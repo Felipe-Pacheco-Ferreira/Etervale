@@ -16,14 +16,12 @@
   <ItemGroup>
     <ProjectReference Include="../PristonTale.Client.Net/PristonTale.Client.Net.csproj" />
     <ProjectReference Include="../../Shared/PristonTale.Assets/PristonTale.Assets.csproj" />
-    <AndroidAsset Include="Resources/ricarten.smd" Link="ricarten.smd" />
+    <AndroidAsset Include="RicartenResources/ricarten.smd" Link="ricarten.smd" />
     <AndroidAsset Include="$(BaseIntermediateOutputPath)ricarten-resources/Mobile/ricarten-scene.bin" Link="ricarten-scene.bin" />
 
+    <AndroidAsset Include="RicartenResources/ChatBox/*.png" Link="ChatBox/%(Filename)%(Extension)" />
   </ItemGroup>
   <Target Name="ExtractRicartenResources" BeforeTargets="PrepareForBuild">
-    <Unzip SourceFiles="Resources/ricarten.zip" DestinationFolder="$(BaseIntermediateOutputPath)ricarten-resources" />
-    <ItemGroup>
-      <AndroidAsset Include="$(BaseIntermediateOutputPath)ricarten-resources/Mobile/ChatBox/*.png" Link="ChatBox/%(Filename)%(Extension)" />
-    </ItemGroup>
+    <Unzip SourceFiles="RicartenResources/ricarten.zip" DestinationFolder="$(BaseIntermediateOutputPath)ricarten-resources" />
   </Target>
 </Project>
