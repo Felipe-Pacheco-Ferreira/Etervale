@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-android</TargetFramework>
+    <SupportedOSPlatformVersion>24</SupportedOSPlatformVersion>
+    <OutputType>Exe</OutputType>
+    <ApplicationId>org.etervale.android.prototype</ApplicationId>
+    <ApplicationVersion>18</ApplicationVersion>
+    <ApplicationDisplayVersion>0.18</ApplicationDisplayVersion>
+    <AndroidPackageFormats>apk</AndroidPackageFormats>
+    <RuntimeIdentifiers>android-arm64;android-x64</RuntimeIdentifiers>
+    <UseDefaultPublishRuntimeIdentifier>false</UseDefaultPublishRuntimeIdentifier>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../PristonTale.Client.Net/PristonTale.Client.Net.csproj" />
+    <ProjectReference Include="../../Shared/PristonTale.Assets/PristonTale.Assets.csproj" />
+    <AndroidAsset Include="../../assets/Field/Ricarten/village-2.smd" Link="ricarten.smd" />
+    <AndroidAsset Include="../../assets/Mobile/ricarten-scene.bin" Link="ricarten-scene.bin" />
+    <AndroidAsset Include="../../assets/Mobile/ChatBox/*.png" Link="ChatBox/%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

@@ -94,7 +94,8 @@ The other languages' texts come from `Translations/<language>.json`, embedded in
 (`Importer.Translations`): `npcs` (by NPC key: `name` and `dialog`, a line per English ordinal), `monsters` (by monster
 key) and `items` (by item code, every variant of the code). Each text is a `*_texts` or `npc_dialog_lines` row of that
 language beside the English one, so a re-import keeps them; a key the catalog lacks is a warning. `pt-BR.json` holds
-the Brazilian Portuguese names and dialog lines of every NPC; monsters and items keep their English names.
+the Brazilian Portuguese names and dialog lines of NPCs, plus localized names for selected monsters and items.
+Entries without a localized name retain their English catalog name.
 
 Directories are matched case-insensitively (`OpenItem`, `Monster`, `NPC`, `Field`); file patterns too, because the
 data mixes `.npc`/`.NPC` and `.inf`/`.INF`. Only the top level of each directory is parsed (for example

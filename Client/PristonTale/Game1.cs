@@ -107,7 +107,11 @@ public class Game1 : Game
             _presentation.ConfirmRequested |= keyboard.IsKeyDown(Keys.Enter) && !_lastKeyboardState.IsKeyDown(Keys.Enter);
             escapePressed = false;
         }
-        if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || escapePressed && !_client.HandleEscape() || _client.ExitRequested)
+        if (escapePressed)
+        {
+            _client.HandleEscape();
+        }
+        if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || _client.ExitRequested)
         {
             Exit();
         }

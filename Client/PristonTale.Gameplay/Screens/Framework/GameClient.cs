@@ -90,7 +90,7 @@ public sealed class GameClient : IDisposable
         SetScreen(new OpeningScreen(_context));
     }
 
-    public bool HandleEscape() => _screen?.HandleEscape() == true;
+    public void HandleEscape() => _screen?.HandleEscape();
 
     // The diagnostics overlay (F9, as the original's debug display): the frame timing and the screen's status, drawn at
     // the top left over everything.

@@ -15,6 +15,20 @@ rendering internals, skill presentation and VFX data have their own documents (s
 
 ## Code map
 
+The Android prototype lives in `Client/PristonTale.Android` and uses the desktop client's network library. It authenticates
+in Brazilian Portuguese and lists characters. Entering Ricarten opens an OpenGL ES scene with the desktop stage's meshes,
+vertex colours and textures. The following camera tracks the Fighter body and head used for SatroX. The app samples the
+original stand and walk clips, interpolates their poses and advances the walk cycle by distance. Nearby entities are drawn as markers from presence
+updates. The landscape view uses a steep follow camera with a narrow field of view and frames the avatar below center.
+The left thumbstick moves relative to the screen. Tapping
+the scene casts a ray into the stage and sets a walking destination on the floor. The client steps movement locally
+every 20 ms, reports position every 200 ms during continuous movement, and applies server corrections.
+
+The Android project packages the original stage for collision and the generated `assets/Mobile/ricarten-scene.bin`
+for rendering. Export `village-2.smd`, `B002.inx` and `tmh-b01.inx` as three GLBs with `ptgltf`. Pass `--job-mask 0x1`
+for the Fighter body and head. Run `ptgltf --mobile-scene <stage.glb> <body.glb> <head.glb> <ricarten-scene.bin>` to
+bake the textures, meshes and animation frames for the APK.
+
 | Path | Responsibility |
 |---|---|
 | [`Client/PristonTale/Program.cs`](../Client/PristonTale/Program.cs) | Entry: no arguments, `--settings PATH`, or `--validate-display REPORT.json` (runs `DisplayValidationProbe`) |
@@ -109,9 +123,9 @@ OpeningScreen --login ok--> CharacterSelectScreen --enter world ok--> GameplaySc
   field code, spawn x/z, tier, hair) and requests `GameplayScreen`. The Exit button returns to `OpeningScreen`; the next
   login opens a new connection.
 - `GameplayScreen` has no transition out; leaving it means quitting.
-- Escape: `Game1` calls `GameClient.HandleEscape` -> `GameScreen.HandleEscape`. `GameplayScreen` closes the open HUD
-  panels (`GameplayHud.ClosePanel`) and returns true if anything was open; every other case exits the game. While a
-  display change awaits confirmation, Escape reverts it and Enter confirms it instead.
+- Escape: `Game1` forwards the key to the active screen. In gameplay it closes open HUD panels or opens the system menu
+  when no panel is open. On the opening and character selection screens, Escape leaves the current screen in place.
+  While a display change awaits confirmation, Escape reverts it and Enter confirms it instead.
 
 ### Shutdown
 
@@ -938,8 +952,8 @@ first frames after entry) is tried again every second.
 1. Derive from `GameScreen` in `Screens/<Name>/`; take dependencies from `ScreenContext`; load in `Enter`, release GPU
    resources and cancel backend calls in `Dispose`.
 2. Start backend calls as tasks and poll them in `Update` (see `CharacterSelectScreen.PollBusy`).
-3. Transition with `Context.RequestScreen(new NextScreen(Context, ...))`; override `HandleEscape` if Escape must not
-   quit; override `StatusText` for the window title.
+3. Transition with `Context.RequestScreen(new NextScreen(Context, ...))`; override `HandleEscape` for screen-specific
+   Escape behavior and `StatusText` for the window title.
 4. Skip input while `Context.Presentation.AwaitingConfirmation` is set.
 
 ### Handle a new server message on the client

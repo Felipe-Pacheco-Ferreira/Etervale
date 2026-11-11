@@ -19,7 +19,9 @@ public static class StageCollisionReader
     private const int MaterialMeshStateOffset = 168;
 
     // A masked stage (AssetMask) is unmasked in place.
-    public static CollisionMesh Read(byte[] data)
+    public static CollisionMesh Read(byte[] data) => new(ReadTriangles(data));
+
+    public static IReadOnlyList<Triangle> ReadTriangles(byte[] data)
     {
         if (data.Length < SmdLayout.FileHeaderSize + SmdLayout.StageHeaderSize)
         {
@@ -102,7 +104,7 @@ public static class StageCollisionReader
             }
         }
 
-        return new CollisionMesh(triangles);
+        return triangles;
     }
 
     private static ReadOnlySpan<byte> Slice(byte[] data, int offset, int length)

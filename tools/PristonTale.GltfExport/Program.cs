@@ -3,11 +3,17 @@ using PristonTale.Engine3D.Formats;
 using PristonTale.GltfExport;
 using SharpGLTF.Scenes;
 
+if ((args.Length is 5 or 6) && args[0] == "--mobile-scene")
+{
+    MobileSceneBake.Write(args[1], args[2], args[3], args[4], args.Length == 6 ? args[5] : null);
+    return 0;
+}
+
 if (args.Length == 0 || args[0] is "-h" or "--help")
 {
     Console.WriteLine(
         "ptgltf <asset-path> [output.glb|output.gltf] [--asset-root <dir>] [--recenter] [--scale <f>] [--flip-winding] [--flip-v]\n"
-        + "       [--no-anims | --anims-only] [--job-mask <mask>] [--lit-stage] [--stage-object] [--t-pose]\n"
+        + "       [--no-anims | --anims-only] [--job-mask <mask>] [--village-locomotion] [--lit-stage] [--stage-object] [--t-pose]\n"
         + "  Exports a PristonTale .smd (stage/model), .smb (model) or .inx (skinned actor) to glTF/GLB.\n"
         + "  --recenter moves geometry to the origin; --scale <f> applies an explicit unit conversion.\n"
         + "  --anims-only writes only the .inx skeleton and its clips; --no-anims writes geometry in bind pose.\n"
@@ -42,6 +48,7 @@ try
     var litStage = TakeFlag(remaining, "--lit-stage");
     var stageObject = TakeFlag(remaining, "--stage-object");
     var tPose = TakeFlag(remaining, "--t-pose");
+    var villageLocomotion = TakeFlag(remaining, "--village-locomotion");
     var assetRootOption = TakeOption(remaining, "--asset-root");
     var scaleOption = TakeOption(remaining, "--scale");
     var scale = ParseScale(scaleOption);
@@ -88,7 +95,7 @@ try
         animationsOnly,
         jobMask,
         stageObject,
-        tPose);
+        tPose, villageLocomotion);
     temporaryDirectory = Path.Combine(
         Path.GetTempPath(),
         $"ptgltf_{Environment.ProcessId}_{Guid.NewGuid():N}");

@@ -201,6 +201,7 @@ dotnet run --project tools/PristonTale.SmokeClient -c Release --no-build -- tcp:
 | `--character <name>` | none | Use this existing character instead of creating one |
 | `--skill <hex>` | `0x01010001` | Skill code, parsed as hex with or without `0x` |
 | `--chat <text>` | none | A chat line or command to send after the whisper check; prints the answers for 3 s |
+| `--login-only` | off | Exit after authentication without creating a character or entering the world |
 
 Sequence: login, list characters, create a Mechanician named `Smoke<6 hex>` (without `--character`), list again, enter
 the world, read the world catalog, read presence for up to 10 s (requires at least one spawn, the owner status and the

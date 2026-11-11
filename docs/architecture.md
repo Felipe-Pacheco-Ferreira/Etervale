@@ -99,7 +99,7 @@ Consequences:
 | Particle scripts and VFX data | `Client/PristonTale.Effects`, `<assetRoot>/Effect/Vfx` written by `tools/PristonTale.VfxImport` |
 | HUD, windows, input, presentation of server events | `Client/PristonTale.Gameplay` |
 
-Original asset paths are resolved with `AssetFiles`; do not build original paths by hand.
+Original asset paths are resolved with `AssetFiles`; do not build original paths by hand. Its case-insensitive lookup skips directories it cannot enumerate.
 
 ## Server threading model
 
