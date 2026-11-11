@@ -123,6 +123,18 @@ dotnet run --project tools/PristonTale.GltfExport -c Release --no-build -- <armo
   summary.
 - `--verbose` prints full exception stacks and cleanup failures. Exit 0 on success, 1 on any error, 2 under
   `--strict-textures` when a texture fell back (the file is still written).
+- `ptgltf` also bakes the Android client's data ([android.md](android.md), "Baked files"), each as a separate mode:
+  - `--mobile-char-select <assets-root> <art-dir> <archive.zip>`: into the directory, the character selection's art
+    (`CharacterSelectArt`) as PNG, its cues and loops (`CharacterSelectSounds`) and the UI font; into the archive, the
+    selection's baked stage, the music and one character file per class. Exits 1 after listing missing art.
+  - `--mobile-loading <assets-root> <output-dir>`: every loading picture of `WorldLoadingArt.Directory` as PNG, no
+    taller than `WorldLoadingArt.MostPackagedHeight`.
+  - `--mobile-scene <stage.glb> <scene.bin> [npc-glb-directory] [scenery-glb-directory]`: a field from exported GLBs.
+    Pass `-` for the NPC directory to bake scenery without NPCs. Export animated scenery with `--stage-object`.
+  - `--mobile-scene-upgrade <old.bin> <new.bin>`: a field scene of the previous format rewritten in the current one.
+  - --mobile-world-arrival <model.glb> <Progression.vfx.json> <world-arrival.bin>: the original world entry mesh
+    and its authored playback settings for the Android renderer.
+  - `--mobile-wave <source.wav> <output.wav>`: normalize the original WAV header for playback on Android.
 
 ## WorldImport (`ptworld`)
 

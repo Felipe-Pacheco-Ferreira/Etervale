@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using PristonTale.Assets;
 using PristonTale.Engine3D.Rendering;
 using PristonTale.Simulation.Characters;
 using PristonTale.Contracts.Characters;
@@ -9,25 +10,8 @@ namespace PristonTale.Gameplay.Screens.CharacterSelect;
 
 internal sealed class CharSelectAssets : IDisposable
 {
-    private const string UiDir = "StartImage/login/CharSelect";
-    private const string UiParentDir = "StartImage/login";
-
-    private sealed record JobArtFiles(string NormalLabel, string SelectedLabel, string Description);
-
-    private static readonly Dictionary<PlayerClass, JobArtFiles> JobArtFile = new()
-    {
-        [PlayerClass.Mechanician] = new("T_cls-meca_.tga", "T_cls-meca.tga", "T_chr-meca.tga"),
-        [PlayerClass.Fighter] = new("T_cls-ft_.tga", "T_cls-ft.tga", "T_chr-ft.tga"),
-        [PlayerClass.Pikeman] = new("T_cls-pkm_.tga", "T_cls-pkm.tga", "T_chr-pkm.tga"),
-        [PlayerClass.Archer] = new("T_cls-ac_.tga", "T_cls-ac.tga", "T_chr-ac.tga"),
-        [PlayerClass.Knight] = new("T-cls-knt_.tga", "T-cls-knt.tga", "T_chr-knt.tga"),
-        [PlayerClass.Atalanta] = new("T_cls-atlt_.tga", "T_cls-atlt.tga", "T_chr-atlt.tga"),
-        [PlayerClass.Priestess] = new("T_cls-prts_.tga", "T_cls-prts.tga", "T_chr-prts.tga"),
-        [PlayerClass.Magician] = new("T_cls-mgc_.tga", "T_cls-mgc.tga", "T_chr-mgc.tga"),
-        [PlayerClass.Assassin] = new("T_cls-assa_.tga", "T_cls-assa.tga", "T_chr-assa.tga"),
-        [PlayerClass.Shaman] = new("T_cls-sha_.tga", "T_cls-sha.tga", "T_chr-sha.tga"),
-        [PlayerClass.MartialArtist] = new("T_cls-ma_.tga", "T_cls-ma.tga", "T_chr-ma.tga"),
-    };
+    private const string UiDir = CharacterSelectArt.ScreenDirectory;
+    private const string UiParentDir = CharacterSelectArt.LoginDirectory;
 
     private readonly PristonTextureLoader _loader;
     private readonly Func<string, string> _assetPath;
@@ -43,47 +27,47 @@ internal sealed class CharSelectAssets : IDisposable
         _loader.Initialize();
 
         BtOk = Ui("Bt_ok.tga");
-        BtSelect = Ui("Bt_select.tga");
-        BtBack = Ui("Bt_back.tga");
-        BtExit = Ui("Bt_exit.tga");
-        BtDelete = Ui("Bt_delet.tga");
-        BtNewChar = Ui("bt-Newchar.tga");
-        NewCharBig = Ui("New_char.tga");
+        BtSelect = Ui(CharacterSelectArt.SelectButton);
+        BtBack = Ui(CharacterSelectArt.BackButton);
+        BtExit = Ui(CharacterSelectArt.ExitButton);
+        BtDelete = Ui(CharacterSelectArt.DeleteButton);
+        BtNewChar = Ui(CharacterSelectArt.NewCharacterButton);
+        NewCharBig = Ui(CharacterSelectArt.NewCharacterPrompt);
 
-        FrameL = Ui("mainbox_L.tga");
-        FrameT = Ui("mainbox_T.tga");
-        FrameR = Ui("mainbox_R.tga");
-        FrameD = Ui("mainbox_D.tga");
-        FrameCn1 = Ui("mainbox_CN1.tga");
-        FrameCn2 = Ui("mainbox_CN2.tga");
-        FrameCn3 = Ui("mainbox_CN3.tga");
-        FrameCn4 = Ui("mainbox_CN4.tga");
+        FrameL = Ui(CharacterSelectArt.FrameLeft);
+        FrameT = Ui(CharacterSelectArt.FrameTop);
+        FrameR = Ui(CharacterSelectArt.FrameRight);
+        FrameD = Ui(CharacterSelectArt.FrameBottom);
+        FrameCn1 = Ui(CharacterSelectArt.FrameCorner1);
+        FrameCn2 = Ui(CharacterSelectArt.FrameCorner2);
+        FrameCn3 = Ui(CharacterSelectArt.FrameCorner3);
+        FrameCn4 = Ui(CharacterSelectArt.FrameCorner4);
 
-        TitleBox = Ui("title-box.tga");
-        TitleTxt = Ui("title-txt30.tga");
+        TitleBox = Ui(CharacterSelectArt.TitleBox);
+        TitleTxt = Ui(CharacterSelectArt.TitleText);
 
-        MarkTempscron = Ui("mark_T.tga");
-        MarkMorion = Ui("mark_M.tga");
-        LogoTempscron = Ui("T-tempscron.tga");
-        LogoMorion = Ui("T-Morion.tga");
-        RaceBoxMain = Ui("mark_box1.tga");
-        RaceBoxEnd = Ui("mark_box2.tga");
-        TempscronDescription = Ui("T-ex_tscr.tga");
-        MorionDescription = Ui("T-ex_mrin.tga");
+        MarkTempscron = Ui(CharacterSelectArt.TempskronMark);
+        MarkMorion = Ui(CharacterSelectArt.MorionMark);
+        LogoTempscron = Ui(CharacterSelectArt.TempskronTitle);
+        LogoMorion = Ui(CharacterSelectArt.MorionTitle);
+        RaceBoxMain = Ui(CharacterSelectArt.TribeBoxMain);
+        RaceBoxEnd = Ui(CharacterSelectArt.TribeBoxEnd);
+        TempscronDescription = Ui(CharacterSelectArt.TempskronDescription);
+        MorionDescription = Ui(CharacterSelectArt.MorionDescription);
 
-        JobBoxMain = Ui("T_cls-box1.tga");
-        JobBoxEnd = Ui("T_cls-box2.tga");
+        JobBoxMain = Ui(CharacterSelectArt.ClassBoxMain);
+        JobBoxEnd = Ui(CharacterSelectArt.ClassBoxEnd);
 
-        InfoBackPanel = UiParent("UserCharacterInfo.tga");
-        InfoOverlay = UiParent("CharacterInfo.tga");
+        InfoBackPanel = UiParent(CharacterSelectArt.InfoBackPanel);
+        InfoOverlay = UiParent(CharacterSelectArt.InfoOverlay);
 
-        FaceBigBoxTop = Ui("face_bigbox1.tga");
-        FaceBigBoxBottom = Ui("face_bigbox2.tga");
-        FaceBoxNormal = Ui("face_box_.tga");
-        FaceBoxSelected = Ui("face_box.tga");
-        FaceNameBox = Ui("face_box2.tga");
+        FaceBigBoxTop = Ui(CharacterSelectArt.FaceBackdropTop);
+        FaceBigBoxBottom = Ui(CharacterSelectArt.FaceBackdropBottom);
+        FaceBoxNormal = Ui(CharacterSelectArt.FaceBoxNormal);
+        FaceBoxSelected = Ui(CharacterSelectArt.FaceBoxSelected);
+        FaceNameBox = Ui(CharacterSelectArt.FaceNameBox);
 
-        foreach (var (playerClass, files) in JobArtFile)
+        foreach (var (playerClass, files) in CharacterSelectArt.Classes)
         {
             _normalClassLabels[playerClass] = Ui(files.NormalLabel);
             _selectedClassLabels[playerClass] = Ui(files.SelectedLabel);
@@ -156,49 +140,16 @@ internal sealed class CharSelectAssets : IDisposable
     public void LoadFaceThumbs(PlayerClass playerClass)
     {
         Array.Clear(_faceThumbs);
-        var spec = FaceThumbFiles(playerClass);
+        var faces = CharacterSelectArt.Faces(playerClass);
         for (var index = 0; index < CharacterFace.FaceCount; index++)
         {
-            _faceThumbs[index, 0] = _loader.LoadUiTexture(_assetPath(spec.Dir), spec.Normal[index]);
-            _faceThumbs[index, 1] = _loader.LoadUiTexture(_assetPath(spec.Dir), spec.Selected[index]);
+            _faceThumbs[index, 0] = _loader.LoadUiTexture(_assetPath(faces.Directory), faces.Normal[index]);
+            _faceThumbs[index, 1] = _loader.LoadUiTexture(_assetPath(faces.Directory), faces.Selected[index]);
         }
     }
 
     private Texture2D Ui(string name) => _loader.LoadUiTexture(_assetPath(UiDir), name);
     private Texture2D UiParent(string name) => _loader.LoadUiTexture(_assetPath(UiParentDir), name);
-
-    private static (string Dir, string[] Normal, string[] Selected) FaceThumbFiles(PlayerClass playerClass)
-    {
-        var stem = playerClass switch
-        {
-            PlayerClass.Mechanician => "TmA",
-            PlayerClass.Fighter => "TmB",
-            PlayerClass.Pikeman => "TmC",
-            PlayerClass.Archer => "TfD",
-            PlayerClass.Knight => "MmA",
-            PlayerClass.Atalanta => "MfB",
-            PlayerClass.Priestess => "MfC",
-            PlayerClass.Magician => "MmD",
-            PlayerClass.Assassin => "TfE",
-            PlayerClass.Shaman => "MmE",
-            PlayerClass.MartialArtist => "TfF",
-            _ => throw new ArgumentOutOfRangeException(nameof(playerClass), playerClass, "Unsupported character-select class.")
-        };
-        var morion = playerClass is PlayerClass.Knight or PlayerClass.Atalanta or PlayerClass.Priestess or PlayerClass.Magician or PlayerClass.Shaman;
-        var usesLetterSuffix = morion || playerClass is PlayerClass.Assassin or PlayerClass.MartialArtist;
-        var order = playerClass == PlayerClass.Atalanta ? new[] { 2, 1, 3 } : new[] { 1, 2, 3 };
-        var normalSuffix = usesLetterSuffix ? "-a.tga" : "-01.tga";
-        var selectedSuffix = usesLetterSuffix ? "-b.tga" : "-02.tga";
-        var normal = new string[CharacterFace.FaceCount];
-        var selected = new string[CharacterFace.FaceCount];
-        for (var index = 0; index < CharacterFace.FaceCount; index++)
-        {
-            normal[index] = $"{stem}0{order[index]}{normalSuffix}";
-            selected[index] = $"{stem}0{order[index]}{selectedSuffix}";
-        }
-
-        return (morion ? UiParentDir + "/Moryon" : UiParentDir, normal, selected);
-    }
 
     public void Dispose()
     {

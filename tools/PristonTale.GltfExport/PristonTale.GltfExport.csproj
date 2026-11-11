@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Client\PristonTale.Engine3D\PristonTale.Engine3D.csproj" />
+    <ProjectReference Include="..\..\Shared\PristonTale.Simulation\PristonTale.Simulation.csproj" />
   </ItemGroup>
 
   <ItemGroup>

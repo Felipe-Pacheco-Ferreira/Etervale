@@ -233,11 +233,13 @@ public sealed record QuestJournalPacket(long Revision, ushort Code, byte Timer, 
 {
     private const int MinimumSize = 8 + 4 + 8 + 4 + 4 + 2 + 4 + 4 + 8 + 4 + 4 + 4 + 4;
 
+    public int TargetQuestCode { get; init; }
+
     public int Capacity
     {
         get
         {
-            var size = MinimumSize + NpcWire.TextSize(TargetName, QuestWire.MaxTextBytes);
+            var size = MinimumSize + sizeof(int) + NpcWire.TextSize(TargetName, QuestWire.MaxTextBytes);
             foreach (var line in Progress.Concat(Finished))
             {
                 size += NpcWire.TextSize(line.Title, QuestWire.MaxTextBytes) + NpcWire.TextSize(line.Description, QuestWire.MaxTextBytes);
@@ -269,6 +271,7 @@ public sealed record QuestJournalPacket(long Revision, ushort Code, byte Timer, 
         writer.Int32(WeaponKillsLeft);
         WriteLines(ref writer, Progress);
         WriteLines(ref writer, Finished);
+        writer.Int32(TargetQuestCode);
         return writer.Finish();
     }
 
@@ -317,7 +320,10 @@ public sealed record QuestJournalPacket(long Revision, ushort Code, byte Timer, 
         var left = reader.Int32();
         var progress = ReadLines(ref reader, QuestWire.MaxProgress);
         var finished = ReadLines(ref reader, QuestWire.MaxFinished);
-        return new QuestJournalPacket(revision, code, timer, reset, state, target, kills, needed, timerMs, stage, left, progress, finished);
+        return new QuestJournalPacket(revision, code, timer, reset, state, target, kills, needed, timerMs, stage, left, progress, finished)
+        {
+            TargetQuestCode = reader.Remaining >= sizeof(int) ? reader.Int32() : 0
+        };
     }
 }
 

@@ -31,6 +31,7 @@ where to look. Setup, build and run commands are in the root [README.md](../READ
 | [persistence.md](persistence.md) | Repositories, migrations, schema, SQLite and PostgreSQL providers |
 | [world-import.md](world-import.md) | `tools/PristonTale.WorldImport`: authored data formats, parsers, catalog import, verify |
 | [client.md](client.md) | Client app, screens, game scene, HUD and windows, remote actors, audio, client networking |
+| [android.md](android.md) | `Client/PristonTale.Android`: login, character selection, Ricarten; how a desktop screen is ported; baked data and packaging |
 | [rendering.md](rendering.md) | `Client/PristonTale.Engine3D`: original formats, renderer passes, lighting, shadows, post-processing |
 | [shaders.md](shaders.md) | Shader library under `Client/PristonTale/Content/Shaders` |
 | [effects.md](effects.md) | `Client/PristonTale.Effects` and the VFX JSON format |
@@ -57,6 +58,7 @@ The MonoGame fork documents itself in [monogame/README.md](../monogame/README.md
 | Add a HUD window or screen | client.md | rendering.md |
 | Change lighting, shadows or a render pass | rendering.md | shaders.md, client-settings.md |
 | Add a client option | client-settings.md | client.md |
+| Change the Android client or port a screen to it | android.md | client.md, tools.md |
 | Add a skill or hit effect | effects.md | skills.md |
 | Change a server setting or connection limit | server.md | protocol.md |
 | Add a regression case | testing.md | the area doc |
@@ -69,7 +71,7 @@ The MonoGame fork documents itself in [monogame/README.md](../monogame/README.md
 | `Shared/` | Contracts, Geometry, Assets, Simulation, Protocol, Application (shared by server and client) |
 | `Server/` | Game server host |
 | `Persistence/` | Storage abstractions, repositories, migrations, providers |
-| `Client/` | Engine3D, Effects, Client.Net, Gameplay, the client executable |
+| `Client/` | Engine3D, Effects, Client.Net, Gameplay, the client executable, the Android client |
 | `tests/` | Regression runner |
 | `tools/` | Importer and developer tools |
 | `monogame/` | Vendored MonoGame fork (Vulkan) |

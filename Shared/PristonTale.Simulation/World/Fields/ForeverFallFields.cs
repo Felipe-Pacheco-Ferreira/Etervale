@@ -142,7 +142,7 @@ public static class ForeverFall1Field
             "Field\\forever-fall\\1ani-26.smd"
         ])
     {
-        FieldCode = 20,
+        FieldCode = FieldCodes.ForeverFall1,
         Center = new FieldPoint(2032, 71183),
         StartPoints = [new FieldPoint(1875, 69871), new FieldPoint(2637, 60219)],
         Gates = [new FieldGate("pilai", -8508, -10576, 0)],

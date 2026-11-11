@@ -56,7 +56,7 @@ internal static class WireMapping
                 var owned = view.OwnerId != 0;
                 var template = new DescribedTemplate(view.TemplateId, monster.ModelScale, (uint)monster.SoundCode, monster.PortraitOffsetY,
                     monster.PortraitOffsetZ, (byte)(owned ? Simulation.World.Monsters.MonsterBrood.User : monster.Brood), view.OwnerId,
-                    owned ? view.ModelScale : 0f, 0, (int)monster.Class, monster.ShadowSizeLevel);
+                    owned ? view.ModelScale : 0f, 0, (int)monster.Class, monster.ShadowSizeLevel) { QuestCode = monster.QuestCode };
                 return new EntityDescriptionPacket(view.EntityId, revision, EntityKind.Monster, view.Level, view.MoveSpeed, view.AttackRate,
                     monster.Name ?? "", monster.ModelInxPath ?? "", Template: template);
             }

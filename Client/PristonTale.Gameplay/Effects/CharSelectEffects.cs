@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using PristonTale.Assets;
 using PristonTale.Effects.Vfx;
 
 namespace PristonTale.Gameplay.Effects;
@@ -12,31 +13,31 @@ public static class CharSelectEffects
     // Seconds of flames one beam effect emits; CharSelectFlames starts the next as it ends, so the flames never stop.
     public const float BeamPeriod = 2f;
 
-    private const float Rise = 60f;
-    private const float Lean = Rise * 0.06f;
-    private const float Rate = 9f;
+    private const float Rise = CharacterSelectStage.FlameRise;
+    private const float Lean = CharacterSelectStage.FlameLean;
+    private const float Rate = CharacterSelectStage.FlameRate;
 
     public static VfxDefinition GreenBeamDefinition() => new()
     {
         Name = GreenBeam,
-        Duration = BeamPeriod + 2.4f,
+        Duration = BeamPeriod + CharacterSelectStage.FlameLongestLife,
         Parts =
         [
             new VfxPartDefinition
             {
                 Count = (int)(BeamPeriod * Rate),
                 DelayStep = 1f / Rate,
-                Lifetime = [1.8f, 2.4f],
-                Texture = "image/flame.bmp",
-                Frames = 8,
+                Lifetime = [CharacterSelectStage.FlameShortestLife, CharacterSelectStage.FlameLongestLife],
+                Texture = CharacterSelectArt.FlameTexture,
+                Frames = CharacterSelectArt.FlameFrames,
                 FrameTime = 1f / Rate,
                 Loop = true,
-                Color = [80f, 235f, 110f, 115f],
-                Size = [24f, 24f],
-                Growth = 10f / 2.1f,
+                Color = [CharacterSelectStage.FlameColor.R, CharacterSelectStage.FlameColor.G, CharacterSelectStage.FlameColor.B, CharacterSelectStage.FlameColor.A],
+                Size = [CharacterSelectStage.FlameSize, CharacterSelectStage.FlameSize],
+                Growth = CharacterSelectStage.FlameGrowth,
                 Fade = VfxPartFade.InOut,
-                FadeOut = 2.4f,
-                Shell = [4f, 4f, 4f],
+                FadeOut = CharacterSelectStage.FlameFadeOut,
+                Shell = [CharacterSelectStage.FlameShell, CharacterSelectStage.FlameShell, CharacterSelectStage.FlameShell],
                 VelocityMin = [-Lean, Rise, -Lean],
                 VelocityMax = [Lean, Rise, Lean]
             }

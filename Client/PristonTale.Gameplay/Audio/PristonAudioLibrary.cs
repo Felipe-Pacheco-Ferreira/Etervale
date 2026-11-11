@@ -142,7 +142,7 @@ public sealed class PristonAudioLibrary : IDisposable
         {
             var byPath = new Dictionary<string, SoundEffect>(StringComparer.OrdinalIgnoreCase);
             library.OpeningMusic = library.Load(assetRoot, "StartImage/Opening/Intro.wav", byPath);
-            library.CharacterSelectMusic = library.Load(assetRoot, "StartImage/login/CharacterSelect.wav", byPath);
+            library.CharacterSelectMusic = library.Load(assetRoot, CharacterSelectSounds.Music, byPath);
             foreach (var (cue, path) in LoginAudio.CueFiles)
             {
                 library._loginCues.Add(cue, library.Load(assetRoot, path, byPath));

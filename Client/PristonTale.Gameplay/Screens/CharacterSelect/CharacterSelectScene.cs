@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using PristonTale.Assets;
 using PristonTale.Engine3D.Diagnostics;
 using PristonTale.Engine3D.Formats;
 using PristonTale.Engine3D.Physics;
@@ -15,51 +16,22 @@ namespace PristonTale.Gameplay.Screens.CharacterSelect;
 
 internal sealed class CharacterSelectScene
 {
-    private static readonly (float X, float Z)[] OriginalUserCharacterPositions =
-    [
-        (0f, -110f),
-        (-35f, -90f),
-        (35f, -90f),
-        (-70f, -60f),
-        (70f, -60f),
-    ];
-
-    private static readonly (float X, float Z)[] SixUserCharacterPositions =
-    [
-        (-18f, -110f),
-        (18f, -110f),
-        (-53f, -85f),
-        (53f, -85f),
-        (-88f, -55f),
-        (88f, -55f),
-    ];
-
-    // The job lineup stands from -90 to 90: five classes 45 apart, six 36 apart; the two at the ends stand 10 nearer.
-    internal static (float X, float Z) JobCharacterPos(int index, int count)
-    {
-        var spacing = count > 5 ? 36 : 45;
-        return ((2 * index - (count - 1)) * spacing / 2, index == 0 || index == count - 1 ? -320f : -330f);
-    }
+    internal static (float X, float Z) JobCharacterPos(int index, int count) => CharacterSelectStage.LineupPosition(index, count);
 
     private (float X, float Z) JobSlot(int jobIndex) => JobCharacterPos(_jobActors[jobIndex].SlotIndex, _jobActors.Count);
 
-    private static readonly PlayerClass[] TempscronJobs =
-        [PlayerClass.Mechanician, PlayerClass.Fighter, PlayerClass.Pikeman, PlayerClass.Archer, PlayerClass.Assassin, PlayerClass.MartialArtist];
-    private static readonly PlayerClass[] MorionJobs =
-        [PlayerClass.Knight, PlayerClass.Atalanta, PlayerClass.Priestess, PlayerClass.Magician, PlayerClass.Shaman];
+    private const float HitHeadHeight = CharacterSelectStage.PickHeight;
+    private const float HitHalfWidthPixels = CharacterSelectStage.PickHalfWidthPixels;
 
-    private const float HitHeadHeight = 45f;
-    private const float HitHalfWidthPixels = 26f;
+    private const float MeasuredLoginFloorY = CharacterSelectStage.FloorY;
+    private const float PlausibleFloorAbsY = CharacterSelectStage.PlausibleFloor;
 
-    private const float MeasuredLoginFloorY = 0f;
-    private const float PlausibleFloorAbsY = 40f;
-
-    private const float JobForwardZ = -420f;
-    private const float JobStopZ = -415f;
-    private const float JobRestZ = -429f;
-    private const float JobForwardUnitsPerSecond = 120f;
-    private const float JobTurnRate = 9f;
-    private const float JobYawSettleEpsilon = 0.01f;
+    private const float JobForwardZ = CharacterSelectStage.ForwardZ;
+    private const float JobStopZ = CharacterSelectStage.StopZ;
+    private const float JobRestZ = CharacterSelectStage.RestZ;
+    private const float JobForwardUnitsPerSecond = CharacterSelectStage.RunUnitsPerSecond;
+    private const float JobTurnRate = CharacterSelectStage.TurnRate;
+    private const float JobYawSettleEpsilon = CharacterSelectStage.YawSettle;
 
     private enum JobMovePhase { None, TurnToHeading, Running, TurnToCamera }
 
@@ -169,8 +141,8 @@ internal sealed class CharacterSelectScene
     public async Task PrepareJobLineupAsync(CharacterBrood brood, CancellationToken cancellationToken)
     {
         var jobs = JobsForBrood(brood);
-        var preparations = new List<Task>(jobs.Length * CharacterFace.FaceCount);
-        for (var jobIndex = 0; jobIndex < jobs.Length; jobIndex++)
+        var preparations = new List<Task>(jobs.Count * CharacterFace.FaceCount);
+        for (var jobIndex = 0; jobIndex < jobs.Count; jobIndex++)
         {
             var visuals = JobVisuals(jobs[jobIndex]);
             for (var faceIndex = 0; faceIndex < CharacterFace.FaceCount; faceIndex++)
@@ -187,14 +159,14 @@ internal sealed class CharacterSelectScene
     {
         ClearJobLineup();
         var jobs = JobsForBrood(brood);
-        for (var i = 0; i < jobs.Length; i++)
+        for (var i = 0; i < jobs.Count; i++)
         {
             var visuals = JobVisuals(jobs[i]);
             var handles = _playerComposer.Compose(
                 _assetRoot,
                 visuals,
                 0,
-                SlotWorld(JobCharacterPos(i, jobs.Length)),
+                SlotWorld(JobCharacterPos(i, jobs.Count)),
                 MotionCode.Stand);
             ApplySelectPose(handles);
             _jobActors.Add(new JobActor(jobs[i], i, visuals, handles));
@@ -572,9 +544,9 @@ internal sealed class CharacterSelectScene
         };
     }
 
-    private static PlayerClass[] JobsForBrood(CharacterBrood brood)
+    private static IReadOnlyList<PlayerClass> JobsForBrood(CharacterBrood brood)
     {
-        return brood == CharacterBrood.Morion ? MorionJobs : TempscronJobs;
+        return brood == CharacterBrood.Morion ? CharacterSelectArt.MorionLineup : CharacterSelectArt.TempskronLineup;
     }
 
     private void PlaceJobActor(JobActor job, (float X, float Z) slot, MotionCode motion, float yaw)
@@ -634,13 +606,8 @@ internal sealed class CharacterSelectScene
 
     private static Vector3 SlotToWorld((float X, float Z) slot, float floorY) => WorldSpace.Mirror(new Vector3(slot.X, floorY, slot.Z));
 
-    internal static (float X, float Z) UserCharacterPosition(int characterCount, int index)
-    {
-        var positions = characterCount == CharacterSlots.Maximum
-            ? SixUserCharacterPositions
-            : OriginalUserCharacterPositions;
-        return positions[index];
-    }
+    internal static (float X, float Z) UserCharacterPosition(int characterCount, int index) =>
+        CharacterSelectStage.RosterPosition(characterCount, index);
 
     internal static PlayerClass JobClassForBrood(CharacterBrood brood, int index)
     {
@@ -675,15 +642,8 @@ internal sealed class CharacterSelectScene
         }
     }
 
-    private static float HighlightIntensity(int index, int hoveredIndex, int selectedIndex)
-    {
-        if (index == selectedIndex)
-        {
-            return 120f / 255f;
-        }
-
-        return index == hoveredIndex ? 50f / 255f : 0f;
-    }
+    private static float HighlightIntensity(int index, int hoveredIndex, int selectedIndex) =>
+        CharacterSelectStage.Glow(index, hoveredIndex, selectedIndex);
 
     private float ResolveFloorY((float X, float Z) slot)
     {

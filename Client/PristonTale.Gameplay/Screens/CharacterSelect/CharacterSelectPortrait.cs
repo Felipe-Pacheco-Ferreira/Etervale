@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using PristonTale.Assets;
 using PristonTale.Engine3D.Rendering;
 using PristonTale.Gameplay.World.Remote;
 
@@ -7,9 +8,9 @@ namespace PristonTale.Gameplay.Screens.CharacterSelect;
 
 internal sealed class CharacterSelectPortrait : IDisposable
 {
-    private const float VerticalFieldOfView = 30f * MathF.PI / 180f;
-    private const float VisibleHeightRatio = 0.66f;
-    private const float FocusHeightRatio = 0.70f;
+    private const float VerticalFieldOfView = CharacterSelectStage.PortraitFieldOfView;
+    private const float VisibleHeightRatio = CharacterSelectStage.PortraitVisibleHeight;
+    private const float FocusHeightRatio = CharacterSelectStage.PortraitFocusHeight;
 
     private readonly GraphicsDevice _graphicsDevice;
     private RenderTarget2D _target;

@@ -142,6 +142,13 @@ internal static class CharacterSelectTests
             CharacterSelectScene.JobClassForBrood(CharacterBrood.Morion, 3) == PlayerClass.Magician &&
             CharacterSelectScene.JobClassForBrood(CharacterBrood.Morion, 4) == PlayerClass.Shaman,
             "class lineup differs from the original select screen");
+        var (reached, step) = PristonTale.Assets.CharacterSelectStage.Dolly(PristonTale.Assets.CharacterSelectStage.RailDistance(0), 0, 1, 10f);
+        Assert.True(reached == PristonTale.Assets.CharacterSelectStage.RailDistance(1) && step == 1, "the camera did not stop at the next step of its rail");
+        var (moving, held) = PristonTale.Assets.CharacterSelectStage.Dolly(PristonTale.Assets.CharacterSelectStage.RailDistance(2), 2, 1, 0.1f);
+        Assert.True(moving < PristonTale.Assets.CharacterSelectStage.RailDistance(2) && held == 2, "the camera did not travel back along its rail");
+        var art = PristonTale.Assets.CharacterSelectArt.Files().Select(static file => file.Name).ToArray();
+        Assert.True(art.Distinct(StringComparer.OrdinalIgnoreCase).Count() == art.Length,
+            "two files of the select screen's art share a name, and the Android build keeps them in one directory");
         return Task.CompletedTask;
     }
 

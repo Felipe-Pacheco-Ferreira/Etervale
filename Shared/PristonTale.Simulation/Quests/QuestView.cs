@@ -16,6 +16,7 @@ public sealed record QuestView(
     IReadOnlyList<QuestBoardEntry> Progress,
     IReadOnlyList<QuestBoardEntry> Finished)
 {
+    public int TargetQuestCode { get; init; }
     public bool SkillResetOffered { get; init; }
     public int WeaponStage { get; init; }
     public int WeaponKillsLeft { get; init; }
@@ -27,6 +28,7 @@ public sealed record QuestView(
         return new QuestView(journal.Revision, active.Code, active.State, QuestMonsters.NameOf(active.Target), active.Kills, active.KillsNeeded,
             active.Timer, active.TimerMs, QuestBoard.Progress(character), QuestBoard.Finished(character))
         {
+            TargetQuestCode = active.Target,
             SkillResetOffered = journal.SkillResetOffered,
             WeaponStage = active.WeaponStage,
             WeaponKillsLeft = active.WeaponKillsLeft

@@ -1,107 +1,171 @@
 using System.Numerics;
+using PristonTale.Assets;
 using SharpGLTF.Runtime;
 using SharpGLTF.Schema2;
 using SharpGLTF.Transforms;
 
 namespace PristonTale.GltfExport;
 
+// Bakes a field's scene for the Android client (docs/android.md, "Baked files"): the stage and, for each NPC template
+// given, its model as an animated part. The player's model is not in it: it comes from the class's character file.
 internal static class MobileSceneBake
 {
-    private const int IdleFrames = 16;
-    private const int WalkFrames = 56;
+    internal const int FloatsPerVertex = 8;
+    private const float NpcFramesPerSecond = 12f;
+    private const int FewestNpcFrames = 2;
+    private const int MostNpcFrames = 24;
+    private const int PreviousMagic = 0x34544352;
 
-    public static void Write(string stagePath, string bodyPath, string headPath, string outputPath, string? npcDirectory)
+    // npcDirectory holds one GLB per NPC template, named by the template's number.
+    public static void Write(string stagePath, string outputPath, string? npcDirectory, string? sceneryDirectory)
     {
         var textures = new List<byte[]>();
-        var stage = new Model(stagePath, textures);
-        var body = new Model(bodyPath, textures);
-        var head = new Model(headPath, textures);
-        var terrain = stage.Bake(null, 0);
-        var idle = BakeClip(body, head, "Stand", IdleFrames);
-        var walk = BakeClip(body, head, "Walk", WalkFrames);
-        var run = BakeClip(body, head, "Run", WalkFrames);
-        var npcs = new SortedDictionary<uint, (NpcClip Idle, NpcClip? Walk, NpcClip? Run)>();
+        var stage = new Model(stagePath, textures).Bake(null, 0).ToList();
+        var scenery = new List<MobilePart>();
+        if (sceneryDirectory is not null)
+        {
+            const string animation = "Animation";
+            foreach (var path in Directory.EnumerateFiles(sceneryDirectory, "*.glb").Order(StringComparer.Ordinal))
+            {
+                var model = new Model(path, textures);
+                var clip = MobileActorWriter.BakeClip(model, animation, 12f, 2, 60);
+                if (clip is null)
+                {
+                    stage.AddRange(model.Bake(null, 0f));
+                }
+                else
+                {
+                    scenery.Add(new MobilePart(MobileActorWriter.Batches(model, animation), [clip]));
+                }
+            }
+        }
+        var npcs = new SortedDictionary<uint, MobilePart>();
         if (npcDirectory is not null)
         {
             foreach (var path in Directory.EnumerateFiles(npcDirectory, "*.glb"))
             {
                 var id = uint.Parse(Path.GetFileNameWithoutExtension(path), System.Globalization.CultureInfo.InvariantCulture);
                 var model = new Model(path, textures);
-                npcs.Add(id, (model.BakeNpcClip("Stand") ?? new NpcClip(1f, [model.Bake(null, 0f)]), model.BakeNpcClip("Walk"), model.BakeNpcClip("Run")));
+                var stand = Npc(model, GltfSceneExport.StandClip);
+                npcs.Add(id, new MobilePart(
+                    MobileActorWriter.Batches(model, stand is null ? null : GltfSceneExport.StandClip),
+                    [stand ?? Still(model), Npc(model, GltfSceneExport.WalkClip), Npc(model, GltfSceneExport.RunClip)]));
             }
         }
 
-        using var writer = new BinaryWriter(File.Create(outputPath));
-        writer.Write(0x34544352);
-        writer.Write(textures.Count);
-        foreach (var texture in textures)
+        Write(outputPath, textures, stage, npcs, scenery);
+        Console.WriteLine($"Mobile scene: {stage.Count} stage batches, {textures.Count} textures, {npcs.Count} NPC models, {scenery.Count} scenery clips.");
+    }
+
+    // Rewrites a scene file of the previous format, which repeated every vertex's colour and texture coordinates in
+    // every frame and carried one fixed player model, in the current one.
+    public static void Upgrade(string previousPath, string outputPath)
+    {
+        using var reader = new BinaryReader(File.OpenRead(previousPath));
+        if (reader.ReadInt32() != PreviousMagic)
         {
-            writer.Write(texture.Length);
-            writer.Write(texture);
+            throw new InvalidDataException("The file is not a scene of the previous format.");
         }
-        WriteFrame(writer, terrain);
-        WriteClip(writer, idle);
-        WriteClip(writer, walk);
-        WriteClip(writer, run);
+
+        var textures = new List<byte[]>();
+        for (var count = reader.ReadInt32(); count > 0; count--)
+        {
+            textures.Add(reader.ReadBytes(reader.ReadInt32()));
+        }
+
+        var stage = ReadFrame(reader);
+        for (var playerClip = 0; playerClip < 3; playerClip++)
+        {
+            ReadClip(reader);
+        }
+
+        var npcs = new SortedDictionary<uint, MobilePart>();
+        for (var count = reader.ReadInt32(); count > 0; count--)
+        {
+            var id = reader.ReadUInt32();
+            var clips = new MobileClip?[MobileActorFormat.NpcClips];
+            MobilePartBatch[]? batches = null;
+            for (var clip = 0; clip < clips.Length; clip++)
+            {
+                var seconds = reader.ReadSingle();
+                if (seconds <= 0f)
+                {
+                    continue;
+                }
+
+                var frames = ReadClip(reader);
+                batches ??= frames[0].Select(batch => new MobilePartBatch(batch.Texture, MobileActorWriter.Channel(batch.Vertices, 6, 2))).ToArray();
+                clips[clip] = new MobileClip(seconds,
+                    frames.Select(frame => frame.Select(batch => MobileActorWriter.Channel(batch.Vertices, 0, 3)).ToArray()).ToArray());
+            }
+
+            npcs.Add(id, new MobilePart(batches ?? [], clips));
+        }
+
+        Write(outputPath, textures, stage, npcs);
+        Console.WriteLine($"Mobile scene upgraded: {stage.Length} stage batches, {textures.Count} textures, {npcs.Count} NPC models.");
+    }
+
+    private static void Write(string outputPath, List<byte[]> textures, IReadOnlyList<Batch> stage, SortedDictionary<uint, MobilePart> npcs,
+        IReadOnlyList<MobilePart>? scenery = null)
+    {
+        using var writer = new BinaryWriter(File.Create(outputPath));
+        writer.Write(scenery is { Count: > 0 } ? MobileActorFormat.FieldSceneryMagic : MobileActorFormat.FieldSceneMagic);
+        MobileActorWriter.WriteTextures(writer, textures);
+        MobileActorWriter.WriteStage(writer, stage);
         writer.Write(npcs.Count);
-        foreach (var (id, model) in npcs)
+        foreach (var (id, part) in npcs)
         {
             writer.Write(id);
-            WriteNpcClip(writer, model.Idle);
-            WriteNpcClip(writer, model.Walk);
-            WriteNpcClip(writer, model.Run);
+            MobileActorWriter.WritePart(writer, part);
         }
-        Console.WriteLine($"Mobile scene: {terrain.Count} stage batches, {textures.Count} textures, {idle.Length} idle and {walk.Length} walk and {run.Length} run frames.");
-    }
 
-    private static IReadOnlyList<Batch>[] BakeClip(Model body, Model head, string clip, int frames)
-    {
-        var result = new IReadOnlyList<Batch>[frames];
-        for (var i = 0; i < frames; i++)
+        if (scenery is { Count: > 0 })
         {
-            var phase = i / (float)frames;
-            result[i] = body.Bake(clip, phase).Concat(head.Bake(clip, phase)).ToArray();
-        }
-        return result;
-    }
-
-    private sealed record NpcClip(float Seconds, IReadOnlyList<Batch>[] Frames);
-
-    private static void WriteNpcClip(BinaryWriter writer, NpcClip? clip)
-    {
-        writer.Write(clip?.Seconds ?? 0f);
-        if (clip is not null)
-        {
-            WriteClip(writer, clip.Frames);
-        }
-    }
-
-    private static void WriteClip(BinaryWriter writer, IReadOnlyList<Batch>[] frames)
-    {
-        writer.Write(frames.Length);
-        foreach (var frame in frames)
-        {
-            WriteFrame(writer, frame);
-        }
-    }
-
-    private static void WriteFrame(BinaryWriter writer, IReadOnlyList<Batch> batches)
-    {
-        writer.Write(batches.Count);
-        foreach (var batch in batches)
-        {
-            writer.Write(batch.Texture);
-            writer.Write(batch.Vertices.Length);
-            foreach (var value in batch.Vertices)
+            writer.Write(scenery.Count);
+            foreach (var part in scenery)
             {
-                writer.Write(value);
+                MobileActorWriter.WritePart(writer, part);
             }
         }
     }
 
-    private sealed record Batch(int Texture, float[] Vertices);
+    private static MobileClip? Npc(Model model, string clip) =>
+        MobileActorWriter.BakeClip(model, clip, NpcFramesPerSecond, FewestNpcFrames, MostNpcFrames);
 
-    private sealed class Model
+    // A model without a stand keeps its bind pose.
+    private static MobileClip Still(Model model) =>
+        new(1f, [model.Bake(null, 0f).Select(batch => MobileActorWriter.Channel(batch.Vertices, 0, 3)).ToArray()]);
+
+    private static Batch[][] ReadClip(BinaryReader reader)
+    {
+        var frames = new Batch[reader.ReadInt32()][];
+        for (var frame = 0; frame < frames.Length; frame++)
+        {
+            frames[frame] = ReadFrame(reader);
+        }
+
+        return frames;
+    }
+
+    private static Batch[] ReadFrame(BinaryReader reader)
+    {
+        var batches = new Batch[reader.ReadInt32()];
+        for (var index = 0; index < batches.Length; index++)
+        {
+            var texture = reader.ReadInt32();
+            var vertices = new float[reader.ReadInt32()];
+            reader.BaseStream.ReadExactly(System.Runtime.InteropServices.MemoryMarshal.AsBytes(vertices.AsSpan()));
+            batches[index] = new Batch(texture, vertices);
+        }
+
+        return batches;
+    }
+
+    // Vertices hold position, colour and texture coordinates (FloatsPerVertex each); Blend is 0 opaque, 1 cut-out, 2 blended.
+    internal sealed record Batch(int Texture, float[] Vertices, int Blend = 0);
+
+    internal sealed class Model
     {
         private readonly ModelRoot _root;
         private readonly SceneInstance _scene;
@@ -124,22 +188,7 @@ internal static class MobileSceneBake
             }
         }
 
-        public NpcClip? BakeNpcClip(string name)
-        {
-            var animation = _root.LogicalAnimations.FirstOrDefault(clip => clip.Name == name);
-            if (animation is null || animation.Duration <= 0f)
-            {
-                return null;
-            }
-
-            var count = Math.Clamp((int)MathF.Ceiling(animation.Duration * 12f), 2, 24);
-            var frames = new IReadOnlyList<Batch>[count];
-            for (var i = 0; i < count; i++)
-            {
-                frames[i] = Bake(animation.Name, i / (float)count);
-            }
-            return new NpcClip(animation.Duration, frames);
-        }
+        public float? Duration(string clip) => _root.LogicalAnimations.FirstOrDefault(item => item.Name == clip)?.Duration;
 
         public IReadOnlyList<Batch> Bake(string? clip, float phase)
         {
@@ -168,7 +217,7 @@ internal static class MobileSceneBake
             var weights = primitive.GetVertexAccessor("WEIGHTS_0")?.AsVector4Array();
             var image = primitive.Material?.FindChannel("BaseColor")?.Texture?.PrimaryImage;
             var triangles = primitive.GetTriangleIndices().ToArray();
-            var vertices = new float[triangles.Length * 3 * 8];
+            var vertices = new float[triangles.Length * 3 * FloatsPerVertex];
             var offset = 0;
             foreach (var (a, b, c) in triangles)
             {
@@ -176,7 +225,13 @@ internal static class MobileSceneBake
                 Put(b);
                 Put(c);
             }
-            return new Batch(image is null ? -1 : _textureIndices[image.LogicalIndex], vertices);
+            var blend = primitive.Material?.Alpha switch
+            {
+                AlphaMode.BLEND => 2,
+                AlphaMode.MASK => 1,
+                _ => 0
+            };
+            return new Batch(image is null ? -1 : _textureIndices[image.LogicalIndex], vertices, blend);
 
             void Put(int index)
             {

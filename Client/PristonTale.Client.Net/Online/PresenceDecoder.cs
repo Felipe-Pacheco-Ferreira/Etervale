@@ -770,6 +770,7 @@ internal sealed class PresenceDecoder : IEventHandleReader
             packet.Name, packet.Level)
         {
             OwnerId = owner,
+            QuestCode = template?.QuestCode ?? 0,
             ModelScale = owner != 0 ? template!.InstanceScale : 0f
         };
     }

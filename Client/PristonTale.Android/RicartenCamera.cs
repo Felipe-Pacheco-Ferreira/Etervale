@@ -2,7 +2,7 @@ using System.Numerics;
 
 namespace PristonTale.Mobile;
 
-internal sealed record RicartenCamera(float Yaw = 0f, float Pitch = .685f, float Distance = 352f)
+internal sealed record RicartenCamera(float Yaw = 0f, float Pitch = .685f, float Distance = 264f)
 {
     private Vector2 Forward => new(MathF.Sin(Yaw), MathF.Cos(Yaw));
 

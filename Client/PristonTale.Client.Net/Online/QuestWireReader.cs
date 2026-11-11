@@ -39,7 +39,8 @@ internal static class QuestWireReader
         {
             SkillResetOffered = packet.SkillResetOffered,
             WeaponStage = packet.WeaponStage,
-            WeaponKillsLeft = packet.WeaponKillsLeft
+            WeaponKillsLeft = packet.WeaponKillsLeft,
+            TargetQuestCode = packet.TargetQuestCode
         };
 
     private static QuestBoardEntry[] Entries(IReadOnlyList<QuestBoardLine> lines) =>

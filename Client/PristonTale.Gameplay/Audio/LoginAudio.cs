@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework.Audio;
+using PristonTale.Assets;
 
 namespace PristonTale.Gameplay.Audio;
 
@@ -21,22 +22,16 @@ public sealed class LoginAudio : IDisposable
 
     internal static readonly (LoginCue Cue, string Path)[] CueFiles =
     [
-        (LoginCue.Button, "wav/Button.wav"),
-        (LoginCue.NewCharacter, "wav/New.wav"),
-        (LoginCue.Delete, "wav/CharacterDelete.WAV"),
-        (LoginCue.Back, "wav/ButtonBack.wav"),
-        (LoginCue.PickCharacter, "wav/CharacterSelect.wav"),
-        (LoginCue.GameStart, "wav/GameStart.wav"),
+        (LoginCue.Button, CharacterSelectSounds.Button),
+        (LoginCue.NewCharacter, CharacterSelectSounds.NewCharacter),
+        (LoginCue.Delete, CharacterSelectSounds.Delete),
+        (LoginCue.Back, CharacterSelectSounds.Back),
+        (LoginCue.PickCharacter, CharacterSelectSounds.PickCharacter),
+        (LoginCue.GameStart, CharacterSelectSounds.GameStart),
         (LoginCue.Login, "wav/Login.wav")
     ];
 
-    // The character screen's loops beside its music, at the original's volumes out of 400.
-    internal static readonly (string Path, float Volume)[] CharacterSelectLoopFiles =
-    [
-        ("wav/NewChar.wav", 350f / 400f),
-        ("wav/Fire.wav", 1f),
-        ("wav/Thunder.wav", 1f)
-    ];
+    internal static IReadOnlyList<(string Path, float Volume)> CharacterSelectLoopFiles => CharacterSelectSounds.Loops;
 
     private readonly PristonAudioLibrary _library;
     private readonly List<(SoundEffectInstance Instance, float Volume)> _loops = [];

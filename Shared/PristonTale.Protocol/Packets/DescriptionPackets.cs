@@ -115,7 +115,10 @@ public sealed record DescribedTemplate(
     float InstanceScale,
     uint NpcServices,
     int Class = 0,
-    int ShadowSize = 0);
+    int ShadowSize = 0)
+{
+    public int QuestCode { get; init; }
+}
 
 // S->C: what a viewer needs to draw an entity, for one description revision. {header, uint16 Version = 2, uint16 Flags =
 // 0, varuint EntityId, uint8 Revision, uint8 Kind, varuint Level, varuint MoveSpeed, float32 AttackRate, text Name, text
@@ -189,6 +192,7 @@ public sealed record EntityDescriptionPacket(
             writer.UInt32(template.NpcServices);
             writer.VarUInt((uint)Math.Max(0, template.Class));
             writer.VarInt(Math.Clamp(template.ShadowSize, -1, 3));
+            writer.Int32(template.QuestCode);
         }
 
         return writer.Finish();
@@ -253,7 +257,7 @@ public sealed record EntityDescriptionPacket(
                 var shadow = reader.VarInt();
                 return new EntityDescriptionPacket(entityId, revision, kind, level, moveSpeed, attackRate, name, model, null,
                     new DescribedTemplate(template, templateScale, sound, portraitY, portraitZ, brood, owner, instanceScale, services, monsterClass,
-                        shadow));
+                        shadow) { QuestCode = reader.Remaining >= sizeof(int) ? reader.Int32() : 0 });
             }
             default:
                 throw new InvalidDataException($"Description of unknown kind {(int)kind}.");

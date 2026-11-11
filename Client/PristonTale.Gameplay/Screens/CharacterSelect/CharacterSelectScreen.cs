@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using PristonTale.Assets;
 using PristonTale.Effects.Vfx;
 using PristonTale.Engine3D.Formats;
 using PristonTale.Engine3D.Rendering;
@@ -20,9 +21,9 @@ namespace PristonTale.Gameplay.Screens.CharacterSelect;
 
 public sealed class CharacterSelectScreen : GameScreen
 {
-    internal const string LoginStagePath = "cSelect/Login.smd";
+    internal const string LoginStagePath = CharacterSelectStage.StagePath;
 
-    private static readonly Color LoginClearColor = new(8, 7, 10);
+    private static readonly Color LoginClearColor = new Color((int)CharacterSelectStage.ClearColor.R, CharacterSelectStage.ClearColor.G, CharacterSelectStage.ClearColor.B);
 
     private const int MaxNameLength = CharacterNames.MaxLength;
 
@@ -40,11 +41,7 @@ public sealed class CharacterSelectScreen : GameScreen
     private CharSelectFlames _flames;
 
     // Where the green flames burn (CharSelectEffects).
-    public static readonly Vector3[] BrazierPositions =
-    [
-        new(-70f, 55f, 156f), new(-77f, 60f, 143f), new(-81f, 65f, 143f),
-        new(70f, 56f, 155f),  new(75f, 60f, 152f),  new(81f, 66f, 142f),
-    ];
+    public static readonly Vector3[] BrazierPositions = [.. CharacterSelectStage.Braziers.Select(static brazier => new Vector3(brazier.X, brazier.Y, brazier.Z))];
 
     private LoginAudio _audio;
     private MouseState _lastMouse;
@@ -185,7 +182,7 @@ public sealed class CharacterSelectScreen : GameScreen
     internal static void ConfigureLighting(PristonRenderer renderer)
     {
         renderer.Underground = true;
-        renderer.UndergroundAmbient = new Vector3(0.85f, 0.82f, 0.78f);
+        renderer.UndergroundAmbient = new Vector3(CharacterSelectStage.Ambient.R, CharacterSelectStage.Ambient.G, CharacterSelectStage.Ambient.B);
         renderer.ActorFloorLight = false;
     }
 
@@ -302,7 +299,7 @@ public sealed class CharacterSelectScreen : GameScreen
         if (_hoveredIndex >= 0)
         {
             var now = _elapsedSeconds;
-            var isDouble = _lastClickIndex == _hoveredIndex && (now - _lastClickSeconds) < 0.35d;
+            var isDouble = _lastClickIndex == _hoveredIndex && (now - _lastClickSeconds) < CharacterSelectStage.DoublePressSeconds;
             _selectedIndex = _hoveredIndex;
             _audio.Play(LoginCue.PickCharacter);
             if (isDouble)
@@ -330,7 +327,7 @@ public sealed class CharacterSelectScreen : GameScreen
         var hasChars = _scene.RosterCount > 0;
 
         var primary = hasChars ? _assets.BtSelect : _assets.BtNewChar;
-        var primaryKind = hasChars ? CharSelectLayout.ButtonKind.Select : CharSelectLayout.ButtonKind.NewCharacter;
+        var primaryKind = hasChars ? CharacterSelectButton.Select : CharacterSelectButton.NewCharacter;
         if (InButton(cursor, primary, CharSelectLayout.TwoButtonPrimaryX(viewport), y, primaryKind))
         {
             if (hasChars)
@@ -347,14 +344,14 @@ public sealed class CharacterSelectScreen : GameScreen
             }
             return true;
         }
-        if (InButton(cursor, _assets.BtExit, CharSelectLayout.TwoButtonQuitX(viewport), y, CharSelectLayout.ButtonKind.Exit))
+        if (InButton(cursor, _assets.BtExit, CharSelectLayout.TwoButtonQuitX(viewport), y, CharacterSelectButton.Exit))
         {
             _audio.Play(LoginCue.Button);
             Context.RequestScreen(new OpeningScreen(Context));
             return true;
         }
         if (_selectedIndex >= 0 &&
-            InButton(cursor, _assets.BtDelete, CharSelectLayout.TwoButtonDeleteX, y, CharSelectLayout.ButtonKind.Delete))
+            InButton(cursor, _assets.BtDelete, CharSelectLayout.TwoButtonDeleteX, y, CharacterSelectButton.Delete))
         {
             _audio.Play(LoginCue.Button);
             BeginDelete();
@@ -545,7 +542,7 @@ public sealed class CharacterSelectScreen : GameScreen
         if (_jobHovered >= 0)
         {
             var now = _elapsedSeconds;
-            var isDouble = _lastClickIndex == _jobHovered && (now - _lastClickSeconds) < 0.35d;
+            var isDouble = _lastClickIndex == _jobHovered && (now - _lastClickSeconds) < CharacterSelectStage.DoublePressSeconds;
             _jobSelected = _jobHovered;
             _audio.Play(LoginCue.PickCharacter);
             if (isDouble)
@@ -624,21 +621,21 @@ public sealed class CharacterSelectScreen : GameScreen
         var viewport = Context.GraphicsDevice.Viewport;
         var y = CharSelectLayout.ButtonRowY(viewport);
 
-        if (InButton(cursor, _assets.BtSelect, CharSelectLayout.ThreeButtonOkX(viewport), y, CharSelectLayout.ButtonKind.Select))
+        if (InButton(cursor, _assets.BtSelect, CharSelectLayout.ThreeButtonOkX(viewport), y, CharacterSelectButton.Select))
         {
             _audio.Play(LoginCue.Button);
             OnCreateOk();
             return true;
         }
 
-        if (InButton(cursor, _assets.BtBack, CharSelectLayout.ThreeButtonBackX(viewport), y, CharSelectLayout.ButtonKind.Back))
+        if (InButton(cursor, _assets.BtBack, CharSelectLayout.ThreeButtonBackX(viewport), y, CharacterSelectButton.Back))
         {
             _audio.Play(LoginCue.Back);
             StepBack();
             return true;
         }
 
-        if (InButton(cursor, _assets.BtExit, CharSelectLayout.ThreeButtonQuitX(viewport), y, CharSelectLayout.ButtonKind.Exit))
+        if (InButton(cursor, _assets.BtExit, CharSelectLayout.ThreeButtonQuitX(viewport), y, CharacterSelectButton.Exit))
         {
             _audio.Play(LoginCue.Button);
             Context.RequestScreen(new OpeningScreen(Context));
@@ -812,7 +809,7 @@ public sealed class CharacterSelectScreen : GameScreen
         Texture2D texture,
         int x,
         int y,
-        CharSelectLayout.ButtonKind kind)
+        CharacterSelectButton kind)
     {
         if (texture == null)
         {

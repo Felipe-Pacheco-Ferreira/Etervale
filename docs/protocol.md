@@ -562,6 +562,10 @@ Bodies start with `{uint16 Version = 1, uint16 Flags = 0}`.
 
 ### Quests
 
+Quest journals carry a trailing signed 32-bit target quest code. Monster descriptions carry the same trailing
+field for their authored classification. Older packets may omit it, which reads as zero and disables objective
+matching on the client. Display names remain localized independently.
+
 Quest bodies start with the NPC header `{uint16 Version = 3, uint16 Flags = 0}` (`NpcWire`); text is UTF-8 with a `uint16` byte length (64 bytes).
 A dialog is `{uint16 Code, uint8 Followup, uint8 0, int32 State, int32 Choice, text Document, game text Title,
 ConfirmLine1, ConfirmLine2, ConfirmDetail, Subject (what the document's `$$%s` names), int32 ChoiceCount, (text Choice, text ChoiceDocument)...}` (at most 16

@@ -25,5 +25,6 @@ public sealed record EntitySpawnInfo(
 {
     // A summon: its owner's entityId and its own model scale (0 keeps the catalog's).
     public ulong OwnerId { get; init; }
+    public int QuestCode { get; init; }
     public float ModelScale { get; init; }
 }

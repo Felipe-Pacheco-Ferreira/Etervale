@@ -4,8 +4,8 @@
     <SupportedOSPlatformVersion>24</SupportedOSPlatformVersion>
     <OutputType>Exe</OutputType>
     <ApplicationId>org.etervale.android.prototype</ApplicationId>
-    <ApplicationVersion>18</ApplicationVersion>
-    <ApplicationDisplayVersion>0.18</ApplicationDisplayVersion>
+    <ApplicationVersion>26</ApplicationVersion>
+    <ApplicationDisplayVersion>0.26</ApplicationDisplayVersion>
     <AndroidPackageFormats>apk</AndroidPackageFormats>
     <RuntimeIdentifiers>android-arm64;android-x64</RuntimeIdentifiers>
     <UseDefaultPublishRuntimeIdentifier>false</UseDefaultPublishRuntimeIdentifier>
@@ -16,12 +16,37 @@
   <ItemGroup>
     <ProjectReference Include="../PristonTale.Client.Net/PristonTale.Client.Net.csproj" />
     <ProjectReference Include="../../Shared/PristonTale.Assets/PristonTale.Assets.csproj" />
+    <AndroidAsset Include="RicartenResources/QuestDialogs/**/*" Link="QuestDialogs/%(RecursiveDir)%(Filename)%(Extension)" />
+    <AndroidAsset Include="RicartenResources/QuestJournal/**/*" Link="QuestJournal/%(RecursiveDir)%(Filename)%(Extension)" />
+    <AndroidAsset Include="RicartenResources/World/*" Link="%(Filename)%(Extension)" />
     <AndroidAsset Include="RicartenResources/ricarten.smd" Link="ricarten.smd" />
     <AndroidAsset Include="$(BaseIntermediateOutputPath)ricarten-resources/Mobile/ricarten-scene.bin" Link="ricarten-scene.bin" />
 
     <AndroidAsset Include="RicartenResources/ChatBox/*.png" Link="ChatBox/%(Filename)%(Extension)" />
+    <AndroidAsset Include="RicartenResources/CharSelect/*" Link="CharSelect/%(Filename)%(Extension)" />
+    <AndroidAsset Include="RicartenResources/Loading/*.png" Link="Loading/%(Filename)%(Extension)" />
+    <AndroidAsset Include="$(BaseIntermediateOutputPath)charselect-resources/CharSelect/scene.bin" Link="CharSelect/scene.bin" />
+    <AndroidAsset Include="$(BaseIntermediateOutputPath)charselect-resources/CharSelect/music.wav" Link="CharSelect/music.wav" />
+    <AndroidAsset Include="$(BaseIntermediateOutputPath)charselect-resources/Characters/1.bin" Link="Characters/1.bin" />
+    <AndroidAsset Include="$(BaseIntermediateOutputPath)charselect-resources/Characters/2.bin" Link="Characters/2.bin" />
+    <AndroidAsset Include="$(BaseIntermediateOutputPath)charselect-resources/Characters/3.bin" Link="Characters/3.bin" />
+    <AndroidAsset Include="$(BaseIntermediateOutputPath)charselect-resources/Characters/4.bin" Link="Characters/4.bin" />
+    <AndroidAsset Include="$(BaseIntermediateOutputPath)charselect-resources/Characters/5.bin" Link="Characters/5.bin" />
+    <AndroidAsset Include="$(BaseIntermediateOutputPath)charselect-resources/Characters/6.bin" Link="Characters/6.bin" />
+    <AndroidAsset Include="$(BaseIntermediateOutputPath)charselect-resources/Characters/7.bin" Link="Characters/7.bin" />
+    <AndroidAsset Include="$(BaseIntermediateOutputPath)charselect-resources/Characters/8.bin" Link="Characters/8.bin" />
+    <AndroidAsset Include="$(BaseIntermediateOutputPath)charselect-resources/Characters/9.bin" Link="Characters/9.bin" />
+    <AndroidAsset Include="$(BaseIntermediateOutputPath)charselect-resources/Characters/10.bin" Link="Characters/10.bin" />
+    <AndroidAsset Include="$(BaseIntermediateOutputPath)charselect-resources/Characters/11.bin" Link="Characters/11.bin" />
+    <EmbeddedResource Include="../PristonTale.Gameplay/Localization/ClientText.pt-BR.resx" Link="ClientTextPtBr.resx" WithCulture="false"
+      LogicalName="PristonTale.Mobile.ClientTextPtBr.resources" />
   </ItemGroup>
   <Target Name="ExtractRicartenResources" BeforeTargets="PrepareForBuild">
     <Unzip SourceFiles="RicartenResources/ricarten.zip" DestinationFolder="$(BaseIntermediateOutputPath)ricarten-resources" />
+    <Unzip SourceFiles="RicartenResources/charselect.zip" DestinationFolder="$(BaseIntermediateOutputPath)charselect-resources" />
+  </Target>
+  <!-- The release file: the signed package under the version's name, beside the build's own output. -->
+  <Target Name="NameReleasePackage" AfterTargets="Build" Condition="Exists('$(OutDir)$(ApplicationId)-Signed.apk')">
+    <Copy SourceFiles="$(OutDir)$(ApplicationId)-Signed.apk" DestinationFiles="$(OutDir)Etervale-$(ApplicationDisplayVersion).apk" />
   </Target>
 </Project>

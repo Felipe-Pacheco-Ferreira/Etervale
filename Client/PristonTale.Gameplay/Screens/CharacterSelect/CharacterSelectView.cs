@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using PristonTale.Assets;
 using PristonTale.Simulation.Characters;
 using PristonTale.Contracts.Characters;
 
@@ -22,7 +23,7 @@ internal sealed class CharSelectViewModel
 
     public int HoveredRace = -1;
     public int JobCount;
-    public CharSelectJobView[] Jobs = new CharSelectJobView[5];
+    public CharSelectJobView[] Jobs = new CharSelectJobView[Math.Max(CharacterSelectArt.TempskronLineup.Count, CharacterSelectArt.MorionLineup.Count)];
 
     public int FaceIndex;
     public int HoveredFace = -1;

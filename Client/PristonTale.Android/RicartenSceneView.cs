@@ -1,6 +1,7 @@
 using System.Numerics;
 using System.Diagnostics;
 using PristonTale.Contracts.Motion;
+using PristonTale.Client.Net.Presence;
 using Android.Content;
 using Android.Opengl;
 using Android.Views;
@@ -24,27 +25,55 @@ internal sealed class RicartenSceneView : GLSurfaceView
     private readonly Dictionary<ulong, SceneEntity> _entities = new();
     private bool _entitiesChanged;
 
-    public RicartenSceneView(Context context, MobileScene scene, Vector3 spawn) : base(context)
+    public RicartenSceneView(Context context, MobileScene scene, Vector3 spawn, CharacterModel? player, int face, WorldArrival arrival) : base(context)
     {
         _touchSlop = ViewConfiguration.Get(context)?.ScaledTouchSlop ?? 8;
-        _renderer = new RicartenRenderer(scene, spawn);
+        _renderer = new RicartenRenderer(scene, spawn, player, face, arrival);
         _zoomListener = new CameraZoomListener(this);
         _zoom = new ScaleGestureDetector(context, _zoomListener) { QuickScaleEnabled = false };
         SetEGLContextClientVersion(2);
         SetEGLConfigChooser(8, 8, 8, 8, 16, 0);
         SetRenderer(_renderer);
         Clickable = true;
-        ContentDescription = "Cena 3D de Ricarten. Arraste no lado direito para mover a câmera. Use dois dedos para ajustar o zoom.";
+        ContentDescription = "Cena 3D do mapa. Arraste no lado direito para mover a câmera. Use dois dedos para ajustar o zoom.";
     }
+
+    public void ShowArrival(Vector3 position) => QueueEvent(new Java.Lang.Runnable(() => _renderer.ShowArrival(position)));
+
+    public void ShowNpcPortrait(ulong id, View placeholder)
+    {
+        if (!_entities.TryGetValue(id, out var entity) || placeholder.Width <= 0 || placeholder.Height <= 0)
+        {
+            return;
+        }
+
+        var mapOrigin = new int[2];
+        var viewOrigin = new int[2];
+        GetLocationInWindow(mapOrigin);
+        placeholder.GetLocationInWindow(viewOrigin);
+        _renderer.SetNpcPortrait(new NpcPortrait(entity.TemplateId, viewOrigin[0] - mapOrigin[0], viewOrigin[1] - mapOrigin[1],
+            placeholder.Width, placeholder.Height));
+    }
+
+    public void ClearNpcPortrait() => _renderer.SetNpcPortrait(null);
+
+    public void SetRoute(Vector3[] points) => _renderer.SetRoute(points);
+
+    public Task FirstFrame => _renderer.FirstFrame;
 
     public Vector2 MovementDirection(Vector2 stick) => _camera.MovementDirection(stick);
 
     public void UpdatePlayer(Vector3 position, float facing, int moveSpeed, bool moving, bool running, bool snap) =>
         _renderer.SetPlayer(new PlayerFrame(position, facing, moveSpeed, moving, running, snap));
 
-    public void SetEntity(ulong id, Vector3 position, EntityKind kind, uint templateId, float facing, float scale, MotionState motion)
+    public void SetEntity(ulong id, Vector3 position, EntityKind kind, uint templateId, float facing, float scale, MotionState motion, PlayerAppearanceInfo? appearance)
     {
-        _entities[id] = new SceneEntity(id, position, kind, templateId, facing, scale, motion, position, facing, 0L, 0f);
+        if (appearance is not null)
+        {
+            _renderer.PrepareRemoteClass(Context!.Assets!, appearance.Class);
+        }
+
+        _entities[id] = new SceneEntity(id, position, kind, templateId, facing, scale, motion, position, facing, 0L, 0f, appearance);
         _entitiesChanged = true;
     }
 
@@ -203,7 +232,7 @@ internal sealed class RicartenSceneView : GLSurfaceView
 internal sealed record PlayerFrame(Vector3 Position, float Facing, int MoveSpeed, bool Moving, bool Running, bool Snap);
 
 internal readonly record struct SceneEntity(ulong Id, Vector3 Position, EntityKind Kind, uint TemplateId, float Facing, float Scale,
-    MotionState Motion, Vector3 PreviousPosition, float PreviousFacing, long UpdatedAt, float BlendSeconds)
+    MotionState Motion, Vector3 PreviousPosition, float PreviousFacing, long UpdatedAt, float BlendSeconds, PlayerAppearanceInfo? Appearance)
 {
     public (Vector3 Position, float Facing) At(long now)
     {

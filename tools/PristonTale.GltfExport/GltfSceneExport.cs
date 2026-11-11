@@ -27,7 +27,7 @@ internal sealed record ExportOptions(
     bool AnimationsOnly = false,
     uint JobMask = 0,
     bool StageObject = false,
-    bool TPose = false, bool VillageLocomotion = false)
+    bool TPose = false, bool VillageLocomotion = false, bool PlayerClips = false)
 {
     public float ClipTicksPerSecond => StageObject
         ? GltfSceneExport.StageObjectTicksPerSecond
@@ -512,7 +512,7 @@ internal static class GltfSceneExport
                 : [];
         }
 
-        return EnumerateClips(actor, options.JobMask, options.VillageLocomotion)
+        return (options.PlayerClips ? EnumeratePlayerClips(actor, options.JobMask) : EnumerateClips(actor, options.JobMask, options.VillageLocomotion))
             .Select(clip => new ClipPlan(clip.Name, clip.StartTicks, clip.EndTicks, true, options.ClipTicksPerSecond))
             .ToList();
     }
@@ -613,6 +613,55 @@ internal static class GltfSceneExport
         return Math.Min(objectIndex, lastSkeletonIndex);
     }
 
+    // The clips a player model is baked with for the Android client, under these names: the relaxed stand at the first
+    // character motion record (the character selection's), and the stand, walk and run a village selects.
+    internal const string SelectStandClip = "SelectStand";
+    internal const string StandClip = "Stand";
+    internal const string WalkClip = "Walk";
+    internal const string RunClip = "Run";
+
+    private static IEnumerable<MotionClip> EnumeratePlayerClips(PristonActor actor, uint jobMask)
+    {
+        var context = new PristonMotionContext(-1, jobMask, 1);
+        var info = actor.Info;
+        PristonMotionInfo? selectStand = null;
+        foreach (var (index, motion) in info.UsableMotions())
+        {
+            if (index == PristonFormatConstants.CharacterMotionBase)
+            {
+                selectStand = motion;
+            }
+        }
+
+        (string Name, PristonMotionInfo? Motion)[] wanted =
+        [
+            (SelectStandClip, selectStand),
+            (StandClip, PristonMotionSelection.Select(info, MotionCode.Stand, context)),
+            (WalkClip, PristonMotionSelection.Select(info, MotionCode.Walk, context)),
+            (RunClip, PristonMotionSelection.Select(info, MotionCode.Run, context))
+        ];
+        foreach (var (name, motion) in wanted)
+        {
+            if (motion is null || !TryClipRange(actor, motion, out var startTicks, out var endTicks))
+            {
+                throw new InvalidDataException($"The actor has no usable {name} motion.");
+            }
+
+            yield return new MotionClip(name, startTicks, endTicks);
+        }
+    }
+
+    // Motion record frames are signed in the client; a decoded 0xFFFFFFF8 end frame is -8, an empty range.
+    private static bool TryClipRange(PristonActor actor, PristonMotionInfo motion, out int startTicks, out int endTicks)
+    {
+        var offset = MotionFrameOffsetTicks(actor, motion) / SampleStepTicks;
+        var start = ((long)unchecked((int)motion.StartFrame) + offset) * SampleStepTicks;
+        var end = ((long)unchecked((int)motion.EndFrame) + offset) * SampleStepTicks;
+        startTicks = (int)Math.Clamp(start, 0, int.MaxValue);
+        endTicks = (int)Math.Clamp(end, 0, int.MaxValue);
+        return end > start && start >= 0 && end <= int.MaxValue;
+    }
+
     private static IEnumerable<MotionClip> EnumerateClips(PristonActor actor, uint jobMask, bool villageLocomotion)
     {
         var usedNames = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
@@ -642,19 +691,12 @@ internal static class GltfSceneExport
                 continue;
             }
 
-            // Motion record frames are signed in the client; a decoded 0xFFFFFFF8 end frame is -8, an empty range.
-            var offset = MotionFrameOffsetTicks(actor, motion) / SampleStepTicks;
-            var startTicksLong = ((long)unchecked((int)motion.StartFrame) + offset) * SampleStepTicks;
-            var endTicksLong = ((long)unchecked((int)motion.EndFrame) + offset) * SampleStepTicks;
-            if (endTicksLong <= startTicksLong || startTicksLong < 0 || endTicksLong > int.MaxValue)
+            if (!TryClipRange(actor, motion, out var startTicks, out var endTicks))
             {
                 Console.Error.WriteLine(
                     $"warning: motion {index} (state 0x{motion.State:X}) has an unusable frame range {unchecked((int)motion.StartFrame)}..{unchecked((int)motion.EndFrame)}; skipped.");
                 continue;
             }
-
-            var startTicks = (int)startTicksLong;
-            var endTicks = (int)endTicksLong;
 
             var baseName = Enum.IsDefined(typeof(MotionCode), motion.State)
                 ? ((MotionCode)motion.State).ToString()

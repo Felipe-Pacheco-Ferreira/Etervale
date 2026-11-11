@@ -15,19 +15,8 @@ rendering internals, skill presentation and VFX data have their own documents (s
 
 ## Code map
 
-The Android prototype lives in `Client/PristonTale.Android` and uses the desktop client's network library. It authenticates
-in Brazilian Portuguese and lists characters. Entering Ricarten opens an OpenGL ES scene with the desktop stage's meshes,
-vertex colours and textures. The following camera tracks the Fighter body and head used for SatroX. The app samples the
-original stand and walk clips, interpolates their poses and advances the walk cycle by distance. Nearby entities are drawn as markers from presence
-updates. The landscape view uses a steep follow camera with a narrow field of view and frames the avatar below center.
-The left thumbstick moves relative to the screen. Tapping
-the scene casts a ray into the stage and sets a walking destination on the floor. The client steps movement locally
-every 20 ms, reports position every 200 ms during continuous movement, and applies server corrections.
-
-The Android project packages the original stage for collision and the generated `assets/Mobile/ricarten-scene.bin`
-for rendering. Export `village-2.smd`, `B002.inx` and `tmh-b01.inx` as three GLBs with `ptgltf`. Pass `--job-mask 0x1`
-for the Fighter body and head. Run `ptgltf --mobile-scene <stage.glb> <body.glb> <head.glb> <ricarten-scene.bin>` to
-bake the textures, meshes and animation frames for the APK.
+The Android prototype (`Client/PristonTale.Android`) follows these screens with its own renderer; it is described in
+[android.md](android.md). A change to the character selection is made on both clients.
 
 | Path | Responsibility |
 |---|---|

@@ -413,7 +413,7 @@ public sealed partial class GameScene : IDisposable, IHudPortraitScene
     private int _streamScanCounter;
 
     private const float WarpCooldownSeconds = 1.5f;
-    private const float SpecialWarpDelaySeconds = 2f;
+    private const float SpecialWarpDelaySeconds = WingGates.DelayedWarpSeconds;
     private float _warpCooldown;
     private FieldWarpGate _pendingWarp;
     private WarpInfo _pendingFieldWarp;

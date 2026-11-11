@@ -12,6 +12,7 @@ public static class FieldCodes
     public const int Desert4 = 12;
     public const int Dungeon1 = 13;
     public const int ForeverFall3 = 18;
+    public const int ForeverFall1 = 20;
     public const int Ricarten = 3;
     public const int Navisko = 9;
     public const int OfficeRoom = 16;

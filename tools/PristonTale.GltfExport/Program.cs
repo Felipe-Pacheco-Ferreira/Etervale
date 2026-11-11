@@ -1,12 +1,63 @@
 using System.Globalization;
 using PristonTale.Engine3D.Formats;
+using PristonTale.Engine3D.IO;
+using PristonTale.Assets;
+using PristonTale.Contracts.Units;
 using PristonTale.GltfExport;
 using SharpGLTF.Scenes;
 
-if ((args.Length is 5 or 6) && args[0] == "--mobile-scene")
+if ((args.Length is >= 3 and <= 5) && args[0] == "--mobile-scene")
 {
-    MobileSceneBake.Write(args[1], args[2], args[3], args[4], args.Length == 6 ? args[5] : null);
+    MobileSceneBake.Write(args[1], args[2], args.Length >= 4 && args[3] != "-" ? args[3] : null, args.Length == 5 ? args[4] : null);
     return 0;
+}
+
+if (args.Length == 4 && args[0] == "--mobile-minimap")
+{
+    var rectangle = new PristonSmdReader().ReadStage(args[1]).AuthoredMapRectangle;
+    var image = ImageDecode.Decode(File.ReadAllBytes(args[2]), Path.GetExtension(args[2]));
+    if (!image.IsValid || rectangle.Right <= rectangle.Left || rectangle.Bottom <= rectangle.Top)
+    {
+        throw new InvalidDataException("Missing minimap image or stage bounds.");
+    }
+
+    PngWriter.Write(args[3] + ".png", image.Width, image.Height, image.Rgba);
+    using var writer = new BinaryWriter(File.Create(args[3] + ".bin"));
+    writer.Write(rectangle.Left / GameUnits.FixedScale);
+    writer.Write(rectangle.Top / GameUnits.FixedScale);
+    writer.Write(rectangle.Right / GameUnits.FixedScale);
+    writer.Write(rectangle.Bottom / GameUnits.FixedScale);
+    return 0;
+}
+
+if (args.Length == 3 && args[0] == "--mobile-wave")
+{
+    using var source = PristonWaveDecoder.OpenRead(args[1]);
+    using var destination = File.Create(args[2]);
+    source.CopyTo(destination);
+    return 0;
+}
+
+if (args.Length == 4 && args[0] == "--mobile-world-arrival")
+{
+    MobileWorldArrivalBake.Write(args[1], args[2], args[3]);
+    return 0;
+}
+
+if (args.Length == 3 && args[0] == "--mobile-scene-upgrade")
+{
+    MobileSceneBake.Upgrade(args[1], args[2]);
+    return 0;
+}
+
+if (args.Length == 4 && args[0] == "--mobile-char-select")
+{
+    return MobileCharacterSelectBake.Write(args[1], args[2], args[3]);
+}
+
+if (args.Length == 3 && args[0] == "--mobile-loading")
+{
+    return MobileCharacterSelectBake.WriteLoadingArt(args[1], args[2]);
 }
 
 if (args.Length == 0 || args[0] is "-h" or "--help")
