@@ -1,0 +1,1 @@
+﻿Saia de Pillai pelo portal para a primeira região de Terra Esquecida. Derrote três Rabie e recolha um Cristal de Hopy. Você pode ativar a Auto-caça quando encontrar os alvos. Depois, volte a falar comigo.

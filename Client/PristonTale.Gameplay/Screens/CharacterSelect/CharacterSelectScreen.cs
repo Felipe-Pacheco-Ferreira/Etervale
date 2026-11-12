@@ -89,6 +89,8 @@ public sealed class CharacterSelectScreen : GameScreen
     }
 
     public Func<MouseState> PointerInput { get; init; }
+    public float ButtonScale { get; init; } = 1f;
+    public float CameraDistanceScale { get; init; } = 1f;
     public Action<CharacterSummary, EnterWorldOutcome> WorldEntered { get; init; }
     public bool IsNameInputActive => _nameField?.Focused == true && _state is State.FaceSelect or State.Name;
 
@@ -103,14 +105,14 @@ public sealed class CharacterSelectScreen : GameScreen
         var stage = _reader.ReadStage(AssetPath(LoginStagePath));
         _renderer.AddStage(stage, Array.Empty<PristonModel>());
 
-        _cameraCtl = new CharacterSelectCamera(Context.GraphicsDevice, (int)State.CharacterSelect);
+        _cameraCtl = new CharacterSelectCamera(Context.GraphicsDevice, (int)State.CharacterSelect, CameraDistanceScale);
         _scene = new CharacterSelectScene(_renderer, _actorLoader, Context.AssetRoot, _cameraCtl, stage, Context.Log);
 
         _nameField = new TextInputField { MaxLength = MaxNameLength };
 
         _assets = new CharSelectAssets(Context.GraphicsDevice, AssetPath);
         _portrait = new CharacterSelectPortrait(Context.GraphicsDevice);
-        _view = new CharacterSelectView(Context.SpriteBatch, Context.Font, _assets, _cameraCtl);
+        _view = new CharacterSelectView(Context.SpriteBatch, Context.Font, _assets, _cameraCtl, ButtonScale);
         InitEffects();
         _audio = LoginAudio.CharacterSelect(Context.Audio);
         BeginLoadRoster();
@@ -815,7 +817,7 @@ public sealed class CharacterSelectScreen : GameScreen
         return _viewModel;
     }
 
-    private static bool InButton(
+    private bool InButton(
         Vector2 cursor,
         Texture2D texture,
         int x,
@@ -827,7 +829,9 @@ public sealed class CharacterSelectScreen : GameScreen
             return false;
         }
 
-        return CharSelectLayout.ButtonHit(texture, x, y, kind).Contains((int)cursor.X, (int)cursor.Y);
+        var hit = CharSelectLayout.ButtonHit(texture, x, y, kind);
+        return CharSelectLayout.ScaleButton(hit, Context.GraphicsDevice.Viewport, ButtonScale, kind == CharacterSelectButton.Delete)
+            .Contains((int)cursor.X, (int)cursor.Y);
     }
 
     private bool Clicked(in MouseState mouse) =>

@@ -21,6 +21,7 @@ internal static class QuestTests
         yield return ("the level 85 tear goes back on death and returns with the restarted hunt", KhaliaTearAsync);
         yield return ("quest grants respect the carried-weight limit and leave the quest unchanged when refused", WeightAsync);
         yield return ("beginner quests run in order with deliveries, hunts, tribe finishers and class rewards", ElementaryAsync);
+        yield return ("Avalon adventurer journey validates the guide, belt, hunt and crystal", AdventurerJourneyAsync);
         yield return ("the first Tempskron rank-up needs the home master, level and skills and gathers one trophy of each", TrophiesAsync);
         yield return ("the first Morion rank-up follows the name branch, brews at the aging master and promotes after delivery", PotionAsync);
         yield return ("the second rank-up buys a quest weapon with vamps, grows it by stage and expires it with its ring", QuestWeaponAsync);
@@ -31,6 +32,44 @@ internal static class QuestTests
         yield return ("the wing exchange takes the held wing, crystals and gold for the next wing", WingAsync);
         yield return ("quest drops come only from allowed sources and while a running quest wants them", DropsAsync);
         yield return ("class tier changes only through rank-up quests and masters of a lower group stop at the first", TierAuthorityAsync);
+    }
+
+    private static Task AdventurerJourneyAsync()
+    {
+        const QuestCode code = QuestCode.AdventurerJourney;
+        var crystal = ItemCodes.Parse("GP101");
+        foreach (var (playerClass, name, target, field) in new[]
+        {
+            (PlayerClass.Fighter, "Adventurer Skadi", QuestMonsters.Hopy, 2),
+            (PlayerClass.Priestess, "Adventurer Jin", QuestMonsters.Rabie, FieldCodes.ForeverFall1)
+        })
+        {
+            var player = Character(playerClass, "Adventurer", 1);
+            var guide = new QuestNpc(Name: name);
+            Assert.True(QuestView.Capture(player).Progress.Count == 1, "arrival objective missing");
+            Assert.True(Talk(player, guide).Prompt is { Code: code, State: 0 }, "starter offer missing");
+            var levelSpan = Simulation.Progression.ExperienceTable.ForLevel(2) - Simulation.Progression.ExperienceTable.ForLevel(1);
+            var welcome = Expect(player, guide, QuestAction.Proceed, code, 0, "starter failed");
+            Assert.True(welcome.Experience == levelSpan * 15 / 100, "welcome XP differs");
+            Assert.True(Talk(player, guide).Prompt is { Followup: QuestFollowup.Close }, "preparation was skipped");
+            player.Equip(EquipmentSlot.Weapon, new ItemInstance(new ItemDefinition(ItemCodes.Parse("WA101"), "Training weapon", ItemKind.Axe, EquipmentSlot.Weapon)));
+            var potion = player.Inventory.Occupied().Single().Item;
+            Assert.True(potion.Definition.Code == ItemCodes.Parse("PL101") && player.TryPutOnBelt(potion.InstanceId, 0, 1), "tutorial potion could not be belted");
+            var preparation = Expect(player, guide, QuestAction.Proceed, code, 1, "hunt did not start");
+            Assert.True(preparation.Experience == levelSpan * 30 / 100 && player.Money == 500
+                && QuestInventory.Count(player, ItemCodes.Parse("PL101")) == 16, "preparation reward differs");
+            Assert.True(player.Quests.Active.Target == target, "hunt target differs by tribe");
+            Kill(player, QuestMonsters.Bargon, field: field);
+            Kill(player, target, 3, field);
+            Assert.True(Talk(player, guide).Prompt is { Followup: QuestFollowup.Close }, "delivery accepted without a crystal");
+            var item = new ItemInstance(new ItemDefinition(crystal, "Hopy Crystal", ItemKind.Misc));
+            Assert.True(player.Inventory.TryAdd(item), "test crystal could not be collected");
+            var result = Expect(player, guide, QuestAction.Proceed, code, 2, "delivery failed");
+            Assert.True(result.Experience == levelSpan * 20 / 100 && player.Money == 800
+                && player.Quests.HasFinished(code) && !QuestInventory.Has(player, crystal), "delivery did not settle");
+            Assert.True(Talk(player, guide).Prompt is null, "completed journey was offered again");
+        }
+        return Task.CompletedTask;
     }
 
     private static Task LevelQuestsAsync()

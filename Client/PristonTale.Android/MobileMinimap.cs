@@ -15,7 +15,20 @@ internal sealed class MobileMinimap : View
     private readonly global::Android.Graphics.Path _arrow = new();
     private Vector3 _position;
     private float _facing;
+    private IReadOnlyList<Vector2> _route = [];
+    // Dots along the route are this many field units apart.
+    private const float RouteDotSpacing = 72f;
     public event Action<Vector2>? DestinationSelected;
+
+    // The route to show as yellow dots, in field coordinates, as the position is; empty hides it.
+    public void SetRoute(IReadOnlyList<Vector2> route)
+    {
+        if (!ReferenceEquals(route, _route))
+        {
+            _route = route;
+            Invalidate();
+        }
+    }
 
     private MobileMinimap(Context context, Bitmap image, RectF world) : base(context)
     {
@@ -81,6 +94,8 @@ internal sealed class MobileMinimap : View
         _paint.StrokeWidth = 2;
         canvas.DrawRect(1, 1, Width - 1, Height - 1, _paint);
         _paint.SetStyle(Paint.Style.Fill);
+        DrawRoute(canvas, cx, cy, scale);
+        _paint.Color = Color.Rgb(233, 196, 117);
         canvas.Save();
         canvas.Rotate(_facing * 180f / MathF.PI, cx, cy);
         var size = Width * .055f;
@@ -91,6 +106,33 @@ internal sealed class MobileMinimap : View
         _arrow.Close();
         canvas.DrawPath(_arrow, _paint);
         canvas.Restore();
+    }
+
+    private void DrawRoute(Canvas canvas, float cx, float cy, float scale)
+    {
+        if (_route.Count == 0)
+        {
+            return;
+        }
+
+        _paint.Color = Color.Rgb(255, 214, 64);
+        var dot = Math.Max(2f, Width * .018f);
+        var from = new Vector2(_position.X, _position.Z);
+        foreach (var to in _route)
+        {
+            var length = Vector2.Distance(from, to);
+            var dots = Math.Max(1, (int)(length / RouteDotSpacing));
+            for (var index = 1; index <= dots; index++)
+            {
+                var point = Vector2.Lerp(from, to, index / (float)dots);
+                canvas.DrawCircle(cx + (point.X - _position.X) * scale, cy - (point.Y - _position.Z) * scale, dot, _paint);
+            }
+
+            from = to;
+        }
+
+        var goal = _route[^1];
+        canvas.DrawCircle(cx + (goal.X - _position.X) * scale, cy - (goal.Y - _position.Z) * scale, dot * 2.2f, _paint);
     }
 
     protected override void Dispose(bool disposing)

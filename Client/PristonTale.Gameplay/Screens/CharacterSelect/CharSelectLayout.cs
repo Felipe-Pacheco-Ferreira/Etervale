@@ -42,5 +42,13 @@ internal static class CharSelectLayout
     public static Rectangle ButtonHit(Texture2D texture, int x, int y, CharacterSelectButton kind) =>
         Rect(CharacterSelectLayout.ButtonHit(texture.Height, x, y, kind));
 
+    public static Rectangle ScaleButton(Rectangle rect, Viewport viewport, float scale, bool leftAligned)
+    {
+        var anchorX = leftAligned ? 0 : viewport.Width / 2;
+        return new Rectangle(anchorX + (int)MathF.Round((rect.X - anchorX) * scale),
+            viewport.Height + (int)MathF.Round((rect.Y - viewport.Height) * scale),
+            (int)MathF.Round(rect.Width * scale), (int)MathF.Round(rect.Height * scale));
+    }
+
     private static Rectangle Rect(ScreenRect rect) => new(rect.X, rect.Y, rect.Width, rect.Height);
 }

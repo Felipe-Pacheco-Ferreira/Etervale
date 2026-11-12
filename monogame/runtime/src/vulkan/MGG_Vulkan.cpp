@@ -587,7 +587,7 @@ struct MGG_Shader
 	VkPipeline computePipeline;
 
 	VkDescriptorPoolCreateInfo* poolInfo;
-	VkDescriptorPool pool;
+	std::vector<VkDescriptorPool> descriptorPools;
 
 	std::queue<MGVK_DescriptorInfo*> freeSets;
 	std::multimap<uint32_t, MGVK_DescriptorInfo*> usedSets;   // Etervale fork: hash → sets, key compared in full
@@ -3896,13 +3896,22 @@ static void MGVK_UpdateRenderPass(MGG_GraphicsDevice* device, FrameCounter curre
 	device->deferredOcclusionQueries.clear();
 }
 
+#if defined(__ANDROID__)
+static const int DefaultPoolSize = 256;
+#else
 static const int DefaultPoolSize = 16384;
+#endif
 
 static void MGVK_FillDescriptorSetCache(MGG_GraphicsDevice* device, MGG_Shader* shader)
 {
+	VkDescriptorPool pool = VK_NULL_HANDLE;
+	VkResult result = vkCreateDescriptorPool(device->device, shader->poolInfo, nullptr, &pool);
+	VK_CHECK_RESULT(result);
+	shader->descriptorPools.push_back(pool);
+
 	// Pre-fill the free descriptor sets now.
 	VkDescriptorSetAllocateInfo alloc_info = { VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO };
-	alloc_info.descriptorPool = shader->pool;
+	alloc_info.descriptorPool = pool;
 	alloc_info.descriptorSetCount = 1;
 	alloc_info.pSetLayouts = &shader->setLayout;
 	for (int i = 0; i < DefaultPoolSize; i++)
@@ -6683,7 +6692,6 @@ MGG_Shader* MGG_Shader_Create(MGG_GraphicsDevice* device, MGShaderStage stage, m
 		VK_CHECK_RESULT(res);
 
 		shader->poolInfo = nullptr;
-		shader->pool = nullptr;
 		shader->writes = nullptr;
 		MGVK_CreateComputePipeline(device, shader);
 		return shader;
@@ -6726,13 +6734,11 @@ MGG_Shader* MGG_Shader_Create(MGG_GraphicsDevice* device, MGShaderStage stage, m
 		shader->poolInfo->poolSizeCount = layoutBindings.size();
 		shader->poolInfo->pPoolSizes = pool_sizes;
 
-		res = vkCreateDescriptorPool(device->device, shader->poolInfo, nullptr, &shader->pool);
-		VK_CHECK_RESULT(res);
-		VK_SET_OBJECT_NAME(device->device, shader->pool, VK_OBJECT_TYPE_DESCRIPTOR_POOL, "MGG_Shader.pool (id: %u)", shader->id);
 	}
 
-	// Pre-fill the free descriptor sets now.
+#if !defined(__ANDROID__)
 	MGVK_FillDescriptorSetCache(device, shader);
+#endif
 
 	// Prepare the write descriptor set for updates at runtime. (Etervale fork: storage buffers take a buffer info too.)
 	size_t bufferBindings = 0;
@@ -6880,7 +6886,6 @@ void MGG_Shader_Destroy(MGG_GraphicsDevice* device, MGG_Shader* shader)
 
 	for (auto pair : shader->usedSets)
 	{
-		//vkFreeDescriptorSets(device->device, shader->pool, 1, &pair.second->set);
 		delete pair.second;
 	}
 
@@ -6889,13 +6894,13 @@ void MGG_Shader_Destroy(MGG_GraphicsDevice* device, MGG_Shader* shader)
 		auto free = shader->freeSets.front();
 		shader->freeSets.pop();
 
-		//vkFreeDescriptorSets(device->device, shader->pool, 1, &free->set);
 		delete free;
 	}
 
 	vkDestroyDescriptorSetLayout(device->device, shader->setLayout, nullptr);
 
-	vkDestroyDescriptorPool(device->device, shader->pool, nullptr);
+	for (auto pool : shader->descriptorPools)
+		vkDestroyDescriptorPool(device->device, pool, nullptr);
 	if (shader->poolInfo)
 	{
 		delete [] shader->poolInfo->pPoolSizes;

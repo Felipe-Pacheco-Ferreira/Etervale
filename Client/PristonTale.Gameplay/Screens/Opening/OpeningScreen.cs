@@ -22,6 +22,10 @@ public sealed class OpeningScreen : GameScreen
     {
     }
 
+    public Func<MouseState> PointerInput { get; init; }
+    public bool KeyboardRequested => _loginRevealed && _loginController.KeyboardRequested;
+    public bool KeyboardFieldTapped => _loginRevealed && _loginController.KeyboardFieldTapped;
+
     public override string StatusText => _status;
 
     public override void Enter()
@@ -37,7 +41,7 @@ public sealed class OpeningScreen : GameScreen
             Context.Effects);
         _cinematic.Load();
         _audio = LoginAudio.Opening(Context.Audio);
-        _loginController = new OpeningLoginController(Context, _audio);
+        _loginController = new OpeningLoginController(Context, _audio, PointerInput is not null);
         _status = ClientText.Format("Status.Opening", _cinematic.StatusSuffix);
     }
 
@@ -49,6 +53,7 @@ public sealed class OpeningScreen : GameScreen
         _cinematic.Update(gameTime);
 
         var keyboard = Keyboard.GetState();
+        var pointer = PointerInput?.Invoke() ?? Mouse.GetState();
         if (Context.Presentation.AwaitingConfirmation)
         {
             _lastKeyboard = keyboard;
@@ -57,10 +62,10 @@ public sealed class OpeningScreen : GameScreen
 
         if (!_loginRevealed)
         {
-            if (AnyKeyPressed(keyboard, _lastKeyboard) || _cinematic.IsOver)
+            if (AnyKeyPressed(keyboard, _lastKeyboard) || _cinematic.IsOver || PointerInput is not null && pointer.LeftButton == ButtonState.Pressed)
                 _loginRevealed = true;
         }
-        else if (_loginController.Update(keyboard, _lastKeyboard, dt) == OpeningLoginController.LoginResult.Succeeded)
+        else if (_loginController.Update(keyboard, _lastKeyboard, pointer, dt) == OpeningLoginController.LoginResult.Succeeded)
         {
             Context.RequestScreen(new CharacterSelectScreen(Context));
         }

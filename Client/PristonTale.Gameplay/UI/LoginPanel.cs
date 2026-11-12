@@ -39,6 +39,9 @@ public sealed class LoginPanel
     public TextInputField Account { get; } = new() { MaxLength = 20, Focused = true };
     public TextInputField Password { get; } = new() { MaxLength = 20, Masked = true };
     public string Status { get; set; } = string.Empty;
+    public bool TouchLayout { get; init; }
+    public bool KeyboardRequested { get; private set; }
+    public bool KeyboardFieldTapped { get; private set; }
     public bool InputEnabled { get; set; } = true;
 
     // typed: the characters the window typed since the last frame (TypedText), for the focused field.
@@ -50,10 +53,11 @@ public sealed class LoginPanel
     internal LoginIntent Update(in KeyboardState keyboard, in KeyboardState previousKeyboard, MouseState mouse, ReadOnlySpan<char> typed, double dtSeconds,
         Viewport viewport)
     {
+        KeyboardFieldTapped = false;
         var intent = LoginIntent.None;
         if (InputEnabled)
         {
-            var layout = LoginLayout.Create(viewport.Width, viewport.Height);
+            var layout = LoginLayout.Create(viewport.Width, viewport.Height, TouchLayout);
             var cursor = layout.Pointer(mouse.Position);
             var clicked = mouse.LeftButton == ButtonState.Pressed && _previousMouse.LeftButton == ButtonState.Released;
             if (Pressed(keyboard, previousKeyboard, Keys.Tab))
@@ -67,15 +71,23 @@ public sealed class LoginPanel
                 if (layout.Account.Contains(cursor))
                 {
                     SetFocus(FocusTarget.Account);
+                    KeyboardRequested = true;
+                    KeyboardFieldTapped = TouchLayout;
                 }
                 else if (layout.Password.Contains(cursor))
                 {
                     SetFocus(FocusTarget.Password);
+                    KeyboardRequested = true;
+                    KeyboardFieldTapped = TouchLayout;
                 }
                 else if (layout.Login.Contains(cursor))
                 {
                     SetFocus(FocusTarget.Login);
                     intent = LoginIntent.SubmitLogin;
+                }
+                else if (TouchLayout)
+                {
+                    KeyboardRequested = false;
                 }
             }
 
@@ -86,6 +98,11 @@ public sealed class LoginPanel
             {
                 intent = LoginIntent.SubmitLogin;
             }
+        }
+
+        if (intent == LoginIntent.SubmitLogin)
+        {
+            KeyboardRequested = false;
         }
 
         _previousMouse = mouse;
@@ -101,7 +118,7 @@ public sealed class LoginPanel
 
     public void Draw(Viewport viewport)
     {
-        var layout = LoginLayout.Create(viewport.Width, viewport.Height);
+        var layout = LoginLayout.Create(viewport.Width, viewport.Height, TouchLayout);
         var tint = InputEnabled ? Color.White : new Color(155, 155, 155);
         _canvas.Begin(layout.Scale);
         _canvas.Image("LoginPanel", layout.Panel);

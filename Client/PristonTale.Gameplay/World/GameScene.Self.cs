@@ -33,6 +33,8 @@ namespace PristonTale.Gameplay.World;
 public sealed partial class GameScene
 {
     private bool _selfArrived;
+    private Vector3? _arrivalSoundPosition;
+    private float _arrivalSoundWait;
 
     private void SetPlayerMotion(MotionCode motion)
     {
@@ -74,10 +76,15 @@ public sealed partial class GameScene
     {
         OnSelfState(new EntityStateInfo(spawn.EntityId, spawn.Position, spawn.Facing, spawn.MoveState,
             spawn.Life, spawn.MoveSpeed, spawn.AttackRate, spawn.AttackTargetId, spawn.AttackSequence));
-        if (!_selfArrived && _playerBody is not null)
+        PlayInitialArrival(spawn.EntityId);
+    }
+
+    public void PlayInitialArrival(ulong entityId)
+    {
+        if (!_selfArrived && entityId != 0 && _playerBody is not null)
         {
             _selfArrived = true;
-            ArriveInWorld(spawn.EntityId);
+            ArriveInWorld(entityId);
         }
     }
 
@@ -86,7 +93,26 @@ public sealed partial class GameScene
     private void ArriveInWorld(ulong selfId)
     {
         _skillFx?.Spawn(SkillPresentation.RestartEffect, selfId, selfId, _playerBody.Position);
-        _combatSounds?.PlayRestart(_playerBody.Position, _playerBody.Position);
+        _arrivalSoundPosition = _playerBody.Position;
+        _arrivalSoundWait = 2f;
+    }
+
+    private void UpdateArrivalSound(float seconds)
+    {
+        if (_arrivalSoundPosition is not { } position)
+        {
+            return;
+        }
+
+        if (_combatSounds?.RestartReady == true)
+        {
+            _combatSounds.PlayRestart(position, position);
+            _arrivalSoundPosition = null;
+        }
+        else if ((_arrivalSoundWait -= seconds) <= 0f)
+        {
+            _arrivalSoundPosition = null;
+        }
     }
 
     private void OnSelfState(EntityStateInfo state)

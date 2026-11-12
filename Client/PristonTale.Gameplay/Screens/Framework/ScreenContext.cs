@@ -71,5 +71,5 @@ public sealed class ScreenContext
     // Replaces a backend that already logged in or lost its connection; the old one is disposed off the game thread.
     public void RenewBackend() => _renewBackend?.Invoke();
 
-    internal void ReplaceBackend(IGameBackend backend) => Backend = backend;
+    public void ReplaceBackend(IGameBackend backend) => Backend = backend;
 }

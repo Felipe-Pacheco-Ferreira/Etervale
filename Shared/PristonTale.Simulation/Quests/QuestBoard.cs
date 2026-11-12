@@ -93,6 +93,16 @@ public static class QuestBoard
         var entries = new List<QuestBoardEntry>();
         switch (active.Code)
         {
+            case QuestCode.None when AdventurerJourney.IsAvailable(character):
+                entries.Add(new QuestBoardEntry(tempskron ? "Encontre Skadi em Ricarten" : "Encontre Jin em Pillai",
+                    tempskron ? AdventurerJourneyRoute.MeetSkadiDescription : AdventurerJourneyRoute.MeetJinDescription));
+                break;
+            case QuestCode.AdventurerJourney:
+                entries.Add(active.State == 1
+                    ? new QuestBoardEntry("Jornada do aventureiro · Preparação", "Avalon/Preparation.msg")
+                    : new QuestBoardEntry("Jornada do aventureiro · Primeira caçada",
+                        tempskron ? "Avalon/SkadiHunt.msg" : "Avalon/JinHunt.msg"));
+                break;
             case QuestCode.RankUpTrophies:
                 entries.Add(Open(Rows[0]));
                 break;
@@ -162,6 +172,7 @@ public static class QuestBoard
                 QuestCode.RankUpMasterTrial => Done(Rows[33]),
                 QuestCode.RankUpHestian => Done(Rows[FifthRankUpRow]),
                 QuestCode.FuryOfPhantom => Done(BeginnerRows[14]),
+                QuestCode.AdventurerJourney => new QuestBoardEntry("Jornada do aventureiro", "Avalon/Finished.msg"),
                 _ when LevelQuests.IsLevelQuest(code) => Done(Rows[LevelRow(code)]),
                 _ when QuestCodes.IsElementary(code) => Done(BeginnerRows[BeginnerRow(code, true)]),
                 _ => null

@@ -15,7 +15,8 @@ public readonly record struct QuestNpc(
     int ClassChangeGroup = 0,
     bool HomeMaster = false,
     bool WingExchange = false,
-    bool ItemAging = false)
+    bool ItemAging = false,
+    string Name = "")
 {
     public static readonly QuestNpc None = new();
 }

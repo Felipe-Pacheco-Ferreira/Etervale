@@ -48,12 +48,15 @@ internal sealed class CharacterSelectView
     private readonly CharSelectAssets _assets;
     private readonly CharacterSelectCamera _camera;
 
-    public CharacterSelectView(SpriteBatch spriteBatch, SpriteFont font, CharSelectAssets assets, CharacterSelectCamera camera)
+    private readonly float _buttonScale;
+
+    public CharacterSelectView(SpriteBatch spriteBatch, SpriteFont font, CharSelectAssets assets, CharacterSelectCamera camera, float buttonScale)
     {
         _sb = spriteBatch;
         _font = font;
         _assets = assets;
         _camera = camera;
+        _buttonScale = buttonScale;
     }
 
     public void Draw(Viewport viewport, CharSelectViewModel m)
@@ -156,17 +159,17 @@ internal sealed class CharacterSelectView
         var primary = m.RosterHasChars ? _assets.BtSelect : _assets.BtNewChar;
         if (primary != null)
         {
-            _sb.Draw(primary, new Vector2(CharSelectLayout.TwoButtonPrimaryX(viewport), y), Color.White);
+            DrawButton(primary, CharSelectLayout.TwoButtonPrimaryX(viewport), y, viewport);
         }
 
         if (_assets.BtExit != null)
         {
-            _sb.Draw(_assets.BtExit, new Vector2(CharSelectLayout.TwoButtonQuitX(viewport), y), Color.White);
+            DrawButton(_assets.BtExit, CharSelectLayout.TwoButtonQuitX(viewport), y, viewport);
         }
 
         if (m.HasSelectedRoster && _assets.BtDelete != null)
         {
-            _sb.Draw(_assets.BtDelete, new Vector2(CharSelectLayout.TwoButtonDeleteX, y), Color.White);
+            DrawButton(_assets.BtDelete, CharSelectLayout.TwoButtonDeleteX, y, viewport, leftAligned: true);
         }
 
         if (m.ShowNewCharacterPrompt && _assets.NewCharBig != null)
@@ -281,25 +284,28 @@ internal sealed class CharacterSelectView
         var y = CharSelectLayout.ButtonRowY(viewport);
         if (_assets.BtSelect != null)
         {
-            _sb.Draw(_assets.BtSelect, new Vector2(CharSelectLayout.ThreeButtonOkX(viewport), y), Color.White);
+            DrawButton(_assets.BtSelect, CharSelectLayout.ThreeButtonOkX(viewport), y, viewport);
         }
 
         if (_assets.BtBack != null)
         {
-            _sb.Draw(_assets.BtBack, new Vector2(CharSelectLayout.ThreeButtonBackX(viewport), y), Color.White);
+            DrawButton(_assets.BtBack, CharSelectLayout.ThreeButtonBackX(viewport), y, viewport);
         }
 
         if (_assets.BtExit != null)
         {
-            _sb.Draw(_assets.BtExit, new Vector2(CharSelectLayout.ThreeButtonQuitX(viewport), y), Color.White);
+            DrawButton(_assets.BtExit, CharSelectLayout.ThreeButtonQuitX(viewport), y, viewport);
         }
     }
 
     private void DrawInfoPanel(Viewport viewport, CharSelectInfo info)
     {
-        var boxX = viewport.Width / 2 - 128;
-        var boxY = viewport.Height / 2 + viewport.Height / 5;
-        var rect = new Rectangle(boxX, boxY, 256, 128);
+        var scale = _buttonScale > 1f ? MathF.Min(1.6f, viewport.Width / 950f) : 1f;
+        var boxX = viewport.Width / 2 - (int)(128 * scale);
+        var boxY = _buttonScale > 1f ? (int)(viewport.Height * .68f) : viewport.Height / 2 + viewport.Height / 5;
+        Rectangle PanelRect(int x, int y, int width, int height) =>
+            new(boxX + (int)(x * scale), boxY + (int)(y * scale), (int)(width * scale), (int)(height * scale));
+        var rect = PanelRect(0, 0, 256, 128);
         if (_assets.InfoBackPanel != null)
         {
             _sb.Draw(_assets.InfoBackPanel, rect, Color.White);
@@ -316,31 +322,31 @@ internal sealed class CharacterSelectView
             }
             else
             {
-                _sb.Draw(_assets.InfoOverlay, new Rectangle(boxX, boxY + 13, 256, 95), new Rectangle(0, 33, 256, 95), Color.White);
+                _sb.Draw(_assets.InfoOverlay, PanelRect(0, 13, 256, 95), new Rectangle(0, 33, 256, 95), Color.White);
             }
         }
 
-        var valueX = boxX + InfoPanelValueColumnX;
-        var top = boxY + (inClan ? 20 : 0) + InfoPanelValueBaselineAdjustment;
+        var valueX = boxX + InfoPanelValueColumnX * scale;
+        var top = boxY + ((inClan ? 20 : 0) + InfoPanelValueBaselineAdjustment) * scale;
         if (inClan)
         {
-            _sb.Draw(_assets.ClanMark, new Vector2(valueX - 3, boxY + 17), Color.White);
-            SmallValue(info.ClanName, valueX + 17, top, new Color(230, 240, 255));
+            _sb.Draw(_assets.ClanMark, PanelRect(InfoPanelValueColumnX - 3, 17, _assets.ClanMark.Width, _assets.ClanMark.Height), Color.White);
+            SmallValue(info.ClanName, valueX + 17 * scale, top, new Color(230, 240, 255), scale);
         }
 
-        SmallValue(info.Name, valueX, top + 20, new Color(255, 250, 235));
+        SmallValue(info.Name, valueX, top + 20 * scale, new Color(255, 250, 235), scale);
         if (info.Level != _levelShown)
         {
             (_levelShown, _levelText) = (info.Level, info.Level.ToString(System.Globalization.CultureInfo.InvariantCulture));
         }
 
-        SmallValue(_levelText, valueX, top + 40, new Color(255, 220, 100));
-        SmallValue(info.BroodName, valueX, top + 60, new Color(255, 250, 235));
-        SmallValue(info.ClassName, valueX, top + 80, new Color(255, 250, 235));
+        SmallValue(_levelText, valueX, top + 40 * scale, new Color(255, 220, 100), scale);
+        SmallValue(info.BroodName, valueX, top + 60 * scale, new Color(255, 250, 235), scale);
+        SmallValue(info.ClassName, valueX, top + 80 * scale, new Color(255, 250, 235), scale);
     }
 
-    private void SmallValue(string text, float x, float y, Color color) =>
-        _sb.DrawString(_font, text, new Vector2(x, y), color, 0f, Vector2.Zero, InfoPanelValueScale, SpriteEffects.None, 0f);
+    private void SmallValue(string text, float x, float y, Color color, float scale = 1f) =>
+        _sb.DrawString(_font, text, new Vector2(x, y), color, 0f, Vector2.Zero, InfoPanelValueScale * scale, SpriteEffects.None, 0f);
 
     private void DrawRaceMark(Rectangle rectangle, Texture2D mark, Texture2D logo)
     {
@@ -404,5 +410,11 @@ internal sealed class CharacterSelectView
         {
             _sb.Draw(_assets.FaceBigBoxBottom, CharSelectLayout.FaceBackdropBottom(viewport), Color.White);
         }
+    }
+
+    private void DrawButton(Texture2D texture, int x, int y, Viewport viewport, bool leftAligned = false)
+    {
+        var bounds = new Rectangle(x, y, texture.Width, texture.Height);
+        _sb.Draw(texture, CharSelectLayout.ScaleButton(bounds, viewport, _buttonScale, leftAligned), Color.White);
     }
 }

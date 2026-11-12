@@ -8,7 +8,7 @@ using PristonTale.Simulation.Quests;
 
 namespace PristonTale.Mobile;
 
-internal sealed class MobileQuestDialog(Activity activity, IPlayChannel play, TextView notice)
+internal sealed class MobileQuestDialog(Activity activity, IPlayChannel play, TextView notice, Func<string, string, string[], CancellationToken, Task<int?>> presenter = null)
 {
     private static readonly Encoding DocumentEncoding = CreateEncoding();
 
@@ -119,7 +119,10 @@ internal sealed class MobileQuestDialog(Activity activity, IPlayChannel play, Te
         }
     }
 
-    private async Task<int?> AskAsync(string title, string message, string[] choices, CancellationToken ct)
+    private Task<int?> AskAsync(string title, string message, string[] choices, CancellationToken ct) =>
+        presenter is null ? AskInDialogAsync(title, message, choices, ct) : presenter(title, message, choices, ct);
+
+    private async Task<int?> AskInDialogAsync(string title, string message, string[] choices, CancellationToken ct)
     {
         var answer = new TaskCompletionSource<int?>(TaskCreationOptions.RunContinuationsAsynchronously);
         using var builder = new AlertDialog.Builder(activity);

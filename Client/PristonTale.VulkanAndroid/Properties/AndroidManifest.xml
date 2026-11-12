@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
   <uses-permission android:name="android.permission.INTERNET" />
-  <application android:label="Etervale Vulkan Probe">
+  <application android:label="Priston Avalon" android:icon="@mipmap/priston_avalon">
     <activity android:name="org.libsdl.app.SDLActivity" android:exported="false" android:screenOrientation="landscape"
               android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|uiMode">
 

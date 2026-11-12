@@ -7,6 +7,10 @@ internal sealed class TouchOrbit
     private long firstId;
     private long moveId;
     private bool moving;
+    private bool joystickMoved;
+    private bool dragged;
+    private Vector2 touchStart;
+    public Vector2? Tap { get; private set; }
     private Vector2 origin;
     public Vector2 Movement { get; private set; }
     public bool JoystickActive => moving;
@@ -18,15 +22,16 @@ internal sealed class TouchOrbit
     private float previousSpan;
     private float yaw;
     private float pitch = 0.59f;
-    private float distance = 375f;
+    private float distance = 270f;
 
     public Vector3 Offset => new(
         MathF.Sin(yaw) * MathF.Cos(pitch) * distance,
         MathF.Sin(pitch) * distance,
         MathF.Cos(yaw) * MathF.Cos(pitch) * distance);
 
-    public void Update()
+    public void Update(bool allowJoystick = true)
     {
+        Tap = null;
         for (var index = 0; index < SDL_GetNumTouchDevices(); index++)
         {
             var device = SDL_GetTouchDevice(index);
@@ -36,9 +41,10 @@ internal sealed class TouchOrbit
                 continue;
             }
 
-            if (!moving && previousCount == 0 && first.X < .45f && first.Y > .48f)
+            if (allowJoystick && !moving && previousCount == 0 && first.X < .45f && first.Y > .48f)
             {
                 moving = true;
+                joystickMoved = false;
                 moveId = first.Id;
                 origin = new Vector2(first.X, first.Y);
             }
@@ -48,6 +54,7 @@ internal sealed class TouchOrbit
                 {
                     var offset = (new Vector2(first.X, first.Y) - origin) * new Vector2(12f, 6f);
                     Movement = offset.LengthSquared() < .16f * .16f ? Vector2.Zero : offset / Math.Max(1f, offset.Length());
+                    joystickMoved |= Movement != Vector2.Zero;
                     count--;
                     if (count == 0 || !TryRead(device, 1, out first))
                     {
@@ -62,6 +69,11 @@ internal sealed class TouchOrbit
                 }
             }
             var position = new Vector2(first.X, first.Y);
+            if (previousCount == 0)
+            {
+                touchStart = position;
+                dragged = moving;
+            }
             if (!moving && count >= 2 && TryRead(device, 1, out var second))
             {
                 var span = Vector2.Distance(position, new Vector2(second.X, second.Y));
@@ -69,13 +81,15 @@ internal sealed class TouchOrbit
                 {
                     distance = Math.Clamp(distance * previousSpan / span, 125f, 850f);
                 }
+                dragged = true;
                 previousSpan = Math.Max(0.025f, span);
                 secondId = second.Id;
                 previousCount = 2;
             }
             else
             {
-                if (previousCount == 1 && first.Id == firstId)
+                dragged |= Vector2.DistanceSquared(touchStart, position) > .012f * .012f;
+                if (dragged && previousCount == 1 && first.Id == firstId)
                 {
                     var delta = position - previousPosition;
                     yaw = MathHelper.WrapAngle(yaw - delta.X * MathHelper.TwoPi);
@@ -89,6 +103,14 @@ internal sealed class TouchOrbit
             return;
         }
 
+        if (moving && !joystickMoved)
+        {
+            Tap = origin;
+        }
+        else if (previousCount == 1 && !moving && !dragged)
+        {
+            Tap = previousPosition;
+        }
         previousCount = 0;
         moving = false;
         Movement = Vector2.Zero;

@@ -32,6 +32,7 @@ namespace PristonTale.Gameplay.World;
 // The local player's input: moving, picking loot and targets, approaching NPCs and the attack it shows.
 public sealed partial class GameScene
 {
+    public Func<MouseState> WorldPointerInput { get; set; }
     public Vector2? TouchMovement { get; set; }
     public Vector3? TouchCameraOffset { get; set; }
     private bool _touchMoving;
@@ -73,7 +74,7 @@ public sealed partial class GameScene
             return;
         }
 
-        var mouse = Mouse.GetState();
+        var mouse = WorldPointerInput?.Invoke() ?? Mouse.GetState();
         if (_pendingWarp is not null)
         {
             _lastMouseState = mouse;
@@ -306,6 +307,9 @@ public sealed partial class GameScene
             out ray);
     }
 
+    public bool SelectCombatTargetOnTap { get; set; }
+    public ulong SelectedCombatTarget { get; private set; }
+
     private bool TryPickAttackTarget(MouseState mouse, bool rightButton = false)
     {
         if (_remote == null)
@@ -342,9 +346,40 @@ public sealed partial class GameScene
         _lootInteraction.Cancel();
         _targetSelection.Trace(entityId);
 
+        if (SelectCombatTargetOnTap && !rightButton)
+        {
+            SelectedCombatTarget = entityId;
+            return true;
+        }
+
         var automatic = ShiftHeld(Keyboard.GetState());
         SendAttackIntent(_attackInput.Press(entityId, automatic, rightButton));
         return true;
+    }
+
+    public bool TrackQuestMonster(ulong target, out float distanceSquared)
+    {
+        distanceSquared = float.PositiveInfinity;
+        if (_remote is null || _playerBody is null || !_remote.TryGetTarget(target, out var position, out var dead) || dead)
+        {
+            return false;
+        }
+        distanceSquared = Vector3.DistanceSquared(position, PlayerPosition);
+        return true;
+    }
+
+    public void SetQuestHuntTarget(ulong target, bool automatic = true)
+    {
+        if (automatic && _attackInput.TargetId == target)
+        {
+            return;
+        }
+        ClearAttackTarget();
+        if (target != 0)
+        {
+            _targetSelection.Trace(target);
+            SendAttackIntent(_attackInput.Press(target, automatic, rightButton: false));
+        }
     }
 
     private void SendAttackIntent(AttackRequest request)
@@ -393,7 +428,7 @@ public sealed partial class GameScene
     // the original's grabbing hand.
     private void UpdateHoveredDrop()
     {
-        var mouse = Mouse.GetState();
+        var mouse = WorldPointerInput?.Invoke() ?? Mouse.GetState();
         HoveredDropId = Guid.Empty;
         if (_groundLoot is not null && _camera is not null && !PointerCaptured && CameraInputEnabled && TryCursorRay(mouse, out var ray)
             && _groundLoot.Pick(mouse.Position, ray, out var id, out _, ShowAllDropLabels))

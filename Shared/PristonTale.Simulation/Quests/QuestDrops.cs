@@ -200,6 +200,10 @@ public static class QuestTick
         LevelQuests.OnKill(context, monsterCode);
         LevelBonusQuests.OnKill(context, monsterCode);
         ElementaryQuests.OnKill(context, monsterCode);
+        if (context.Journal.Active.Code == QuestCode.AdventurerJourney)
+        {
+            QuestSteps.CreditHunt(context, monsterCode);
+        }
         FuryOfPhantomQuest.OnKill(context);
         RankUpByMasterTrial.OnKill(context, monsterCode);
         RankUpByHestian.OnKill(context, monsterCode);

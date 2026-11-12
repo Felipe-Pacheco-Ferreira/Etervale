@@ -19,19 +19,22 @@ internal sealed class OpeningLoginController : IDisposable
     private Task<LoginOutcome> _loginTask;
     private CancellationTokenSource _loginCts;
 
-    public OpeningLoginController(ScreenContext context, LoginAudio audio)
+    public OpeningLoginController(ScreenContext context, LoginAudio audio, bool touchLayout)
     {
         _context = context;
         _audio = audio;
-        _login = new LoginPanel(context.SpriteBatch, context.Font, context.UiAtlas);
+        _login = new LoginPanel(context.SpriteBatch, context.Font, context.UiAtlas) { TouchLayout = touchLayout };
     }
+
+    public bool KeyboardRequested => _login.KeyboardRequested;
+    public bool KeyboardFieldTapped => _login.KeyboardFieldTapped;
 
     public enum LoginResult { None, Succeeded }
 
-    public LoginResult Update(in KeyboardState keyboard, in KeyboardState lastKeyboard, float dt)
+    public LoginResult Update(in KeyboardState keyboard, in KeyboardState lastKeyboard, MouseState pointer, float dt)
     {
         var typed = _context.TypedText.Drain();
-        if (_phase == Phase.Login && _login.Update(keyboard, lastKeyboard, typed, dt, _context.GraphicsDevice.Viewport) == LoginIntent.SubmitLogin)
+        if (_phase == Phase.Login && _login.Update(keyboard, lastKeyboard, pointer, typed, dt, _context.GraphicsDevice.Viewport) == LoginIntent.SubmitLogin)
         {
             BeginLogin();
         }
@@ -51,7 +54,7 @@ internal sealed class OpeningLoginController : IDisposable
         _login.Status = "Connecting…";
         _login.InputEnabled = false;
         _phase = Phase.Authenticating;
-        _loginCts = new CancellationTokenSource();
+        _loginCts = _login.TouchLayout ? new CancellationTokenSource(TimeSpan.FromSeconds(20)) : new CancellationTokenSource();
         if (_context.Backend.RequiresNewConnection)
         {
             _context.RenewBackend();

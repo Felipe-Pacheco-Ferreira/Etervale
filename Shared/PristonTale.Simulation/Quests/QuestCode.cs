@@ -65,7 +65,8 @@ public enum QuestCode : ushort
     Elite114D = 0x51,
     Elite114E = 0x52,
     Elite114F = 0x53,
-    Elite114G = 0x54
+    Elite114G = 0x54,
+    AdventurerJourney = 0x55
 }
 
 // Completed level-milestone quests (bit per quest); both level 55 branches share one bit.
@@ -95,7 +96,8 @@ public enum ElementaryQuestLog : uint
     E = 16,
     F = 32,
     G = 64,
-    FuryOfPhantom = 128
+    FuryOfPhantom = 128,
+    AdventurerJourney = 256
 }
 
 // Completed elite quests (EliteQuests.Bit): bit n is the chains' n-th quest, Elite106A first.

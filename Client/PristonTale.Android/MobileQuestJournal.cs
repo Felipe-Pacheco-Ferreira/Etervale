@@ -17,7 +17,7 @@ internal sealed class MobileQuestJournal(Activity activity)
 
     public void Update(QuestView view) => _view = view;
 
-    public void Open()
+    public void Open(Action? startAutoHunt = null)
     {
         var panel = new LinearLayout(activity) { Orientation = Orientation.Vertical };
         panel.SetBackgroundColor(Panel);
@@ -44,6 +44,16 @@ internal sealed class MobileQuestJournal(Activity activity)
         builder.SetView(panel);
         var dialog = builder.Create()!;
         close.Click += (_, _) => dialog.Dismiss();
+        if (startAutoHunt is not null && _view is { TargetQuestCode: > 0 } hunt && hunt.Kills < hunt.KillsNeeded)
+        {
+            var start = Action("Iniciar auto-caça");
+            start.Click += (_, _) =>
+            {
+                startAutoHunt();
+                dialog.Dismiss();
+            };
+            panel.AddView(start);
+        }
         dialog.DismissEvent += (_, _) => dialog.Dispose();
         ShowList(active: true);
         dialog.Show();
@@ -66,7 +76,7 @@ internal sealed class MobileQuestJournal(Activity activity)
             foreach (var entry in entries)
             {
                 var button = Action(entry.Title);
-                button.Click += (_, _) => ShowEntry(entry, active ? view : null);
+                button.Click += (_, _) => ShowEntry(entry, active && entry == entries[^1] ? view : null);
                 list.AddView(button);
             }
 
@@ -76,7 +86,7 @@ internal sealed class MobileQuestJournal(Activity activity)
             }
             else
             {
-                ShowEntry(entries[0], active ? view : null);
+                ShowEntry(active ? entries[^1] : entries[0], active ? view : null);
             }
         }
 

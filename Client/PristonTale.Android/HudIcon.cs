@@ -3,7 +3,7 @@ using Android.Graphics.Drawables;
 
 namespace PristonTale.Mobile;
 
-internal enum HudGlyph { Attack, Potion, Skill, Journal, Chat, Run, Auto, Exit }
+internal enum HudGlyph { Attack, Potion, Skill, Journal, Chat, Run, Auto, Exit, Menu, Bag }
 
 internal sealed class HudIcon(HudGlyph glyph, int size) : Drawable
 {
@@ -57,6 +57,17 @@ internal sealed class HudIcon(HudGlyph glyph, int size) : Drawable
                 Line(12, 16, 12, 21);
                 Line(3, 12, 8, 12);
                 Line(16, 12, 21, 12);
+                break;
+            case HudGlyph.Menu:
+                Line(4, 6, 20, 6);
+                Line(4, 12, 20, 12);
+                Line(4, 18, 20, 18);
+                break;
+            case HudGlyph.Bag:
+                Line(7, 8, 7, 6, 9, 4, 15, 4, 17, 6, 17, 8);
+                Line(5, 8, 19, 8, 21, 20, 3, 20, 5, 8);
+                Line(4, 13, 20, 13);
+                Line(10, 13, 10, 16, 14, 16, 14, 13);
                 break;
             case HudGlyph.Exit:
                 Line(11, 4, 5, 4, 5, 20, 11, 20);

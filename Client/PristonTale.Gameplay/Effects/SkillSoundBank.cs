@@ -25,6 +25,7 @@ public sealed class SkillSoundBank : IDisposable
     public bool Enabled { get; set; } = true;
 
     public int ReadyCount => _ready.Count;
+    public bool IsReady(string path) => _ready.ContainsKey(path);
 
     // A sound asked to play, ready or not (diagnostics and cases).
     public event Action<string> Requested;

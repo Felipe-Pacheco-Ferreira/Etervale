@@ -118,7 +118,8 @@ internal static class QuestFixture
 
         foreach (var key in new[] { "PL101", "PS101", "PM101", "PL103", "PS103", "PM103" })
         {
-            definitions.Add(new ItemDefinition(Code(key), key, ItemKind.Potion, MaxStack: 100) { CatalogKey = key });
+            definitions.Add(new ItemDefinition(Code(key), key, ItemKind.Potion, MaxStack: 100)
+                { CatalogKey = key, Potion = key == "PL101" ? new PotionDefinition(10, 10, 0, 0, 0, 0) : default });
         }
 
         foreach (var key in new[] { "WA102", "WA108", "WA120", "WC120", "WH121", "WP121", "WS122", "WS223", "WT121", "WM121" })

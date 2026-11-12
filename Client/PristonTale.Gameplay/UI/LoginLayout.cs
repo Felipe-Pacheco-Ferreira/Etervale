@@ -12,11 +12,16 @@ public readonly record struct LoginLayout(float Scale, Rectangle Panel)
     public Rectangle Status => At(78, 558, 324, 24);
     public Rectangle Hint => At(78, 586, 324, 18);
 
-    public static LoginLayout Create(int width, int height)
+    public static LoginLayout Create(int width, int height, bool touch = false)
     {
         var scale = Math.Max(0.1f, Math.Min(1, Math.Min((width - 24) / 480f, (height - 24) / 720f)));
+        if (touch)
+        {
+            scale = Math.Max(0.1f, Math.Min((width - 24) / 480f, (height - 24) / 360f));
+        }
+
         var x = (int)((width / scale - 480) / 2);
-        var y = (int)((height / scale - 720) / 2);
+        var y = (int)((height / scale - (touch ? 360 : 720)) / 2) - (touch ? 258 : 0);
         return new LoginLayout(scale, new Rectangle(x, y, 480, 720));
     }
 

@@ -132,7 +132,7 @@ public sealed class PristonAudioLibrary : IDisposable
     public int NpcSoundCount => _npcSoundCount;
     public int TalkSoundCount => _talkSounds.Count;
 
-    public static PristonAudioLibrary LoadBootstrap(string assetRoot, IClientLog log)
+    public static PristonAudioLibrary LoadBootstrap(string assetRoot, IClientLog log, bool loadOpeningMusic = true)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(assetRoot);
         ArgumentNullException.ThrowIfNull(log);
@@ -141,7 +141,11 @@ public sealed class PristonAudioLibrary : IDisposable
         try
         {
             var byPath = new Dictionary<string, SoundEffect>(StringComparer.OrdinalIgnoreCase);
-            library.OpeningMusic = library.Load(assetRoot, "StartImage/Opening/Intro.wav", byPath);
+            if (loadOpeningMusic)
+            {
+                library.OpeningMusic = library.Load(assetRoot, "StartImage/Opening/Intro.wav", byPath);
+            }
+
             library.CharacterSelectMusic = library.Load(assetRoot, CharacterSelectSounds.Music, byPath);
             foreach (var (cue, path) in LoginAudio.CueFiles)
             {

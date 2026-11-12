@@ -30,7 +30,8 @@ internal static class QuestTransactions
             master?.Value ?? 0,
             master is not null && QuestClasses.IsHomeTown(character, fieldCode),
             wing is not null && wing.Value <= 1,
-            definition.Has(NpcServiceKind.ItemAging));
+            definition.Has(NpcServiceKind.ItemAging),
+            definition.Name);
     }
 
     public static PreparedQuestOperation Prepare(PlayerSession session, WorldPlayer player, FieldInstance field, QuestCommand command,

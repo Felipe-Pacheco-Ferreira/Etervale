@@ -221,7 +221,24 @@ public sealed partial class GameScene : IDisposable, IHudPortraitScene
     public PristonIntRectangle ActiveMapRectangle => _activeField?.Stage.AuthoredMapRectangle ?? default;
     public PristonRenderer Renderer => _renderer;
 
-    public int CopyActorHandles(ulong entityId, Span<ActorHandle> destination) => _remote?.CopyActorHandles(entityId, destination) ?? 0;
+    public int CopyActorHandles(ulong entityId, Span<ActorHandle> destination)
+    {
+        if (entityId == 0 || entityId != _remote?.SelfEntityId)
+        {
+            return _remote?.CopyActorHandles(entityId, destination) ?? 0;
+        }
+
+        var count = 0;
+        if (_playerBodyActor.IsValid && !destination.IsEmpty)
+        {
+            destination[count++] = _playerBodyActor;
+            if (_playerHeadActor.IsValid && count < destination.Length)
+            {
+                destination[count++] = _playerHeadActor;
+            }
+        }
+        return count;
+    }
 
     // The loaded field other than the active one whose map lies nearest the player: the minimap draws it underneath.
     public bool TryGetNeighbourMap(out string fieldId, out PristonIntRectangle rectangle)
@@ -432,6 +449,7 @@ public sealed partial class GameScene : IDisposable, IHudPortraitScene
         UpdateMonsterEffects((float)gameTime.ElapsedGameTime.TotalSeconds);
         UpdateCombatSounds();
         var frameDt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+        UpdateArrivalSound(frameDt);
         UpdateWeather(frameDt);
         if (_playerBody is not null)
         {

@@ -30,6 +30,11 @@ public static class QuestEngine
     // was blocked by the running one says so.
     public static bool Talk(QuestContext context)
     {
+        if (AdventurerJourney.Talk(context))
+        {
+            return true;
+        }
+
         var npc = context.Npc;
         if (npc.ScriptCode != 0)
         {
@@ -72,6 +77,11 @@ public static class QuestEngine
 
     public static bool Proceed(QuestContext context, QuestCode code, int state)
     {
+        if (code == QuestCode.AdventurerJourney)
+        {
+            return AdventurerJourney.Proceed(context, state);
+        }
+
         if (LevelQuests.IsLevelQuest(code))
         {
             return LevelQuests.Proceed(context, code, state);

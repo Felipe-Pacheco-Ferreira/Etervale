@@ -4,12 +4,15 @@
     <SupportedOSPlatformVersion>26</SupportedOSPlatformVersion>
     <OutputType>Exe</OutputType><ImplicitUsings>enable</ImplicitUsings><Nullable>annotations</Nullable>
     <ApplicationId>org.etervale.vulkan.probe</ApplicationId>
-    <ApplicationVersion>11</ApplicationVersion>
-    <ApplicationDisplayVersion>0.11</ApplicationDisplayVersion>
+    <ApplicationVersion>37</ApplicationVersion>
+    <ApplicationDisplayVersion>0.37</ApplicationDisplayVersion>
     <AndroidPackageFormats>apk</AndroidPackageFormats>
     <RuntimeIdentifiers>android-arm64;android-x64</RuntimeIdentifiers><UseDefaultPublishRuntimeIdentifier>false</UseDefaultPublishRuntimeIdentifier>
     <RunAOTCompilation>false</RunAOTCompilation>
   </PropertyGroup>
+  <ItemGroup Condition="'$(EtervaleServerAddress)' != ''">
+    <AssemblyMetadata Include="EtervaleServerAddress" Value="$(EtervaleServerAddress)" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../monogame/framework/MonoGame.Framework/MonoGame.Framework.Native.csproj" />
     <ProjectReference Include="../PristonTale.Engine3D/PristonTale.Engine3D.csproj" />
@@ -17,8 +20,16 @@
     <ProjectReference Include="../PristonTale.Client.Net/PristonTale.Client.Net.csproj" />
     <ProjectReference Include="../PristonTale.Gameplay/PristonTale.Gameplay.csproj" />
     <Compile Include="../PristonTale.Android/MobileWorldHud.cs;../PristonTale.Android/MobileHudTheme.cs;../PristonTale.Android/HudIcon.cs" LinkBase="MobileHud" />
-    <AndroidAsset Include="../PristonTale.Android/RicartenResources/World/ricarten-minimap.png" Link="hud-minimap.png" />
+    <Compile Include="../PristonTale.Android/MobileQuestDialog.cs;../PristonTale.Android/MobileQuestJournal.cs;../PristonTale.Android/MobileShortcuts.cs;../PristonTale.Android/MobileMinimap.cs;../PristonTale.Android/CharacterSelect/CharSelectText.cs" LinkBase="MobileHud" />
+    <EmbeddedResource Include="../PristonTale.Gameplay/Localization/ClientText.pt-BR.resx" Link="ClientTextPtBr.resx" WithCulture="false"
+      LogicalName="PristonTale.Mobile.ClientTextPtBr.resources" />
+    <AndroidAsset Include="../PristonTale.Android/RicartenResources/QuestDialogs/**/*" Link="QuestDialogs/%(RecursiveDir)%(Filename)%(Extension)" />
+    <AndroidAsset Include="../PristonTale.Android/RicartenResources/QuestJournal/**/*" Link="QuestJournal/%(RecursiveDir)%(Filename)%(Extension)" />
+    <AndroidAsset Include="../PristonTale.Android/RicartenResources/World/*-minimap.*" Link="%(Filename)%(Extension)" />
+    <AndroidAsset Include="Assets/priston-avalon-loading.png" Link="priston-avalon-loading.png" />
     <AndroidAsset Include="obj/vulkan/ricarten-desktop.zip" Link="ricarten-desktop.zip" />
+    <AndroidAsset Include="obj/vulkan/opening-desktop.zip" Link="opening-desktop.zip" />
+    <AndroidAsset Include="obj/vulkan/adventurer-journey.zip" Link="adventurer-journey.zip" />
     <AndroidJavaSource Include="../../monogame/runtime/src/external/sdl2/sdl/android-project/app/src/main/java/org/libsdl/app/*.java" Bind="false" />
     <AndroidNativeLibrary Include="obj/vulkan/arm64/libmain.so" Abi="arm64-v8a" />
     <AndroidNativeLibrary Include="obj/vulkan/arm64/libmgruntime.so" Abi="arm64-v8a" />
@@ -27,4 +38,7 @@
     <AndroidNativeLibrary Include="obj/vulkan/x64/libmgruntime.so" Abi="x86_64" />
     <AndroidNativeLibrary Include="obj/vulkan/x64/sdl2/libSDL2.so" Abi="x86_64" />
   </ItemGroup>
+  <Target Name="NameReleasePackage" AfterTargets="Build" Condition="Exists('$(OutDir)$(ApplicationId)-Signed.apk')">
+    <Copy SourceFiles="$(OutDir)$(ApplicationId)-Signed.apk" DestinationFiles="$(OutDir)Etervale-$(ApplicationDisplayVersion).apk" />
+  </Target>
 </Project>

@@ -130,6 +130,7 @@ public sealed class CombatSounds : IDisposable
 
     // The restart chime where a character rises again.
     public void PlayRestart(Vector3 source, Vector3 listener) => _bank.Play(RestartSound, source, listener);
+    public bool RestartReady => _bank.IsReady(RestartSound);
 
     public void Dispose() => _bank.Dispose();
 

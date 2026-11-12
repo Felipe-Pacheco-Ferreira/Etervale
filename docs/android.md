@@ -276,6 +276,20 @@ world-arrival.bin        int32 MobileActorFormat.WorldArrivalMagic, float32 offs
 - `ptgltf --mobile-scene-upgrade <old.bin> <new.bin>` rewrites a field scene of the previous format, which repeated
   colour and texture coordinates in every frame and carried one fixed player model.
 
+## Continuing on another machine
+
+Everything the client and the tools need is in the repository except:
+
+- the game data (`assets/`, the archive linked in README.md) and the SQLite database and TLS certificate under `data/`;
+- the APK signing keystore. An APK installs over the one on the phone only when it is signed with the same key, so copy
+  the keystore privately (never into the repository) and pass it to `Client/PristonTale.VulkanAndroid/package-release.ps1` (or `.sh`);
+- the Vulkan runtime libraries under `Client/PristonTale.VulkanAndroid/obj/vulkan`, rebuilt by `build.ps1` (NDK
+  28.2.13676358, CMake 3.22.1, Ninja 1.13.1, both `arm64-v8a` and `x86_64`), which also stages the world archives.
+
+Then: build the runtime and archives with `build.ps1`, bump the version in the project file, run `package-release.ps1`
+with the keystore, the SDK and JDK paths and the server address, and publish the server with
+`dotnet publish Server/PristonTale.Server -c Release -o <folder>`.
+
 ## How to
 
 ### Build the APK
@@ -379,9 +393,136 @@ MonoGame Native on Android. It uses the existing Android HUD views over the Vulk
 movement feed the desktop camera and locomotion code, and the desktop presence stream supplies actors,
 equipment, pets, weather, the server clock, and effects.
 
-For a Windows build, install the .NET 10 Android workload, Android SDK and NDK, JDK, CMake and Ninja.
+Vulkan Android uses a closer initial world orbit and a shorter selection-camera rail. The character selection and
+creation action buttons use 1.8 times the desktop size, with hit targets scaled to match. Selection taps use the
+normalized SDL touch position mapped to the rendered viewport. The character information card uses larger art and text. A roster tap selects the character and Confirm requests world entry. The enlarged card stays centered below the character.
+The client prepares shared sky assets before selection and uses the server's spawn coordinates when loading the field. The world HUD uses an edge-anchored mobile layout and shows
+the local player's live portrait beside the status meters, a chat icon, and the quest journal with an Auto-caça action. Tap a world target to interact; dragging or pinching controls the camera.
+Quest NPCs and server-opened dialogs use the original desktop quest documents and the shared quest commands.
+Vulkan Android uses the desktop overhead name plates and shows quest text, NPC speech and choices in a side panel while the world remains visible.
+The panel draws the live 3D portrait for an NPC opened by touch. A stationary tap in the joystick region still picks the world.
+The Vulkan world uses the desktop High preset with +0.45 stops of exposure compensation for the mobile display.
+Auto-caça tracks a visible living monster with the active objective's quest code using the desktop attack trace.
+Moving the joystick or finishing the objective stops the mode. The server must publish quest target codes. The lower dock opens the menu, quest journal and read-only bag. The action bar uses the three potion belt slots and a configurable skill shortcut. Attack selects the nearest visible monster. The minimap follows the player.
+The Vulkan package is currently limited to Ricarten, so hunts in other fields require a larger asset package.
+
+For a Windows build, use PowerShell 7 and install the .NET 10 Android workload, Android SDK and NDK, JDK, CMake and Ninja.
 Fetch the pinned SDL2 and FAudio dependencies using the runtime build instructions, supply the original
 `assets/` directory, and build the Windows client in Release to compile its Vulkan content. Run
-`Client/PristonTale.VulkanAndroid/build.ps1` with `-AndroidSdk`, `-Ndk` and `-JavaSdk`.
-The signed APK is in the Vulkan Android project's Release output. The asset package covers Ricarten,
+`Client/PristonTale.VulkanAndroid/build.ps1` with `-AndroidSdk`, `-Ndk` and `-JavaSdk`. Use `-CMake` and `-Ninja` for explicit tool paths, and `-AssetRoot` and `-DesktopContent` to use existing source and content directories.
+On Windows, if Ninja runs a child command but never returns in a restricted shell, verify it in a regular PowerShell session and pass the working executable with `-Ninja`.
+Use `-SkipNativeBuild` to package existing ARM64 and x86_64 libraries from `obj/vulkan` after compiling them separately.
+The signed APK is copied to Etervale-<version>.apk in the Vulkan Android project's Release output. The asset package covers Ricarten,
 the character selection, player classes and city NPCs. Original game assets are supplied separately.
+Use forward slashes for entry paths in the asset archive so the same archive extracts correctly on Android.
+For on-device quest and Auto-caça verification, connect to a running server that publishes quest target codes
+and select a character with a hunt objective in the packaged field.
+
+Pass `-ServerAddress 'host:10009?cert=<server SHA-256>'` to embed the endpoint in the APK. The address field is hidden
+when the APK includes an endpoint. Builds without a packaged address expose the field and reuse the last successful endpoint.
+
+For a USB device, forward the game port with "adb reverse tcp:10009 tcp:10009" and connect to
+"127.0.0.1:10009?cert=<server SHA-256>". Verify a TLS connection before testing login and gameplay.
+For large local APKs, "adb install --no-streaming --no-incremental <apk>" uses a push before installation.
+
+On Windows, if the server can load the certificate and bind the port but closes TLS handshakes in a
+restricted shell, run it from a regular PowerShell session and verify the presented certificate fingerprint.
+Android starts extracting the asset archive on a background thread at launch and reuses the cache on later launches.
+Priston Avalon artwork and an animated spinner cover asset preparation and the SDL surface until the first game frame. The SDL overlay is attached after the activity has installed its surface. Once the first frame is rendered, the splash stays dismissed for the lifetime of the app process.
+A packaged endpoint opens the shared desktop opening cinematic and login panel once the archive is ready.
+Touch reveals the panel. Tapping either credential field opens or reopens the Android keyboard for that field. Tapping the game surface outside the fields dismisses it without clearing the input. The panel scales for
+landscape touch targets. Builds without a packaged endpoint use the native Android form to collect an address.
+The SDL Vulkan loader is opened before MonoGame enumerates graphics adapters. Startup errors are displayed on
+return to the native launcher. A separate opening archive contains the cinematic, its music and the interface atlas.
+
+Vulkan 0.22 uses the animated opening as the credential screen for packaged endpoints. If SDL exits, the launcher offers an explicit reopen action. NPC dialogue displays the server-provided speaker name below the animated portrait and keeps the quest title and dialogue in the subtitle card.
+
+Vulkan 0.23 releases the opening atlas and presents a frame after disposing character selection before loading the world. The world starts at Medium quality with the existing exposure compensation. Android logs record field load start and completion.
+
+Vulkan 0.24 extracts packaged game resources into Android's private no-backup files directory. Android can evict individual cache files, leaving the extraction marker in place while required assets such as the opening audio are missing.
+
+On the Android test device, Vulkan 0.24 was killed in the foreground with signal 9 (2.6 GB PSS in Android's exit record). A subsequent process reached 3.2 GB PSS during the opening cinematic, with approximately 2.2 GB attributed to the native heap. The exit record did not identify the source of the signal.
+
+Vulkan 0.25 uses the Low rendering preset and a 1024-pixel shadow atlas for the animated opening and world. After the opening closes, Vulkan presents a frame before allocating character selection resources, matching the existing handoff from selection to the world.
+
+The Vulkan backend creates Android descriptor pools on demand in batches of 256 sets per shader. The previous eager allocation created 16,384 sets for every shader. Additional pools grow with demand and remain owned by the shader until its deferred destruction.
+
+Vulkan 0.25 device validation: the animated opening rendered at approximately 0.8 GB PSS after warming up. A player entered Ricarten and walked with the touch joystick for about 30 seconds across several inputs, ending near Adventurer Skadi. The process stayed on the same PID, with approximately 1.0 GB PSS and 0.29 GB native heap PSS after the walk. The NPC portrait and dialogue rendered in-world.
+
+The Vulkan HUD opens an in-world navigation menu and a side inventory with Bag, Equipped, Belt and Quest tabs backed by the owner's live inventory snapshot. The quest tracker and journal open the latest active step and display the server's hunt counter and timer only for that step.
+
+Vulkan 0.26 uses the Priston Avalon launcher name and original gold shield icon, with launcher artwork supplied at five Android densities. The in-game menu shows the installed APK version.
+
+Vulkan 0.27 uses an adaptive launcher icon so Android applies the launcher shape. Density-specific fallback icons use transparent, rounded corners.
+
+Vulkan 0.27 presents an in-world menu with a character header, version, two rows of icon shortcuts and a separate exit action. Exiting closes the game task. Packaged builds dismiss the launcher when SDL returns and report a startup failure with a toast.
+
+Vulkan 0.28 distinguishes the launcher's first OnResume from its return after SDL, using the intervening OnPause. With assets already extracted, SDL can be requested during OnCreate, before the first OnResume.
+
+Vulkan 0.29 connects the inventory to server-validated equip, unequip, belt placement and belt return operations. Commands use the last authoritative inventory revision and the desktop default slot rules. The Vulkan world triggers the shared entry effect once using the entity ID from the server; the restart sound can wait briefly for its existing asynchronous load.
+
+Vulkan 0.30 adds the server-side Adventurer Journey. Skadi (Tempskron) and Jin (Morion) verify a weapon and a filled belt slot before starting the three-kill hunt. The server checks a newly acquired Hopy Crystal at turn-in and pays 100 XP once. The journal gives directions to the original hunting fields and Auto Hunt tracks visible monsters of the active quest. The supplemental archive adds Pillai, the starting hunting fields and their monster models. In manual mode a tap selects a target; Attack uses that target or the nearest living monster when none is selected.
+
+The 0.30 APK was signed and installed over 0.29 using ADB. Keep the same application ID and signing key for in-place upgrades, and increment the application version code for every new APK. The 0.30 server was deployed on port 10009 with the existing SQLite database and TLS certificate. Both Adventurer Journey branches passed the focused simulation test. Device validation of the full quest flow and automatic route guidance remains pending.
+
+Device walkthrough on 0.30 confirmed entry in Ricarten, Skadi's accepted quest and the Preparation journal entry. The current character had no potion in the bag, so the hunt remained gated. The initial guide objective before the first NPC conversation, the Morion walkthrough, collection, turn-in and manual/automatic combat are still open for device validation.
+
+Vulkan 0.31 publishes a welcome objective in the initial quest view for characters eligible for the Adventurer Journey. In the home town the HUD points toward Skadi or Jin and indicates when the guide is close. The first conversation advances the quest and gives one small HP potion directly to the active bag page. Existing 0.30 characters in Preparation can receive the same one-time tutorial potion by talking to the guide. A blocked grant can be retried after making space.
+
+Rewards are adapted from the public Zephira quest catalog (https://clandragonballz.com.br/wiki/missoes). Welcome pays 15% of level-one XP. The combined preparation step pays 30% of level-one XP, 15 small HP potions and 500 gold. The first hunt pays 20% of level-one XP and 300 gold. The Android bag displays the actual 12-by-6 inventory layout with item footprints, category glyphs and tap-to-select item actions.
+
+Device check confirmed that 0.31 entered Ricarten on the updated server and displayed the 12-by-6 bag grid with the three existing 2-by-2 crystal items. The walkthrough ended in Preparation before the potion grant.
+
+### Automatic quest
+
+Vulkan 0.32 plays the Adventurer Journey by itself (`QuestNavigator`, run once a frame on the game thread from
+`RicartenProbe.Update`). It starts on arrival, so a new character is walked to its tribe's guide before any tap.
+The joystick pauses it; the quest card's Auto-missão button resumes it, and the journal's auto-hunt action does too.
+
+- **Route data.** `AdventurerJourneyRoute` (`Shared/PristonTale.Simulation/Quests`) holds, per tribe, the guide's
+  name and place, the hunting field, the exits between them (Ricarten and Forest 1 meet at a seam; Pillai and Forever
+  Fall 1 at warp gates) and the hunting field's spawn points nearest the entry. The server names the guide from the
+  same table. Points are a field's own planar (x, z).
+- **Steps** (`QuestNavigator.Plan`, from the quest view):
+  - Welcome objective or state 0: go to the guide and talk.
+  - State 1: equip a weapon from the bag and put a potion in the belt when missing (the same inventory commands the
+    bag uses), then talk to the guide.
+  - State 2 with kills left: travel to the hunting field and hunt the quest's monster (`QuestCode`), walking from one
+    spawn point to the next while none is in view and picking up drops within reach.
+  - State 2 with the kills done: the guide takes a Hopy Crystal gathered after the hunt began. The navigator keeps the
+    crystal count it saw while hunting; when the guide answers without moving the quest on, it hunts and gathers again
+    (`VulkanWorldSession.KeepHunting` keeps Auto Hunt running past the kill count).
+- **Walking.** Routes come from `GroundRoute` (`Client/PristonTale.Gameplay/World`): an A* over 32-unit cells whose every
+  leg is checked by simulating the player's own movement (`GameScene.WalksTo`: the wall slide at body height, then the
+  floor, 12 units at a time) with the body widened to 1.25 radii, so a leg is kept only when no step is turned aside, no
+  climb is more than a step and no drop is a ledge. Cells are told apart by height (`Storey`), so stairs and bridges are
+  their own places. A leg with less than three body radii of room on its sides costs 2.5 times its length, so routes
+  keep to the middle of roads, squares and stairs. The route is shortened to the fewest walkable legs. The search runs
+  off the game thread over a snapshot of the loaded fields (`GameScene.PlanRouteAsync`; their collision meshes are
+  read-only). A goal outside the loaded fields gives a route to the nearest reachable point, searched again from there.
+  The player follows it with `GameScene.WalkTo` to within `TalkReach` of the guide, and only then approaches it with
+  `GameScene.ApproachNpc` (whose own walk is a straight line); it goes for drops
+  with `GameScene.PickUpNear`, each as the matching tap. A walk blocked by something the search cannot see (a monster,
+  another player) searches again from where it stands.
+- **Fighting.** A monster within `DefendRange` of the player is fought before the quest's own, and a belt potion is
+  drunk under 45% life. The game's attack walks straight at its target; when that leaves the player standing for
+  `AttackStuckSeconds` out of reach, the navigator drops the attack, walks to the target along a route and attacks again.
+- **Minimap.** The route shows as yellow dots on the field's minimap (`MobileMinimap.SetRoute`); Ricarten, Pillai and
+  Forever Fall 1 have one.
+- **Dialogs.** While it runs, a quest dialog shows for `AutoAnswerMilliseconds` and answers its first choice.
+- **HUD.** `VulkanQuestTracker` replaces the old quest card: the journey's title, the objective, a kill bar, what the
+  automatic quest is doing (or the compass to the guide while paused) and the Auto-missão button.
+- **Starter weapon.** The guide's first talk, and any talk in Preparation, gives the class's beginner weapon
+  (`ClassProfile.BeginnerWeapon`) to a character that carries no weapon at all, so the step it asks for can be done.
+
+### Character window (0.34)
+
+`VulkanInventoryPanel` is one window over a dimmed screen: the equipment slots around the character on the left
+(rings and amulet, weapon, armour and shield, gloves, bracelet and boots, sheltom), the 12 x 6 bag with each item's own
+sprite at its footprint (`VulkanItemIcons`: the desktop's `ItemIconFiles` sprites, decoded off the UI thread), the potion
+belt, gold and weight in the header, and the chosen item's sheet (values from `ItemDetailView`) with its actions: equip,
+remove, belt or store. Every action is the inventory command the server validates.
+
+Device runs: 0.32 walked SatroX to Skadi, readied the belt, advanced to the hunt and reached Forest 1, where it hunted
+Hopy; the route of that build cut through walls, which 0.33 replaced with `GroundRoute`. Not verified on the device yet:
+the 0.33 routes, the warp gates of Pillai, the crystal pickup and the turn-in, and the 0.34 character window.

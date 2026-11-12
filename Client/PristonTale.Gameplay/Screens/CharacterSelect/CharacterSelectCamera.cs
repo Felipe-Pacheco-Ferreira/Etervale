@@ -12,11 +12,13 @@ internal sealed class CharacterSelectCamera
     private readonly PristonCamera _camera;
     private readonly Vector3 _target;
     private float _distance;
+    private readonly float _distanceScale;
     private int _currentState;
     private float _swaySeconds;
 
-    public CharacterSelectCamera(GraphicsDevice graphicsDevice, int initialState)
+    public CharacterSelectCamera(GraphicsDevice graphicsDevice, int initialState, float distanceScale = 1f)
     {
+        _distanceScale = distanceScale;
         _target = new Vector3(0f, CharacterSelectStage.CameraTargetY, 0f);
         _currentState = initialState;
         _distance = CharacterSelectStage.RailDistance(initialState);
@@ -39,7 +41,8 @@ internal sealed class CharacterSelectCamera
     private void Apply(GraphicsDevice graphicsDevice, float sway)
     {
         var radians = CharacterSelectStage.CameraAngle * GameUnits.RadiansPerAngle;
-        var offset = new Vector3(0f, _distance * MathF.Sin(radians), _distance * MathF.Cos(radians));
+        var distance = _distance * _distanceScale;
+        var offset = new Vector3(0f, distance * MathF.Sin(radians), distance * MathF.Cos(radians));
         var target = _target + new Vector3(0f, sway, 0f);
         _camera.SetScriptedView(graphicsDevice, target + offset, target, Vector3.Up, CharacterSelectStage.CameraFieldOfView);
     }
