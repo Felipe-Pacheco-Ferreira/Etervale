@@ -19,6 +19,12 @@ public static class Locomotion
         return 250 + (10 * (level - 1));
     }
 
+    public static bool ShouldRun(bool requested, bool running, bool tracing, int stamina, int maxStamina, bool overweight)
+        => stamina > 0 && !overweight && (tracing && stamina <= Math.Max(1, maxStamina) / 4 ? running : requested);
+
+    public static float UnitsPerSecond(int moveSpeed, bool running, bool inVillage)
+        => running ? RunUnitsPerSecond(moveSpeed) : WalkUnitsPerSecond(moveSpeed, inVillage);
+
     public static float WalkUnitsPerSecond(int moveSpeedStat, bool inVillage)
     {
         int baseTranslation = BaseTranslation(moveSpeedStat);

@@ -2188,6 +2188,11 @@ void MGVK_RecreateSwapChain(
 	create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 	create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
 	create_info.preTransform = surface_capabilities.currentTransform;
+#if defined(__ANDROID__)
+	// The game renders in the SDL window's orientation. Let Android apply the display transform.
+	if (surface_capabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR)
+		create_info.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+#endif
 	create_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 	create_info.presentMode = selectedPresentMode;
 	create_info.clipped = VK_TRUE;

@@ -1,3 +1,6 @@
+using PristonTale.Contracts.Units;
+using PristonTale.Client.Net.Presence;
+using PristonTale.Simulation.World;
 using System.Diagnostics;
 using System.Collections.Concurrent;
 using Android.Content.Res;
@@ -19,7 +22,7 @@ internal sealed record NpcPortrait(uint Template, int X, int Y, int Width, int H
 // Draws a field's baked scene: the stage, the player as the class model and face it was given, NPCs with a baked model
 // as that model and every other entity as a marker. An NPC's model is uploaded the first time the NPC is drawn, one a
 // frame, so entering the field waits only for the stage and the player.
-internal sealed class RicartenRenderer(MobileScene scene, Vector3 spawn, CharacterModel? player, int face, WorldArrival arrival) : Java.Lang.Object, GLSurfaceView.IRenderer
+internal sealed class RicartenRenderer(MobileScene scene, Vector3 spawn, CharacterModel? player, int face, WorldArrival arrival, AssetManager assets) : Java.Lang.Object, GLSurfaceView.IRenderer
 {
     private const int FloatsPerVertex = 8;
     private const float WalkCycleDistance = 90f;
@@ -45,17 +48,41 @@ internal sealed class RicartenRenderer(MobileScene scene, Vector3 spawn, Charact
     private int _width;
     private int _height;
     private NpcPortrait? _portrait;
-    private readonly Dictionary<uint, (Vector3 Center, float Height)> _portraitBounds = new();
+    private NpcPortrait? _playerPortrait;
+    public void SetPlayerPortrait(NpcPortrait portrait) => Volatile.Write(ref _playerPortrait, portrait);
+    private readonly Dictionary<ActorPart, (Vector3 Center, float Height)> _portraitBounds = new(ReferenceEqualityComparer.Instance);
     private CameraSnapshot? _projection;
     private float _npcTime;
     private const float NpcWalkUnitsPerSecond = 70f;
-    private readonly Dictionary<ulong, NpcStride> _npcStrides = new();
+    private readonly Dictionary<ulong, ActorStride> _actorStrides = new();
     private SceneEntity[]? _lastRenderedEntities;
     private int _program;
     private int _matrixUniform;
     private int _tintUniform;
     private int _frameBlendUniform;
     private int _effectAlphaUniform;
+    private const int MostVisibleLamps = 6;
+    private readonly float[] _lampPositions = new float[MostVisibleLamps * 4];
+    private readonly float[] _lampColors = new float[MostVisibleLamps * 3];
+    private int _lampPositionsUniform;
+    private int _lampColorsUniform;
+    private int _lightTransformUniform;
+    private int _worldLightUniform;
+    private int _hazeUniform;
+    private float _worldHour = 12f;
+    private float _cloudTarget = -1f;
+    private float _cloud;
+
+    public void SetWeather(WeatherState weather) =>
+        Volatile.Write(ref _cloudTarget, weather.Kind == WeatherKind.Clear ? 0f : 1f);
+
+    public void SetWorldClock(long? gameClockMs)
+    {
+        if (gameClockMs is { } clock)
+        {
+            Volatile.Write(ref _worldHour, WorldClock.HoursAt(clock));
+        }
+    }
     private GlActorPart? _arrivalPart;
     private Vector3 _arrivalPosition;
     private long _arrivalStart;
@@ -67,6 +94,19 @@ internal sealed class RicartenRenderer(MobileScene scene, Vector3 spawn, Charact
     private readonly Dictionary<uint, GlActorPart> _npcs = new();
     private readonly ConcurrentDictionary<PlayerClass, Task<CharacterModel>> _remoteModels = new();
     private readonly Dictionary<PlayerClass, (GlTexture[] Textures, GlActorPart Body, GlActorPart?[] Heads)> _remoteActors = new();
+    private readonly CharacterModel? _character = player;
+    private readonly MobileAppearance _appearance = new(assets);
+    private PlayerAppearanceInfo? _localAppearance;
+    private readonly Dictionary<(ulong Owner, int Pet), PetFrame> _petFrames = new();
+    private readonly List<(ulong Owner, int Pet)> _expiredPets = new();
+
+    public void PrepareAppearance(PlayerAppearanceInfo appearance) => _appearance.Prepare(appearance);
+
+    public void SetLocalAppearance(PlayerAppearanceInfo appearance)
+    {
+        PrepareAppearance(appearance);
+        Volatile.Write(ref _localAppearance, appearance);
+    }
     private GlActorPart? _playerBody;
     private GlActorPart? _playerHead;
     private bool _uploadedThisFrame;
@@ -154,6 +194,7 @@ internal sealed class RicartenRenderer(MobileScene scene, Vector3 spawn, Charact
 
     public void OnSurfaceCreated(IGL10? gl, EGLConfig? config)
     {
+        _appearance.ResetGraphics();
         GLES20.GlClearColor(.48f, .67f, .80f, 1f);
         GLES20.GlEnable(GLES20.GlDepthTest);
         _program = CreateProgram();
@@ -161,6 +202,11 @@ internal sealed class RicartenRenderer(MobileScene scene, Vector3 spawn, Charact
         _tintUniform = GLES20.GlGetUniformLocation(_program, "uTint");
         _frameBlendUniform = GLES20.GlGetUniformLocation(_program, "uFrameBlend");
         _effectAlphaUniform = GLES20.GlGetUniformLocation(_program, "uEffectAlpha");
+        _lampPositionsUniform = GLES20.GlGetUniformLocation(_program, "uLamps[0]");
+        _lampColorsUniform = GLES20.GlGetUniformLocation(_program, "uLampColors[0]");
+        _lightTransformUniform = GLES20.GlGetUniformLocation(_program, "uLightTransform");
+        _hazeUniform = GLES20.GlGetUniformLocation(_program, "uHaze");
+        _worldLightUniform = GLES20.GlGetUniformLocation(_program, "uWorldLight");
         _cubeBuffer = GlUpload.Buffer(BuildCube());
         using (var white = Bitmap.CreateBitmap(1, 1, Bitmap.Config.Argb8888!)!)
         {
@@ -192,7 +238,7 @@ internal sealed class RicartenRenderer(MobileScene scene, Vector3 spawn, Charact
             _scenery[index] = new GlActorPart(part, UsedTextures(part), _whiteTexture);
         }
 
-        if (player is not null)
+        if (_character is { } player)
         {
             var textures = new GlTexture[player.Textures.Length];
             for (var index = 0; index < textures.Length; index++)
@@ -253,12 +299,35 @@ internal sealed class RicartenRenderer(MobileScene scene, Vector3 spawn, Charact
         _locomotionPhase = moving ? (_locomotionPhase + distance / cycleDistance) % 1f : 0f;
         _idlePhase = (_idlePhase + dt / ClipSeconds(MobileActorFormat.Stand)) % 1f;
 
-        var camera = Volatile.Read(ref _camera).ViewProjection(_displayPosition, _aspect);
-        Volatile.Write(ref _projection, new CameraSnapshot(camera));
+        var camera = Volatile.Read(ref _camera).ViewProjection(_displayPosition, _aspect, out var eye);
+        Volatile.Write(ref _projection, new CameraSnapshot(camera, _displayPosition, eye));
         _npcTime += dt;
+        var hour = Volatile.Read(ref _worldHour);
+        var daylight = GameHours.IsNight(hour) ? 0f : Math.Clamp(
+            Math.Min(hour - GameHours.DayStart, GameHours.NightStart - hour), 0f, 1f);
+        var sky = Vector3.Lerp(new Vector3(.03f, .04f, .075f), new Vector3(.48f, .67f, .80f), daylight);
+        var light = Vector3.Lerp(new Vector3(.17f, .21f, .31f), new Vector3(.85f, .86f, .88f), daylight);
+        var cloudTarget = Volatile.Read(ref _cloudTarget);
+        if (cloudTarget >= 0f)
+        {
+            _cloud += (cloudTarget - _cloud) * (1f - MathF.Exp(-dt * .5f));
+        }
+        var overcast = Vector3.Lerp(new Vector3(.065f, .075f, .10f), new Vector3(.48f, .51f, .55f), daylight);
+        sky = Vector3.Lerp(sky, overcast, _cloud);
+        light *= 1f - _cloud * daylight * .28f;
+        var sunset = GameHours.GlowStart + .25f;
+        var dusk = Math.Clamp(1f - MathF.Abs(hour - sunset) / 1.1f, 0f, 1f) * (1f - _cloud * .65f);
+        var haze = new Vector3(.96f, .68f, .40f);
+        sky = Vector3.Lerp(sky, haze, dusk);
+        light *= Vector3.Lerp(Vector3.One, new Vector3(.85f, .72f, .55f), dusk);
+        GLES20.GlClearColor(sky.X, sky.Y, sky.Z, 1f);
         GLES20.GlClear(GLES20.GlColorBufferBit | GLES20.GlDepthBufferBit);
         GLES20.GlUseProgram(_program);
         GLES20.GlUniform1f(_effectAlphaUniform, -1f);
+        GLES20.GlUniform3f(_worldLightUniform, light.X, light.Y, light.Z);
+        GLES20.GlUniform4f(_hazeUniform, haze.X, haze.Y, haze.Z, dusk);
+        SetStageLamps(1f - daylight);
+        SetLightTransform(Matrix4x4.Identity);
         DrawFrame(_stage, camera);
         DrawRoute(camera);
         foreach (var scenery in _scenery)
@@ -271,15 +340,27 @@ internal sealed class RicartenRenderer(MobileScene scene, Vector3 spawn, Charact
         if (!ReferenceEquals(_lastRenderedEntities, entities))
         {
             var visibleIds = entities.Select(entity => entity.Id).ToHashSet();
-            foreach (var id in _npcStrides.Keys.Where(id => !visibleIds.Contains(id)).ToArray())
+            foreach (var id in _actorStrides.Keys.Where(id => !visibleIds.Contains(id)).ToArray())
             {
-                _npcStrides.Remove(id);
+                _actorStrides.Remove(id);
             }
+            foreach (var key in _petFrames.Keys)
+            {
+                if (key.Owner != 0 && !visibleIds.Contains(key.Owner))
+                {
+                    _expiredPets.Add(key);
+                }
+            }
+            foreach (var key in _expiredPets)
+            {
+                _petFrames.Remove(key);
+            }
+            _expiredPets.Clear();
             _lastRenderedEntities = entities;
         }
         foreach (var entity in entities)
         {
-            if (entity.Kind == EntityKind.Player && DrawRemotePlayer(entity, now, camera))
+            if (entity.Kind == EntityKind.Player && DrawRemotePlayer(entity, now, dt, camera))
             {
                 continue;
             }
@@ -311,12 +392,10 @@ internal sealed class RicartenRenderer(MobileScene scene, Vector3 spawn, Charact
                 var phase = (_npcTime / seconds + (entity.Id % 17) / 17f) % 1f;
                 if (entity.Motion is MotionState.Walk or MotionState.Run && clip != MobileActorFormat.Stand)
                 {
-                    var previousStride = _npcStrides.GetValueOrDefault(entity.Id);
-                    var delta = new Vector2(position.X - previousStride.Position.X, position.Z - previousStride.Position.Z);
-                    var stride = NpcWalkUnitsPerSecond * seconds;
-                    phase = previousStride.Motion == entity.Motion ? (previousStride.Phase + delta.Length() / stride) % 1f : 0f;
+                    phase = TravelPhase(entity, position, NpcWalkUnitsPerSecond * seconds);
                 }
-                _npcStrides[entity.Id] = new NpcStride(position, entity.Motion, phase);
+                _actorStrides[entity.Id] = new ActorStride(position, entity.Motion, phase);
+                SetLightTransform(world);
                 DrawPart(model, clip, phase, world * camera);
                 continue;
             }
@@ -325,13 +404,20 @@ internal sealed class RicartenRenderer(MobileScene scene, Vector3 spawn, Charact
             var color = entity.Kind == EntityKind.Npc ? new Vector3(.94f, .69f, .31f) : new Vector3(.30f, .63f, .91f);
             DrawBox(new Vector3(13f, 36f, 13f), new Vector3(0f, 18f, 0f), Matrix4x4.CreateTranslation(entity.Position), camera, color);
         }
+        var localAppearance = Volatile.Read(ref _localAppearance);
+        var localBody = localAppearance is null ? _playerBody : _appearance.Armor(localAppearance, _whiteTexture) ?? _playerBody;
         var body = Matrix4x4.CreateRotationY(_displayFacing + MathF.PI) * Matrix4x4.CreateTranslation(_displayPosition);
-        if (_playerBody is not null && _playerHead is not null)
+        if (localBody is not null && _playerHead is not null)
         {
             var clip = moving ? running ? MobileActorFormat.Run : MobileActorFormat.Walk : MobileActorFormat.Stand;
             var phase = moving ? _locomotionPhase : _idlePhase;
-            DrawPart(_playerBody, clip, phase, body * camera);
+            SetLightTransform(body);
+            DrawPart(localBody, clip, phase, body * camera);
             DrawPart(_playerHead, clip, phase, body * camera);
+            if (localAppearance is not null)
+            {
+                DrawEquipment(localAppearance, clip, phase, body, camera);
+            }
         }
         else
         {
@@ -340,7 +426,20 @@ internal sealed class RicartenRenderer(MobileScene scene, Vector3 spawn, Charact
             DrawBox(new Vector3(13f, 36f, 13f), new Vector3(0f, 18f, 0f), body, camera, Vector3.One);
         }
 
+        if (localAppearance is not null)
+        {
+            DrawPets(0, localAppearance, _displayPosition, _displayFacing, dt, camera);
+        }
         DrawArrival(now, camera);
+        Array.Clear(_lampColors);
+        GLES20.GlUniform3fv(_lampColorsUniform, MostVisibleLamps, _lampColors, 0);
+        GLES20.GlUniform3f(_worldLightUniform, 1f, 1f, 1f);
+        GLES20.GlUniform4f(_hazeUniform, 0f, 0f, 0f, 0f);
+        if (Volatile.Read(ref _playerPortrait) is { } playerPortrait && _character is { } character && localBody is { } bodyPart)
+        {
+            var headPart = character.Heads[Math.Clamp(face, 0, character.Heads.Length - 1)];
+            DrawPortrait(playerPortrait, character.Body, bodyPart, _playerHead, headPart);
+        }
         DrawNpcPortrait();
         _firstFrame.TrySetResult();
     }
@@ -361,7 +460,7 @@ internal sealed class RicartenRenderer(MobileScene scene, Vector3 spawn, Charact
         }
     }
 
-    private bool DrawRemotePlayer(SceneEntity entity, long now, Matrix4x4 camera)
+    private bool DrawRemotePlayer(SceneEntity entity, long now, float secondsElapsed, Matrix4x4 camera)
     {
         if (entity.Appearance is not { } appearance || !_remoteModels.TryGetValue(appearance.Class, out var load)
             || !load.IsCompletedSuccessfully)
@@ -398,18 +497,84 @@ internal sealed class RicartenRenderer(MobileScene scene, Vector3 spawn, Charact
         }
 
         var (position, facing) = entity.At(now);
-        var transform = Matrix4x4.CreateRotationY(facing + MathF.PI) * Matrix4x4.CreateTranslation(position) * camera;
+        var world = Matrix4x4.CreateRotationY(facing + MathF.PI) * Matrix4x4.CreateTranslation(position);
+        SetLightTransform(world);
         var clip = entity.Motion switch
         {
             MotionState.Run => First(actor.Body, MobileActorFormat.Run, MobileActorFormat.Walk),
             MotionState.Walk => First(actor.Body, MobileActorFormat.Walk, MobileActorFormat.Run),
             _ => MobileActorFormat.Stand
         };
-        var phase = (_npcTime / actor.Body.Seconds(clip)) % 1f;
-        DrawPart(actor.Body, clip, phase, transform);
-        DrawPart(actor.Heads[face]!, clip, phase, transform);
+        var seconds = actor.Body.Seconds(clip);
+        var phase = (_npcTime / seconds) % 1f;
+        if (clip is MobileActorFormat.Walk or MobileActorFormat.Run)
+        {
+            // Keep the desktop's playback range, using the speed between authoritative samples.
+            // Interpolation can pause between packets and should not pause the animation clock.
+            var running = entity.Motion == MotionState.Run;
+            const int baseMoveSpeed = 1;
+            var referenceSpeed = Locomotion.UnitsPerSecond(baseMoveSpeed, running, appearance.InVillage);
+            var scale = Math.Clamp(entity.PlanarSpeed / referenceSpeed, .5f, 2f);
+            var rate = Locomotion.StepRate(baseMoveSpeed, running) * scale;
+            phase = _actorStrides.TryGetValue(entity.Id, out var previous) && previous.Motion == entity.Motion
+                ? (previous.Phase + secondsElapsed * rate / seconds) % 1f
+                : 0f;
+        }
+        _actorStrides[entity.Id] = new ActorStride(position, entity.Motion, phase);
+        DrawPart(_appearance.Armor(appearance, _whiteTexture) ?? actor.Body, clip, phase, world * camera);
+        DrawPart(actor.Heads[face]!, clip, phase, world * camera);
+        DrawEquipment(appearance, clip, phase, world, camera);
+        DrawPets(entity.Id, appearance, position, facing, secondsElapsed, camera);
         return true;
     }
+
+    private void DrawEquipment(PlayerAppearanceInfo appearance, int clip, float phase, Matrix4x4 body, Matrix4x4 camera)
+    {
+        for (var hand = 0; hand < 2; hand++)
+        {
+            if (_appearance.TryGetGear(appearance, hand == 1, clip, phase, _whiteTexture, out var part, out var socket) && part is not null)
+            {
+                var world = socket * body;
+                SetLightTransform(world);
+                DrawPart(part, 0, 0f, world * camera);
+            }
+        }
+    }
+
+    private void DrawPets(ulong owner, PlayerAppearanceInfo appearance, Vector3 position, float facing, float dt, Matrix4x4 camera)
+    {
+        if (appearance.HelperPet is >= 1 and <= 4)
+        {
+            DrawPet(appearance.HelperPet, 10f);
+        }
+        if (appearance.Phoenix)
+        {
+            DrawPet(5, -10f);
+        }
+
+        void DrawPet(int id, float side)
+        {
+            if (_appearance.Pet(id, _whiteTexture) is not { } pet)
+            {
+                return;
+            }
+            var place = position + new Vector3(MathF.Cos(facing) * side, 41f, -MathF.Sin(facing) * side);
+            var key = (owner, id);
+            var previous = _petFrames.TryGetValue(key, out var frame) ? frame : new PetFrame(place, 0, 0f);
+            var offset = place - previous.Position;
+            var flying = offset.LengthSquared() > 1.4f;
+            var drawn = flying ? previous.Position + offset * (1f - MathF.Pow(14f / 15f, dt * GameUnits.TicksPerSecond)) : previous.Position;
+            var clip = flying ? 1 : 0;
+            var phase = previous.Clip == clip ? (previous.Phase + dt / pet.Seconds(clip)) % 1f : 0f;
+            _petFrames[key] = new PetFrame(drawn, clip, phase);
+            var world = Matrix4x4.CreateScale(1.3125f) * Matrix4x4.CreateRotationY(facing + MathF.PI)
+                * Matrix4x4.CreateTranslation(drawn);
+            SetLightTransform(world);
+            DrawPart(pet, clip, phase, world * camera);
+        }
+    }
+
+    private readonly record struct PetFrame(Vector3 Position, int Clip, float Phase);
 
     private void DrawNpcPortrait()
     {
@@ -420,7 +585,12 @@ internal sealed class RicartenRenderer(MobileScene scene, Vector3 spawn, Charact
             return;
         }
 
-        if (!_portraitBounds.TryGetValue(portrait.Template, out var bounds))
+        DrawPortrait(portrait, baked, model);
+    }
+
+    private void DrawPortrait(NpcPortrait portrait, ActorPart baked, GlActorPart model, GlActorPart? head = null, ActorPart? bakedHead = null)
+    {
+        if (!_portraitBounds.TryGetValue(baked, out var bounds))
         {
             var minimum = new Vector3(float.PositiveInfinity);
             var maximum = new Vector3(float.NegativeInfinity);
@@ -434,6 +604,16 @@ internal sealed class RicartenRenderer(MobileScene scene, Vector3 spawn, Charact
                 }
             }
 
+            if (bakedHead?.Clips[MobileActorFormat.Stand] is { } headClip)
+            {
+                foreach (var batch in headClip.Frames[0])
+                {
+                    for (var index = 1; index < batch.Length; index += 3)
+                    {
+                        maximum.Y = Math.Max(maximum.Y, batch[index]);
+                    }
+                }
+            }
             var height = maximum.Y - minimum.Y;
             if (!(height > 0f) || !float.IsFinite(height))
             {
@@ -443,7 +623,7 @@ internal sealed class RicartenRenderer(MobileScene scene, Vector3 spawn, Charact
             var center = (minimum + maximum) * .5f;
             center.Y = minimum.Y + height * .78f;
             bounds = (center, height);
-            _portraitBounds.Add(portrait.Template, bounds);
+            _portraitBounds.Add(baked, bounds);
         }
 
         var y = _height - portrait.Y - portrait.Height;
@@ -453,10 +633,15 @@ internal sealed class RicartenRenderer(MobileScene scene, Vector3 spawn, Charact
         GLES20.GlClearColor(.10f, .075f, .055f, 1f);
         GLES20.GlClear(GLES20.GlColorBufferBit | GLES20.GlDepthBufferBit);
         var view = Matrix4x4.CreateLookAt(bounds.Center - Vector3.UnitZ * bounds.Height * 2f, bounds.Center, Vector3.UnitY);
-        var span = bounds.Height * .55f;
+        var span = bounds.Height * (head is null ? .55f : .52f);
         var projection = Matrix4x4.CreateOrthographic(span * portrait.Width / portrait.Height, span, .1f, bounds.Height * 5f);
         const int clip = MobileActorFormat.Stand;
-        DrawPart(model, clip, (_npcTime / model.Seconds(clip)) % 1f, view * projection);
+        var phase = (_npcTime / model.Seconds(clip)) % 1f;
+        DrawPart(model, clip, phase, view * projection);
+        if (head is not null)
+        {
+            DrawPart(head, clip, phase, view * projection);
+        }
         GLES20.GlDisable(GLES20.GlScissorTest);
         GLES20.GlViewport(0, 0, _width, _height);
         GLES20.GlClearColor(.48f, .67f, .80f, 1f);
@@ -497,8 +682,22 @@ internal sealed class RicartenRenderer(MobileScene scene, Vector3 spawn, Charact
         return clip.W > 0f && ndc.Z is >= 0f and <= 1f;
     }
 
-    private readonly record struct NpcStride(Vector3 Position, MotionState Motion, float Phase);
-    private sealed record CameraSnapshot(Matrix4x4 Matrix);
+    private float TravelPhase(SceneEntity entity, Vector3 position, float cycleDistance)
+    {
+        if (!_actorStrides.TryGetValue(entity.Id, out var previous) || previous.Motion != entity.Motion)
+        {
+            return 0f;
+        }
+        var distance = Vector2.Distance(new(position.X, position.Z), new(previous.Position.X, previous.Position.Z));
+        return (previous.Phase + distance / cycleDistance) % 1f;
+    }
+
+    private readonly record struct ActorStride(Vector3 Position, MotionState Motion, float Phase);
+    public Vector3 LocalPosition => Volatile.Read(ref _projection)?.Position ?? Vector3.Zero;
+
+    public Vector3 CameraEye => Volatile.Read(ref _projection)?.Eye ?? Vector3.Zero;
+
+    private sealed record CameraSnapshot(Matrix4x4 Matrix, Vector3 Position, Vector3 Eye);
 
     // The player's clip length in seconds; a second when there is no model, so phases still advance.
     private float ClipSeconds(int clip) => _playerBody is { } body && body.Has(clip) ? body.Seconds(clip) : 1f;
@@ -557,8 +756,12 @@ internal sealed class RicartenRenderer(MobileScene scene, Vector3 spawn, Charact
         return _textures;
     }
 
-    private void DrawBox(Vector3 size, Vector3 offset, Matrix4x4 body, Matrix4x4 camera, Vector3 tint) =>
-        Draw(Matrix4x4.CreateScale(size) * Matrix4x4.CreateTranslation(offset) * body * camera, tint, 36);
+    private void DrawBox(Vector3 size, Vector3 offset, Matrix4x4 body, Matrix4x4 camera, Vector3 tint)
+    {
+        var world = Matrix4x4.CreateScale(size) * Matrix4x4.CreateTranslation(offset) * body;
+        SetLightTransform(world);
+        Draw(world * camera, tint, 36);
+    }
 
     private void Draw(Matrix4x4 m, Vector3 tint, int count)
     {
@@ -566,7 +769,63 @@ internal sealed class RicartenRenderer(MobileScene scene, Vector3 spawn, Charact
         GLES20.GlDrawArrays(GLES20.GlTriangles, 0, count);
     }
 
+    private void SetStageLamps(float strength)
+    {
+        Array.Clear(_lampPositions);
+        Array.Clear(_lampColors);
+        if (strength > 0f)
+        {
+            Span<int> nearest = stackalloc int[MostVisibleLamps];
+            Span<float> distances = stackalloc float[MostVisibleLamps];
+            distances.Fill(float.PositiveInfinity);
+            var count = 0;
+            for (var candidate = 0; candidate < scene.Lamps.Length; candidate++)
+            {
+                var distance = Vector3.DistanceSquared(scene.Lamps[candidate].Position, _displayPosition);
+                var insert = Math.Min(count, MostVisibleLamps - 1);
+                if (distance >= distances[insert])
+                {
+                    continue;
+                }
+                while (insert > 0 && distance < distances[insert - 1])
+                {
+                    nearest[insert] = nearest[insert - 1];
+                    distances[insert] = distances[insert - 1];
+                    insert--;
+                }
+                nearest[insert] = candidate;
+                distances[insert] = distance;
+                count = Math.Min(count + 1, MostVisibleLamps);
+            }
+
+            for (var index = 0; index < count; index++)
+            {
+                var lamp = scene.Lamps[nearest[index]];
+                var position = (lamp.Position - _displayPosition) / 1024f;
+                var color = lamp.Color * (1.7f * strength);
+                _lampPositions[index * 4] = position.X;
+                _lampPositions[index * 4 + 1] = position.Y;
+                _lampPositions[index * 4 + 2] = position.Z;
+                _lampPositions[index * 4 + 3] = 1024f / lamp.Range;
+                _lampColors[index * 3] = color.X;
+                _lampColors[index * 3 + 1] = color.Y;
+                _lampColors[index * 3 + 2] = color.Z;
+            }
+        }
+        GLES20.GlUniform4fv(_lampPositionsUniform, MostVisibleLamps, _lampPositions, 0);
+        GLES20.GlUniform3fv(_lampColorsUniform, MostVisibleLamps, _lampColors, 0);
+    }
+
+    private void SetLightTransform(Matrix4x4 world) =>
+        UploadMatrix(_lightTransformUniform, world * Matrix4x4.CreateTranslation(-_displayPosition) * Matrix4x4.CreateScale(1f / 1024f));
+
     private void SetTransform(Matrix4x4 m, Vector3 tint)
+    {
+        UploadMatrix(_matrixUniform, m);
+        GLES20.GlUniform3f(_tintUniform, tint.X, tint.Y, tint.Z);
+    }
+
+    private void UploadMatrix(int uniform, Matrix4x4 m)
     {
         for (var row = 0; row < 4; row++)
         {
@@ -575,8 +834,7 @@ internal sealed class RicartenRenderer(MobileScene scene, Vector3 spawn, Charact
                 _matrix[row * 4 + column] = m[row, column];
             }
         }
-        GLES20.GlUniformMatrix4fv(_matrixUniform, 1, false, _matrix, 0);
-        GLES20.GlUniform3f(_tintUniform, tint.X, tint.Y, tint.Z);
+        GLES20.GlUniformMatrix4fv(uniform, 1, false, _matrix, 0);
     }
 
     private static void BindVertices(int buffer)
@@ -629,12 +887,18 @@ internal sealed class RicartenRenderer(MobileScene scene, Vector3 spawn, Charact
             attribute vec2 aUv;
             attribute vec3 aNextPosition;
             uniform mat4 uMatrix;
+            uniform mat4 uLightTransform;
             uniform vec3 uTint;
             uniform float uFrameBlend;
             varying vec3 vColor;
             varying vec2 vUv;
+            varying mediump vec3 vLightPosition;
+            varying mediump float vDepth;
             void main() {
-                gl_Position = uMatrix * vec4(mix(aPosition, aNextPosition, uFrameBlend), 1.0);
+                vec4 position = vec4(mix(aPosition, aNextPosition, uFrameBlend), 1.0);
+                gl_Position = uMatrix * position;
+                vDepth = gl_Position.w / 1024.0;
+                vLightPosition = (uLightTransform * position).xyz;
                 vColor = aColor * uTint;
                 vUv = aUv;
             }
@@ -643,8 +907,14 @@ internal sealed class RicartenRenderer(MobileScene scene, Vector3 spawn, Charact
             precision mediump float;
             varying vec3 vColor;
             varying vec2 vUv;
+            varying mediump vec3 vLightPosition;
+            varying mediump float vDepth;
             uniform sampler2D uTexture;
             uniform float uEffectAlpha;
+            uniform vec3 uWorldLight;
+            uniform vec4 uHaze;
+            uniform vec4 uLamps[6];
+            uniform vec3 uLampColors[6];
             void main() {
                 vec4 texel = texture2D(uTexture, fract(vUv));
                 if (uEffectAlpha >= 0.0) {
@@ -652,7 +922,15 @@ internal sealed class RicartenRenderer(MobileScene scene, Vector3 spawn, Charact
                     return;
                 }
                 if (texel.a < 0.45) discard;
-                gl_FragColor = vec4(texel.rgb * vColor, 1.0);
+                vec3 lighting = uWorldLight;
+                for (int i = 0; i < 6; ++i) {
+                    vec3 delta = (vLightPosition - uLamps[i].xyz) * uLamps[i].w;
+                    float falloff = max(0.0, 1.0 - dot(delta, delta));
+                    lighting += uLampColors[i] * falloff * falloff;
+                }
+                vec3 surface = texel.rgb * vColor * lighting;
+                float haze = uHaze.a * smoothstep(0.10, 0.85, vDepth);
+                gl_FragColor = vec4(mix(surface, uHaze.rgb, haze), 1.0);
             }
             """);
         var program = GLES20.GlCreateProgram();

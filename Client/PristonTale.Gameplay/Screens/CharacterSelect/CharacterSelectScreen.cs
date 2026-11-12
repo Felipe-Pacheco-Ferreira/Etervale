@@ -88,6 +88,10 @@ public sealed class CharacterSelectScreen : GameScreen
         _actorLoader = new PristonActorLoader(_assetCache);
     }
 
+    public Func<MouseState> PointerInput { get; init; }
+    public Action<CharacterSummary, EnterWorldOutcome> WorldEntered { get; init; }
+    public bool IsNameInputActive => _nameField?.Focused == true && _state is State.FaceSelect or State.Name;
+
     public override string StatusText => ClientText.Get("Status.CharacterSelect");
 
     public override void Enter()
@@ -144,7 +148,7 @@ public sealed class CharacterSelectScreen : GameScreen
         _renderer.Update(gameTime);
         _flames?.Update(dt);
 
-        var mouse = Mouse.GetState();
+        var mouse = PointerInput?.Invoke() ?? Mouse.GetState();
         var keyboard = Keyboard.GetState();
         // Drained every frame, so keys typed before the name box opens never reach it.
         var typed = Context.TypedText.Drain();
@@ -391,7 +395,14 @@ public sealed class CharacterSelectScreen : GameScreen
                 s.Class, s.Name ?? string.Empty, s.Level, s.FaceIndex,
                 outcome.FieldId, outcome.SpawnX, outcome.SpawnZ, s.Tier, s.HairIndex);
             _enterTask = null;
-            Context.RequestScreen(new GameplayScreen(Context, entered));
+            if (WorldEntered is { } onWorldEntered)
+            {
+                onWorldEntered(s, outcome);
+            }
+            else
+            {
+                Context.RequestScreen(new GameplayScreen(Context, entered));
+            }
             return;
         }
         _errorMessage = _enterTask.IsCompletedSuccessfully

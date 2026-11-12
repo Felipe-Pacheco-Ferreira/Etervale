@@ -35,12 +35,12 @@ internal sealed class MobileShortcuts
         for (var index = 0; index < _belt.Length; index++)
         {
             var box = index;
-            var button = AddButton($"PoÃ§Ã£o {box + 1}");
+            var button = AddButton($"{box + 1}", HudGlyph.Potion);
             button.Enabled = false;
             button.Click += async (_, _) => await UseBeltAsync(box);
             _belt[index] = button;
         }
-        _skill = AddButton("Habilidade");
+        _skill = AddButton("Habilidade", HudGlyph.Skill);
         _skill.Click += async (_, _) => await CastAsync();
         _skill.LongClick += (_, args) =>
         {
@@ -55,7 +55,8 @@ internal sealed class MobileShortcuts
         for (var index = 0; index < _belt.Length; index++)
         {
             var item = OwnedItemView.InBox(owner.Items, index);
-            var label = item is null ? $"PoÃ§Ã£o {index + 1}" : $"{item.Name} Ã—{item.Count}";
+            var label = item is null ? $"{index + 1}" : $"×{item.Count}";
+            _belt[index].ContentDescription = item is null ? $"Poção {index + 1}" : $"{item.Name}, {item.Count}";
             if (_belt[index].Text != label)
             {
                 _belt[index].Text = label;
@@ -71,12 +72,16 @@ internal sealed class MobileShortcuts
 
     public void SetTarget(ulong target) => _target = target;
 
-    private Button AddButton(string label)
+    private Button AddButton(string label, HudGlyph glyph)
     {
         var button = MobileHudTheme.Button(_activity, label);
-        button.SetMaxLines(2);
+        MobileHudTheme.Icon(button, glyph, stacked: true);
+        button.SetPadding(2, 2, 2, 2);
+        button.TextSize = 9;
+        button.SetSingleLine(true);
+        button.Ellipsize = global::Android.Text.TextUtils.TruncateAt.End;
         var density = _activity.Resources!.DisplayMetrics!.Density;
-        View.AddView(button, new LinearLayout.LayoutParams((int)(78 * density), -2));
+        View.AddView(button, new LinearLayout.LayoutParams((int)(glyph == HudGlyph.Skill ? 68 * density : 42 * density), (int)(44 * density)) { LeftMargin = (int)(3 * density) });
         return button;
     }
 

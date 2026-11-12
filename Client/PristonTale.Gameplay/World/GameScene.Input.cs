@@ -32,6 +32,40 @@ namespace PristonTale.Gameplay.World;
 // The local player's input: moving, picking loot and targets, approaching NPCs and the attack it shows.
 public sealed partial class GameScene
 {
+    public Vector2? TouchMovement { get; set; }
+    public Vector3? TouchCameraOffset { get; set; }
+    private bool _touchMoving;
+
+    private void ApplyTouchMovement()
+    {
+        if (TouchMovement is not { } stick)
+        {
+            return;
+        }
+        if (stick.LengthSquared() > 0f && !MovementLocked)
+        {
+            if (!_touchMoving)
+            {
+                ClearAttackTarget();
+                _npcTargetId = 0;
+                _lootInteraction?.Cancel();
+                _reports.Request();
+            }
+            var forward = _camera.FlatForward;
+            var right = Vector3.Cross(forward, Vector3.Up);
+            var direction = forward * -stick.Y + right * stick.X;
+            _moveTarget = _playerBody.PlanarPosition + new Vector2(direction.X, direction.Z) * (PlayerRadius * 8f);
+            _hasMoveTarget = true;
+            _touchMoving = true;
+        }
+        else if (_touchMoving)
+        {
+            _touchMoving = false;
+            StopPredictedMovement();
+            _reports.Request();
+        }
+    }
+
     private void UpdatePlayerInput(GameTime gameTime)
     {
         if (_renderer == null || _activeField == null || _camera == null || _playerBody == null)
@@ -126,6 +160,8 @@ public sealed partial class GameScene
         {
             SetMoveTarget(mouse);
         }
+
+        ApplyTouchMovement();
 
         if (_hasMoveTarget && !_playerController.LocomotionFrozen && !_selfAttacking && !SelfCasting && !SelfStunned)
         {

@@ -55,6 +55,18 @@ if (args.Length == 4 && args[0] == "--mobile-char-select")
     return MobileCharacterSelectBake.Write(args[1], args[2], args[3]);
 }
 
+if (args.Length == 3 && args[0] == "--mobile-pets")
+{
+    MobileAppearanceBake.WritePets(args[1], args[2]);
+    return 0;
+}
+
+if (args.Length >= 3 && args[0] == "--mobile-appearance")
+{
+    MobileAppearanceBake.Write(args[1], args[2], args.Skip(3).ToArray());
+    return 0;
+}
+
 if (args.Length == 3 && args[0] == "--mobile-loading")
 {
     return MobileCharacterSelectBake.WriteLoadingArt(args[1], args[2]);

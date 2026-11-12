@@ -6,6 +6,8 @@ namespace PristonTale.Mobile;
 // baked for it. The player's model is not here; it is the class's character file.
 internal sealed record MobileScene(byte[][] Textures, SceneBatch[] Stage, IReadOnlyDictionary<uint, ActorPart> Npcs, ActorPart[] Scenery)
 {
+    public StageCollisionReader.StageLamp[] Lamps { get; init; } = [];
+
     private const int MostNpcs = 1024;
 
     public static MobileScene Read(Stream stream)

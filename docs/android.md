@@ -198,10 +198,13 @@ Auto-caça requires a server build that sends target codes in quest journals and
 The joystick and the stop button cancel the mode. Hunts without a single target code, searching beyond visible
 monsters, cross-field route planning and minimap entity markers are pending.
 
-The field HUD uses compact, dark cards with gold trim. Status and chat stay at the upper left, with the minimap
-at the upper right, the quest tracker and target at the upper centre, and the action controls around the lower
-and right edges of the play area. Quest and chat details open on demand.
+On Android 11 and later the game hides the system bars in landscape, with swipe access to transient bars.
+The field HUD places an animated portrait of the selected character, name, level, compact vital bars and recent chat at the upper left, the target at the top center, and the minimap
+and movement modes at the upper right. Experience spans the bottom edge, with quest and exit controls at the lower left
+and attack at the lower right. The inline chat composer supports local and party messages. Nearby player speech uses the
+desktop chat frame and follows the speaker above their head. NPC dialogue shows an animated portrait, the name, and the spoken text in a side panel.
 
+Nearby player and NPC names are projected above their models. Gold-framed icon controls distinguish combat, chat, travel and shortcuts. Potion slots show the stack count and retain item names for accessibility.
 The field HUD displays the owner's life, mana, stamina and experience toward the next level. The quest button
 shows the active hunt's target and count. A manual attack selects a target and shows its name and life while
 it remains present and alive. All three panels read the normal server presence updates. The Chat button opens the current field session transcript and sends nearby or party messages through the same play channel as the desktop.
@@ -220,6 +223,22 @@ Quest NPC interactions use the server's Talk, Proceed, Accept, ChangeClass and C
 Windows-1252 documents from the desktop quest assets packaged as lowercase paths under QuestDialogs. The server
 validates each follow-up by quest code, step and NPC. The server may also send a quest prompt directly after a duel. Android opens its original document and sends the response without an NPC ID. Combat presentation,
 mounts and objective-wide navigation remain pending.
+
+## Player appearance in the field
+
+The Android field reads equipment and pet identifiers from player presence, including the local player.
+The appearance catalog maps class and armour key to an animated body. The character's existing head and
+face remain separate. Starter weapons and the starter shield use the desktop item meshes and sampled
+skeleton attachments for stand, walk and run. The helper pets and Phoenix use their desktop idle and
+flight ranges and follow the owner. Unpackaged equipment falls back to the class body or no attachment.
+Weapon-specific motion selection, special dual attachments and pet combat effects still use the desktop
+presentation only.
+
+Rebuild the packaged appearance from the desktop assets with:
+
+```sh
+dotnet run --project tools/PristonTale.GltfExport -c Release -- --mobile-appearance assets Client/PristonTale.Android/RicartenResources/Appearance DA101 DA102 DA103 DA104 DA105 DA201 DA202 DA203
+```
 
 ## Baked files
 
@@ -338,8 +357,31 @@ on the floor, facing the camera, the stage unmirrored.
   range. Keep the near plane far (20 units here) on the 16-bit depth buffer.
 - `ClientText.pt-BR.resx` is linked into the Android assembly; a key missing from it shows as the key.
 
+The Android world follows the server clock, using the shared day, night and evening glow hours to shade the sky and world geometry.
+The stage SMD supplies lamp positions, radii and colours. The six nearest ground lights illuminate terrain, scenery and
+actors at night. Server weather controls overcast lighting and rain density and wind, subject to the same field rain
+eligibility as desktop. Rain streaks project from world coordinates, stop at the upper collision surface and produce
+splashes. Collision traces hide rain behind scenery, shelter reduces rain volume, and storms add flashes and thunder. Remote player walk and run playback uses planar speed
+between presence samples and the shared locomotion rates, with the desktop playback range.
+The pace button switches between walking and running. The joystick sets direction at the selected pace, using the same
+movement speed, stamina and weight rules as the desktop client.
+
 ## Related
 
 - [client.md](client.md): the desktop screens the Android ones follow.
 - [tools.md](tools.md): `ptgltf` and its Android modes.
 - [protocol.md](protocol.md): login, character commands and world entry.
+
+## Vulkan Android client
+
+`Client/PristonTale.VulkanAndroid` hosts the desktop character selection and gameplay scene through
+MonoGame Native on Android. It uses the existing Android HUD views over the Vulkan surface. Touch orbit and
+movement feed the desktop camera and locomotion code, and the desktop presence stream supplies actors,
+equipment, pets, weather, the server clock, and effects.
+
+For a Windows build, install the .NET 10 Android workload, Android SDK and NDK, JDK, CMake and Ninja.
+Fetch the pinned SDL2 and FAudio dependencies using the runtime build instructions, supply the original
+`assets/` directory, and build the Windows client in Release to compile its Vulkan content. Run
+`Client/PristonTale.VulkanAndroid/build.ps1` with `-AndroidSdk`, `-Ndk` and `-JavaSdk`.
+The signed APK is in the Vulkan Android project's Release output. The asset package covers Ricarten,
+the character selection, player classes and city NPCs. Original game assets are supplied separately.

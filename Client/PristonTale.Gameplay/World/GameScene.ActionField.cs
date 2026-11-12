@@ -72,6 +72,13 @@ public sealed partial class GameScene
                 _camera.SnapFollow(_playerBody.Position, _fieldCollision);
             }
 
+            if (TouchCameraOffset is { } offset)
+            {
+                var target = _playerBody.Position + Vector3.Up * 32f;
+                _camera.SetScriptedView(_graphicsDevice, target + offset, target);
+                return;
+            }
+
             _camera.Update(gameTime, _graphicsDevice, _playerBody.Position, _playerForward, _fieldCollision, PointerCaptured, CameraInputEnabled,
                 keysEnabled: !KeyboardCaptured);
             return;

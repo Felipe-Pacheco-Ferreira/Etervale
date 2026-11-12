@@ -620,7 +620,7 @@ internal static class GltfSceneExport
     internal const string WalkClip = "Walk";
     internal const string RunClip = "Run";
 
-    private static IEnumerable<MotionClip> EnumeratePlayerClips(PristonActor actor, uint jobMask)
+    internal static IEnumerable<MotionClip> EnumeratePlayerClips(PristonActor actor, uint jobMask)
     {
         var context = new PristonMotionContext(-1, jobMask, 1);
         var info = actor.Info;
@@ -725,7 +725,7 @@ internal static class GltfSceneExport
         return actor.Skeleton.FrameRanges[rangeIndex].StartFrame;
     }
 
-    private readonly record struct MotionClip(
+    internal readonly record struct MotionClip(
         string Name,
         int StartTicks,
         int EndTicks);

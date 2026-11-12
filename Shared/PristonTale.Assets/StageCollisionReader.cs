@@ -18,10 +18,17 @@ public static class StageCollisionReader
     // Material record: 104 bytes of texture slots and states, eleven scalars and the diffuse colour, then UseState at 164.
     private const int MaterialMeshStateOffset = 168;
 
+    public readonly record struct StageLamp(Vector3 Position, float Range, Vector3 Color);
+
     // A masked stage (AssetMask) is unmasked in place.
     public static CollisionMesh Read(byte[] data) => new(ReadTriangles(data));
 
-    public static IReadOnlyList<Triangle> ReadTriangles(byte[] data)
+    public static IReadOnlyList<Triangle> ReadTriangles(byte[] data) => ReadTriangles(data, out _, includeLamps: false);
+
+    public static IReadOnlyList<Triangle> ReadTriangles(byte[] data, out StageLamp[] lamps) =>
+        ReadTriangles(data, out lamps, includeLamps: true);
+
+    private static IReadOnlyList<Triangle> ReadTriangles(byte[] data, out StageLamp[] lamps, bool includeLamps)
     {
         if (data.Length < SmdLayout.FileHeaderSize + SmdLayout.StageHeaderSize)
         {
@@ -104,8 +111,50 @@ public static class StageCollisionReader
             }
         }
 
+        lamps = includeLamps
+            ? ReadLamps(data, counts, checked(offset + faceCount * SmdLayout.StageFaceSize))
+            : [];
         return triangles;
     }
+
+    private static StageLamp[] ReadLamps(byte[] data, ReadOnlySpan<byte> counts, int offset)
+    {
+        const int textureLinkSize = 32;
+        const int lightSize = 28;
+        const int lensFlag = 0x2;
+        const int dynamicFlag = 0x80000;
+        var linkCount = BinaryPrimitives.ReadInt32LittleEndian(counts[8..]);
+        var lightCount = BinaryPrimitives.ReadInt32LittleEndian(counts[12..]);
+        if (linkCount < 0 || lightCount < 0)
+        {
+            throw new InvalidDataException("Stage SMD has invalid light or texture link counts.");
+        }
+
+        offset = checked(offset + linkCount * textureLinkSize);
+        var records = Slice(data, offset, checked(lightCount * lightSize));
+        var lamps = new List<StageLamp>(lightCount);
+        for (var index = 0; index < lightCount; index++)
+        {
+            var record = records[(index * lightSize)..];
+            var flags = BinaryPrimitives.ReadInt32LittleEndian(record);
+            if ((flags & lensFlag) != 0 && (flags & dynamicFlag) == 0)
+            {
+                continue;
+            }
+
+            var position = new Vector3(WorldUnits(record[4..]), WorldUnits(record[8..]), WorldUnits(record[12..]));
+            var range = WorldUnits(record[16..]);
+            var color = new Vector3(ColorChannel(record[20..]), ColorChannel(record[22..]), ColorChannel(record[24..]));
+            lamps.Add(new StageLamp(position, range > 1f ? range : 600f, color));
+        }
+        return lamps.ToArray();
+    }
+
+    private static float WorldUnits(ReadOnlySpan<byte> bytes) =>
+        BinaryPrimitives.ReadInt32LittleEndian(bytes) / GameUnits.FixedScale;
+
+    private static float ColorChannel(ReadOnlySpan<byte> bytes) =>
+        Math.Clamp((int)BinaryPrimitives.ReadInt16LittleEndian(bytes), 0, 255) / 255f;
 
     private static ReadOnlySpan<byte> Slice(byte[] data, int offset, int length)
     {

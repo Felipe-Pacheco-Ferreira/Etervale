@@ -13,7 +13,7 @@ namespace PristonTale.Mobile;
 internal sealed record FieldSessionResult(string Message, PresenceUpdate? Update = null);
 
 internal sealed class RicartenSession(IPlayChannel play, FieldTerrain terrain, RicartenSceneView map, MovementJoystick joystick, TextView notice, Vector3 spawn,
-    int fieldId, string fieldName, Action playArrivalSound, MobileQuestJournal journal, Button attack, MobileWorldHud hud, MobileQuestDialog questDialog, MobileWorldChat chat, MobileMinimap? minimap, MobileShortcuts shortcuts, Button autoHunt, Button portalGuide)
+    int fieldId, string fieldName, Action playArrivalSound, MobileQuestJournal journal, Button attack, MobileWorldHud hud, MobileQuestDialog questDialog, MobileWorldChat chat, MobileMinimap? minimap, MobileShortcuts shortcuts, Button autoHunt, Button portalGuide, MobileRainView rain, Func<bool> runRequested)
 {
     private static readonly WorldCatalog Fields = new();
     private FieldWarpGate? _pendingGate;
@@ -24,7 +24,7 @@ internal sealed class RicartenSession(IPlayChannel play, FieldTerrain terrain, R
     private static readonly TimeSpan ReportInterval = TimeSpan.FromMilliseconds(200);
     private Vector3 _position = spawn;
     private Vector2 _stick;
-    private Vector2 _walkVelocity;
+    private bool _running;
     private bool _reportedMoving;
     private OwnerState? _owner;
     private float _facing;
@@ -183,7 +183,8 @@ internal sealed class RicartenSession(IPlayChannel play, FieldTerrain terrain, R
     {
         if (_routeStep >= _route.Length)
         {
-            return map.MovementDirection(_stick);
+            var direction = map.MovementDirection(_stick);
+            return direction == Vector2.Zero ? Vector2.Zero : Vector2.Normalize(direction);
         }
 
         while (_routeStep < _route.Length)
@@ -230,7 +231,15 @@ internal sealed class RicartenSession(IPlayChannel play, FieldTerrain terrain, R
 
     private void ApplyPresence(PresenceUpdate update, CancellationToken ct)
     {
-        chat.Observe(update.Chat);
+        if (update.Weather is { } weather)
+        {
+            if (Fields.TryGetFieldByCode(fieldId, out var field) && !WeatherSchedule.Rains(field))
+            {
+                weather = WeatherState.Clear;
+            }
+            map.SetWeather(weather);
+            rain.SetWeather(weather);
+        }
         if (update.Warp is { } warp)
         {
             _pendingGate = null;
@@ -238,7 +247,6 @@ internal sealed class RicartenSession(IPlayChannel play, FieldTerrain terrain, R
             ClearRoute();
             _position = warp.Position;
             minimap?.UpdatePosition(_position, _facing);
-            _walkVelocity = Vector2.Zero;
             map.UpdatePlayer(_position, _facing, _owner?.MoveSpeed ?? 1, moving: false, running: false, snap: true);
             notice.Text = "Posição corrigida pelo servidor.";
         }
@@ -278,6 +286,14 @@ internal sealed class RicartenSession(IPlayChannel play, FieldTerrain terrain, R
             {
                 _monsters[spawn.EntityId] = (spawn.Position, spawn.Name, spawn.Life, spawn.MaxLife, spawn.QuestCode);
             }
+            if (spawn.IsSelf)
+            {
+                chat.SelfId = spawn.EntityId;
+                if (spawn.Player is { } appearance)
+                {
+                    map.SetLocalAppearance(appearance);
+                }
+            }
             if (spawn.IsSelf && !_arrived)
             {
                 _arrived = true;
@@ -286,7 +302,7 @@ internal sealed class RicartenSession(IPlayChannel play, FieldTerrain terrain, R
             }
             else if (!spawn.IsSelf)
             {
-                map.SetEntity(spawn.EntityId, spawn.Position, spawn.Kind, spawn.TemplateId, spawn.Facing, spawn.ModelScale, spawn.MoveState, spawn.Player);
+                map.SetEntity(spawn.EntityId, spawn.Position, spawn.Kind, spawn.TemplateId, spawn.Facing, spawn.ModelScale, spawn.MoveState, spawn.Name, spawn.Life, spawn.MaxLife, spawn.Player);
             }
         }
         foreach (var state in update.States)
@@ -304,7 +320,7 @@ internal sealed class RicartenSession(IPlayChannel play, FieldTerrain terrain, R
                 }
             }
 
-            map.MoveEntity(state.EntityId, state.Position, state.Facing, state.MoveState);
+            map.MoveEntity(state.EntityId, state.Position, state.Facing, state.MoveState, state.Life);
         }
         foreach (var removed in update.Removed)
         {
@@ -318,6 +334,7 @@ internal sealed class RicartenSession(IPlayChannel play, FieldTerrain terrain, R
             shortcuts.SetTarget(0);
         }
         map.PublishEntities();
+        chat.Observe(update.Chat);
     }
 
     private async Task MoveAsync(CancellationToken ct)
@@ -327,6 +344,7 @@ internal sealed class RicartenSession(IPlayChannel play, FieldTerrain terrain, R
         var previousReport = previousStep;
         while (await timer.WaitForNextTickAsync(ct))
         {
+            map.SetWorldClock(play.GameClockMs);
             var now = Stopwatch.GetTimestamp();
             var seconds = Math.Min(.05f, (float)Stopwatch.GetElapsedTime(previousStep, now).TotalSeconds);
             previousStep = now;
@@ -345,26 +363,13 @@ internal sealed class RicartenSession(IPlayChannel play, FieldTerrain terrain, R
             }
 
             await UpdateAutoHuntAsync(owner, now, ct);
-            var running = !owner.Overweight;
-            var speed = running
-                ? Locomotion.RunUnitsPerSecond(owner.MoveSpeed)
-                : Locomotion.WalkUnitsPerSecond(owner.MoveSpeed, inVillage: fieldId is FieldCodes.Ricarten or FieldCodes.Pillai);
             var direction = MoveDirection();
-            var velocity = direction * speed;
-            if (running)
-            {
-                _walkVelocity = Vector2.Zero;
-            }
-            else
-            {
-                var difference = velocity - _walkVelocity;
-                var change = difference.Length();
-                var responseSeconds = direction == Vector2.Zero ? .10f : .16f;
-                var maxChange = speed * seconds / responseSeconds;
-                _walkVelocity = change > maxChange ? _walkVelocity + difference * (maxChange / change) : velocity;
-                velocity = _walkVelocity;
-            }
-            var displacement = velocity * seconds;
+            _running = Locomotion.ShouldRun(runRequested(), _running, direction != Vector2.Zero,
+                owner.Stamina, owner.MaxStamina, owner.Overweight);
+            var running = _running;
+            var inVillage = Fields.TryGetFieldByCode(fieldId, out var field) && field.State == FieldState.Village;
+            var speed = Locomotion.UnitsPerSecond(owner.MoveSpeed, running, inVillage);
+            var displacement = direction * (speed * seconds);
             var next = _position + new Vector3(displacement.X, 0f, displacement.Y);
             var slid = terrain.Slide(_position, next);
             var moving = false;
@@ -380,7 +385,6 @@ internal sealed class RicartenSession(IPlayChannel play, FieldTerrain terrain, R
                 {
                     ClearRoute();
                 }
-                _walkVelocity = Vector2.Zero;
             }
             map.UpdatePlayer(_position, _facing, owner.MoveSpeed, moving, running, snap: false);
             minimap?.UpdatePosition(_position, _facing);

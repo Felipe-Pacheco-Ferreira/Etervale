@@ -80,7 +80,7 @@ internal static class MobileCharacterSelectSceneBake
     }
 
     // A head is sampled with its body's frame counts; a body chooses them from its clips' lengths.
-    private static MobilePart BakePart(string assetRoot, string relativePath, uint jobMask, string temporary, List<byte[]> textures, MobilePart? body)
+    internal static MobilePart BakePart(string assetRoot, string relativePath, uint jobMask, string temporary, List<byte[]> textures, MobilePart? body)
     {
         var path = AssetFiles.ResolveFile(assetRoot, relativePath) ?? throw new FileNotFoundException("A character part is missing.", relativePath);
         var options = new ExportOptions(FlipWinding: false, FlipV: false, JobMask: jobMask, PlayerClips: true);
@@ -97,7 +97,7 @@ internal static class MobileCharacterSelectSceneBake
         return new MobilePart(MobileActorWriter.Batches(model, GltfSceneExport.StandClip), clips);
     }
 
-    private static MobileSceneBake.Model Reload(SharpGLTF.Schema2.ModelRoot model, string temporary, List<byte[]> textures)
+    internal static MobileSceneBake.Model Reload(SharpGLTF.Schema2.ModelRoot model, string temporary, List<byte[]> textures)
     {
         var path = Path.Combine(temporary, $"{Guid.NewGuid():N}.glb");
         model.SaveGLB(path);

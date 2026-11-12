@@ -26,6 +26,7 @@ public sealed class MainActivity : Activity
     // How long the world takes to appear out of the curtain once it is drawn.
     private static readonly TimeSpan FirstWorldFrameTimeout = TimeSpan.FromSeconds(30);
 
+    private bool _runRequested = true;
     private readonly CancellationTokenSource _lifetime = new();
     private RicartenSceneView? _scene;
     private MediaPlayer? _worldMusic;
@@ -87,6 +88,39 @@ public sealed class MainActivity : Activity
         field.SetSingleLine();
         form.AddView(field);
         return field;
+    }
+
+    public override void OnWindowFocusChanged(bool hasFocus)
+    {
+        base.OnWindowFocusChanged(hasFocus);
+        if (hasFocus)
+        {
+            ApplyImmersiveMode();
+        }
+    }
+
+    private void ApplyImmersiveMode()
+    {
+        if (Window is not { } window)
+        {
+            return;
+        }
+        if (OperatingSystem.IsAndroidVersionAtLeast(30))
+        {
+            if (!OperatingSystem.IsAndroidVersionAtLeast(35))
+            {
+                window.SetDecorFitsSystemWindows(false);
+            }
+            if (window.DecorView is { IsAttachedToWindow: true } decor && decor.WindowInsetsController is { } controller)
+            {
+                controller.SystemBarsBehavior = (int)WindowInsetsControllerBehavior.ShowTransientBarsBySwipe;
+                controller.Hide(WindowInsets.Type.SystemBars());
+            }
+        }
+        else
+        {
+            window.AddFlags(WindowManagerFlags.Fullscreen);
+        }
     }
 
     private async Task<string> ConnectAsync(string address, string account, string password, ScrollView loginForm, CancellationToken ct)
@@ -185,11 +219,11 @@ public sealed class MainActivity : Activity
         using var asset = Assets!.Open($"{field}.smd");
         using var bytes = new MemoryStream();
         asset.CopyTo(bytes);
-        var triangles = PristonTale.Assets.StageCollisionReader.ReadTriangles(bytes.ToArray());
+        var triangles = PristonTale.Assets.StageCollisionReader.ReadTriangles(bytes.ToArray(), out var lamps);
         using var scene = Assets.Open($"{field}-scene.bin");
         using var buffered = new BufferedStream(scene, BakedReader.BufferSize);
         using var arrival = Assets.Open(WorldArrival.ModelAsset);
-        return (new CollisionMesh(triangles), MobileScene.Read(buffered), WorldArrival.Read(arrival));
+        return (new CollisionMesh(triangles), MobileScene.Read(buffered) with { Lamps = lamps }, WorldArrival.Read(arrival));
     }
 
     // Plays in the selected field until the player leaves or the connection ends.
@@ -201,24 +235,15 @@ public sealed class MainActivity : Activity
         var spawn = terrain.PlaceOnFloor(position);
         using var playing = CancellationTokenSource.CreateLinkedTokenSource(ct);
         var world = new FrameLayout(this) { MotionEventSplittingEnabled = true };
-        var info = new LinearLayout(this) { Orientation = Orientation.Vertical };
-        MobileHudTheme.Card(info);
-        info.SetPadding(Dp(12), Dp(7), Dp(12), Dp(7));
-        var title = new TextView(this) { Text = $"{characterName} · {fieldName}", TextSize = 15 };
-        var notice = new TextView(this) { Text = "Aguardando o servidor…", TextSize = 12 };
-        title.SetTextColor(MobileHudTheme.Gold);
+        var notice = new TextView(this) { Text = "Aguardando o servidor�", TextSize = 10 };
         notice.SetTextColor(MobileHudTheme.Ink);
+        notice.SetShadowLayer(Dp(1), 0f, Dp(1), Color.Black);
         notice.SetMaxLines(2);
-        notice.SetMaxWidth(Dp(190));
-        info.AddView(title);
-        var hud = new MobileWorldHud(this);
-        var chat = new MobileWorldChat(this, play);
+        notice.SetMaxWidth(Dp(170));
+        var hud = new MobileWorldHud(this, characterName);
         var shortcuts = new MobileShortcuts(this, play, notice, playing.Token);
-        info.AddView(hud.Status);
-        var chatButton = MobileHudTheme.Button(this, "Chat");
-        chatButton.Click += (_, _) => chat.Open(playing.Token);
-        info.AddView(chatButton);
-        var leave = MobileHudTheme.Button(this, "Voltar");
+        var leave = MobileHudTheme.Button(this, "Sair");
+        MobileHudTheme.Icon(leave, HudGlyph.Exit);
         using var map = new RicartenSceneView(this, stage.Scene, spawn, model, face, stage.Arrival);
         using var arrivalSound = PrepareFieldAudio(WorldArrival.SoundAsset);
         using var fieldMusic = PrepareFieldAudio($"{fieldAsset}-music.ogg");
@@ -231,37 +256,90 @@ public sealed class MainActivity : Activity
         _scene = map;
         _joystick = joystick;
         world.AddView(map, new FrameLayout.LayoutParams(-1, -1));
-        world.AddView(shortcuts.View, Overlay(-2, -2, GravityFlags.Bottom | GravityFlags.CenterHorizontal));
-        world.AddView(info, Overlay(-2, -2, GravityFlags.Top | GravityFlags.Left));
+        using var rainSound = PrepareFieldAudio("rain01.wav");
+        using var thunderSound = PrepareFieldAudio("thunder1.wav");
+        using var rain = new MobileRainView(this, map, stage.Mesh, rainSound, thunderSound);
+        world.AddView(rain, new FrameLayout.LayoutParams(-1, -1));
+        using var nameplates = new MobileNameplates(this, map);
+        world.AddView(nameplates, new FrameLayout.LayoutParams(-1, -1));
+        var chat = new MobileWorldChat(this, play, world, map, characterName, playing.Token);
+        var statusColumn = new LinearLayout(this) { Orientation = Orientation.Vertical };
+        var profile = new LinearLayout(this);
+        profile.SetGravity(GravityFlags.CenterVertical);
+        profile.AddView(hud.Portrait, new LinearLayout.LayoutParams(Dp(62), Dp(68)));
+        profile.AddView(hud.Status, new LinearLayout.LayoutParams(Dp(142), -2) { LeftMargin = Dp(4) });
+        statusColumn.AddView(profile);
+        hud.Portrait.LayoutChange += (_, _) => map.ShowPlayerPortrait(hud.Portrait);
+        statusColumn.AddView(chat.View, new LinearLayout.LayoutParams(Dp(225), -2) { TopMargin = Dp(4) });
+        world.AddView(hud.Experience, new FrameLayout.LayoutParams(-1, Dp(14), GravityFlags.Bottom));
+        var shortcutsLayout = Overlay(-2, -2, GravityFlags.Bottom | GravityFlags.CenterHorizontal);
+        shortcutsLayout.BottomMargin += Dp(10);
+        world.AddView(shortcuts.View, shortcutsLayout);
+        world.AddView(statusColumn, Overlay(-2, -2, GravityFlags.Top | GravityFlags.Left));
         var rightPanel = new LinearLayout(this) { Orientation = Orientation.Vertical };
         rightPanel.SetGravity(GravityFlags.Right);
-        rightPanel.AddView(leave);
+        var mapTitle = new TextView(this) { Text = fieldName, TextSize = 11, Gravity = GravityFlags.Center };
+        mapTitle.SetTextColor(MobileHudTheme.Gold);
+        MobileHudTheme.Card(mapTitle);
+        rightPanel.AddView(mapTitle, new LinearLayout.LayoutParams(Dp(100), Dp(19)));
+
         var portalGuide = MobileHudTheme.Button(this, fieldId == FieldCodes.Pillai ? "Ir à floresta" : "Ir a Pillai");
         using var minimap = MobileMinimap.Open(this, fieldAsset);
         if (minimap is not null)
         {
             minimap.UpdatePosition(spawn, 0f);
-            rightPanel.AddView(minimap, new LinearLayout.LayoutParams(Dp(100), Dp(100)));
+            var mapFrame = new FrameLayout(this);
+            MobileHudTheme.Card(mapFrame);
+            mapFrame.SetPadding(Dp(2), Dp(2), Dp(2), Dp(2));
+            mapFrame.AddView(minimap, new FrameLayout.LayoutParams(-1, -1));
+            rightPanel.AddView(mapFrame, new LinearLayout.LayoutParams(Dp(100), Dp(100)));
         }
         if (fieldId is FieldCodes.Pillai or FieldCodes.ForeverFall1)
         {
             rightPanel.AddView(portalGuide);
         }
         world.AddView(rightPanel, Overlay(-2, -2, GravityFlags.Top | GravityFlags.Right));
-        world.AddView(joystick, Overlay(Dp(128), Dp(128), GravityFlags.Bottom | GravityFlags.Left));
+        var stickLayout = Overlay(Dp(128), Dp(128), GravityFlags.Bottom | GravityFlags.Left);
+        stickLayout.BottomMargin += Dp(44);
+        world.AddView(joystick, stickLayout);
         var journal = new MobileQuestJournal(this);
         var questDialog = new MobileQuestDialog(this, play, notice);
         hud.Journal.Click += (_, _) => journal.Open();
         var tracker = new LinearLayout(this) { Orientation = Orientation.Vertical };
         tracker.SetGravity(GravityFlags.CenterHorizontal);
-        tracker.AddView(hud.Journal);
+
         tracker.AddView(hud.Target);
-        tracker.AddView(notice);
+        statusColumn.AddView(notice);
+        map.SetWorldClock(play.GameClockMs);
+        var pace = MobileHudTheme.Button(this, _runRequested ? "Corrida" : "Caminhada");
+        MobileHudTheme.Icon(pace, HudGlyph.Run);
+        pace.Click += (_, _) =>
+        {
+            _runRequested = !_runRequested;
+            pace.Text = _runRequested ? "Corrida" : "Caminhada";
+        };
+
         var autoHunt = MobileHudTheme.Button(this, "Auto-caça");
-        tracker.AddView(autoHunt);
+        MobileHudTheme.Icon(autoHunt, HudGlyph.Auto);
+        var combatModes = new LinearLayout(this) { Orientation = Orientation.Horizontal };
+        pace.SetSingleLine(true);
+        autoHunt.SetSingleLine(true);
+        pace.TextSize = autoHunt.TextSize = 10;
+        combatModes.AddView(pace, new LinearLayout.LayoutParams(0, -1, 1f));
+        combatModes.AddView(autoHunt, new LinearLayout.LayoutParams(0, -1, 1f) { LeftMargin = Dp(4) });
+        rightPanel.AddView(combatModes, new LinearLayout.LayoutParams(Dp(176), Dp(38)));
+        var menu = new LinearLayout(this) { Orientation = Orientation.Horizontal };
+        menu.AddView(leave);
+        menu.AddView(hud.Journal, new LinearLayout.LayoutParams(-2, -2) { LeftMargin = Dp(4) });
+        var menuLayout = Overlay(-2, -2, GravityFlags.Bottom | GravityFlags.Left);
+        menuLayout.BottomMargin += Dp(10);
+        world.AddView(menu, menuLayout);
         world.AddView(tracker, Overlay(-2, -2, GravityFlags.Top | GravityFlags.CenterHorizontal));
         var attack = MobileHudTheme.Button(this, "Atacar", prominent: true);
-        world.AddView(attack, Overlay(Dp(76), Dp(76), GravityFlags.CenterVertical | GravityFlags.Right));
+        MobileHudTheme.Icon(attack, HudGlyph.Attack, stacked: true);
+        var attackLayout = Overlay(Dp(76), Dp(76), GravityFlags.Bottom | GravityFlags.Right);
+        attackLayout.BottomMargin += Dp(32);
+        world.AddView(attack, attackLayout);
         var npcPanel = new LinearLayout(this) { Orientation = Orientation.Vertical, Visibility = ViewStates.Gone };
         npcPanel.SetPadding(Dp(12), Dp(8), Dp(12), Dp(8));
         MobileHudTheme.Card(npcPanel);
@@ -274,14 +352,24 @@ public sealed class MainActivity : Activity
 
         var speech = new LinearLayout(this) { Orientation = Orientation.Vertical, Visibility = ViewStates.Gone };
         using var portrait = new View(this);
-        speech.AddView(portrait, new LinearLayout.LayoutParams(Dp(86), Dp(86)) { Gravity = GravityFlags.CenterHorizontal });
-        using var subtitle = new TextView(this) { TextSize = 14, Gravity = GravityFlags.Center };
-        subtitle.SetTextColor(Color.Rgb(239, 225, 193));
-        subtitle.SetBackgroundColor(Color.Argb(230, 25, 20, 15));
-        subtitle.SetPadding(Dp(8), Dp(6), Dp(8), Dp(6));
-        subtitle.SetMaxLines(5);
-        speech.AddView(subtitle, new LinearLayout.LayoutParams(-1, -2));
-        world.AddView(speech, Overlay(Dp(270), -2, GravityFlags.Bottom | GravityFlags.CenterHorizontal));
+        using var portraitFrame = new global::Android.Graphics.Drawables.GradientDrawable();
+        portraitFrame.SetColor(Color.Transparent);
+        portraitFrame.SetStroke(Dp(1), MobileHudTheme.Gold);
+        portrait.Foreground = portraitFrame;
+        speech.AddView(portrait, new LinearLayout.LayoutParams(-1, Dp(82)));
+        var dialogue = new LinearLayout(this) { Orientation = Orientation.Vertical };
+        MobileHudTheme.Card(dialogue);
+        using var speakerName = new TextView(this) { TextSize = 12, Gravity = GravityFlags.Center };
+        speakerName.SetTextColor(MobileHudTheme.Gold);
+        speakerName.SetPadding(Dp(6), Dp(3), Dp(6), Dp(3));
+        dialogue.AddView(speakerName);
+        using var subtitle = new TextView(this) { TextSize = 12, Gravity = GravityFlags.Center };
+        subtitle.SetTextColor(MobileHudTheme.Ink);
+        subtitle.SetPadding(Dp(7), Dp(3), Dp(7), Dp(6));
+        subtitle.SetMaxLines(4);
+        dialogue.AddView(subtitle);
+        speech.AddView(dialogue, new LinearLayout.LayoutParams(-1, -2));
+        world.AddView(speech, Overlay(Dp(148), -2, GravityFlags.CenterVertical | GravityFlags.Right));
 
         ulong speakingNpc = 0;
         using var hideSpeech = new Java.Lang.Runnable(() =>
@@ -326,6 +414,7 @@ public sealed class MainActivity : Activity
                 var services = interaction.Services.Select(service => NpcServiceLabel(service.Kind)).Distinct().ToArray();
                 npcInfo.Text = services.Length == 0 ? interaction.Name : $"{interaction.Name}\n{string.Join(" · ", services)}";
                 npcPanel.Visibility = ViewStates.Visible;
+                speakerName.Text = interaction.Name;
                 subtitle.Text = string.Join("\n", interaction.Dialog.Where(line => !string.IsNullOrWhiteSpace(line)));
                 speech.RemoveCallbacks(hideSpeech);
                 map.ClearNpcPortrait();
@@ -383,7 +472,7 @@ public sealed class MainActivity : Activity
             _worldMusic = fieldMusic;
             PlayFieldAudio(fieldMusic);
             var session = new RicartenSession(play, terrain, map, joystick, notice, spawn, fieldId, fieldName,
-                () => PlayFieldAudio(arrivalSound), journal, attack, hud, questDialog, chat, minimap, shortcuts, autoHunt, portalGuide);
+                () => PlayFieldAudio(arrivalSound), journal, attack, hud, questDialog, chat, minimap, shortcuts, autoHunt, portalGuide, rain, () => _runRequested);
             return await session.RunAsync(initial, playing.Token);
         }
         finally

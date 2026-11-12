@@ -101,7 +101,7 @@ public sealed partial class GameScene : IDisposable, IHudPortraitScene
             return Locomotion.GameMasterDashUnitsPerSecond;
         }
 
-        return running ? Locomotion.RunUnitsPerSecond(moveSpeed) : Locomotion.WalkUnitsPerSecond(moveSpeed, inVillage);
+        return Locomotion.UnitsPerSecond(moveSpeed, running, inVillage);
     }
 
     // A game master running with Shift held dashes, as the original's debug mode did; the server allows game masters
@@ -123,14 +123,7 @@ public sealed partial class GameScene : IDisposable, IHudPortraitScene
         var tracing = _hasMoveTarget || _followCursor || _attackInput.TargetId != 0 || _npcTargetId != 0
             || mouse.LeftButton == ButtonState.Pressed;
         var stamina = Owner?.Stamina ?? 1;
-        var maxStamina = Math.Max(1, Owner?.MaxStamina ?? 1);
-        var run = _runMode;
-        if (!tracing || stamina > maxStamina / 4)
-        {
-            run = InActionField ? _actionDash : _runFlag;
-        }
-
-        run = run && stamina > 0 && !Overweight;
+        var run = Locomotion.ShouldRun(InActionField ? _actionDash : _runFlag, _runMode, tracing, stamina, Owner?.MaxStamina ?? 1, Overweight);
         if (run != _runMode)
         {
             _runMode = run;

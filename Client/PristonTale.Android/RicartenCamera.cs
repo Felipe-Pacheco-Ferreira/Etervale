@@ -19,12 +19,13 @@ internal sealed record RicartenCamera(float Yaw = 0f, float Pitch = .685f, float
         return right * stick.X + forward * stick.Y;
     }
 
-    public Matrix4x4 ViewProjection(Vector3 player, float aspect)
+    public Matrix4x4 ViewProjection(Vector3 player, float aspect, out Vector3 eye)
     {
         var forward = new Vector3(Forward.X, 0f, Forward.Y);
         var focus = player + 22f * Vector3.UnitY + 12f * forward;
         var offset = Distance * (MathF.Sin(Pitch) * Vector3.UnitY - MathF.Cos(Pitch) * forward);
-        return Matrix4x4.CreateLookAt(focus + offset, focus, Vector3.UnitY)
+        eye = focus + offset;
+        return Matrix4x4.CreateLookAt(eye, focus, Vector3.UnitY)
             * Matrix4x4.CreatePerspectiveFieldOfView(.68f, aspect, 8f, 2500f);
     }
 }
