@@ -421,10 +421,11 @@ internal sealed class CharacterSelectScene
         return SlotWorld(JobSlot(jobIndex));
     }
 
-    public int PickRoster(Vector2 cursor, Viewport viewport) =>
-        PickCharacter(cursor, viewport, _placed.Count, index => _placed[index].Slot);
-    public int PickJob(Vector2 cursor, Viewport viewport) =>
-        PickCharacter(cursor, viewport, _jobActors.Count, JobSlot);
+    // scale: how many times the desktop's pick box a character answers in (a finger needs a wider one than a cursor).
+    public int PickRoster(Vector2 cursor, Viewport viewport, float scale = 1f) =>
+        PickCharacter(cursor, viewport, _placed.Count, index => _placed[index].Slot, scale);
+    public int PickJob(Vector2 cursor, Viewport viewport, float scale = 1f) =>
+        PickCharacter(cursor, viewport, _jobActors.Count, JobSlot, scale);
 
     public void SetRosterHighlight(int hoveredIndex, int selectedIndex)
     {
@@ -478,9 +479,16 @@ internal sealed class CharacterSelectScene
         return new CharSelectInfo(summary.Name, summary.Level, broodName, klass.Name, summary.ClanName);
     }
 
-    private int PickCharacter(Vector2 cursor, Viewport viewport, int count, Func<int, (float X, float Z)> positionOf)
+    // A character answers inside the box from its feet to HitHeadHeight above them, HitHalfWidthPixels to each side; a
+    // scaled box also reaches past the feet and the head by the extra width. Where boxes overlap the farther character
+    // wins (the depth buffer is reversed), except that scaled boxes, which overlap their neighbours, go first to the
+    // character whose feet are nearest the cursor's column.
+    private int PickCharacter(Vector2 cursor, Viewport viewport, int count, Func<int, (float X, float Z)> positionOf, float scale)
     {
+        var halfWidth = HitHalfWidthPixels * scale;
+        var margin = halfWidth - HitHalfWidthPixels;
         var best = -1;
+        var bestColumn = float.MaxValue;
         var bestDepth = float.MaxValue;
         for (var i = 0; i < count; i++)
         {
@@ -493,16 +501,23 @@ internal sealed class CharacterSelectScene
                 continue;
             }
 
-            var minY = MathF.Min(foot.Y, head.Y);
-            var maxY = MathF.Max(foot.Y, head.Y);
-            var cx = foot.X;
-            if (cursor.X >= cx - HitHalfWidthPixels && cursor.X <= cx + HitHalfWidthPixels &&
-                cursor.Y >= minY && cursor.Y <= maxY && foot.Z < bestDepth)
+            var minY = MathF.Min(foot.Y, head.Y) - margin;
+            var maxY = MathF.Max(foot.Y, head.Y) + margin;
+            var offset = MathF.Abs(cursor.X - foot.X);
+            if (offset > halfWidth || cursor.Y < minY || cursor.Y > maxY)
+            {
+                continue;
+            }
+
+            var column = scale > 1f ? offset : 0f;
+            if (column < bestColumn || column == bestColumn && foot.Z < bestDepth)
             {
                 best = i;
+                bestColumn = column;
                 bestDepth = foot.Z;
             }
         }
+
         return best;
     }
 

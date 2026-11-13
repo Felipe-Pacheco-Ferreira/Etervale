@@ -176,6 +176,7 @@ internal sealed class RicartenProbe : Game
         {
             PointerInput = ReadWorldPointer,
             ButtonScale = 1.8f,
+            PickScale = 2.5f,
             CameraDistanceScale = .82f,
             WorldEntered = (character, entered) =>
             {
@@ -239,10 +240,9 @@ internal sealed class RicartenProbe : Game
         scene.BeginRemotePresence(play, entered);
         scene.NpcSelected += session.SelectNpc;
         session.Bind(scene, play);
-        // The journey's first step starts on arrival: the player is taken to the tribe's guide.
+        // The automatic quest waits for the quest card's button; the card shows the way to the guide meanwhile.
         session.AssetRoot = root;
         session.Navigator = new QuestNavigator(session);
-        session.Navigator.SetEnabled(true);
         joystickBatch = new SpriteBatch(GraphicsDevice);
         portrait = new HudTargetPortrait(GraphicsDevice);
         npcPortrait = new HudTargetPortrait(GraphicsDevice);

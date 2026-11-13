@@ -395,7 +395,9 @@ equipment, pets, weather, the server clock, and effects.
 
 Vulkan Android uses a closer initial world orbit and a shorter selection-camera rail. The character selection and
 creation action buttons use 1.8 times the desktop size, with hit targets scaled to match. Selection taps use the
-normalized SDL touch position mapped to the rendered viewport. The character information card uses larger art and text. A roster tap selects the character and Confirm requests world entry. The enlarged card stays centered below the character.
+normalized SDL touch position mapped to the rendered viewport. A character answers a tap in a pick box 2.5 times the
+desktop's (`CharacterSelectScreen.PickScale`), reaching past its feet and head by the extra width; where these wider
+boxes overlap, the character whose feet are nearest the tap's column wins. The character information card uses larger art and text. A roster tap selects the character and Confirm requests world entry. The enlarged card stays centered below the character.
 The client prepares shared sky assets before selection and uses the server's spawn coordinates when loading the field. The world HUD uses an edge-anchored mobile layout and shows
 the local player's live portrait beside the status meters, a chat icon, and the quest journal with an Auto-caça action. Tap a world target to interact; dragging or pinching controls the camera.
 Quest NPCs and server-opened dialogs use the original desktop quest documents and the shared quest commands.
@@ -459,7 +461,7 @@ Vulkan 0.27 presents an in-world menu with a character header, version, two rows
 
 Vulkan 0.28 distinguishes the launcher's first OnResume from its return after SDL, using the intervening OnPause. With assets already extracted, SDL can be requested during OnCreate, before the first OnResume.
 
-Vulkan 0.29 connects the inventory to server-validated equip, unequip, belt placement and belt return operations. Commands use the last authoritative inventory revision and the desktop default slot rules. The Vulkan world triggers the shared entry effect once using the entity ID from the server; the restart sound can wait briefly for its existing asynchronous load.
+Vulkan 0.29 connects the inventory to server-validated equip, unequip, belt placement and belt return operations. Commands use the last authoritative inventory revision and the desktop default slot rules. The Vulkan world triggers the shared entry effect once using the entity ID from the server; the restart sound can wait briefly for its existing asynchronous load. The world shows before the effect library has finished loading, so `GameScene.PlayInitialArrival`, called every frame, waits until the pillar of light (`vfx.player.restart`) is registered; before 0.43 it fired on the first frame and the effect was dropped.
 
 Vulkan 0.30 adds the server-side Adventurer Journey. Skadi (Tempskron) and Jin (Morion) verify a weapon and a filled belt slot before starting the three-kill hunt. The server checks a newly acquired Hopy Crystal at turn-in and pays 100 XP once. The journal gives directions to the original hunting fields and Auto Hunt tracks visible monsters of the active quest. The supplemental archive adds Pillai, the starting hunting fields and their monster models. In manual mode a tap selects a target; Attack uses that target or the nearest living monster when none is selected.
 
@@ -476,8 +478,8 @@ Device check confirmed that 0.31 entered Ricarten on the updated server and disp
 ### Automatic quest
 
 Vulkan 0.32 plays the Adventurer Journey by itself (`QuestNavigator`, run once a frame on the game thread from
-`RicartenProbe.Update`). It starts on arrival, so a new character is walked to its tribe's guide before any tap.
-The joystick pauses it; the quest card's Auto-missão button resumes it, and the journal's auto-hunt action does too.
+`RicartenProbe.Update`). It waits for the player: the quest card's Iniciar auto-missão button starts it (the card points
+to the guide meanwhile), and the journal's auto-hunt action does too. The joystick pauses it.
 
 - **Route data.** `AdventurerJourneyRoute` (`Shared/PristonTale.Simulation/Quests`) holds, per tribe, the guide's
   name and place, the hunting field, the exits between them (Ricarten and Forest 1 meet at a seam; Pillai and Forever
@@ -492,18 +494,51 @@ The joystick pauses it; the quest card's Auto-missão button resumes it, and the
   - State 2 with the kills done: the guide takes a Hopy Crystal gathered after the hunt began. The navigator keeps the
     crystal count it saw while hunting; when the guide answers without moving the quest on, it hunts and gathers again
     (`VulkanWorldSession.KeepHunting` keeps Auto Hunt running past the kill count).
-- **Walking.** Routes come from `GroundRoute` (`Client/PristonTale.Gameplay/World`): an A* over 32-unit cells whose every
-  leg is checked by simulating the player's own movement (`GameScene.WalksTo`: the wall slide at body height, then the
-  floor, 12 units at a time) with the body widened to 1.25 radii, so a leg is kept only when no step is turned aside, no
-  climb is more than a step and no drop is a ledge. Cells are told apart by height (`Storey`), so stairs and bridges are
-  their own places. A leg with less than three body radii of room on its sides costs 2.5 times its length, so routes
-  keep to the middle of roads, squares and stairs. The route is shortened to the fewest walkable legs. The search runs
+- **Walking.** Routes come from `GroundRoute` (`Client/PristonTale.Gameplay/World`): an A* over 32-unit cells, searched
   off the game thread over a snapshot of the loaded fields (`GameScene.PlanRouteAsync`; their collision meshes are
-  read-only). A goal outside the loaded fields gives a route to the nearest reachable point, searched again from there.
-  The player follows it with `GameScene.WalkTo` to within `TalkReach` of the guide, and only then approaches it with
-  `GameScene.ApproachNpc` (whose own walk is a straight line); it goes for drops
-  with `GameScene.PickUpNear`, each as the matching tap. A walk blocked by something the search cannot see (a monster,
-  another player) searches again from where it stands.
+  read-only). Cells are told apart by height (`Storey`), so stairs and bridges are their own places. Each leg is a walk
+  `GameScene.WalksTo` accepts, step by 12-unit step:
+  - the wall slide at body height, looking 1.25 radii ahead, must not turn the step aside;
+  - the floor is sampled every unit (`FollowsFloor`). The player samples it two to four units apart, depending on the
+    frame rate, and stops at a rise of more than `StepUp` between two samples, wherever they fall; so the route holds
+    every rise between any two of its samples up to four units apart under `RouteStepUp` (one under `StepUp`), and
+    every drop over two units under `GroundFall.SnapDistance` (a larger one plays the fall);
+  - the wall slide traces only the line the body's centre walks, so each step is also traced sideways and along two
+    parallel lines on each side out to `RouteBody` (0.75 radii), and the floor at those offsets must not rise more
+    than `RouteStepUp` or fall more than `SnapDistance` (`Crowded`, `Uneven`): lamp posts, railings, a stair's side,
+    a railing's base and kerbs lower than the slide's trace height, and the edge of a drop, are all kept clear.
+  A leg that only passes with `RouteNarrowBody` (0.3 radii, still more than the player strays from a leg) of side room
+  is cramped and costs 2.5 times its length, so the route keeps to open ground and takes a narrow stair or gate only
+  where there is no other way. Every unit the feet rise or fall on a leg adds four to its cost, so the route walks
+  around hedges and planters it could step onto and takes stairs only as the way up. Standing NPCs in view
+  (`VulkanWorldSession.NpcPoints`, but those near the goal) are kept two body radii from every leg. Only a leg of at
+  most 48 units out of the player's own place skips the side room and the NPCs, so a player against a wall or beside
+  an NPC can leave. The search weighs the distance left 1.5 times the way walked, so it heads for the goal. The route
+  is shortened to the fewest legs, a shortcut kept only when it is walkable, climbs no more than the legs it replaces
+  and is cramped only where one of them was. A goal outside the loaded fields (an exit into a field still streaming)
+  gives a route to the nearest reachable point, the search ending 6000 cells after it last came nearer, and the route
+  is searched again from there. A start near the goal counts as arrived only when the leg to it is walkable, so a goal
+  below a parapet is not.
+  `GameScene.PlanRoute` then walks the route frame by frame with the player's own movement (`WalkRoute`: what
+  `UpdatePlayerInput` does at a run, 60 frames a second: `DestinationMovement`, the wall slide with the body's radius,
+  the floor). Where that walk stops or falls, the place is avoided like an NPC and the search runs again, up to four
+  times, so a route handed to the player is one its movement walks to the end.
+  The player walks to each point of the route to within `GameScene.RoutePointReach` (one unit; `GameScene.WalkTo`, not
+  a tap's body radius), so it walks the legs the search checked. A walk that has not moved for `StuckSeconds` (one
+  second) searches again from where it stands. A search that finds no leg leaves the player standing, says so on the
+  quest card and tries again two seconds later: the player never walks blind at the goal. Every start and pause of the
+  automatic quest drops the route, so a resume plans afresh from where the player stands.
+  `dotnet run --project tests/PristonTale.Tests -c Release --no-build -- --inspect-adventurer-route <assets>` walks the
+  whole Adventurer Journey of both tribes over the town's and the hunting field's collision: from a grid around the
+  guide to the guide, the guide to the exit, then every hunt point in turn; each route is walked with `WalkRoute` and
+  every stop is printed. In 0.45 all 155 Tempskron and 148 Morion routes found are walked to the end; searches take
+  under 1.5 s on a desktop but for two of about 300 (2.8 s at most). Starts that find no route are on roofs, in closed
+  yards and in ditches.
+  The player follows the route to within `TalkReach` of the guide, and only then approaches it
+  with `GameScene.ApproachNpc` (whose own walk is a straight line), and only from where that straight walk is clear
+  (`GameScene.WalksStraightTo`, the route's leg check at the body's own width): near the guide but on a terrace above it
+  or behind a wall, the route goes on to the guide itself, down the stairs or around the wall. Within `WaypointReach`
+  the approach starts whatever the check says. It goes for drops with `GameScene.PickUpNear`, each as the matching tap.
 - **Fighting.** A monster within `DefendRange` of the player is fought before the quest's own, and a belt potion is
   drunk under 45% life. The game's attack walks straight at its target; when that leaves the player standing for
   `AttackStuckSeconds` out of reach, the navigator drops the attack, walks to the target along a route and attacks again.
@@ -524,5 +559,18 @@ belt, gold and weight in the header, and the chosen item's sheet (values from `I
 remove, belt or store. Every action is the inventory command the server validates.
 
 Device runs: 0.32 walked SatroX to Skadi, readied the belt, advanced to the hunt and reached Forest 1, where it hunted
-Hopy; the route of that build cut through walls, which 0.33 replaced with `GroundRoute`. Not verified on the device yet:
-the 0.33 routes, the warp gates of Pillai, the crystal pickup and the turn-in, and the 0.34 character window.
+Hopy; the route of that build cut through walls, which 0.33 replaced with `GroundRoute`. On 0.38 the route reached the
+terrace above Skadi and then ran into its parapet: within `TalkReach` on the plane, the navigator approached in a
+straight line across the drop; 0.39 checks that walk first (above). 0.39 still struck planters and a lamp post on the
+way, cutting from one route point to the next 40 units early; 0.40 walks to each point. 0.40 still grazed railings
+beside the stairs: its legs were checked along the centre line only. 0.41 adds the side traces. 0.41 still ran into
+walls in two cases: a search with no way walked a straight line at the goal (off a ledge into the ditch under a bridge,
+too), and a resume walked on the route planned before the pause. 0.42 removes both. 0.42 walked over a hedge and into
+a standing NPC; 0.43 makes climbing costly and keeps clear of NPCs. 0.43 still stopped at stair corners and turned too
+early: the frame-by-frame walk of the probe showed 48 of 173 routes stopping or falling, from low structures beside the
+line, drops up to 32 units, the four-unit arrival and floor samples four units apart; 0.44 fixes each and none stops.
+On 0.44 the hunt's way to Forest 1 took long to plan and then ran into things: the stricter legs made the roomy search
+fail and sweep the whole town before the narrow one ran, and Pillai's steep ramps stopped walks the route had passed.
+0.45 runs one search with cramped legs costed, samples the floor every unit with the four-unit window above, and walks
+every route before handing it out. Not verified on the device yet: the 0.45 walk and approach,
+the warp gates of Pillai, the crystal pickup and the turn-in, and the 0.34 character window.

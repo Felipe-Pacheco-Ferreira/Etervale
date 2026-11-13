@@ -16,11 +16,16 @@ using XnaVector2 = Microsoft.Xna.Framework.Vector2;
 internal sealed class QuestNavigator(VulkanWorldSession session)
 {
     private const float WaypointReach = 40f;
+    // A route's point counts as passed this close: the player walks the legs the search checked and walked, never
+    // cutting a corner into a planter or a lamp post.
+    private const float PointReach = GameScene.RoutePointReach;
     // The guide is talked to from this close; the walk there follows a route, never a straight line.
     private const float TalkReach = 110f;
     private const float LootRadius = 260f;
     private const float StuckDistance = 8f;
-    private const double StuckSeconds = 2.5;
+    // A walk that has not moved this long searches again from where it stands (a crack in the floor finer than the
+    // route's samples, a player in the way).
+    private const double StuckSeconds = 1;
     private const double TalkCooldownSeconds = 6;
     // A guide that answered without moving the quest on is asked again only after this long.
     private const double RepeatTalkSeconds = 30;
@@ -39,6 +44,10 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
 
     private readonly Stopwatch _clock = Stopwatch.StartNew();
     private int _enabled;
+    private int _replan;
+    // A search that found no way from here is tried again only after this long.
+    private const double NoRouteRetrySeconds = 2;
+    private double _retryAt;
     private string _status = "";
     private Step _step;
 
@@ -74,8 +83,12 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
     // What the automatic quest is doing, for the HUD.
     public string Status => Volatile.Read(ref _status);
 
+    // Called on the UI thread; the game thread drops the old route on its next update, so every start plans afresh from
+    // where the player stands.
     public void SetEnabled(bool value)
     {
+        Volatile.Write(ref _replan, 1);
+        Volatile.Write(ref _marks, new RouteMarks(0, []));
         Volatile.Write(ref _enabled, value ? 1 : 0);
         if (!value)
         {
@@ -103,6 +116,15 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
             scene.StopAutoMove();
             SetEnabled(false);
             return;
+        }
+
+        if (Interlocked.Exchange(ref _replan, 0) != 0)
+        {
+            scene.StopAutoMove();
+            ClearRoute();
+            _routeGoal = default;
+            _chasing = 0;
+            _retryAt = 0;
         }
 
         if (scene.PlayerDead || scene.Warping || session.Quest is not { } quest || session.MapPose is not { } pose)
@@ -218,11 +240,17 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
             return;
         }
 
-        // Walk to the guide along a route (its place in view, else the route data's), then talk from beside it.
+        // Walk to the guide along a route (its place in view, else the route data's), then talk from beside it. The talk
+        // walks straight, so it starts only where that walk is clear: near the guide but above it on a terrace, or behind
+        // a wall, the route goes on (down the stairs, around the wall).
         var known = session.TryFindNpc(route.GuideName, out var guide, out var at);
         var target = known ? new Vector2(at.X, at.Z) : new Vector2(route.Guide.X, route.Guide.Z);
-        if (!Walk(scene, pose, route.Guide.FieldCode, target, 0, $"Indo até {GuideName(route)}", TalkReach) || !known)
+        var distance = Vector2.Distance(new Vector2(pose.Position.X, pose.Position.Z), target);
+        var beside = known && distance <= TalkReach
+            && (distance <= WaypointReach || scene.WalksStraightTo(new XnaVector2(target.X, -target.Y)));
+        if (!beside)
         {
+            Walk(scene, pose, route.Guide.FieldCode, target, 0, $"Indo até {GuideName(route)}", 0f);
             return;
         }
 
@@ -358,26 +386,30 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
             return true;
         }
 
-        if (_routeField != field || _routeGoal != goal || (_route.Count == 0 && _routing is null))
+        var now = _clock.Elapsed.TotalSeconds;
+        if (_routeField != field || _routeGoal != goal || (_route.Count == 0 && _routing is null && now >= _retryAt))
         {
             _routeField = field;
             _routeGoal = goal;
             _route = [];
-            _routing = scene.PlanRouteAsync(new XnaVector2(goal.X, -goal.Y));
+            var renderGoal = new XnaVector2(goal.X, -goal.Y);
+            _routing = scene.PlanRouteAsync(renderGoal, session.NpcPoints(renderGoal, TalkReach));
         }
 
         if (_routing is { IsCompleted: true } search)
         {
             var routing = search.IsCompletedSuccessfully ? search.Result : null;
             _routing = null;
-            if (routing is null)
+            if (routing is not { Points.Count: > 0 })
             {
+                // No walkable way from here: never walk blind at the goal, which runs into the walls between.
+                _retryAt = now + NoRouteRetrySeconds;
+                Show("Sem caminho daqui; tentando de novo");
                 return false;
             }
 
-
             // A route that stops short of the goal leads as near as the loaded ground allows; the next search starts there.
-            _route = routing.Points.Count > 0 ? routing.Points : [new XnaVector2(goal.X, -goal.Y)];
+            _route = routing.Points;
             _routeIndex = 0;
             _lastProgressAt = _clock.Elapsed.TotalSeconds;
             Volatile.Write(ref _marks, new RouteMarks(field, _route.Select(point => new Vector2(point.X, -point.Y)).ToArray()));
@@ -394,7 +426,7 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
         }
 
         var player = scene.PlayerPlanar;
-        while (_routeIndex < _route.Count && XnaVector2.Distance(player, _route[_routeIndex]) <= WaypointReach)
+        while (_routeIndex < _route.Count && XnaVector2.Distance(player, _route[_routeIndex]) <= PointReach)
         {
             _routeIndex++;
         }
@@ -406,8 +438,7 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
             return false;
         }
 
-        scene.WalkTo(_route[_routeIndex]);
-        var now = _clock.Elapsed.TotalSeconds;
+        scene.WalkTo(_route[_routeIndex], PointReach);
         if (Vector3.Distance(pose.Position, _lastPosition) > StuckDistance)
         {
             _lastPosition = pose.Position;

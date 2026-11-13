@@ -90,6 +90,8 @@ public sealed class CharacterSelectScreen : GameScreen
 
     public Func<MouseState> PointerInput { get; init; }
     public float ButtonScale { get; init; } = 1f;
+    // How many times wider than for a cursor a character's pick box is (touch).
+    public float PickScale { get; init; } = 1f;
     public float CameraDistanceScale { get; init; } = 1f;
     public Action<CharacterSummary, EnterWorldOutcome> WorldEntered { get; init; }
     public bool IsNameInputActive => _nameField?.Focused == true && _state is State.FaceSelect or State.Name;
@@ -282,7 +284,7 @@ public sealed class CharacterSelectScreen : GameScreen
     private void UpdateCharacterSelect(MouseState mouse)
     {
         var cursor = new Vector2(mouse.X, mouse.Y);
-        _hoveredIndex = _scene.PickRoster(cursor, Context.GraphicsDevice.Viewport);
+        _hoveredIndex = _scene.PickRoster(cursor, Context.GraphicsDevice.Viewport, PickScale);
         _hoverNewCharacter = HasFreeSlot && CharSelectLayout.NewCharHotspot(Context.GraphicsDevice.Viewport).Contains(mouse.X, mouse.Y);
         _scene.SetRosterHighlight(_hoveredIndex, _selectedIndex);
 
@@ -539,7 +541,7 @@ public sealed class CharacterSelectScreen : GameScreen
     private void UpdateJobSelect(MouseState mouse)
     {
         var cursor = new Vector2(mouse.X, mouse.Y);
-        _jobHovered = _scene.PickJob(cursor, Context.GraphicsDevice.Viewport);
+        _jobHovered = _scene.PickJob(cursor, Context.GraphicsDevice.Viewport, PickScale);
         _scene.SetJobHighlight(_jobHovered, _jobSelected);
 
         if (!Clicked(mouse))

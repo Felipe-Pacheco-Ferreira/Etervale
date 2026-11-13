@@ -42,6 +42,22 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
     public QuestNavigator Navigator { get; set; }
 
     // An NPC in view by name, with its place in field coordinates; called on the game thread.
+    // Where the NPCs in view stand, on the render plane, leaving out those within keepFree of goal (the one walked to).
+    public List<Microsoft.Xna.Framework.Vector2> NpcPoints(Microsoft.Xna.Framework.Vector2 goal, float keepFree)
+    {
+        var points = new List<Microsoft.Xna.Framework.Vector2>(npcPlaces.Count);
+        foreach (var (_, place) in npcPlaces)
+        {
+            var point = new Microsoft.Xna.Framework.Vector2(place.Position.X, -place.Position.Z);
+            if (Microsoft.Xna.Framework.Vector2.Distance(point, goal) > keepFree)
+            {
+                points.Add(point);
+            }
+        }
+
+        return points;
+    }
+
     public bool TryFindNpc(string name, out ulong id, out System.Numerics.Vector3 position)
     {
         foreach (var (entity, place) in npcPlaces)

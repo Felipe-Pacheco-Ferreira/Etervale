@@ -89,8 +89,8 @@ internal sealed class VulkanQuestTracker
         var running = navigator?.Enabled == true;
         var hasWork = navigator?.HasWork(quest) == true;
         _auto.Visibility = hasWork ? ViewStates.Visible : ViewStates.Gone;
-        _auto.Text = running ? "Pausar auto-missão" : "Auto-missão";
-        _status.Text = running ? navigator.Status : hasWork ? GuideDirection() ?? "Toque em Auto-missão para continuar" : "";
+        _auto.Text = running ? "Pausar auto-missão" : "Iniciar auto-missão";
+        _status.Text = running ? navigator.Status : hasWork ? GuideDirection() ?? "Toque em Iniciar auto-missão para continuar" : "";
         _status.Visibility = _status.Text.Length > 0 ? ViewStates.Visible : ViewStates.Gone;
     }
 

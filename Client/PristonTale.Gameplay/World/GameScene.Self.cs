@@ -79,9 +79,11 @@ public sealed partial class GameScene
         PlayInitialArrival(spawn.EntityId);
     }
 
+    // Waits for the effect library: a client that shows the world before its effects have loaded (Android) calls this
+    // every frame, and the pillar of light appears once it can.
     public void PlayInitialArrival(ulong entityId)
     {
-        if (!_selfArrived && entityId != 0 && _playerBody is not null)
+        if (!_selfArrived && entityId != 0 && _playerBody is not null && _skillFx?.Library.TryGet(SkillPresentation.RestartEffect, out _) == true)
         {
             _selfArrived = true;
             ArriveInWorld(entityId);
