@@ -1,0 +1,33 @@
+@page
+@inject NewsFeed News
+@inject ILogger<NewsFeed> Logger
+@{
+    ViewData["Title"] = "Notícias";
+    ViewData["Description"] = "Novidades e atualizações do Priston Avalon.";
+    var items = News.Items(Logger);
+}
+
+<div class="page">
+    <header class="page-head">
+        <h1>Notícias</h1>
+        <p>Atualizações do jogo e do servidor.</p>
+    </header>
+
+    @if (items.Count == 0)
+    {
+        <p class="plate empty">Nenhuma notícia publicada ainda.</p>
+    }
+
+    @foreach (var item in items)
+    {
+        <article class="plate news-post">
+            <time datetime="@item.Date.ToString("yyyy-MM-dd")">@SiteText.Date(item.Date)</time>
+            <h2>@item.Title</h2>
+            <p class="lead">@item.Summary</p>
+            @foreach (var paragraph in item.Body)
+            {
+                <p>@paragraph</p>
+            }
+        </article>
+    }
+</div>

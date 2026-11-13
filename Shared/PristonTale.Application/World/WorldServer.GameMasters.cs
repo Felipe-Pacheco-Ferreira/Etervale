@@ -38,7 +38,7 @@ public sealed partial class WorldServer
     private long UnixNowMs => _clock.GetUtcNow().ToUnixTimeMilliseconds();
 
     // The display name of a field (the catalog is immutable, so any thread may read it).
-    public string FieldName(int fieldId) => _catalog.TryGetFieldByCode(fieldId, out var definition) ? definition.Name : fieldId.ToString();
+    public string FieldName(int fieldId) => _catalog.FieldName(fieldId);
 
     // Gold spent on services since the server started, for the currency report.
     public CurrencyLedger Currency { get; } = new();

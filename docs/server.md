@@ -40,7 +40,7 @@ layouts live in [protocol.md](protocol.md).
 | `Net/WireMapping.cs`, `Net/NpcWireMapping.cs`, `Net/QuestWireMapping.cs`, `Net/RewardWireMapping.cs` | Authoritative views to wire structs (presence entries, descriptions, events, NPC service state, quest messages, the events and rewards window). |
 | `Net/ClientSession.Rewards.cs`, `Net/PresenceEncoder.Rewards.cs` | The events and rewards window: requests and claims, and the window each snapshot carries when it changed. |
 | `Net/NetworkLimits.cs` | `Network:*` settings with defaults and validation; IPv4-mapped address normalisation. |
-| `Net/ConnectionGuards.cs` | `PacketRateLimiter`, `TokenBucket`, `ConnectionLimiter`, `LoginThrottle`, `LogSampler`. |
+| `Net/ConnectionGuards.cs` | `PacketRateLimiter`, `TokenBucket`, `ConnectionLimiter`, `LogSampler`; the login throttle is `LoginThrottle` (`Shared/PristonTale.Application/Sessions`), which the website uses too. |
 | `Application/README.md` | Placeholder rule: server-only orchestration goes here; use cases stay in `Shared/PristonTale.Application`. |
 | `appsettings.json` | Logging level, PostgreSQL connection string, `Database:Provider` and `Database:SqlitePath`. |
 

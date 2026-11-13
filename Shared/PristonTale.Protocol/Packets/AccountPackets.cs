@@ -17,8 +17,8 @@ public static class ProtocolVersion
 public static class AccountWire
 {
     public const ushort CurrentVersion = 1;
-    public const int MaxAccountBytes = 64;
-    public const int MaxPasswordBytes = 128;
+    public const int MaxAccountBytes = AccountRules.MaxAccountBytes;
+    public const int MaxPasswordBytes = AccountRules.MaxPasswordBytes;
     public const int MaxLanguageBytes = 16;
     public const int MaxNameBytes = 64;
 }

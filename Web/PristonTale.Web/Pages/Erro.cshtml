@@ -1,0 +1,25 @@
+@page "{code:int?}"
+@using Microsoft.AspNetCore.Mvc
+@attribute [IgnoreAntiforgeryToken]
+@attribute [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+@{
+    var code = RouteData.Values["code"] is string text && int.TryParse(text, out var parsed) ? parsed : StatusCodes.Status500InternalServerError;
+    var (title, message) = code switch
+    {
+        StatusCodes.Status404NotFound => ("Página não encontrada", "O endereço que você abriu não existe ou foi movido."),
+        StatusCodes.Status400BadRequest => ("Formulário expirado", "Recarregue a página e envie o formulário de novo."),
+        StatusCodes.Status405MethodNotAllowed => ("Ação não permitida", "Esta página não aceita esse tipo de pedido."),
+        StatusCodes.Status429TooManyRequests => ("Muitas requisições", "Aguarde um minuto e tente de novo."),
+        _ => ("Algo deu errado", "Não foi possível concluir o pedido agora. Tente de novo em instantes.")
+    };
+    ViewData["Title"] = title;
+}
+
+<div class="page page-narrow">
+    <section class="plate empty-state">
+        <img src="~/img/emblem-256.png" alt="" width="96" height="96">
+        <h1>@title</h1>
+        <p>@message</p>
+        <a class="btn btn-primary" href="/">Voltar ao início</a>
+    </section>
+</div>

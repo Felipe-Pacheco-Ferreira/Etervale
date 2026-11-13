@@ -1,5 +1,6 @@
 using PristonTale.Application.Chat;
 using PristonTale.Application.GameMasters;
+using PristonTale.Application.Sessions;
 
 namespace PristonTale.Server.Net;
 

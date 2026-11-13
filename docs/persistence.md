@@ -19,6 +19,7 @@ FluentMigrator migrations, the schema, and the SQLite and PostgreSQL providers. 
 | `Persistence/PristonTale.Persistence.Abstractions/` | Provider-neutral contracts and records; references only Simulation |
 | `.../IDbConnectionFactory.cs`, `IDatabaseMigrator.cs` | Open a provider connection; apply pending migrations |
 | `.../Accounts/` | `AccountRecord` (with `GmLevel`), `IAccountRepository` |
+| `.../Rankings/IRankingRepository.cs` | `RankedCharacter`, `WorldTotals` and the website's read-only player views |
 | `.../GameMasters/IGameMasterRepository.cs` | Set a game-master level, append and read the audit trail, move a character between accounts |
 | `.../GameLogs/GameLogRecords.cs` | `IGameLogRepository` and the game log records: item transfers, currency sinks, server events |
 | `.../Characters/CharacterRecord.cs` | One `characters` row; positional record, JSON columns as `JsonText` |
@@ -39,13 +40,16 @@ FluentMigrator migrations, the schema, and the SQLite and PostgreSQL providers. 
 Consumers: `Server/PristonTale.Server/Hosting/HostingExtensions.cs` (provider selection),
 `DatabaseMigrationService` (migrates at host start), `Shared/PristonTale.Application` services
 (`AuthAppService`, `CharacterAppService`, `SessionAppService`, `NpcAppService`, `WorldDataAppService`),
-`tools/PristonTale.WorldImport` (owns all catalog write SQL) and `tools/PristonTale.DevAccounts`.
+`tools/PristonTale.WorldImport` (owns all catalog write SQL), `tools/PristonTale.DevAccounts` and the website
+(`Web/PristonTale.Web`, which never migrates: it reads the game server's database and writes only new accounts; see
+[website.md](website.md)).
 
 ## Repository contracts
 
 | Interface | Implementation | Operations |
 | --- | --- | --- |
-| `IAccountRepository` | `DapperAccountRepository` | `FindByUserIdAsync`, `CreateAsync` (INSERT ... RETURNING), `UpdateLastLoginAsync` |
+| `IAccountRepository` | `DapperAccountRepository` | `FindByUserIdAsync` (exact name), `CreateAsync` (INSERT ... RETURNING), `UpdateLastLoginAsync`, `IsUserIdTakenAsync` (the name in any letter case, `lower()` on both providers) |
+| `IRankingRepository` | `DapperRankingRepository` | Read-only views for the website: `TopAsync` (characters by level, then experience, then id, of one job code or all, with their clan's name; game masters' and blocked accounts' characters left out), `TotalsAsync` (accounts and characters) |
 | `ICharacterRepository` | `DapperCharacterRepository` | List by account (ordered by slot), find by name for account, global `NameExistsAsync`, `UsedSlotsAsync`, create (RETURNING), delete by name, `UpdateAsync`, `SaveAllAsync` (the background saves: every record in one transaction, skipping older captures and missing characters, returns the rows written), `UpdateAllAsync` (several characters in one transaction, all or none: a personal shop sale) |
 | `IContactRepository` | `DapperContactRepository` | `ListAsync` (in the order added), `AddAsync` (false when the name is already on the list), `RemoveAsync` |
 | `IClanRepository` | `DapperClanRepository` | `LoadAsync` (clans, members with their character's name, class, level and account), `FoundAsync` (clan, chief and the paying character's `UpdateSql` in one transaction; 0 when the name is taken or the capture is stale), `AddMemberAsync` / `RemoveMemberAsync` (with the clan's state and deadline), `SetRanksAsync` (optionally with a payment), `SetMarkVersionAsync` (once a new mark is kept), `DisbandAsync` (clan and members go, cooldowns for the members), `CooldownAsync`, `IsMemberAsync`, `ClanNamesAsync` (the clan of each of an account's characters, for the character list) |

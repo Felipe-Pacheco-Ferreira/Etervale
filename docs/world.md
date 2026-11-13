@@ -456,7 +456,7 @@ events Etervale runs are listed:
 
 | Kind | Rule | Occurrences |
 | --- | --- | --- |
-| `FieldBosses` | The boss pass above: the hours of each `BossSpawn` (24 never comes) | A moment per hour some boss has, carrying the bosses of that hour as bits; today's at `BossMinute`, later days' at the hour's start with `MinuteUnknown` (the minute is drawn on the day). A call that has passed is gone. |
+| `FieldBosses` | The boss pass above: the hours of each `BossSpawn` (24 never comes) | A moment per hour some boss has, carrying the bosses of that hour as bits; today's at `BossMinute`, later days' (and today's when `BossMinuteKnown` is false, for a reader outside the game server) at the hour's start with `MinuteUnknown` (the minute is drawn on the day). A call that has passed is gone. |
 | `Bellatra` | `BellatraRules.OpenWindows` in `BellatraMode.Hours`, always in `Always` | A window per open span of each day, or one always-running occurrence. |
 | `CastleSiege` | `CastleRules.NextSiege` and `ScheduledMinutes` (the weekly siege or the league) | The week's sieges; the siege the castle reports running (`LiveSiege`) replaces the scheduled one, and a scheduled siege that should be running but is not (it ended early) is left out. |
 | `CrystalEvent` | `MonsterCrystals.EventActive` | Each day from `EventStartHour` to its end, or always running all day. |

@@ -1,0 +1,73 @@
+@page
+@model ContaModel
+@inject ClassTitles Classes
+@{
+    ViewData["Title"] = "Minha conta";
+}
+
+<div class="page">
+    <header class="page-head page-head-row">
+        <div>
+            <h1>Minha conta</h1>
+            <p>Conta <strong>@Model.Account.UserId</strong> · @Model.Characters.Count @(Model.Characters.Count == 1 ? "personagem" : "personagens")</p>
+        </div>
+        <form method="post" asp-page="/Sair">
+            <button class="btn" type="submit">Sair</button>
+        </form>
+    </header>
+
+    @if (Model.Nova)
+    {
+        <p class="alert alert-success" role="status">Conta criada! Baixe o jogo no seu Android e entre com esta conta e senha para criar seu primeiro personagem.</p>
+    }
+
+    @if (Model.Characters.Count == 0)
+    {
+        <section class="plate empty-state">
+            <img src="~/img/emblem-256.png" alt="" width="96" height="96">
+            <h2>Nenhum personagem ainda</h2>
+            <p>Os personagens são criados dentro do jogo. Depois de criados, eles aparecem aqui.</p>
+            <a class="btn btn-primary" href="/download">Baixar o jogo</a>
+        </section>
+    }
+
+    <div class="characters">
+        @foreach (var character in Model.Characters)
+        {
+            var progress = SiteText.LevelProgress(character.Level, character.Exp);
+            <article class="plate character">
+                <div class="character-head">
+                    <span class="medal medal-large medal-@SiteText.MedalTone(character.Level)" title="Nível @character.Level">@character.Level</span>
+                    <div>
+                        <h2>@character.Name</h2>
+                        <p class="muted">@Classes.Of(character.JobCode, character.Tier)</p>
+                    </div>
+                </div>
+                <div class="gauge-row">
+                    <span>Experiência</span>
+                    <progress class="gauge gauge-exp" max="1" value="@progress.ToString(System.Globalization.CultureInfo.InvariantCulture)">@SiteText.Percent(progress)</progress>
+                    <span class="num">@SiteText.Percent(progress)</span>
+                </div>
+                <dl class="facts">
+                    <dt>Clã</dt>
+                    <dd>@(Model.Clans.TryGetValue(character.Id, out var clan) ? clan : "—")</dd>
+                    <dt>Onde está</dt>
+                    <dd>@Model.FieldName(character.FieldId)</dd>
+                    <dt>Ouro</dt>
+                    <dd>@SiteText.Number(character.Money)</dd>
+                    <dt>Último jogo</dt>
+                    <dd>@(character.LastPlayedAt is { } played ? SiteText.Date(DateOnly.FromDateTime(played.ToLocalTime())) : "—")</dd>
+                </dl>
+            </article>
+        }
+    </div>
+
+    <section class="plate tips">
+        <h2>Segurança da conta</h2>
+        <ul>
+            <li>A equipe nunca pede sua senha, nem no jogo nem fora dele.</li>
+            <li>Use uma senha que você não usa em nenhum outro lugar.</li>
+            <li>Saia da conta ao usar um aparelho que não é seu.</li>
+        </ul>
+    </section>
+</div>

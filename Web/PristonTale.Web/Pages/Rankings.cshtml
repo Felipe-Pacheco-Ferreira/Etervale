@@ -1,0 +1,55 @@
+@page
+@model RankingsModel
+@inject ClassTitles Classes
+@{
+    ViewData["Title"] = Model.Class is { } chosen ? "Ranking · " + Classes.Of(chosen, 0) : "Rankings";
+    ViewData["Description"] = "Os aventureiros mais fortes do Priston Avalon, por nível e por classe.";
+}
+
+<div class="page">
+    <header class="page-head">
+        <h1>Rankings</h1>
+        <p>Os @SiteData.RankingSize aventureiros de maior nível@(Model.Class is { } shown ? " entre os " + Classes.Of(shown, 0) : ""). Empates são decididos pela experiência.</p>
+    </header>
+
+    <nav class="filters" aria-label="Filtrar por classe">
+        <a href="/rankings" aria-current="@(Model.Class is null ? "page" : "false")">Todas</a>
+        @foreach (var playerClass in ClassTitles.All)
+        {
+            <a href="/rankings?classe=@ClassTitles.Slug(playerClass)" aria-current="@(Model.Class == playerClass ? "page" : "false")">@Classes.Of(playerClass, 0)</a>
+        }
+    </nav>
+
+    @if (Model.Top.Count == 0)
+    {
+        <p class="plate empty">Nenhum aventureiro nesta lista ainda.</p>
+    }
+    else
+    {
+        <div class="plate table-wrap">
+            <table class="ranking ranking-players">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Personagem</th>
+                        <th scope="col">Classe</th>
+                        <th scope="col">Clã</th>
+                        <th scope="col" class="num">Nível</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var (character, index) in Model.Top.Select((character, index) => (character, index)))
+                    {
+                        <tr>
+                            <td><span class="rank rank-@(index + 1)">@(index + 1)</span></td>
+                            <th scope="row">@character.Name</th>
+                            <td>@Classes.Of(character.JobCode, character.Tier)</td>
+                            <td class="muted">@(character.ClanName ?? "—")</td>
+                            <td class="num"><span class="medal medal-@SiteText.MedalTone(character.Level)">@character.Level</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

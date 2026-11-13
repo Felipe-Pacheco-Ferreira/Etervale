@@ -58,6 +58,9 @@ public sealed record EventScheduleRules
     // The minute of today's boss calls, today being the server's local day.
     public int BossMinute { get; init; }
 
+    // False when today's minute is not known (a reader outside the game server): today's calls are then shown by their hour only.
+    public bool BossMinuteKnown { get; init; } = true;
+
     public BellatraMode Bellatra { get; init; }
 
     public CastleMode Castle { get; init; }
@@ -81,7 +84,23 @@ public sealed record EventScheduleRules
 
 // The calendar as sent to a player: the bosses the boss calls name and the occurrences.
 public sealed record EventCalendar(IReadOnlyList<CalendarBoss> Bosses, IReadOnlyList<CalendarOccurrence> Occurrences, int ExperiencePercent,
-    DropEvents Drops);
+    DropEvents Drops)
+{
+    // The bosses a boss call brings (its Bosses bits).
+    public List<CalendarBoss> BossesOf(CalendarOccurrence call)
+    {
+        var named = new List<CalendarBoss>();
+        for (var index = 0; index < Bosses.Count && index < EventSchedule.MaxBosses; index++)
+        {
+            if ((call.Bosses & 1UL << index) != 0)
+            {
+                named.Add(Bosses[index]);
+            }
+        }
+
+        return named;
+    }
+}
 
 // The timed events of the server's rules over a span of time. Hours are the server's local hours (its time zone); the
 // occurrences are in UTC. A local time a daylight-saving change skips has no occurrence.
@@ -106,6 +125,21 @@ public static class EventSchedule
         }
 
         return mask;
+    }
+
+    // The hours of a HourMask, in order.
+    public static List<int> Hours(int mask)
+    {
+        var hours = new List<int>();
+        for (var hour = 0; hour < HoursPerDay; hour++)
+        {
+            if ((mask & 1 << hour) != 0)
+            {
+                hours.Add(hour);
+            }
+        }
+
+        return hours;
     }
 
     public static EventCalendar Calendar(EventScheduleRules rules, DateTimeOffset now, TimeZoneInfo zone, TimeSpan horizon)
@@ -198,7 +232,7 @@ public static class EventSchedule
         for (var day = 0; day < reach.Days; day++)
         {
             var date = reach.Today.AddDays(day);
-            var known = day == 0;
+            var known = day == 0 && rules.BossMinuteKnown;
             for (var hour = 0; hour < HoursPerDay; hour++)
             {
                 if (byHour[hour] == 0 || !TryUtc(date, hour, known ? rules.BossMinute : 0, reach.Zone, out var start))

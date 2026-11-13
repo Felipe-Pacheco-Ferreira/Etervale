@@ -1,0 +1,136 @@
+@page
+@model EventosModel
+@using PristonTale.Simulation.World.Calendar
+@{
+    ViewData["Title"] = "Eventos";
+    ViewData["Description"] = "Calendário de eventos do Priston Avalon: chefes de campo, Bellatra, cerco ao Bless Castle e eventos especiais.";
+    var calendar = Model.Calendar;
+    var zone = calendar.Zone;
+}
+
+<div class="page">
+    <header class="page-head">
+        <h1>Calendário de eventos</h1>
+        <p>Horários do servidor (@SiteText.ZoneName(zone, calendar.Now)).</p>
+    </header>
+
+    <section aria-labelledby="agora">
+        <h2 id="agora">Agora</h2>
+        @if (calendar.Running.Count == 0)
+        {
+            <p class="plate empty">Nenhum evento em andamento.</p>
+        }
+        <div class="cards">
+            @foreach (var occurrence in calendar.Running)
+            {
+                <article class="plate event event-@SiteText.Tone(occurrence.Kind) event-live">
+                    <header>
+                        <span class="tag tag-live">Em andamento</span>
+                        <h3>@SiteText.Title(occurrence.Kind)</h3>
+                    </header>
+                    <p class="event-time">@SiteText.Window(occurrence, zone)</p>
+                    <p>@SiteText.Describe(occurrence.Kind)</p>
+                    <ul class="details">
+                        @foreach (var line in Model.Details(occurrence.Kind))
+                        {
+                            <li>@line</li>
+                        }
+                    </ul>
+                </article>
+            }
+        </div>
+    </section>
+
+    <section aria-labelledby="proximas">
+        <h2 id="proximas">Próximas 24 horas</h2>
+        @if (calendar.Coming.Count == 0)
+        {
+            <p class="plate empty">Nenhum evento começa nas próximas 24 horas.</p>
+        }
+        <div class="cards">
+            @foreach (var entry in calendar.Coming)
+            {
+                <article class="plate event event-@SiteText.Tone(entry.Kind)">
+                    <header>
+                        <span class="tag tag-@SiteText.Tone(entry.Kind)">@SiteText.Start(entry.First, zone)</span>
+                        <h3>@SiteText.Title(entry.Kind)</h3>
+                    </header>
+                    <p class="event-time">@SiteText.Window(entry.First, zone)</p>
+                    <p>@SiteText.Describe(entry.Kind)</p>
+                </article>
+            }
+        </div>
+    </section>
+
+    <section aria-labelledby="chefes">
+        <h2 id="chefes">@SiteText.Title(CalendarEventKind.FieldBosses)</h2>
+        <p class="muted">@SiteText.Describe(CalendarEventKind.FieldBosses) Cada um nasce nas horas marcadas, no minuto do dia, sorteado a cada dia
+            entre @SiteText.BossMinuteRange; por isso aqui aparece só a hora.</p>
+        @if (calendar.NextCalls.Count == 0)
+        {
+            <p class="plate empty">Nenhum chefe de campo tem horário marcado.</p>
+        }
+        else
+        {
+            <div class="boss-grid">
+                <div class="plate">
+                    <h3>Próximas chamadas</h3>
+                    <ul class="calls">
+                        @foreach (var call in calendar.NextCalls)
+                        {
+                            <li>
+                                <span class="tag tag-boss">@SiteText.Start(call.Call, zone)</span>
+                                <span>@string.Join(", ", call.Bosses.Select(static boss => boss.Name))</span>
+                            </li>
+                        }
+                    </ul>
+                </div>
+                <div class="plate table-wrap">
+                    <table class="ranking bosses">
+                        <thead>
+                            <tr>
+                                <th scope="col">Chefe</th>
+                                <th scope="col">Mapa</th>
+                                <th scope="col">Horas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var boss in calendar.Bosses)
+                            {
+                                <tr>
+                                    <th scope="row">@boss.Boss.Name</th>
+                                    <td class="muted">@boss.Boss.FieldName</td>
+                                    <td>@string.Join(" · ", boss.Hours.Select(static hour => hour.ToString("00") + "h"))</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    </section>
+
+    <section aria-labelledby="semana">
+        <h2 id="semana">Próximos dias</h2>
+        @if (calendar.Days.Count == 0)
+        {
+            <p class="plate empty">Nenhum outro evento marcado para os próximos dias.</p>
+        }
+        @foreach (var day in calendar.Days)
+        {
+            <div class="plate day">
+                <h3>@SiteText.Day(day.Day)</h3>
+                <ul class="day-list">
+                    @foreach (var entry in day.Entries)
+                    {
+                        <li>
+                            <span class="tag tag-@SiteText.Tone(entry.Kind)">@SiteText.Start(entry.First, zone)</span>
+                            <span class="day-title">@SiteText.Title(entry.Kind)</span>
+                            <span class="muted">@SiteText.Window(entry.First, zone)</span>
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+    </section>
+</div>

@@ -19,6 +19,7 @@ PristonTale (client, MonoGame/Vulkan)  --TLS over TCP 10009, Etervale frames--> 
                                                                                    v
                                                          SQLite data/pristontale.db (default) or PostgreSQL
 tools/PristonTale.WorldImport  --migrate + import authored assets/GameServer data-->  same database
+PristonTale.Web (website, HTTPS)  --reads players and settings, writes new accounts-->  same database
 ```
 
 The game is online only. The server is authoritative for movement validation, combat, loot, skills, inventory,
@@ -40,6 +41,7 @@ shows comes from server snapshots.
 | `Persistence/PristonTale.Persistence` | library | Dapper repositories, FluentMigrator migrations |
 | `Persistence/PristonTale.Persistence.Sqlite`, `.Postgres` | library | Provider wiring (`AddPristonSqlite`, `AddPristonPostgres`) |
 | `Server/PristonTale.Server` | exe | Generic host, DI composition, hosted services (migrations, catalog and terrain load, tick, TCP server), TCP edge mapping packets to application calls |
+| `Web/PristonTale.Web` | exe | The public website (ASP.NET Core Razor Pages, HTTPS): news, download, server status, rankings, event calendar, registration, sign-in and the account's characters, over the game server's database ([website.md](website.md)) |
 | `Client/PristonTale.Engine3D` | library | Original asset formats, IO, renderer, lighting, post-processing, sky, client settings |
 | `Client/PristonTale.Effects` | library | Particles and data-driven VFX |
 | `Client/PristonTale.Client.Net` | library | Client side of the protocol: connection, presence decoding, world catalog from the server |

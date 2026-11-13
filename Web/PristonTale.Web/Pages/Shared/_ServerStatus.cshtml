@@ -1,0 +1,8 @@
+@model ServerStatus?
+@{
+    var (tone, label) = Model is null ? ("checking", "Verificando") : Model.Online ? ("online", "Online") : ("offline", "Offline");
+}
+<a class="status status-@tone" href="/#servidor" title="Estado do servidor de jogo">
+    <span class="status-dot" aria-hidden="true"></span>
+    <span>Servidor @label</span>
+</a>
