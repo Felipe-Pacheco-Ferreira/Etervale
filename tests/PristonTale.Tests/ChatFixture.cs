@@ -291,6 +291,8 @@ internal sealed class MemoryAccounts : IAccountRepository
     public Task<AccountRecord> CreateAsync(string userId, string passwordHash, CancellationToken ct = default) => throw new NotSupportedException();
 
     public Task UpdateLastLoginAsync(long accountId, CancellationToken ct = default) => Task.CompletedTask;
+
+    public async Task<bool> IsUserIdTakenAsync(string userId, CancellationToken ct = default) => await FindByUserIdAsync(userId, ct) is not null;
 }
 
 internal sealed class MemoryWarehouses : IWarehouseRepository

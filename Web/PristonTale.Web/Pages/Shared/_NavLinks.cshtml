@@ -1,0 +1,18 @@
+@model bool
+@{
+    var path = Context.Request.Path.Value ?? "/";
+    string Current(string prefix) => path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) ? "page" : "false";
+}
+<a href="/noticias" aria-current="@Current("/noticias")">Notícias</a>
+<a href="/download" aria-current="@Current("/download")">Download</a>
+<a href="/rankings" aria-current="@Current("/rankings")">Rankings</a>
+<a href="/eventos" aria-current="@Current("/eventos")">Eventos</a>
+@if (Model)
+{
+    <a href="/conta" aria-current="@Current("/conta")">Minha conta</a>
+}
+else
+{
+    <a href="/entrar" aria-current="@Current("/entrar")">Entrar</a>
+    <a class="nav-cta" href="/cadastro" aria-current="@Current("/cadastro")">Criar conta</a>
+}

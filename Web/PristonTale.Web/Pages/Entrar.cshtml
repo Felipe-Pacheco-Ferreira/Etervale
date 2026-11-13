@@ -1,0 +1,31 @@
+@page
+@model EntrarModel
+@{
+    ViewData["Title"] = "Entrar";
+}
+
+<div class="page page-narrow">
+    <form class="plate form" method="post">
+        <h1>Entrar</h1>
+        <p class="muted">Use a mesma conta e senha do jogo.</p>
+
+        @if (Model.Error is not null)
+        {
+            <p class="alert alert-error" role="alert">@Model.Error</p>
+        }
+
+        <label for="conta">Conta</label>
+        <input id="conta" name="Conta" type="text" value="@Model.Conta" autocomplete="username" autocapitalize="none" spellcheck="false"
+               maxlength="@PristonTale.Contracts.Sessions.AccountRules.MaxAccountBytes" required autofocus>
+        <span class="field-error" asp-validation-for="Conta"></span>
+
+        <label for="senha">Senha</label>
+        <input id="senha" name="Senha" type="password" autocomplete="current-password"
+               maxlength="@PristonTale.Contracts.Sessions.AccountRules.MaxPasswordBytes" required>
+        <span class="field-error" asp-validation-for="Senha"></span>
+
+        <input type="hidden" name="voltar" value="@Model.Voltar">
+        <button class="btn btn-primary btn-block" type="submit">Entrar</button>
+        <p class="form-foot">Ainda não tem conta? <a href="/cadastro">Crie uma agora</a>.</p>
+    </form>
+</div>

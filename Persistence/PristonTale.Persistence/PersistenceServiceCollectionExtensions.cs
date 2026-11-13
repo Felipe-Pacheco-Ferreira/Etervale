@@ -7,6 +7,7 @@ using PristonTale.Persistence.Abstractions.Clans;
 using PristonTale.Persistence.Abstractions.Contacts;
 using PristonTale.Persistence.Abstractions.GameMasters;
 using PristonTale.Persistence.Abstractions.GameLogs;
+using PristonTale.Persistence.Abstractions.Rankings;
 using PristonTale.Persistence.Abstractions.Settings;
 using PristonTale.Persistence.Abstractions.Warehouses;
 using PristonTale.Persistence.Abstractions.WorldData;
@@ -33,6 +34,7 @@ public static class PersistenceServiceCollectionExtensions
         services.AddSingleton<IGameMasterRepository, DapperGameMasterRepository>();
         services.AddSingleton<IGameLogRepository, DapperGameLogRepository>();
         services.AddSingleton<IServerSettingsRepository, DapperServerSettingsRepository>();
+        services.AddSingleton<IRankingRepository, DapperRankingRepository>();
         services.AddSingleton<IDatabaseMigrator, FluentMigratorDatabaseMigrator>();
 
         services.AddFluentMigratorCore()

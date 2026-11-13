@@ -1,0 +1,31 @@
+[
+  {
+    "date": "2026-11-13",
+    "title": "Site oficial no ar",
+    "summary": "Crie sua conta pelo site, baixe o jogo para Android e acompanhe rankings e eventos do servidor.",
+    "body": [
+      "A conta criada aqui é a mesma que você usa para entrar no jogo.",
+      "Na página Minha conta você vê seus personagens, o nível, o clã e onde cada um parou.",
+      "O calendário de eventos mostra os chefes de campo, a Bellatra e o cerco ao Bless Castle no horário do servidor."
+    ]
+  },
+  {
+    "date": "2026-11-13",
+    "title": "Versão 0.57 para Android",
+    "summary": "Montaria Hopy, janela de Eventos e Recompensas com calendário, novas janelas de status e de habilidades e um HUD mais polido.",
+    "body": [
+      "A janela de Eventos e Recompensas traz a campanha de boas-vindas, as metas diárias e semanais e a corrida de níveis.",
+      "O calendário de eventos mostra o que acontece agora e o que começa nas próximas horas e dias.",
+      "As janelas de status e de habilidades foram refeitas no estilo do novo HUD."
+    ]
+  },
+  {
+    "date": "2026-11-13",
+    "title": "Versão 0.51 para Android",
+    "summary": "HUD redesenhado, montaria de viagem, rotas mais rápidas e novas janelas de inventário e de missões.",
+    "body": [
+      "O HUD ganhou placas escuras com bordas douradas, medalhão de nível e barras com brilho.",
+      "As rotas automáticas das missões ficaram mais rápidas, e a montaria de viagem encurta os caminhos longos."
+    ]
+  }
+]

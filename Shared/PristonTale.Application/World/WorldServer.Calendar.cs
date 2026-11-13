@@ -1,5 +1,5 @@
+using PristonTale.Application.Calendar;
 using PristonTale.Simulation.World.Calendar;
-using PristonTale.Simulation.World.Loot;
 
 namespace PristonTale.Application.World;
 
@@ -17,28 +17,6 @@ public sealed partial class WorldServer
     {
         var data = _worldData.Current;
         var monsters = _localizedData.Get(language, data).Monsters;
-        var bosses = new List<ScheduledBoss>();
-        foreach (var (fieldId, spawns) in data.FieldSpawns.OrderBy(static field => field.Key))
-        {
-            foreach (var boss in spawns.BossSpawns)
-            {
-                var hours = EventSchedule.HourMask(boss.SpawnHours);
-                if (hours != 0 && monsters.TryGet(boss.BossMonsterCode, out var monster))
-                {
-                    bosses.Add(new ScheduledBoss(new CalendarBoss(monster.Name, FieldName(fieldId)), hours));
-                }
-            }
-        }
-
-        var options = Options;
-        return new EventScheduleRules
-        {
-            Bosses = bosses,
-            BossMinute = BossMinute,
-            Bellatra = options.Bellatra.Mode,
-            CrystalEvent = options.CrystalEvent,
-            ExperiencePercent = KillReward.EventPercent(options.ExperienceEventPercent),
-            Drops = options.ItemEvents.Running
-        };
+        return EventCalendarRules.From(Options, EventCalendarRules.Bosses(data.FieldSpawns, monsters, _catalog), BossMinute);
     }
 }

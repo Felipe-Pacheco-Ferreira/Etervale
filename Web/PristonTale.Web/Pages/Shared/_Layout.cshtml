@@ -1,0 +1,63 @@
+@inject ServerStatusMonitor Monitor
+@inject WebSettings Settings
+@{
+    var status = Monitor.Current;
+    var title = ViewData["Title"] as string;
+    var description = ViewData["Description"] as string ?? "Priston Avalon: o servidor Etervale. Baixe o jogo para Android, crie sua conta e acompanhe rankings e eventos.";
+    var signedIn = User.Identity?.IsAuthenticated == true;
+}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@(title is null ? Settings.Site.Name : title + " · " + Settings.Site.Name)</title>
+    <meta name="description" content="@description">
+    <meta name="theme-color" content="#0a0c11">
+    <meta name="color-scheme" content="dark">
+    <link rel="icon" type="image/png" sizes="32x32" href="~/img/favicon-32.png">
+    <link rel="apple-touch-icon" href="~/img/icon-192.png">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true">
+</head>
+<body>
+    <a class="skip" href="#conteudo">Ir para o conteúdo</a>
+    <header class="topbar">
+        <div class="topbar-inner">
+            <a class="brand" href="/">
+                <img src="~/img/emblem-256.png" alt="" width="40" height="40">
+                <span>@Settings.Site.Name</span>
+            </a>
+            <nav class="nav-wide" aria-label="Principal">
+                <partial name="_NavLinks" model="signedIn" />
+            </nav>
+            <partial name="_ServerStatus" model="status" />
+            <details class="nav-menu">
+                <summary aria-label="Abrir o menu"><span class="burger" aria-hidden="true"></span></summary>
+                <nav aria-label="Menu">
+                    <partial name="_NavLinks" model="signedIn" />
+                </nav>
+            </details>
+        </div>
+    </header>
+
+    <main id="conteudo">
+        @RenderBody()
+    </main>
+
+    <footer class="footer">
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <img src="~/img/emblem-256.png" alt="" width="28" height="28">
+                <span>@Settings.Site.Name · servidor Etervale</span>
+            </div>
+            <nav aria-label="Rodapé">
+                <a href="/noticias">Notícias</a>
+                <a href="/download">Download</a>
+                <a href="/rankings">Rankings</a>
+                <a href="/eventos">Eventos</a>
+            </nav>
+            <p class="fineprint">Nunca peça nem informe sua senha fora deste site ou do jogo. A equipe nunca pede sua senha.</p>
+        </div>
+    </footer>
+</body>
+</html>

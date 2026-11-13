@@ -1,0 +1,162 @@
+@page
+@model IndexModel
+@inject ClassTitles Classes
+@{
+    ViewData["Description"] = "Priston Avalon, o servidor Etervale: MMORPG de fantasia para Android. Baixe o jogo, crie sua conta e acompanhe rankings, eventos e notícias.";
+    var world = Model.Server.World;
+    var eventPercent = world.ExperienceEventPercent;
+    var zone = Model.Calendar?.Zone ?? TimeZoneInfo.Local;
+}
+
+<section class="hero">
+    <img class="hero-art" src="~/img/hero-1600.jpg" srcset="/img/hero-900.jpg 900w, /img/hero-1600.jpg 1600w" sizes="100vw"
+         width="1600" height="900" alt="Arte de Priston Avalon: um castelo sobre o abismo ao pôr do sol">
+    <div class="hero-body">
+        <h1 class="visually-hidden">Priston Avalon</h1>
+        <p class="hero-tagline">Reúna seu grupo, enfrente os chefes de campo e conquiste o Bless Castle.</p>
+        <div class="hero-actions">
+            <a class="btn btn-primary" href="/download">Baixar para Android</a>
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <a class="btn" href="/conta">Minha conta</a>
+            }
+            else
+            {
+                <a class="btn" href="/cadastro">Criar conta grátis</a>
+            }
+        </div>
+    </div>
+</section>
+
+<section class="band" id="servidor" aria-labelledby="servidor-titulo">
+    <h2 id="servidor-titulo" class="visually-hidden">O servidor</h2>
+    <div class="stats">
+        <div class="plate stat">
+            <span class="stat-label">Servidor</span>
+            @if (Model.Status is null)
+            {
+                <span class="stat-value">Verificando…</span>
+            }
+            else if (Model.Status.Online)
+            {
+                <span class="stat-value stat-online">Online</span>
+                <span class="stat-note">no ar @SiteText.Since(Model.Status.Since, Model.Now)</span>
+            }
+            else
+            {
+                <span class="stat-value stat-offline">Offline</span>
+                <span class="stat-note">verificado @SiteText.Since(Model.Status.CheckedAt, Model.Now)</span>
+            }
+        </div>
+        <div class="plate stat">
+            <span class="stat-label">Aventureiros</span>
+            <span class="stat-value">@SiteText.Number(Model.Totals.Characters)</span>
+            <span class="stat-note">@SiteText.Number(Model.Totals.Accounts) contas</span>
+        </div>
+        <div class="plate stat">
+            <span class="stat-label">Experiência</span>
+            <span class="stat-value">×@world.ExperienceMultiplier</span>
+            <span class="stat-note">@(eventPercent > 100 ? $"evento ativo: {eventPercent}% por monstro" : "taxa do servidor")</span>
+        </div>
+        <div class="plate stat">
+            <span class="stat-label">Android</span>
+            <span class="stat-value">@(!Model.AndroidAvailable ? "Em breve" : Model.AndroidVersion.Length > 0 ? "v" + Model.AndroidVersion : "Disponível")</span>
+            <span class="stat-note"><a href="/download">ver download</a></span>
+        </div>
+    </div>
+</section>
+
+<div class="columns">
+    <section class="column-main" aria-labelledby="noticias-titulo">
+        <div class="section-head">
+            <h2 id="noticias-titulo">Notícias</h2>
+            <a class="more" href="/noticias">Todas as notícias</a>
+        </div>
+        @if (Model.News.Count == 0)
+        {
+            <p class="plate empty">Nenhuma notícia publicada ainda.</p>
+        }
+        @foreach (var item in Model.News)
+        {
+            <article class="plate news-card">
+                <time datetime="@item.Date.ToString("yyyy-MM-dd")">@SiteText.Date(item.Date)</time>
+                <h3>@item.Title</h3>
+                <p>@item.Summary</p>
+            </article>
+        }
+    </section>
+
+    <aside class="column-side">
+        <section aria-labelledby="eventos-titulo">
+            <div class="section-head">
+                <h2 id="eventos-titulo">Próximos eventos</h2>
+                <a class="more" href="/eventos">Calendário</a>
+            </div>
+            <div class="plate list">
+                @if (Model.Calendar is { Running.Count: > 0 } calendar)
+                {
+                    foreach (var running in calendar.Running)
+                    {
+                        <div class="list-row">
+                            <span class="tag tag-live">Agora</span>
+                            <span class="list-main">@SiteText.Title(running.Kind)</span>
+                            <span class="list-side">@SiteText.Window(running, zone)</span>
+                        </div>
+                    }
+                }
+                @if (Model.Calendar?.NextCalls.FirstOrDefault() is { } call)
+                {
+                    <div class="list-row">
+                        <span class="tag tag-boss">@SiteText.Start(call.Call, zone)</span>
+                        <span class="list-main">@SiteText.Title(call.Call.Kind)<small>@string.Join(", ", call.Bosses.Select(static boss => boss.Name))</small></span>
+                    </div>
+                }
+                @foreach (var entry in Model.Coming)
+                {
+                    <div class="list-row">
+                        <span class="tag tag-@SiteText.Tone(entry.Kind)">@SiteText.Start(entry.First, zone)</span>
+                        <span class="list-main">@SiteText.Title(entry.Kind)</span>
+                        <span class="list-side">@SiteText.Window(entry.First, zone)</span>
+                    </div>
+                }
+                @if (Model.Calendar is { Running.Count: 0, Coming.Count: 0, NextCalls.Count: 0 })
+                {
+                    <p class="empty">Nenhum evento nas próximas 24 horas.</p>
+                }
+            </div>
+        </section>
+
+        <section aria-labelledby="top-titulo">
+            <div class="section-head">
+                <h2 id="top-titulo">Os mais fortes</h2>
+                <a class="more" href="/rankings">Rankings</a>
+            </div>
+            <ol class="plate list ranking-mini">
+                @foreach (var (character, index) in Model.Top.Select((character, index) => (character, index)))
+                {
+                    <li class="list-row">
+                        <span class="rank rank-@(index + 1)">@(index + 1)</span>
+                        <span class="list-main">@character.Name<small>@Classes.Of(character.JobCode, character.Tier)</small></span>
+                        <span class="medal medal-small medal-@SiteText.MedalTone(character.Level)" title="Nível @character.Level">@character.Level</span>
+                    </li>
+                }
+                @if (Model.Top.Count == 0)
+                {
+                    <li class="empty">Nenhum aventureiro ainda. Seja o primeiro!</li>
+                }
+            </ol>
+        </section>
+    </aside>
+</div>
+
+<section class="plate cta">
+    <img src="~/img/emblem-256.png" alt="" width="96" height="96">
+    <div>
+        <h2>Comece sua jornada</h2>
+        <p>Crie sua conta aqui no site, baixe o jogo no seu Android e entre com a mesma conta e senha.</p>
+    </div>
+    <div class="cta-actions">
+        <a class="btn btn-primary" href="/download">Baixar o jogo</a>
+        <a class="btn" href="/cadastro">Criar conta</a>
+    </div>
+</section>

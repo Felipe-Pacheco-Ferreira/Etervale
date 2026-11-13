@@ -1,0 +1,44 @@
+@page
+@model CadastroModel
+@using PristonTale.Contracts.Sessions
+@{
+    ViewData["Title"] = "Criar conta";
+    ViewData["Description"] = "Crie grátis sua conta do Priston Avalon.";
+}
+
+<div class="page page-narrow">
+    <form class="plate form" method="post">
+        <h1>Criar conta</h1>
+        <p class="muted">Com ela você entra no jogo e acompanha seus personagens aqui no site.</p>
+
+        @if (Model.Error is not null)
+        {
+            <p class="alert alert-error" role="alert">@Model.Error</p>
+        }
+
+        <label for="conta">Nome da conta</label>
+        <input id="conta" name="Conta" type="text" value="@Model.Conta" autocomplete="username" autocapitalize="none" spellcheck="false"
+               minlength="@AccountRules.MinNameLength" maxlength="@AccountRules.MaxNameLength" pattern="[A-Za-z][A-Za-z0-9]*"
+               aria-describedby="conta-ajuda" required autofocus>
+        <span id="conta-ajuda" class="hint">@CadastroModel.NameRule</span>
+        <span class="field-error" asp-validation-for="Conta"></span>
+
+        <label for="senha">Senha</label>
+        <input id="senha" name="Senha" type="password" autocomplete="new-password"
+               minlength="@AccountRules.MinPasswordLength" maxlength="@AccountRules.MaxPasswordLength" aria-describedby="senha-ajuda" required>
+        <span id="senha-ajuda" class="hint">@CadastroModel.PasswordRule Use uma senha só sua, que você não usa em outros sites.</span>
+        <span class="field-error" asp-validation-for="Senha"></span>
+
+        <label for="confirmacao">Repita a senha</label>
+        <input id="confirmacao" name="Confirmacao" type="password" autocomplete="new-password" maxlength="@AccountRules.MaxPasswordLength" required>
+        <span class="field-error" asp-validation-for="Confirmacao"></span>
+
+        <div class="trap" aria-hidden="true">
+            <label for="site">Não preencha este campo</label>
+            <input id="site" name="Site" type="text" tabindex="-1" autocomplete="off">
+        </div>
+
+        <button class="btn btn-primary btn-block" type="submit">Criar conta</button>
+        <p class="form-foot">Já tem conta? <a href="/entrar">Entrar</a>.</p>
+    </form>
+</div>

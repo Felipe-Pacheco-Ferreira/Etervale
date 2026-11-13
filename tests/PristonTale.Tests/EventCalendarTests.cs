@@ -1,3 +1,5 @@
+using PristonTale.Application.Calendar;
+using PristonTale.Application.Settings;
 using PristonTale.Application.World;
 using PristonTale.Client.Net;
 using PristonTale.Protocol.Binary;
@@ -26,6 +28,7 @@ internal static class EventCalendarTests
         yield return ("calendar: a scheduled siege the castle does not report running is left out, and a running one replaces it", SiegesAsync);
         yield return ("calendar: always-running events lead, crystal afternoons are a daily window, settings off add nothing", AlwaysAsync);
         yield return ("calendar: the world gives its field bosses with their hours, today's minute and the event settings", WorldRulesAsync);
+        yield return ("calendar: a reader of storage shows today's boss calls by hour and takes the events and sieges of the settings table", StoredRulesAsync);
         yield return ("calendar: request and calendar cross the wire whole, in UTC minutes, within one frame; a wrong count is refused",
             WireAsync);
     }
@@ -158,6 +161,34 @@ internal static class EventCalendarTests
             "a known boss with a real hour, named with its field");
         Assert.True(rules.BossMinute == 17 && rules.CrystalEvent == 1 && rules.ExperiencePercent == KillReward.NoEventPercent
             && rules.Drops == DropEvents.GiftBox && rules.Bellatra == BellatraOptions.Default.Mode, "today's minute and the event settings");
+        return Task.CompletedTask;
+    }
+
+    private static Task StoredRulesAsync()
+    {
+        var rules = new EventScheduleRules
+        {
+            Bosses = [new ScheduledBoss(new CalendarBoss("Hopy King", "Forest 1"), EventSchedule.HourMask([1, 2]))],
+            BossMinuteKnown = false
+        };
+        var now = Day.AddHours(1).AddMinutes(30);
+        var calls = Of(rules, now);
+        Assert.True(calls[0] == new CalendarOccurrence(CalendarEventKind.FieldBosses, Day.AddHours(1), Day.AddHours(1), CalendarOccurrenceFlags.MinuteUnknown, 1)
+            && calls[1].Start == Day.AddHours(2) && calls[1].MinuteUnknown, "today's calls keep their hour while today's minute is unknown");
+
+        var problems = new List<string>();
+        var settings = ServerSettingCatalog.Read(new Dictionary<string, string>
+        {
+            ["events.crystal"] = "2",
+            ["castle.mode"] = "1",
+            ["castle.siege_day"] = "5",
+            ["castle.siege_hour"] = "21"
+        }, null, problems);
+        var stored = EventCalendarRules.WithCastle(EventCalendarRules.From(settings.World, [], null), settings.Castle, available: true, liveSiege: null);
+        Assert.True(problems.Count == 0 && !stored.BossMinuteKnown && stored.CrystalEvent == 2 && stored.Castle == CastleMode.Weekly
+            && stored.SiegeDay == 5 && stored.SiegeHour == 21 && stored.LiveSiege is null, "the settings table's events and siege schedule");
+        Assert.True(EventCalendarRules.WithCastle(stored, settings.Castle, available: false, liveSiege: null).Castle == CastleMode.Off,
+            "a castle that is not available has no sieges");
         return Task.CompletedTask;
     }
 

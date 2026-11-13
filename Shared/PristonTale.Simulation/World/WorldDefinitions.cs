@@ -334,6 +334,9 @@ public sealed class WorldCatalog
 
     public bool TryGetFieldByCode(int code, out FieldDef field) => _fieldsByCode.TryGetValue(code, out field);
 
+    // The field's name, or its code for a field the catalog does not know.
+    public string FieldName(int code) => _fieldsByCode.TryGetValue(code, out var field) ? field.Name : code.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
     public IReadOnlyList<FieldDef> Neighbours(FieldDef field)
     {
         var result = new List<FieldDef>();

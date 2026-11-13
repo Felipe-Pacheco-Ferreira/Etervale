@@ -147,6 +147,20 @@ Start `docker compose up -d --wait`, then use `--postgres "<connection string>"`
 `ConnectionStrings__Postgres` for the server. `docker compose down` keeps the named volume; `docker compose down -v`
 deletes that volume and its data.
 
+### Website
+
+The public website (news, Android download, server status, rankings, events, registration and the account's
+characters) reads the server's database and its settings from `web-settings.json` beside its executable. Point it at a
+copy of the database while testing, since it writes the accounts it registers:
+
+```bash
+dotnet build Web/PristonTale.Web/PristonTale.Web.csproj -c Release -m:1 -warnaserror
+dotnet run --project Web/PristonTale.Web -c Release --no-build -- --Database:SqlitePath=<copy-of-the-database.db>
+```
+
+It listens on `https://localhost:5443` (and redirects `http://localhost:5080`). Settings, security measures and
+deployment: [docs/website.md](docs/website.md).
+
 ## Validate
 
 ```bash

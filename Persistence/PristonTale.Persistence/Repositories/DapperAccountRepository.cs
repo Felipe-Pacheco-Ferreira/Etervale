@@ -26,6 +26,14 @@ public sealed class DapperAccountRepository(IDbConnectionFactory connectionFacto
             new { userId, passwordHash }, cancellationToken: ct));
     }
 
+    public async Task<bool> IsUserIdTakenAsync(string userId, CancellationToken ct = default)
+    {
+        await using var connection = await connectionFactory.OpenAsync(ct);
+        return await connection.ExecuteScalarAsync<bool>(new CommandDefinition(
+            "SELECT EXISTS (SELECT 1 FROM accounts WHERE lower(user_id) = lower(@userId))",
+            new { userId }, cancellationToken: ct));
+    }
+
     public async Task UpdateLastLoginAsync(long accountId, CancellationToken ct = default)
     {
         await using var connection = await connectionFactory.OpenAsync(ct);

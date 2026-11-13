@@ -13,17 +13,11 @@ public static class EventCalendarQuery
     {
         ArgumentNullException.ThrowIfNull(world);
         ArgumentNullException.ThrowIfNull(castle);
-        var options = castle.Options;
         var view = castle.View();
-        var rules = world.CalendarRules(language) with
-        {
-            Castle = castle.Available ? options.Mode : CastleMode.Off,
-            SiegeDay = options.SiegeDay,
-            SiegeHour = options.SiegeHour,
-            LiveSiege = view.Siege == SiegeState.Running
-                ? new CalendarWindow(DateTimeOffset.FromUnixTimeSeconds(view.SiegeStartedAt), DateTimeOffset.FromUnixTimeSeconds(view.SiegeEndsAt))
-                : null
-        };
+        var liveSiege = view.Siege == SiegeState.Running
+            ? new CalendarWindow(DateTimeOffset.FromUnixTimeSeconds(view.SiegeStartedAt), DateTimeOffset.FromUnixTimeSeconds(view.SiegeEndsAt))
+            : (CalendarWindow?)null;
+        var rules = EventCalendarRules.WithCastle(world.CalendarRules(language), castle.Options, castle.Available, liveSiege);
         return EventSchedule.Calendar(rules, world.UtcNow, world.LocalTimeZone, EventSchedule.Horizon);
     }
 }

@@ -1,0 +1,52 @@
+@page
+@inject AndroidPackage Android
+@{
+    ViewData["Title"] = "Download";
+    ViewData["Description"] = "Baixe o Priston Avalon para Android.";
+    var file = Android.Current();
+}
+
+<div class="page">
+    <header class="page-head">
+        <h1>Download</h1>
+        <p>O Priston Avalon roda em celulares e tablets Android com Vulkan.</p>
+    </header>
+
+    <section class="plate download">
+        <img src="~/img/icon-192.png" alt="" width="96" height="96">
+        <div class="download-body">
+            <h2>Priston Avalon para Android</h2>
+            @if (file is null)
+            {
+                <p>O instalador estará disponível aqui em breve.</p>
+            }
+            else
+            {
+                <dl class="facts">
+                    @if (file.Version.Length > 0)
+                    {
+                        <dt>Versão</dt>
+                        <dd>@file.Version</dd>
+                    }
+                    <dt>Tamanho</dt>
+                    <dd>@SiteText.Size(file.Length)</dd>
+                    <dt>Publicado em</dt>
+                    <dd>@SiteText.Date(DateOnly.FromDateTime(file.LastWrite.LocalDateTime))</dd>
+                    <dt>SHA-256</dt>
+                    <dd><code class="hash">@file.Sha256</code></dd>
+                </dl>
+                <a class="btn btn-primary btn-large" href="@WebHosting.AndroidDownloadPath" download="@file.DownloadName">Baixar APK</a>
+            }
+        </div>
+    </section>
+
+    <section class="plate steps">
+        <h2>Como instalar</h2>
+        <ol>
+            <li>Toque em <strong>Baixar APK</strong> no seu Android.</li>
+            <li>Abra o arquivo baixado. Se o Android pedir, permita que o navegador instale apps desta fonte.</li>
+            <li>Abra o Priston Avalon e entre com a conta que você <a href="/cadastro">criou aqui no site</a>.</li>
+        </ol>
+        <p class="note">Baixe o jogo somente por este site. O código SHA-256 acima permite conferir que o arquivo é o original.</p>
+    </section>
+</div>

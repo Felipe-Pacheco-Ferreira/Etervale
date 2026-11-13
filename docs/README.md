@@ -27,6 +27,7 @@ where to look. Setup, build and run commands are in the root [README.md](../READ
 | [chat-and-gm.md](chat-and-gm.md) | Chat end to end: window, bubbles, routing, whispers, notices; game-master levels, commands and audit |
 | [application.md](application.md) | `Shared/PristonTale.Application`: use cases, sessions, `WorldServer`, tick, transactions, NPC services |
 | [server.md](server.md) | `Server/PristonTale.Server`: startup, hosted services, TCP edge, settings |
+| [website.md](website.md) | `Web/PristonTale.Web`: the public website, its pages, settings, security measures, running and deploying |
 | [protocol.md](protocol.md) | Wire protocol: TLS transport, login and world messages, Etervale opcodes, server capacity |
 | [persistence.md](persistence.md) | Repositories, migrations, schema, SQLite and PostgreSQL providers |
 | [world-import.md](world-import.md) | `tools/PristonTale.WorldImport`: authored data formats, parsers, catalog import, verify |
@@ -62,6 +63,7 @@ The MonoGame fork documents itself in [monogame/README.md](../monogame/README.md
 | Change the Android client or port a screen to it | android.md | client.md, tools.md |
 | Add a skill or hit effect | effects.md | skills.md |
 | Change a server setting or connection limit | server.md | protocol.md |
+| Change the website, its pages or its security | website.md | application.md, persistence.md |
 | Add a regression case | testing.md | the area doc |
 | Run or extend a tool | tools.md | |
 
@@ -71,6 +73,7 @@ The MonoGame fork documents itself in [monogame/README.md](../monogame/README.md
 |---|---|
 | `Shared/` | Contracts, Geometry, Assets, Simulation, Protocol, Application (shared by server and client) |
 | `Server/` | Game server host |
+| `Web/` | Public website |
 | `Persistence/` | Storage abstractions, repositories, migrations, providers |
 | `Client/` | Engine3D, Effects, Client.Net, Gameplay, the client executable, the Android client |
 | `tests/` | Regression runner |

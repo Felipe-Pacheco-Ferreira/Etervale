@@ -1,0 +1,54 @@
+{
+  "Site": {
+    "Name": "Priston Avalon",
+    "HttpsPort": 5443,
+    "HstsDays": 365,
+    "KeysPath": "keys",
+    "KnownProxies": []
+  },
+  "Database": {
+    "Provider": "Sqlite",
+    "SqlitePath": "data/pristontale.db",
+    "Postgres": "",
+    "MaxPoolSize": 10
+  },
+  "GameServer": {
+    "Host": "127.0.0.1",
+    "Port": 10009,
+    "ProbeSeconds": 30
+  },
+  "Downloads": {
+    "AndroidApkPath": "downloads/priston-avalon.apk",
+    "AndroidVersion": "0.57"
+  },
+  "Security": {
+    "LoginFailuresPerAccount": 5,
+    "LoginFailuresPerIp": 20,
+    "LoginFailureWindowSeconds": 300,
+    "RegistrationsPerIp": 3,
+    "RegistrationWindowMinutes": 60,
+    "RequestsPerMinute": 120,
+    "FormPostsPerMinute": 10,
+    "SessionMinutes": 120
+  },
+  "Kestrel": {
+    "AddServerHeader": false,
+    "Limits": {
+      "MaxRequestBodySize": 65536
+    },
+    "Endpoints": {
+      "Http": {
+        "Url": "http://localhost:5080"
+      },
+      "Https": {
+        "Url": "https://localhost:5443"
+      }
+    }
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  }
+}

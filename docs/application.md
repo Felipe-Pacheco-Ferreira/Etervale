@@ -19,7 +19,9 @@ into it is described in [server.md](server.md); skill resolution details are in 
 
 | Path | Responsibility |
 | --- | --- |
-| `Services/AuthAppService.cs` | Login against `IAccountRepository`, creates a `PlayerSession` with the account's `GmLevel` |
+| `Services/AuthAppService.cs` | Game login: the credential check of `AccountAppService`, then a `PlayerSession` with the account's `GmLevel` |
+| `Services/AccountAppService.cs` | Accounts outside a game session: `CheckAsync` (the credential check of the game's and the website's logins) and `RegisterAsync` (the website's registration, `AccountRules`) |
+| `Sessions/LoginThrottle.cs` | Failed logins per account and per address in fixed windows, shared by the game server's TCP edge and the website |
 | `Services/CharacterAppService.cs` | List, name check, create, delete characters; builds `CharacterSummary` for the select screen |
 | [`Services/SessionAppService.cs`](../Shared/PristonTale.Application/Services/SessionAppService.cs) | World entry, saves, durable inventory and progression operations (`ApplyDurableAsync`) |
 | [`Services/NpcAppService.cs`](../Shared/PristonTale.Application/Services/NpcAppService.cs) | NPC click and NPC service requests; warehouse load and joint character+warehouse write |
@@ -44,7 +46,7 @@ into it is described in [server.md](server.md); skill resolution details are in 
 | `World/WorldServer.Bellatra.cs`, `World/BellatraGame.cs`, `World/BellatraBooth.cs`, `World/FieldInstance.Bellatra.cs`, `Services/BellatraAppService.cs`, `Bellatra/BellatraClanAppService.cs` | Bellatra's game: the rounds on the tick, the team booths, the arena's monsters and scores, the prizes paid off the tick, the operating clan and its income ([Bellatra](#bellatra)) |
 | `World/WorldServer.StarterGifts.cs`, `Services/StarterGiftAppService.cs` | The starter gifts of new characters: their offers on the tick, prepare and commit, the durable operation and its chat line ([Starter gifts](#starter-gifts)) |
 | `World/WorldServer.Rewards.cs`, `Services/RewardEventAppService.cs` | The events and rewards window: the server-local date of the tick, login days, the window each snapshot carries, claims ([Events and rewards](#events-and-rewards)) |
-| `Calendar/EventCalendarQuery.cs`, `World/WorldServer.Calendar.cs` | The event calendar a player opens: the world's bosses and event settings with the castle's siege schedule ([Event calendar](#event-calendar)) |
+| `Calendar/EventCalendarQuery.cs`, `Calendar/EventCalendarRules.cs`, `World/WorldServer.Calendar.cs` | The event calendar a player opens: the world's bosses and event settings with the castle's siege schedule; `EventCalendarRules` builds the rules for the game server and the website ([Event calendar](#event-calendar)) |
 | `Settings/` | `ServerSettings`, `ServerSettingCatalog` (every row of the settings table), `ServerSettingsAppService` (read, apply, write) |
 | [`World/FieldInstance.cs`](../Shared/PristonTale.Application/World/FieldInstance.cs) | One live field: players, monsters, NPCs, spawner, AI, collision index, step order, views |
 | `World/FieldCombat.cs` | Basic attack and monster attack resolution, damage log, kill payout, corpses |
@@ -79,7 +81,9 @@ to `PristonTale.Tests`. No sockets, packets, SQL or MonoGame.
 
 | Service and method | Contract |
 | --- | --- |
-| `AuthAppService.LoginAsync` | Empty input, unknown account, wrong password: `BadCredentials` (-2); blocked: `LoginDenied` (-24). Values are wire codes. Success returns a token. |
+| `AuthAppService.LoginAsync` | Empty input, unknown account, wrong password: `BadCredentials` (-2); blocked, with the right password: `LoginDenied` (-24). Values are wire codes. Success returns a token. |
+| `AccountAppService.CheckAsync` | The password is verified before the account's state, so a blocked account answers `LoginDenied` only to its password; an unknown account is verified against a hash nobody knows, so it takes the time a known one does. |
+| `AccountAppService.RegisterAsync` | `AccountRules` name (4 to 16 ASCII letters and digits, from a letter) and password (8 to 64 characters, within the login field, not the name); a name taken in any letter case (`IsUserIdTakenAsync`) is `NameTaken`; registrations of one process run one at a time, and an exact name another process inserted first is `NameTaken` too; the new account is returned; the password is stored as a `PasswordHasher` hash. |
 | `CharacterAppService.ListCharactersAsync` | Summaries with armour/weapon/off-hand catalog keys, `InVillage` and the clan's name (`IClanRepository.ClanNamesAsync`); throws `InvalidDataException` on corrupt saved equipment |
 | `CharacterAppService.CreateCharacterAsync` | Trimmed name 3-16, defined class, valid face, unique name, `CharacterSlots.Maximum` per account, first free slot, starter record in its class's town (`DeathPenalty.TownField`: Ricarten for the Tempskron classes and the assassin, Pillai for the Morion classes) |
 | `CharacterAppService.DeleteCharacterAsync` | Account-scoped delete by name. |
@@ -861,6 +865,12 @@ one of 0 to 23, named in the player's language with their field's name, by field
 now (`CastleView`). `EventSchedule.Calendar` then lists the occurrences over `EventSchedule.Horizon` from the server's
 UTC clock in the server's time zone ([world.md](world.md#event-calendar)). Nothing is stored and no per-player counter
 is sent: Etervale keeps none for these events.
+
+`EventCalendarRules` is the composition both readers share: `Bosses` (the field bosses named from a monster catalog and
+`WorldCatalog.FieldName`), `From` (the settings in force and today's boss minute; null when it is not known, which sets
+`EventScheduleRules.BossMinuteKnown` to false) and `WithCastle` (the siege schedule, and the running siege when known).
+The website builds the same rules from storage: the settings table through `ServerSettingCatalog.Read` and the catalog's
+boss hours with Portuguese monster names, without today's minute or a running siege ([website.md](website.md)).
 
 ## Events and rewards
 
