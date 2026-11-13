@@ -529,6 +529,12 @@ to the guide meanwhile), and the journal's auto-hunt action does too. The joysti
   `ClimbTolerance`), which is the leg the shortening would keep, so the route is the same and found at once. The
   navigator plans a moving goal (a monster it chases) again only once the goal moved `GoalDrift` (60 units); replanning
   at every step of it dropped each search before it ended and left the player standing among the monsters.
+  A long way is led a stretch at a time: the navigator's search examines at most `GroundRoute.Stretch` (2500) cells and
+  ends at the reachable point nearest the goal (`GroundRoute.End`), so the walk starts at once; two points before a
+  stretch ends, the next is planned from its end (`PlanRouteAsync(..., from)`) and taken over without stopping. Only a
+  stretch that leads less than `StretchProgress` (48 units) nearer runs the whole search (`GroundRoute.WholeSearch`,
+  120 000 cells), for a dead end a stretch cannot see out of. A whole search for a far goal took long enough on the
+  phone that the player stood on "Calculando a rota…".
   Otherwise routes come from `GroundRoute` (`Client/PristonTale.Gameplay/World`): an A* over 32-unit cells, searched
   off the game thread over a snapshot of the loaded fields (`GameScene.PlanRouteAsync`; their collision meshes are
   read-only). Cells are told apart by height (`Storey`), so stairs and bridges are their own places. Each leg is a walk
@@ -560,7 +566,8 @@ to the guide meanwhile), and the journal's auto-hunt action does too. The joysti
   through the exits to another field: `Walk(..., ride: true)`); the hunt's walks between spawn points and the chase
   stay on foot, as a fight would end the ride at once. It shows "Montado!" before its status. Taking the joystick
   dismounts; attacking, casting and being hurt dismount through the mount's own rules, and a mount the server refuses
-  is asked again after 10 s. Pausing or finishing the automatic quest dismounts.
+  is asked again after 10 s. Pausing or finishing the automatic quest dismounts, and so does coming within
+  `DismountDistance` (120 units) of a walk's goal or arriving at it, or a walk on foot (the hunt's).
   The grid is anchored to the world (cell centres at multiples of 32 units), so every search meets the same legs
   between cells. `RouteLegCache` keeps what the collision decided for each of them (walkable, end height, climb,
   cramped), keyed by the cell, its storey, the direction and the height walked from; `GameScene` keeps one cache per
@@ -678,6 +685,14 @@ The HUD is drawn by Android views laid out in fractions of the screen height, th
   `VulkanWorldSession.AttackTarget`), above its name box, a red arrow in a gold rim points down, bobbing and glowing,
   while it lives (`HudCombat.DrawTargetMarker`, drawn by `RicartenProbe.Draw` after the name plates; see
   [client.md](client.md)).
+  Under its feet a red ring breathes on the ground with a brighter arc turning round it (`GameScene.GroundRingTarget`,
+  set by `RicartenProbe.Draw`; `GameScene.TargetRing.cs` draws it as ground quads of the skill effects, beside the blob
+  shadows, from a ring texture it makes).
+- **Attention marks** (`VulkanAttention`): a running gold border (something done: the quest card once its count is
+  met, each Receber and RECEBER TUDO in Eventos) and a red dot with a count (something new). The Menu button counts
+  the rewards to claim and so does its Eventos entry; the Bolsa button counts the items that came into the bag since it
+  was last opened; the portrait shows the free attribute points. The points lesson starts the first time there are
+  points, also during the automatic quest, out of a fight.
 - **Portraits:** `RicartenProbe.Draw` renders the player's and the target's heads (`HudTargetPortrait`) at the places
   `HudPlacement` defines; the frames leave a round window over them. Change both together through `HudPlacement`.
 - **NPC dialog** (`VulkanNpcPanel`, bottom): one HUD plate between the menu buttons and the action wheel at their
@@ -702,7 +717,7 @@ The HUD is drawn by Android views laid out in fractions of the screen height, th
   (`CombatEventKind.Hit` from the player) whose life then reaches 0 (`VulkanWorldSession.TryReadKill`).
 - **Experience bar** (`VulkanExperienceBar`, bottom): golden fill with a tick every tenth of the level, the level and
   percentage in the middle.
-- **Buttons:** Menu, Missões and Bolsa as round buttons at the bottom left (the bag is a drawstring pouch,
+- **Buttons:** Menu and Bolsa as round buttons at the bottom left (the bag is a drawstring pouch,
   `HudGlyph.Bag`); chat under the player frame; the quest card and the menu on the HUD plate (`PlateDrawable`). The
   menu holds Inventário, Missões, Eventos, Habilidades, Movimento, Rever tutorial, Gráficos, Editar HUD, Calendário and
   Sair do jogo.

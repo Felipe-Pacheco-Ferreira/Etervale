@@ -622,6 +622,8 @@ public sealed partial class GameScene : IDisposable, IHudPortraitScene
         _groundLoot?.Dispose();
         _looks?.Clear();
         _skillFx?.Dispose();
+        _targetRing?.Dispose();
+        _targetRingHighlight?.Dispose();
         _rain?.Dispose();
         _mounts?.Dispose();
         _renderer?.Dispose();

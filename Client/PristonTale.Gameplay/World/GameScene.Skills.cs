@@ -133,6 +133,7 @@ public sealed partial class GameScene : ISkillSceneHost
         if (_skillFx is not null && _camera is not null)
         {
             QueueBlobShadows();
+            QueueTargetRing();
             QueueFootprints();
             _shots.Draw(_skillFx.Renderer, _skillFx.Library);
 

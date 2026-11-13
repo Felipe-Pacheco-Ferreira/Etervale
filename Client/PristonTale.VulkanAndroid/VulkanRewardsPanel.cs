@@ -285,6 +285,7 @@ internal sealed class VulkanRewardsPanel(Activity activity, FrameLayout overlay,
         _note.Text = Footnote(_track, track?.MinLevel ?? 0);
         _claimAll.Enabled = ready > 0 && !_claiming;
         _claimAll.Alpha = _claimAll.Enabled ? 1f : .45f;
+        VulkanAttention.Gold(_claimAll, _claimAll.Enabled, Dp(10));
     }
 
     // The seven days side by side; the seventh larger, the final reward.
@@ -494,6 +495,8 @@ internal sealed class VulkanRewardsPanel(Activity activity, FrameLayout overlay,
         var claim = MobileHudTheme.Button(activity, "Receber", prominent: true);
         claim.Enabled = !_claiming;
         claim.Click += (_, _) => Send(RewardEventsAction.Claim, track, index);
+        // Ready to claim: the running gold border.
+        VulkanAttention.Gold(claim, true, Dp(10));
         return claim;
     }
 

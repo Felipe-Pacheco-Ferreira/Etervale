@@ -153,13 +153,55 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
         // The menu buttons stand on their own, so the HUD editor moves each.
         var menuOrbs = new List<VulkanActionOrb>();
         var mainMenu = MenuOrb(HudGlyph.Menu, "Menu");
-        var journalOrb = MenuOrb(HudGlyph.Journal, "Missões");
-        journalOrb.Click += (_, _) => OpenJournal();
         var bagOrb = MenuOrb(HudGlyph.Bag, "Bolsa");
-        bagOrb.Click += (_, _) => inventory.Toggle();
+        // Items that came into the bag since the player last looked in it: a count on the bag button.
+        var seenItems = new HashSet<Guid>();
+        var bagSeenOnce = false;
+        void OpenBag()
+        {
+            inventory.Toggle();
+            SeeBag();
+        }
+
+        void SeeBag()
+        {
+            if (session.Owner is not { } current)
+            {
+                return;
+            }
+
+            seenItems.Clear();
+            foreach (var item in current.Items)
+            {
+                seenItems.Add(item.InstanceId);
+            }
+
+            bagSeenOnce = true;
+            bagOrb.SetBadge(0);
+        }
+
+        void CountNewItems(PristonTale.Simulation.Characters.OwnerState current)
+        {
+            if (!bagSeenOnce || inventory.IsOpen)
+            {
+                SeeBag();
+                return;
+            }
+
+            var fresh = 0;
+            foreach (var item in current.Items)
+            {
+                if (!seenItems.Contains(item.InstanceId))
+                {
+                    fresh++;
+                }
+            }
+
+            bagOrb.SetBadge(fresh);
+        }
+
+        bagOrb.Click += (_, _) => OpenBag();
         var rewards = new VulkanRewardsPanel(activity, overlay, session, icons);
-        var eventsOrb = MenuOrb(HudGlyph.Gift, "Eventos");
-        eventsOrb.Click += (_, _) => rewards.Open();
         VulkanActionOrb MenuOrb(HudGlyph glyph, string caption)
         {
             var orb = new VulkanActionOrb(activity, glyph) { ContentDescription = caption };
@@ -200,9 +242,9 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
         mainMenu.Click += (_, _) => navigation.Visibility = navigation.Visibility == ViewStates.Visible
             ? ViewStates.Gone : ViewStates.Visible;
         var firstRow = AddMenuRow();
-        AddMenuAction(firstRow, "Inventário", HudGlyph.Bag, inventory.Toggle);
+        AddMenuAction(firstRow, "Inventário", HudGlyph.Bag, OpenBag);
         AddMenuAction(firstRow, "Missões", HudGlyph.Journal, OpenJournal);
-        AddMenuAction(firstRow, "Eventos", HudGlyph.Gift, rewards.Open);
+        var eventsEntry = AddMenuAction(firstRow, "Eventos", HudGlyph.Gift, rewards.Open);
         var secondRow = AddMenuRow();
         // The skills window needs the action wheel, made further down.
         VulkanSkillsPanel skills = null;
@@ -224,7 +266,7 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
             return row;
         }
 
-        void AddMenuAction(LinearLayout row, string name, HudGlyph glyph, Action action, bool stacked = true)
+        Button AddMenuAction(LinearLayout row, string name, HudGlyph glyph, Action action, bool stacked = true)
         {
             var entry = MobileHudTheme.Button(activity, name);
             MobileHudTheme.Icon(entry, glyph, stacked);
@@ -234,6 +276,7 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
                 action();
             };
             row.AddView(entry, new LinearLayout.LayoutParams(0, Dp(stacked ? 48 : 38), 1) { RightMargin = Dp(3) });
+            return entry;
         }
 
         var messages = new TextView(activity) { TextSize = 11 };
@@ -303,9 +346,7 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
         editor.Register("chat", "Chat", chat);
         editor.Register("chatFeed", "Histórico do chat", chatFeed);
         editor.Register("menu", "Menu", mainMenu);
-        editor.Register("journal", "Missões", journalOrb);
         editor.Register("bag", "Bolsa", bagOrb);
-        editor.Register("events", "Eventos", eventsOrb);
         editor.Register("minimap", "Minimapa", mapBox);
         editor.Register("quest", "Missão", tracker.View);
         editor.Register("attack", "Atacar", wheel.Attack);
@@ -392,6 +433,7 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
             if (owner is not null && !ReferenceEquals(owner, previousOwner))
             {
                 player.Update(owner);
+                CountNewItems(owner);
                 experience.Update(owner);
                 feed.Observe(owner);
                 wheel.Update(owner);
@@ -405,7 +447,9 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
             {
                 previousRewards = rewardWindow;
                 rewards.Update(rewardWindow);
-                eventsOrb.SetBadge(rewardWindow.Ready);
+                // Rewards to claim: the count on the menu button and on its Eventos entry.
+                mainMenu.SetBadge(rewardWindow.Ready);
+                VulkanAttention.Dot(eventsEntry, rewardWindow.Ready);
             }
 
             while (session.TryReadRewardResult(out var rewardResult))

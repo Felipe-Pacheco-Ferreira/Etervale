@@ -22,6 +22,7 @@ internal sealed class VulkanPlayerFrame : View
     private readonly RectF _box = new();
     private string _level = "1";
     private int _levelValue = 1;
+    private int _statPoints;
     private string _lifeText = "";
     private string _manaText = "";
     private string _staminaText = "";
@@ -42,6 +43,7 @@ internal sealed class VulkanPlayerFrame : View
     {
         _level = owner.Level.ToString();
         _levelValue = owner.Level;
+        _statPoints = owner.StatPoints;
         _life.Set(owner.Life, owner.MaxLife);
         _mana.Set(owner.Mana, owner.MaxMana);
         _stamina.Set(owner.Stamina, owner.MaxStamina);
@@ -67,6 +69,12 @@ internal sealed class VulkanPlayerFrame : View
         VulkanHudArt.Plate(canvas, _box, .05f * h, centerX, centerY, size / 2f, crest: true);
         VulkanHudArt.Aura(canvas, centerX, centerY, size / 2f, phase);
         VulkanHudArt.LevelBadge(canvas, centerX - size * .36f, centerY + size * .38f, .03f * h, _level, _levelValue, ExperienceTable.MaximumLevel, phase);
+        if (_statPoints > 0)
+        {
+            // Points to spend: a red dot with their count on the portrait (a tap opens the status).
+            VulkanHudArt.RedBadge(canvas, centerX + size * .38f, centerY - size * .36f, .026f * h,
+                _statPoints > VulkanHudArt.MostBadge ? VulkanHudArt.MostBadgeText : _statPoints.ToString());
+        }
 
         var left = centerX + size / 2f + .03f * h;
         var right = FrameRight * h - .03f * h;

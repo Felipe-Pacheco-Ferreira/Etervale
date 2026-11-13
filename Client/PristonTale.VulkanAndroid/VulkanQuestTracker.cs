@@ -130,6 +130,8 @@ internal sealed class VulkanQuestTracker
             AdventurerJourneyRoute.MeetSkadiDescription or AdventurerJourneyRoute.MeetJinDescription ? "Jornada do Aventureiro" : step.Title;
         _objective.Text = step?.Title ?? "Nenhuma missão ativa";
         var counting = quest is { KillsNeeded: > 0 };
+        // A count met: the card wears the running gold border until the quest moves on.
+        VulkanAttention.Gold(View, counting && quest.Kills >= quest.KillsNeeded, Dp(10));
         _bar.Visibility = counting ? ViewStates.Visible : ViewStates.Gone;
         _title.Text = _titleText + (_collapsed ? "  ▸" : "  ▾");
         _objective.Visibility = _collapsed ? ViewStates.Gone : ViewStates.Visible;

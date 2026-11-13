@@ -8,6 +8,7 @@ using PristonTale.Simulation.Items.Usable;
 using PristonTale.Simulation.Quests;
 using PristonTale.Simulation.World;
 using XnaVector2 = Microsoft.Xna.Framework.Vector2;
+using XnaVector3 = Microsoft.Xna.Framework.Vector3;
 
 // The automatic quest (docs/android.md, "Automatic quest"): from what the server says of the Adventurer Journey, it walks
 // the player to the tribe's guide and talks to it, readies the weapon and the belt the guide asks for, travels to the
@@ -18,6 +19,9 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
     private const float WaypointReach = 40f;
     // How far a route's goal may move before the route is planned again.
     private const float GoalDrift = 60f;
+    // How much nearer a stretch must lead to count as progress, and how many points before its end the next is planned.
+    private const float StretchProgress = 48f;
+    private const int AheadPoints = 2;
     // A route's point counts as passed this close: the player walks the legs the search checked and walked, never
     // cutting a corner into a planter or a lamp post.
     private const float PointReach = GameScene.RoutePointReach;
@@ -51,6 +55,8 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
     private const double NoRouteRetrySeconds = 2;
     // Journeys longer than this ride the travel mount; a refused mount (combat) is asked again after MountRetrySeconds.
     private const float MountDistance = 500f;
+    // How near the goal the rider gets off.
+    private const float DismountDistance = 120f;
     private const double MountRetrySeconds = 10;
     private double _mountRetryAt;
     private string _ridingStatus;
@@ -64,6 +70,12 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
     private int _routeField;
     private Vector2 _routeGoal;
     private Task<GroundRoute> _routing;
+    // The next stretch, planned from where the one walked now ends (_stretchEnd, null when it reaches the goal); where the
+    // search that leads the way started; whether the next search is a whole one.
+    private Task<GroundRoute> _ahead;
+    private XnaVector3? _stretchEnd;
+    private Vector2 _searchFrom;
+    private bool _searchWhole;
     private int _routeFailures;
     private Vector3 _lastPosition;
     private double _drankAt = double.NegativeInfinity;
@@ -399,14 +411,25 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
         var here = new Vector2(pose.Position.X, pose.Position.Z);
         if (Vector2.Distance(here, goal) <= reach)
         {
+            if (scene.Mounted)
+            {
+                scene.Dismount();
+            }
+
             Show(status);
             return true;
         }
 
         var now = _clock.Elapsed.TotalSeconds;
-        if (ride)
+        var left = Vector2.Distance(here, goal);
+        if (ride && left > DismountDistance)
         {
-            Ride(scene, Vector2.Distance(here, goal), now);
+            Ride(scene, left, now);
+        }
+        else if (scene.Mounted)
+        {
+            // Close to the goal, or a walk on foot (the hunt's): off the mount, as a player would get off at the door.
+            scene.Dismount();
         }
 
         Show(scene.Mounted ? RidingStatus(status) : status);
@@ -414,33 +437,45 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
         // and left the mount on and off; the hound may brush a wall instead.
         // A goal that moves (a monster chased) is planned for again only once it moved GoalDrift: replanning at every step
         // of it dropped each search before it ended, and the player stood still among the monsters.
+        var renderGoal = new XnaVector2(goal.X, -goal.Y);
         if (_routeField != field || Vector2.Distance(_routeGoal, goal) > GoalDrift || (_route.Count == 0 && _routing is null && now >= _retryAt))
         {
             _routeField = field;
             _routeGoal = goal;
             _route = [];
-            var renderGoal = new XnaVector2(goal.X, -goal.Y);
-            _routing = scene.PlanRouteAsync(renderGoal, session.NpcPoints(renderGoal, TalkReach), GameScene.WalkingBodyRadius);
+            _ahead = null;
+            _searchFrom = here;
+            // A long way is led a stretch at a time (GroundRoute.Stretch), so the walk starts at once; a whole search runs
+            // only where a stretch could not come nearer (a dead end it cannot see out of).
+            _routing = scene.PlanRouteAsync(renderGoal, session.NpcPoints(renderGoal, TalkReach), GameScene.WalkingBodyRadius,
+                _searchWhole ? GroundRoute.WholeSearch : GroundRoute.Stretch);
         }
 
         if (_routing is { IsCompleted: true } search)
         {
             var routing = search.IsCompletedSuccessfully ? search.Result : null;
+            var whole = _searchWhole;
             _routing = null;
+            _searchWhole = false;
             LogRoute(routing, search.Exception);
-            if (routing is not { Points.Count: > 0 })
+            if (routing is not { Points.Count: > 0 } || !whole && !routing.ReachesGoal && Distance(routing.End, _searchFrom) < StretchProgress)
             {
+                if (!whole && routing is not null)
+                {
+                    // The stretch found no way nearer: the whole search, at once.
+                    _searchWhole = true;
+                    _retryAt = 0;
+                    Show("Calculando a rota…");
+                    return false;
+                }
+
                 // No walkable way from here: never walk blind at the goal, which runs into the walls between.
                 _retryAt = now + NoRouteRetrySeconds;
                 Show("Sem caminho daqui; tentando de novo");
                 return false;
             }
 
-            // A route that stops short of the goal leads as near as the loaded ground allows; the next search starts there.
-            _route = routing.Points;
-            _routeIndex = 0;
-            _lastProgressAt = _clock.Elapsed.TotalSeconds;
-            Volatile.Write(ref _marks, new RouteMarks(field, _route.Select(point => new Vector2(point.X, -point.Y)).ToArray()));
+            Follow(routing, field);
         }
 
         if (_route.Count == 0)
@@ -459,10 +494,34 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
             _routeIndex++;
         }
 
+        // Near the end of a stretch the next one is planned from where it ends, so the walk goes on without stopping.
+        if (_stretchEnd is { } end && _ahead is null && _route.Count - _routeIndex <= AheadPoints)
+        {
+            _ahead = scene.PlanRouteAsync(renderGoal, session.NpcPoints(renderGoal, TalkReach), GameScene.WalkingBodyRadius, GroundRoute.Stretch, end);
+        }
+
         if (_routeIndex >= _route.Count)
         {
-            // The end of a route that stopped short: search again from here.
+            if (_ahead is { IsCompleted: true } next)
+            {
+                _ahead = null;
+                var nextRoute = next.IsCompletedSuccessfully ? next.Result : null;
+                LogRoute(nextRoute, next.Exception);
+                if (nextRoute is { Points.Count: > 0 } && (nextRoute.ReachesGoal || Distance(nextRoute.End, here) >= StretchProgress))
+                {
+                    Follow(nextRoute, field);
+                    return false;
+                }
+            }
+            else if (_ahead is not null)
+            {
+                Show("Calculando a rota…");
+                return false;
+            }
+
+            // The end of a route with nothing planned beyond it: search again from here.
             _route = [];
+            _ahead = null;
             return false;
         }
 
@@ -478,6 +537,7 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
             _routeFailures++;
             _lastProgressAt = now;
             _route = [];
+            _ahead = null;
             if (_routeFailures > MostRouteFailures)
             {
                 _routeFailures = 0;
@@ -487,6 +547,20 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
 
         return false;
     }
+
+    // Walks a route found: from its first point, its end kept when it stops short of the goal (a stretch) so the next
+    // stretch is planned from there.
+    private void Follow(GroundRoute routing, int field)
+    {
+        _route = routing.Points;
+        _routeIndex = 0;
+        _stretchEnd = routing.ReachesGoal ? null : routing.End;
+        _lastProgressAt = _clock.Elapsed.TotalSeconds;
+        Volatile.Write(ref _marks, new RouteMarks(field, _route.Select(point => new Vector2(point.X, -point.Y)).ToArray()));
+    }
+
+    // The planar distance between render-plane feet and a point of a field (its own planar x, z).
+    private static float Distance(XnaVector3 feet, Vector2 point) => Vector2.Distance(new Vector2(feet.X, -feet.Z), point);
 
     // Mounts the travel mount for a long walk; the mount itself refuses in combat, and attacking leaves it.
     private void Ride(GameScene scene, float distance, double now)
@@ -561,6 +635,9 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
     {
         _route = [];
         _routing = null;
+        _ahead = null;
+        _stretchEnd = null;
+        _searchWhole = false;
         _routeField = 0;
         _routeFailures = 0;
         Volatile.Write(ref _marks, NoMarks);

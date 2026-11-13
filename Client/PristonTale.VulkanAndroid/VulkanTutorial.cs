@@ -96,7 +96,8 @@ internal sealed class VulkanTutorial
             [
                 new(Attack, "Hora de lutar", "Um monstro está por perto. Toque em Atacar para lutar com ele.", () => session.Quest is not { Kills: 0 })
             ]),
-            new("points", () => Idle() && session.Owner is { StatPoints: > 0 },
+            // Points to spend matter during the automatic quest too: this lesson waits only for a moment out of a fight.
+            new("points", () => session.Owner is { Life: > 0, StatPoints: > 0 } && session.AttackTarget == 0,
             [
                 new(() => player, "Pontos de atributo", "Você subiu de nível e ganhou pontos para fortalecer seu personagem. Toque no seu retrato "
                     + "para abrir o Status.", () => status.IsOpen),

@@ -28,7 +28,10 @@ public sealed class GroundRoute
 {
     private const float Cell = 32f;
     private const float GoalReach = 40f;
-    private const int MostNodes = 120_000;
+    // The cells a whole search may examine, and those a stretch (a search that only leads the way part of a long walk)
+    // may: a stretch ends at the reachable point nearest the goal, fast enough to start walking at once.
+    public const int WholeSearch = 120_000;
+    public const int Stretch = 2_500;
     // Heights this far apart are different floors of one cell (a stair's flight over the ground, a bridge over a road).
     private const float Storey = 24f;
     private static readonly (int X, int Z)[] Neighbours = [(1, 0), (0, 1), (-1, 0), (0, -1), (1, 1), (-1, 1), (-1, -1), (1, -1)];
@@ -66,6 +69,7 @@ public sealed class GroundRoute
     private Node _closest;
     private int _closestAt;
     private bool _triedDirect;
+    private readonly int _mostCells;
 
     // Cramped: whether the leg into this cell passes with little room. OnGrid: false for the start, off the grid.
     private sealed record Node(Vector3 Feet, int X, int Z, float Cost, bool Cramped, Node Parent, bool OnGrid);
@@ -81,9 +85,12 @@ public sealed class GroundRoute
 
     // startLeg: the legs out of the start, whole (what this search avoids included). leg: every other leg, as the
     // collision alone decides it, then checked by clear; legs between cells are kept in cache, so leg must give the same
-    // answer for the same cells on any search and be safe to call from several threads at once.
-    public GroundRoute(Vector3 start, Vector2 goal, RouteLeg startLeg, RouteLeg leg, RouteClear clear, RouteLegCache cache, bool goalOffGround)
+    // answer for the same cells on any search and be safe to call from several threads at once. mostCells: WholeSearch,
+    // or Stretch for a search that only leads part of the way.
+    public GroundRoute(Vector3 start, Vector2 goal, RouteLeg startLeg, RouteLeg leg, RouteClear clear, RouteLegCache cache, bool goalOffGround,
+        int mostCells = WholeSearch)
     {
+        _mostCells = mostCells;
         _start = start;
         _goal = goal;
         _startLeg = startLeg;
@@ -104,6 +111,9 @@ public sealed class GroundRoute
 
     // The points to walk through after the start, on the render plane.
     public IReadOnlyList<Vector2> Points { get; private set; } = [];
+
+    // The feet where the route ends: the goal, or the reachable point nearest to it, where the next search starts.
+    public Vector3 End { get; private set; }
 
     public int Examined { get; private set; }
 
@@ -140,7 +150,7 @@ public sealed class GroundRoute
             }
         }
 
-        while (budget-- > 0 && Examined < MostNodes && _open.TryDequeue(out var node, out _))
+        while (budget-- > 0 && Examined < _mostCells && _open.TryDequeue(out var node, out _))
         {
             if (_costs[KeyOf(node)] < node.Cost)
             {
@@ -174,7 +184,7 @@ public sealed class GroundRoute
             }
         }
 
-        if (_open.Count == 0 || Examined >= MostNodes)
+        if (_open.Count == 0 || Examined >= _mostCells)
         {
             return Finish(_closest, reachesGoal: false);
         }
@@ -283,6 +293,7 @@ public sealed class GroundRoute
 
         chain.Reverse();
         Points = Shorten(chain);
+        End = end.Feet;
         ReachesGoal = reachesGoal;
         Done = true;
         return true;

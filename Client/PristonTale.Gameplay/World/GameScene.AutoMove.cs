@@ -100,8 +100,11 @@ public sealed partial class GameScene
     // a little wider than the body, searched off the game thread over the fields loaded now (their collision is
     // read-only, so the search reads it alongside the frame). avoid: where standing NPCs are, on the render plane; the
     // body collides with them, which the field's collision does not know. bodyRadius: the radius of the body that will
-    // walk the route. Null when the player is not placed yet.
-    public Task<GroundRoute> PlanRouteAsync(Vector2 goal, IReadOnlyList<Vector2> avoid = null, float bodyRadius = WalkingBodyRadius)
+    // walk the route. mostCells: GroundRoute.WholeSearch, or GroundRoute.Stretch to lead only part of a long way at once.
+    // from: where the route starts (the end of the stretch walked now, to plan the next one ahead), else the player's feet.
+    // Null when the player is not placed yet.
+    public Task<GroundRoute> PlanRouteAsync(Vector2 goal, IReadOnlyList<Vector2> avoid = null, float bodyRadius = WalkingBodyRadius,
+        int mostCells = GroundRoute.WholeSearch, Vector3? from = null)
     {
         if (_playerBody is null)
         {
@@ -122,8 +125,8 @@ public sealed partial class GameScene
             _routeLegs[bodyRadius] = legs;
         }
 
-        var feet = PlayerFeet;
-        return Task.Run(() => PlanRoute(fields, feet, goal, avoid ?? [], legs));
+        var feet = from ?? PlayerFeet;
+        return Task.Run(() => PlanRoute(fields, feet, goal, avoid ?? [], legs, mostCells));
     }
 
     // A route the player's own movement walks to its end: each route found is walked frame by frame (WalkRoute); where
@@ -131,7 +134,7 @@ public sealed partial class GameScene
     // the legs the first search walked. legs: the legs earlier searches over the same fields walked, whose body radius the
     // route is planned for; without it, a fresh cache for the walking body.
     internal static GroundRoute PlanRoute(IReadOnlyList<LoadedField> fields, Vector3 feet, Vector2 goal, IReadOnlyList<Vector2> avoid,
-        RouteLegCache legs = null)
+        RouteLegCache legs = null, int mostCells = GroundRoute.WholeSearch)
     {
         var collision = new FieldCollisionQuery(fields);
         var floor = FloorOf(collision);
@@ -147,7 +150,7 @@ public sealed partial class GameScene
         for (var attempt = 1; attempt <= RouteWalkAttempts; attempt++)
         {
             var started = clock.Elapsed;
-            route = Search(CreateRoute(collision, floor, walls, legs, feet, goal, blocked));
+            route = Search(CreateRoute(collision, floor, walls, legs, feet, goal, blocked, mostCells));
             searching += clock.Elapsed - started;
             cells += route.Examined;
             walked += route.LegsWalked;
@@ -242,7 +245,7 @@ public sealed partial class GameScene
     // way. The collision's answer is the same for every search, so legs between cells are kept in legs; the NPCs are
     // checked on each search.
     private static GroundRoute CreateRoute(FieldCollisionQuery collision, GroundFloorQuery floor, WallTrace walls, RouteLegCache legs, Vector3 feet,
-        Vector2 goal, IReadOnlyList<Vector2> avoid)
+        Vector2 goal, IReadOnlyList<Vector2> avoid, int mostCells)
     {
         var radius = legs.BodyRadius;
         var npcRoom = NpcRadius + radius;
@@ -264,7 +267,7 @@ public sealed partial class GameScene
         };
 
         return new GroundRoute(feet, goal, startLeg, leg, clear, legs,
-            goalOffGround: !collision.TryGetFloorHeight(new Vector3(goal.X, 0f, goal.Y), float.MaxValue, 0f, out _));
+            goalOffGround: !collision.TryGetFloorHeight(new Vector3(goal.X, 0f, goal.Y), float.MaxValue, 0f, out _), mostCells);
     }
 
     // A leg with RouteBody of side room, or else a cramped one with RouteNarrowBody.

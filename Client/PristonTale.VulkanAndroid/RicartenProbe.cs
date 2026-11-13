@@ -462,12 +462,13 @@ internal sealed class RicartenProbe : Game
         {
             targetPortrait.Render(scene, framed, layout);
         }
+        var attacked = scene.AttackTargetId != 0 ? scene.AttackTargetId : session.AttackTarget;
+        scene.GroundRingTarget = attacked;
         GraphicsDevice.Clear(scene.SkyColor);
         scene.Draw();
         nameSprites.Update();
         namePainter.Begin(layout);
         namePlates.DrawNamePlates(namePainter, layout, overhead, scene.HoveredTargetId, scene.TracedTargetId, classic: true);
-        var attacked = scene.AttackTargetId != 0 ? scene.AttackTargetId : session.AttackTarget;
         namePlates.DrawTargetMarker(namePainter, layout, overhead, attacked, Environment.TickCount64, classic: true);
         chat.Bubbles.Draw(namePainter, layout, Environment.TickCount64, overhead, speakerColor, scene.SelectedTargetId);
         namePainter.End();
