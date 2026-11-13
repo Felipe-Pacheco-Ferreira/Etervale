@@ -36,6 +36,7 @@ How the tick calls these rules belongs to [application.md](application.md).
 | `World/Spawning/FieldSpawner.cs` | Population pass, idle despawn, scheduled bosses; `SpawnSeams.cs` holds `IPlayerProximity`, `ISpawnSink` |
 | `World/Spawning/SpawnCadence.cs` | Optional bitmask spawn cadence on a 70 Hz frame clock |
 | `World/Spawning/BossSpawnSchedule.cs` | Server-wide hourly boss pass at a random minute per day |
+| `World/Calendar/` | The event calendar: `EventSchedule` (rules and a time to running and coming occurrences) and `CalendarPages` (the window's pages) ([Event calendar](#event-calendar)) |
 | `World/Loot/` | `DropTable`, `DropRoller`, `KillReward` (experience and kill credit), `GroundDropView` |
 | `World/Motion/` | `MotionClip`, `MotionTiming`, `MotionTimingSet`/`MotionTimingCatalog`, player fallbacks |
 | `World/Motion/PlayerEquipmentTiming.cs`, `World/Motion/Data/PlayerEquipmentTiming.json` | Player attack clips by class and weapon key, loaded from the generated embedded JSON (one entry per class and clip with its keys); do not hand-edit |
@@ -441,10 +442,30 @@ spawn files; see [world-import.md](world-import.md)): `SpawnPoints` (X/Z, `Activ
 `MaintainDespawns`: a live wild monster with no player near loses `dtMs` from `IdleDespawnMsLeft` (bosses get
 `IdleDespawnMs * 32`); a player near resets it; expired monsters are returned for removal.
 
-Bosses: `BossSpawnSchedule` (one per server) picks a random minute 1-45 each local day and opens a pass at that minute
-of every hour, at most once per hour slot and never within 10 minutes of the last pass. `WorldServer` hands the hour to
-every live field; `SpawnScheduledBosses(hour)` spawns each `BossSpawn` whose hours contain it at the first active
+Bosses: `BossSpawnSchedule` (one per server) picks a random minute (`FirstMinute` 1 to `LastMinute` 45) each local
+day and opens a pass at that minute of every hour, at most once per hour slot and never within 10 minutes of the last
+pass. `WorldServer` hands the hour to every live field; `SpawnScheduledBosses(hour)` spawns each `BossSpawn` whose hours contain it at the first active
 point with a player near (else the first active point), plus escorts scattered within 64 units.
+
+## Event calendar
+
+`World/Calendar/EventSchedule.cs` turns the server's event rules (`EventScheduleRules`) and a time into the
+occurrences (`CalendarOccurrence`, UTC) running then or starting before the end of a span (`EventSchedule.Horizon`, 8
+days); local hours are the server's time zone and a local time a daylight-saving change skips has no occurrence. Only
+events Etervale runs are listed:
+
+| Kind | Rule | Occurrences |
+| --- | --- | --- |
+| `FieldBosses` | The boss pass above: the hours of each `BossSpawn` (24 never comes) | A moment per hour some boss has, carrying the bosses of that hour as bits; today's at `BossMinute`, later days' at the hour's start with `MinuteUnknown` (the minute is drawn on the day). A call that has passed is gone. |
+| `Bellatra` | `BellatraRules.OpenWindows` in `BellatraMode.Hours`, always in `Always` | A window per open span of each day, or one always-running occurrence. |
+| `CastleSiege` | `CastleRules.NextSiege` and `ScheduledMinutes` (the weekly siege or the league) | The week's sieges; the siege the castle reports running (`LiveSiege`) replaces the scheduled one, and a scheduled siege that should be running but is not (it ended early) is left out. |
+| `CrystalEvent` | `MonsterCrystals.EventActive` | Each day from `EventStartHour` to its end, or always running all day. |
+| `ExperienceEvent`, `DropEvents` | `KillReward.EventPercent` not `NoEventPercent`; `ItemEventRates.Running` | Always running. |
+
+The list puts the always-running events first, then orders by start. `CalendarPages` makes the window's pages in the
+viewer's time zone: what runs now (`Running`), what starts in the next 24 hours (`Coming`) and the seven days after
+today (`Days`), with each page's boss calls on one card (`CalendarEntry`). A boss spawns only in a field the server has
+loaded (one a player entered since it started), which the calendar does not tell.
 
 ## Loot and kill rewards
 

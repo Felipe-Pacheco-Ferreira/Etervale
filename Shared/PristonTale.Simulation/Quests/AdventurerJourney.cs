@@ -10,6 +10,7 @@ internal static class AdventurerJourney
     private static readonly uint HopyCrystal = AdventurerJourneyRoute.Crystal;
     private static readonly uint SmallLifePotion = ItemCodes.Parse("PL101");
     private const int TutorialPotionGranted = 1;
+    private const int CrystalOwed = 2;
 
     internal static bool IsAvailable(PlayerCharacter character) =>
         (character.Quests.ElementaryLog & ElementaryQuestLog.AdventurerJourney) == 0;
@@ -85,6 +86,36 @@ internal static class AdventurerJourney
         }
 
         return true;
+    }
+
+    // A kill of the prey once the hunt is done leaves the crystal the guide asks for (its own drop is under one kill in a
+    // hundred), until the bag holds one more than when the hunt began. True when the upkeep owes it.
+    public static bool OnKill(QuestContext context, int monsterCode)
+    {
+        var active = context.Journal.Active;
+        if (active.Code != Code || active.State != 2 || !active.HuntComplete || monsterCode != active.Target
+            || (active.Flags & CrystalOwed) != 0 || QuestInventory.Count(context.Character, HopyCrystal) > active.Variant)
+        {
+            return false;
+        }
+
+        context.Journal.Active = active with { Flags = active.Flags | CrystalOwed };
+        return true;
+    }
+
+    // Places the owed crystal; one that does not fit stays owed for the next upkeep.
+    public static void Upkeep(QuestContext context)
+    {
+        var active = context.Journal.Active;
+        if (active.Code != Code || (active.Flags & CrystalOwed) == 0)
+        {
+            return;
+        }
+
+        if (QuestInventory.Count(context.Character, HopyCrystal) > active.Variant || QuestInventory.TryGrant(context, [new QuestGrant(HopyCrystal)]))
+        {
+            context.Journal.Active = active with { Flags = active.Flags & ~CrystalOwed };
+        }
     }
 
     private static bool IsGuide(QuestContext context) =>

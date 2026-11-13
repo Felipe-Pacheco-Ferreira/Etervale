@@ -94,6 +94,7 @@ public static class QuestDrops
 
         RemoveLeftovers(context);
         EliteQuests.Upkeep(context);
+        AdventurerJourney.Upkeep(context);
         RankUpByQuestWeapon.Grow(context);
         RankUpByQuestWeapon.Expire(context);
     }
@@ -200,15 +201,17 @@ public static class QuestTick
         LevelQuests.OnKill(context, monsterCode);
         LevelBonusQuests.OnKill(context, monsterCode);
         ElementaryQuests.OnKill(context, monsterCode);
+        var journeyCrystal = false;
         if (context.Journal.Active.Code == QuestCode.AdventurerJourney)
         {
             QuestSteps.CreditHunt(context, monsterCode);
+            journeyCrystal = AdventurerJourney.OnKill(context, monsterCode);
         }
         FuryOfPhantomQuest.OnKill(context);
         RankUpByMasterTrial.OnKill(context, monsterCode);
         RankUpByHestian.OnKill(context, monsterCode);
         var eliteItem = EliteQuests.OnKill(context, monsterCode);
-        return RankUpByQuestWeapon.OnKill(context, monsterCode) | eliteItem;
+        return RankUpByQuestWeapon.OnKill(context, monsterCode) | eliteItem | journeyCrystal;
     }
 
     // Returns true when the death took a quest item back, which the upkeep then removes.

@@ -14,6 +14,8 @@ internal sealed class VulkanPanel
 
     private readonly FrameLayout _overlay;
     private readonly FrameLayout _window;
+    private readonly LinearLayout _header;
+    private readonly float _density;
 
     public LinearLayout Content { get; }
 
@@ -24,6 +26,7 @@ internal sealed class VulkanPanel
     {
         _overlay = overlay;
         var density = activity.Resources?.DisplayMetrics?.Density ?? 1f;
+        _density = density;
         int Dp(int value) => (int)MathF.Round(value * density);
         _window = new FrameLayout(activity) { Clickable = true };
         _window.SetBackgroundColor(Color.Argb(160, 0, 0, 0));
@@ -31,7 +34,7 @@ internal sealed class VulkanPanel
 
         var plate = new LinearLayout(activity) { Orientation = Orientation.Vertical, Clickable = true, Background = new PlateDrawable(Dp(14)) };
         plate.SetPadding(Dp(18), Dp(12), Dp(18), Dp(14));
-        var header = new LinearLayout(activity);
+        var header = _header = new LinearLayout(activity);
         header.SetGravity(GravityFlags.CenterVertical);
         header.AddView(Title(activity, title), new LinearLayout.LayoutParams(0, -2, 1));
         var close = new VulkanActionOrb(activity, HudGlyph.Exit) { ContentDescription = "Fechar" };
@@ -44,6 +47,13 @@ internal sealed class VulkanPanel
         _window.AddView(plate, new FrameLayout.LayoutParams(Math.Min(Dp(width), overlay.Width - Dp(24)),
             height == -2 ? -2 : Math.Min(Dp(height), overlay.Height - Dp(20)), GravityFlags.Center));
         overlay.AddView(_window, new FrameLayout.LayoutParams(-1, -1));
+    }
+
+    // A round button of size dp in the header, before the close button.
+    public void AddHeaderButton(View button, int size)
+    {
+        var pixels = (int)MathF.Round(size * _density);
+        _header.AddView(button, _header.ChildCount - 1, new LinearLayout.LayoutParams(pixels, pixels) { RightMargin = (int)MathF.Round(8 * _density) });
     }
 
     public void Close()
@@ -59,7 +69,9 @@ internal sealed class VulkanPanel
     public static TextView Title(Activity activity, string text) => Text(activity, text, 20, MobileHudTheme.Gold, serif: true);
 
     // A section heading inside a window.
-    public static TextView Heading(Activity activity, string text) => Text(activity, text, 14, MobileHudTheme.Gold, serif: true);
+    public static TextView Heading(Activity activity, string text, float size = HeadingSize) => Text(activity, text, size, MobileHudTheme.Gold, serif: true);
+
+    public const float HeadingSize = 14;
 
     // Body text: light ink with a soft shadow, readable over the plate and over the world.
     public static TextView Body(Activity activity, string text, float size = 14, Color? color = null) =>

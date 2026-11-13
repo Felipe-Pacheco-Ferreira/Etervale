@@ -32,6 +32,7 @@ where to look. Setup, build and run commands are in the root [README.md](../READ
 | [world-import.md](world-import.md) | `tools/PristonTale.WorldImport`: authored data formats, parsers, catalog import, verify |
 | [client.md](client.md) | Client app, screens, game scene, HUD and windows, remote actors, audio, client networking |
 | [android.md](android.md) | `Client/PristonTale.Android`: login, character selection, Ricarten; how a desktop screen is ported; baked data and packaging |
+| [hud-design.md](hud-design.md) | The Android Vulkan HUD's design language: plates, gold, bezels, medallions, gauges, buttons, motion, placement |
 | [rendering.md](rendering.md) | `Client/PristonTale.Engine3D`: original formats, renderer passes, lighting, shadows, post-processing |
 | [shaders.md](shaders.md) | Shader library under `Client/PristonTale/Content/Shaders` |
 | [effects.md](effects.md) | `Client/PristonTale.Effects` and the VFX JSON format |

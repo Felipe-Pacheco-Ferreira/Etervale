@@ -39,19 +39,44 @@ public static class SkillLearning
     // Whether the window skill at index can take its next rank, money aside. A definition without its ten ranks of costs
     // cannot be trained.
     public static bool CanTrain(IReadOnlyList<Skill> skills, int index, Func<uint, int> rankOf, int level, int tier, int skillPoints,
+        int elitePoints) => Check(skills, index, rankOf, level, tier, skillPoints, elitePoints) == SkillTrainingCheck.Ready;
+
+    // What keeps the window skill at index from its next rank, money aside, or Ready; the first that applies in this order.
+    public static SkillTrainingCheck Check(IReadOnlyList<Skill> skills, int index, Func<uint, int> rankOf, int level, int tier, int skillPoints,
         int elitePoints)
     {
-        if (index < 0 || index >= skills.Count || index >= OpenedBy(tier))
+        if (index < 0 || index >= skills.Count || skills[index].Code == 0 || skills[index].ManaByRank.Count != MaxRank)
         {
-            return false;
+            return SkillTrainingCheck.Unavailable;
+        }
+
+        if (index >= OpenedBy(tier))
+        {
+            return SkillTrainingCheck.TierLocked;
         }
 
         var skill = skills[index];
         var rank = rankOf(skill.Code);
-        var points = UsesElitePoints(index) ? elitePoints : skillPoints;
-        return skill.Code != 0 && skill.ManaByRank.Count == MaxRank && rank < MaxRank && points > 0 && level >= skill.RequiredLevel + rank * 2
-            && (index == 0 || rankOf(skills[index - 1].Code) > 0);
+        if (rank >= MaxRank)
+        {
+            return SkillTrainingCheck.MaxRank;
+        }
+
+        if (index > 0 && rankOf(skills[index - 1].Code) <= 0)
+        {
+            return SkillTrainingCheck.NeedsPrevious;
+        }
+
+        if (level < LevelFor(skill, rank))
+        {
+            return SkillTrainingCheck.NeedsLevel;
+        }
+
+        return (UsesElitePoints(index) ? elitePoints : skillPoints) > 0 ? SkillTrainingCheck.Ready : SkillTrainingCheck.NoPoints;
     }
+
+    // The level the rank after currentRank needs.
+    public static int LevelFor(Skill skill, int currentRank) => skill.RequiredLevel + currentRank * 2;
 
     public static bool TryQuote(PlayerCharacter character, uint code, out long price, out bool elite, int tax = 0)
     {
@@ -77,4 +102,19 @@ public static class SkillLearning
 
         return false;
     }
+}
+
+public enum SkillTrainingCheck
+{
+    Ready,
+    // No such skill in the window, or one without its ten ranks of costs.
+    Unavailable,
+    // The class tier has not opened it yet.
+    TierLocked,
+    MaxRank,
+    // The skill before it in the window has no rank.
+    NeedsPrevious,
+    NeedsLevel,
+    // No skill points (elite points for the fourth and fifth tiers).
+    NoPoints
 }

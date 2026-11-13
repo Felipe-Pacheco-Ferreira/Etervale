@@ -7,8 +7,8 @@ using PristonTale.Simulation.Characters;
 using PristonTale.Simulation.Items;
 
 // First-time tutorials: the first time something is needed (the HUD on arrival, equipping the starter kit the guide
-// gives, putting a potion on the belt, the automatic quest, the first attack), the screen dims around the button to press, a pulsing gold ring
-// marks it and a card explains what to do. Only that button answers touches; the step moves on by itself once its goal
+// gives, putting a potion on the belt, the automatic quest, the first attack, spending free attribute points), the screen
+// dims around the button to press, a pulsing gold ring marks it and a card explains what to do. Only that button answers touches; the step moves on by itself once its goal
 // is met (or with Entendi on a step that only explains). Each lesson is shown once (HudLayoutEditor keeps which), and
 // none starts while the automatic quest is running. Refresh is called on the UI thread a few times a second.
 internal sealed class VulkanTutorial
@@ -38,7 +38,7 @@ internal sealed class VulkanTutorial
 
     // The HUD's lessons, in the order they are offered.
     public static List<Lesson> Lessons(VulkanWorldSession session, View player, View quest, View menu, View bag, VulkanActionWheel wheel,
-        VulkanQuestTracker tracker, VulkanInventoryPanel inventory, Func<bool> statusSeen)
+        VulkanQuestTracker tracker, VulkanInventoryPanel inventory, VulkanStatusPanel status, Func<bool> statusSeen)
     {
         bool Idle() => session.Navigator is not { Enabled: true } && session.Owner is { Life: > 0 };
         OwnedItemView BagPotion() => session.Owner?.Items.FirstOrDefault(item => item.InBag && item.Kind == ItemKind.Potion);
@@ -49,6 +49,16 @@ internal sealed class VulkanTutorial
                 && OwnedItemView.InSlot(owner.Items, (int)ItemEquipmentMetadata.SlotOf(item.Kind)!.Value) is null)
             : null;
         bool Hunting() => session.Quest is { KillsNeeded: > 0 } hunt && hunt.Kills == 0;
+        // The quest card stands over the action wheel; a lesson on the attack button folds it first.
+        View Attack()
+        {
+            if (!tracker.Collapsed)
+            {
+                tracker.Collapsed = true;
+            }
+
+            return wheel.Attack;
+        }
 
         return
         [
@@ -57,7 +67,7 @@ internal sealed class VulkanTutorial
                 new(() => player, "Seu personagem", "Aqui ficam sua vida (vermelho), mana (azul) e estamina (verde); o selo dourado é o seu nível."),
                 new(() => player, "Status do personagem", "Toque no seu retrato para ver força, espírito, talento, agilidade, vitalidade, ataque e defesa.", statusSeen),
                 new(() => quest, "Sua missão", "O cartão mostra o objetivo da missão. Toque nele para minimizar e ver só o progresso."),
-                new(() => wheel.Attack, "Atacar", "Toque para atacar o monstro selecionado ou o mais próximo. Habilidades e poções ficam em volta."),
+                new(Attack, "Atacar", "Toque para atacar o monstro selecionado ou o mais próximo. Habilidades e poções ficam em volta."),
                 new(() => menu, "Menu", "No Menu você abre o inventário, ajusta os gráficos, edita a posição de cada parte da HUD, revê este tutorial e sai do jogo.")
             ]),
             new("equip", () => Idle() && NextPiece() is not null,
@@ -84,8 +94,16 @@ internal sealed class VulkanTutorial
             ]),
             new("attack", () => Idle() && Hunting() && session.Target is { MaxLife: > 0 },
             [
-                new(() => wheel.Attack, "Hora de lutar", "Um monstro está por perto. Toque em Atacar para lutar com ele.", () => session.Quest is not { Kills: 0 })
-            ])
+                new(Attack, "Hora de lutar", "Um monstro está por perto. Toque em Atacar para lutar com ele.", () => session.Quest is not { Kills: 0 })
+            ]),
+            new("points", () => Idle() && session.Owner is { StatPoints: > 0 },
+            [
+                new(() => player, "Pontos de atributo", "Você subiu de nível e ganhou pontos para fortalecer seu personagem. Toque no seu retrato "
+                    + "para abrir o Status.", () => status.IsOpen),
+                new(() => status.PointsView, "Pontos livres", "Aqui ficam os pontos que você ainda não usou. " + status.Advice),
+                new(() => status.PlusOf(status.Main), "Gaste um ponto", $"Toque em + ao lado de {status.MainName}. Cada toque gasta um ponto e "
+                    + "vale na hora.", () => status.Spent > 0)
+            ], () => !status.IsOpen)
         ];
     }
 
@@ -171,6 +189,8 @@ internal sealed class VulkanTutorial
         private float _x;
         private float _y;
         private float _radius;
+        private float _halfWidth;
+        private float _halfHeight;
 
         public Coach(Activity activity, VulkanTutorial tutorial) : base(activity)
         {
@@ -236,13 +256,27 @@ internal sealed class VulkanTutorial
             var scale = _target.ScaleX;
             _x = _there[0] - _here[0] + _target.Width * scale / 2f;
             _y = _there[1] - _here[1] + _target.Height * scale / 2f;
-            _radius = MathF.Max(_target.Width, _target.Height) * scale / 2f + 14f;
+            _halfWidth = _target.Width * scale / 2f;
+            _halfHeight = _target.Height * scale / 2f;
+            _radius = MathF.Max(_halfWidth, _halfHeight) + 14f;
             card.Gravity = GravityFlags.Top | GravityFlags.Left;
             var cardWidth = card.Width;
-            card.LeftMargin = (int)Math.Clamp(_x - cardWidth / 2f, 12f, Math.Max(12f, Width - cardWidth - 12f));
-            var below = _y + _radius + 16f;
             var height = _card.Height > 0 ? _card.Height : Height / 4;
-            card.TopMargin = (int)(below + height < Height ? below : Math.Max(12f, _y - _radius - 16f - height));
+            var below = _y + _radius + 16f;
+            var above = _y - _radius - 16f - height;
+            if (below + height < Height || above >= 12f)
+            {
+                card.LeftMargin = (int)Math.Clamp(_x - cardWidth / 2f, 12f, Math.Max(12f, Width - cardWidth - 12f));
+                card.TopMargin = (int)(below + height < Height ? below : above);
+            }
+            else
+            {
+                // A tall or wide target leaves no room above or below: the card goes beside its window, on the wider side.
+                var left = _x - _radius - 16f - cardWidth;
+                card.LeftMargin = (int)Math.Clamp(_x > Width / 2f ? left : _x + _radius + 16f, 12f, Math.Max(12f, Width - cardWidth - 12f));
+                card.TopMargin = (int)Math.Clamp(_y - height / 2f, 12f, Math.Max(12f, Height - height - 12f));
+            }
+
             _card.LayoutParameters = card;
         }
 
@@ -268,10 +302,14 @@ internal sealed class VulkanTutorial
             }
         }
 
-        // Touches inside the window reach the target below; the rest of the screen waits for the tutorial.
+        // The card always takes its own touches (Entendi, Pular tutorial), even where it overlaps the window; a touch on the
+        // target itself reaches it below; the rest of the screen waits for the tutorial.
         public override bool DispatchTouchEvent(MotionEvent e)
         {
-            if (_radius > 0f && MathF.Pow(e.GetX() - _x, 2) + MathF.Pow(e.GetY() - _y, 2) <= _radius * _radius)
+            var x = e.GetX();
+            var y = e.GetY();
+            var onCard = x >= _card.Left && x <= _card.Right && y >= _card.Top && y <= _card.Bottom;
+            if (!onCard && _radius > 0f && MathF.Abs(x - _x) <= _halfWidth && MathF.Abs(y - _y) <= _halfHeight)
             {
                 return false;
             }

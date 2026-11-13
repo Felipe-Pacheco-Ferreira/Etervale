@@ -116,13 +116,21 @@ internal static class FieldOrderTests
             var account = await provider.GetRequiredService<IAccountRepository>().CreateAsync("mover", "hash");
             var characters = provider.GetRequiredService<ICharacterRepository>();
             var classes = new CharacterClassRegistry();
-            var tower = await characters.CreateAsync(CharacterRecordFactory.NewStarter(classes, account.Id, "Climber", 0, PlayerClass.Fighter, 3));
-            var temple = await characters.CreateAsync(CharacterRecordFactory.NewStarter(classes, account.Id, "Pilgrim", 1, PlayerClass.Fighter, 3));
-            Assert.True(await characters.UpdateAsync(tower with { FieldId = 39 }) && await characters.UpdateAsync(temple with { FieldId = 38 }),
-                "the fixture characters were not stored");
-
             var connections = provider.GetRequiredService<IDbConnectionFactory>();
             await using var connection = await connections.OpenAsync();
+            // The characters table as migration 34 left it: the repository writes the columns of later migrations too.
+            const string Insert =
+                """
+                INSERT INTO characters (account_id, name, slot, job_code, level, exp, money, brood, strength, spirit, talent, agility, health,
+                    stat_points, life, mana, stamina, field_id, pos_x, pos_z, model_name, model_name2, face_index, tier, hair_index, size_level,
+                    inventory, equipment, skills, quests, premium, starter_gifts_received, help_pet, help_pet_hidden)
+                VALUES (@AccountId, @Name, @Slot, @JobCode, @Level, @Exp, @Money, @Brood, @Strength, @Spirit, @Talent, @Agility, @Health,
+                    @StatPoints, @Life, @Mana, @Stamina, @FieldId, @PosX, @PosZ, @ModelName, @ModelName2, @FaceIndex, @Tier, @HairIndex, @SizeLevel,
+                    @Inventory, @Equipment, @Skills, @Quests, @Premium, @StarterGiftsReceived, @HelpPet, @HelpPetHidden)
+                """;
+            Assert.True(await connection.ExecuteAsync(Insert, CharacterRecordFactory.NewStarter(classes, account.Id, "Climber", 0, PlayerClass.Fighter, 39)) == 1
+                && await connection.ExecuteAsync(Insert, CharacterRecordFactory.NewStarter(classes, account.Id, "Pilgrim", 1, PlayerClass.Fighter, 38)) == 1,
+                "the fixture characters were not stored");
             await connection.ExecuteAsync("INSERT INTO fields (stage, field_code) VALUES ('dun-7', 39), ('mine-1', 43), ('sod-2', 44)");
             await connection.ExecuteAsync(
                 "INSERT INTO item_transfers (occurred_at, kind, transfer_id, field_id, amount) VALUES (@At, 1, 'move', 44, 1)",

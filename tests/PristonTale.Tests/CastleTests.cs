@@ -53,10 +53,10 @@ internal static class CastleTests
     {
         var saturday = new DateTimeOffset(2026, 11, 7, 12, 0, 0, TimeSpan.Zero);
         var sunday = new DateTimeOffset(2026, 11, 8, 20, 0, 0, TimeSpan.Zero);
-        Assert.True(CastleAppService.NextSiege(saturday, Weekly) == sunday
-            && CastleAppService.NextSiege(sunday.AddSeconds(30), Weekly) == sunday
-            && CastleAppService.NextSiege(sunday.AddMinutes(1), Weekly) == sunday.AddDays(7)
-            && CastleAppService.NextSiege(sunday.AddHours(3), new CastleOptions(CastleMode.Weekly, 1, 0)) == sunday.AddHours(4),
+        Assert.True(CastleRules.NextSiege(saturday, 0, 20) == sunday
+            && CastleRules.NextSiege(sunday.AddSeconds(30), 0, 20) == sunday
+            && CastleRules.NextSiege(sunday.AddMinutes(1), 0, 20) == sunday.AddDays(7)
+            && CastleRules.NextSiege(sunday.AddHours(3), 1, 0) == sunday.AddHours(4),
             "the coming siege differs");
         return Task.CompletedTask;
     }

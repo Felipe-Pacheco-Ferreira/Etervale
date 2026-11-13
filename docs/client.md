@@ -373,14 +373,24 @@ The client owns its own locomotion; the server validates and corrects.
   leaves the mount on its own swing (`SwingBegin`), cast (`Send`), any life loss, death, a forced or long `FieldWarp`
   and in an action field, and holds itself in combat for `MountRules.CombatHoldMs` after a swing, cast or hit, as the
   server does. `MountPresentation` (`World/Remote/MountPresentation.cs`) draws every rider in view, the local player
-  included: the hound (`char/monster/Hound/Hound.inx`, loaded off the game thread with `PristonActorLoader`) stands at
-  the rider's feet and facing, set back so the rider is over the hound's `Bip01 Spine2` bone, plays Stand while still,
-  Walk below the monster run speed and Run above it, at a rate that follows the smoothed ground speed (0.5x to 3x);
-  the rider is lifted by the bone's height plus 4 units (`Lift`; `PlayerWorld` for the local player,
-  `RemoteEntity.Ride` for others) and shows Stand instead of Walk or Run (`ShownPlayerMotion`,
-  `RemoteEntityBase.Riding`). Other players' mounts come from their descriptions (`PlayerAppearanceInfo.Mounted`); a
-  change of the flag alone does not rebuild the player's model. Routes for a mounted player should keep
-  `MountRules.BodyRadius` (40) from walls instead of the 24 of a player on foot.
+  included: a Hopy (`char/monster/hopy/hopy.inx`, packaged with the Adventurer Journey archive, loaded off the game thread
+  with `PristonActorLoader`) drawn at 1.6 of its size stands at the rider's feet and facing, set ahead so the rider
+  clings to its back, and plays Stand while still and its hopping Walk while moving (it has no run clip), at a rate that
+  follows the smoothed ground speed over the scaled stride (0.5x to 3x). The rider's body and head are seated (`ActorSeat`
+  in Engine3D, through `IActorScene.SetActorSeated` and `PlayerActorHandles.SetWorld`): over whatever clip plays it hugs
+  the mount from behind, as a child rides on a back. The back curls forward 0.45 rad from `Bip01 Spine1` (the thighs
+  hang from the lower spine bone, so it is not used) and 0.3 rad more from the neck; the thighs reach forward 1.35 rad
+  and apart 0.75 rad along the flanks, the shins drop 0.25 rad and wrap 1.2 rad in round the belly; the upper arms
+  reach forward 1.4 rad and apart 0.25 rad round the shoulders, the forearms wrap 1.3 rad in; and the figure drops so
+  its pelvis is its origin. That origin
+  rides the gait: every frame it is lifted to the saddle bone's current height (`Bip02`, through
+  `IActorScene.TryGetActorBoneWorld`), plus the skin there (taken once from the first mount shown,
+  `PristonRenderer.TryGetActorSaddle` at the first frame of the stand motion: 6.5 units behind the bone, the height under
+  which 40% of the skinned points within 8 units of that column lie, so the crest and horn do not count), plus 3 units
+  of seat, through the lift callback (`PlayerWorld` for the local player, `RemoteEntity.Ride` for others) when it moved a
+  quarter unit or more. The rider shows Stand instead of Walk or Run (`ShownPlayerMotion`, `RemoteEntityBase.Riding`). Other players' mounts come
+  from their descriptions (`PlayerAppearanceInfo.Mounted`); a change of the flag alone does not rebuild the player's
+  model.
 - `ActorMotionController`: `ApplyLocomotion` is ignored while Damage, Dead, Eat, FallStand, FallDamage or Yahoo freeze
   locomotion (`LocomotionFrozen`) and while falling;
   `ApplyAuthoritative` always wins.
@@ -735,6 +745,11 @@ come from the window's text input (`Game1` to `GameClient.TypeCharacter` to `Scr
   bar (`DrawHealthBar`, the target frame's colours) shows under a monster once it was clicked or the local player swung
   at it (`Entity.Attacked`, set by `NoteAttack`); when true the box holds the name at the HUD text size and the bar
   shows while the cursor is on the monster (`ShowsPlateBar`).
+- Target marker (`HudCombat.DrawTargetMarker`, drawn after the name boxes by a client that asks for it; the Android
+  client does, the desktop does not): over the living monster the player attacks, a red arrow in a gold rim and a dark
+  outline (`HudPainter.DownTriangle`, one fill per row) points down at the top of its one-line name box, whether or
+  not the box shows; it bobs 3 pixels and its red and gold glow pulse on a 1.1 s loop. A marker that would leave the
+  screen is skipped.
 - Hover outline (`GameScene.Outline.cs`, `PristonRenderer.SetActorOutline`): every actor of the hovered entity is
   outlined, red (255, 30, 0) for monsters and white for players; NPCs only with `classicNamePlates`, in green
   (0, 255, 100). The width share is 1 within 300 units of the camera and falls to 0 at 1300 (`OutlineStrength`). It is

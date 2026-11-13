@@ -74,6 +74,11 @@ public sealed record PresenceUpdate(
 
     // One of the local player's contact lists, as the server answered a change or a refresh.
     public ContactListInfo? Contacts { get; init; }
+
+    // The events and rewards window (on entering the world, on opening it and after each change) and how a request of
+    // it ended.
+    public RewardEventsInfo? Rewards { get; init; }
+    public RewardEventsResultInfo? RewardResult { get; init; }
 }
 
 // A contact list in the order added; Online tells a friend playing now.

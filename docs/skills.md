@@ -144,9 +144,12 @@ Rules in `SkillLearning` and `PlayerCharacter.ApplyProgression`; the command is 
 
 - The NPC must offer `NpcServiceKind.SkillMaster` and be within reach (`NpcServiceTransactions.CanReach`); the player
   must be alive. Opening the skill master opens the skill window in training mode
-  (`HudSkillsPanel.HandleTrainingClick`).
+  (`HudSkillsPanel.HandleTrainingClick`). The Vulkan Android client's skills window sends the same command for the last
+  skill master the player talked to ([android.md](android.md#world-hud)).
 - Class tier `t` (0..4) opens window indices `< 4 (t + 1)`. A skill needs rank >= 1 in the window entry before it.
-- Training from rank `r` to `r + 1` needs level `RequiredLevel + 2r`, rank < 10, ten mana entries, one point, money.
+- Training from rank `r` to `r + 1` needs level `RequiredLevel + 2r` (`SkillLearning.LevelFor`), rank < 10, ten mana
+  entries, one point, money. `SkillLearning.Check` names the first of these a skill lacks, money aside
+  (`SkillTrainingCheck`), for a window that says why; `CanTrain` is its `Ready`.
 - Price: `BasePrices[index] + RankPrices[index] x r`, both tables indexed by window position (500..40000 base).
 - Indices 0..11 spend skill points (one per even level from 10); indices 12..19 (fourth and fifth tiers) share the
   elite points (`EliteSkillPoints`, one per even level from 60).

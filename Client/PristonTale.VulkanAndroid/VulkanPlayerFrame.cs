@@ -11,9 +11,7 @@ internal sealed class VulkanPlayerFrame : View
 {
     private const float FrameRight = .66f;
     private const float FrameBottom = HudPlacement.PlayerPortraitY + HudPlacement.PlayerPortraitSize + .02f;
-    private const int AnimationFrameMs = 40;
-    // The animation phase wraps after this many seconds, so it keeps its precision; the shine crosses a bar every ShineSeconds.
-    private const float AnimationLoop = 600f;
+    // The shine crosses a bar every ShineSeconds.
     private const float ShineSeconds = 3f;
 
     private readonly string _name;
@@ -65,7 +63,7 @@ internal sealed class VulkanPlayerFrame : View
         var centerX = HudPlacement.PlayerPortraitX * h + size / 2f;
         var centerY = HudPlacement.PlayerPortraitY * h + size / 2f;
         _box.Set(.012f * h, .012f * h, FrameRight * h - 2f, FrameBottom * h);
-        var phase = now % (long)(AnimationLoop * 1e9f) / 1e9f;
+        var phase = VulkanHudArt.Phase(now);
         VulkanHudArt.Plate(canvas, _box, .05f * h, centerX, centerY, size / 2f, crest: true);
         VulkanHudArt.Aura(canvas, centerX, centerY, size / 2f, phase);
         VulkanHudArt.LevelBadge(canvas, centerX - size * .36f, centerY + size * .38f, .03f * h, _level, _levelValue, ExperienceTable.MaximumLevel, phase);
@@ -79,14 +77,14 @@ internal sealed class VulkanPlayerFrame : View
         VulkanHudArt.Bar(canvas, _box, VulkanHudArt.Mana, _mana.Shown, _mana.Trail, _manaText, .019f * h, (phase / ShineSeconds + .33f) % 1f);
         _box.Set(left, .166f * h, right - .08f * h, .186f * h);
         VulkanHudArt.Bar(canvas, _box, VulkanHudArt.Stamina, _stamina.Shown, _stamina.Trail, _staminaText, .016f * h, (phase / ShineSeconds + .66f) % 1f);
-        // The aura, the badge and the shine move all the time: smoothly while a gauge eases, at AnimationFrameMs otherwise.
+        // The aura, the badge and the shine move all the time: smoothly while a gauge eases, at VulkanHudArt.AnimationFrameMs otherwise.
         if (moving)
         {
             PostInvalidateOnAnimation();
         }
         else
         {
-            PostInvalidateDelayed(AnimationFrameMs);
+            PostInvalidateDelayed(VulkanHudArt.AnimationFrameMs);
         }
     }
 }

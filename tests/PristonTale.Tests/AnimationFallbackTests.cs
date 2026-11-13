@@ -12,6 +12,41 @@ internal static class AnimationFallbackTests
         yield return ("animation segment caches preserve forward playback, loops and clip jumps", SegmentCacheAsync);
         yield return ("a merged skeleton samples only the motion range holding the frame and keeps the bind pose without one", MotionRangeAsync);
         yield return ("a rotation key past the playing motion's end holds the key before it", RotationEndAsync);
+        yield return ("a mounted biped hugs its mount with its legs round it, its pelvis at its origin, and a rig without legs is not seated", SeatAsync);
+    }
+
+    private static Task SeatAsync()
+    {
+        PristonModelObject Bone(string name, string parent, Vector3 at) =>
+            new(name, parent, false, Matrix.CreateTranslation(at), Vector3.Zero, [], [], [], [], [], [], [], [], [], [], []);
+        var bones = new List<PristonModelObject> { Bone("Bip01 Pelvis", "", new Vector3(0, 40, 0)) };
+        foreach (var (side, x) in new[] { ("L", 5f), ("R", -5f) })
+        {
+            bones.Add(Bone($"Bip01 {side} Thigh", "Bip01 Pelvis", new Vector3(x, 38, 0)));
+            bones.Add(Bone($"Bip01 {side} Calf", $"Bip01 {side} Thigh", new Vector3(x, 20, 0)));
+            bones.Add(Bone($"Bip01 {side} Foot", $"Bip01 {side} Calf", new Vector3(x, 2, 0)));
+            bones.Add(Bone($"Bip01 {side} Toe0", $"Bip01 {side} Foot", new Vector3(x, 0, 6)));
+        }
+
+        var model = new PristonModel("rider", [], bones, [], default);
+        var seat = ActorSeat.TryCreate(model) ?? throw new InvalidOperationException("a biped was not seated");
+        var transforms = new PristonModelAnimator(model).Evaluate(0f);
+        seat.Apply(transforms);
+        Assert.Near(0, transforms[0].Translation.Y);
+        for (var leg = 0; leg < 2; leg++)
+        {
+            var thigh = transforms[1 + leg * 4].Translation;
+            var knee = transforms[2 + leg * 4].Translation;
+            var foot = transforms[3 + leg * 4].Translation;
+            var outward = MathF.Sign(thigh.X);
+            Assert.True(knee.Z > thigh.Z + 8f && MathF.Abs(knee.Y - thigh.Y) < 8f, "the thigh does not reach forward along the flank");
+            Assert.True((knee.X - thigh.X) * outward > 4f, "the thighs are not apart");
+            Assert.True(MathF.Abs(foot.X) < MathF.Abs(knee.X) - 3f && foot.Z > knee.Z, "the shin does not wrap in round the mount");
+        }
+
+        Assert.True(ActorSeat.TryCreate(new PristonModel("hound", [], [Bone("Bip01 Pelvis", "", Vector3.Zero)], [], default)) is null,
+            "a rig without biped legs was seated");
+        return Task.CompletedTask;
     }
 
     private static Task MotionRangeAsync()

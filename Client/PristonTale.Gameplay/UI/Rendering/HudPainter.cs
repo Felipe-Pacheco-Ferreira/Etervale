@@ -181,6 +181,18 @@ public sealed class HudPainter : IDisposable
         }
     }
 
+    // A triangle pointing down, its tip at (centerX, tipY), height rows tall and 2 * halfWidth + 1 wide at the top: one
+    // fill per row.
+    public void DownTriangle(int centerX, int tipY, int halfWidth, int height, Color premultiplied)
+    {
+        var top = tipY - height + 1;
+        for (var row = 0; row < height; row++)
+        {
+            var half = height == 1 ? halfWidth : halfWidth * (height - 1 - row) / (height - 1);
+            Fill(new Rectangle(centerX - half, top + row, 2 * half + 1, 1), premultiplied);
+        }
+    }
+
     // Original colour box fills are straight RGBA.
     public void ColorBox(Rectangle bounds, int r, int g, int b, int a) => Fill(bounds, Color.FromNonPremultiplied(r, g, b, a));
 

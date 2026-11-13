@@ -93,8 +93,28 @@ public sealed class CharacterSelectScreen : GameScreen
     // How many times wider than for a cursor a character's pick box is (touch).
     public float PickScale { get; init; } = 1f;
     public float CameraDistanceScale { get; init; } = 1f;
+    // The 2D layer (frame, marks, captions, faces, buttons) is laid out on a screen this many times smaller and drawn this
+    // many times larger, so a phone shows the PC layout at a readable size; the 3D picks keep the real screen.
+    public float UiScale { get; init; } = 1f;
+    // A touch screen's keyboard: the name takes typing only after a tap on it, and a tap elsewhere ends it.
+    public bool TouchKeyboard { get; init; }
     public Action<CharacterSummary, EnterWorldOutcome> WorldEntered { get; init; }
     public bool IsNameInputActive => _nameField?.Focused == true && _state is State.FaceSelect or State.Name;
+    // The name was tapped this frame: the keyboard opens again even when the system closed it.
+    public bool NameFieldTapped { get; private set; }
+
+    private Viewport UiViewport
+    {
+        get
+        {
+            var viewport = Context.GraphicsDevice.Viewport;
+            return new Viewport(0, 0, (int)(viewport.Width / UiScale), (int)(viewport.Height / UiScale));
+        }
+    }
+
+    private Point UiPoint(in MouseState mouse) => new((int)(mouse.X / UiScale), (int)(mouse.Y / UiScale));
+
+    private Vector2 UiCursor(in MouseState mouse) => new(mouse.X / UiScale, mouse.Y / UiScale);
 
     public override string StatusText => ClientText.Get("Status.CharacterSelect");
 
@@ -114,7 +134,7 @@ public sealed class CharacterSelectScreen : GameScreen
 
         _assets = new CharSelectAssets(Context.GraphicsDevice, AssetPath);
         _portrait = new CharacterSelectPortrait(Context.GraphicsDevice);
-        _view = new CharacterSelectView(Context.SpriteBatch, Context.Font, _assets, _cameraCtl, ButtonScale);
+        _view = new CharacterSelectView(Context.SpriteBatch, Context.Font, _assets, _cameraCtl, ButtonScale, UiScale);
         InitEffects();
         _audio = LoginAudio.CharacterSelect(Context.Audio);
         BeginLoadRoster();
@@ -285,7 +305,7 @@ public sealed class CharacterSelectScreen : GameScreen
     {
         var cursor = new Vector2(mouse.X, mouse.Y);
         _hoveredIndex = _scene.PickRoster(cursor, Context.GraphicsDevice.Viewport, PickScale);
-        _hoverNewCharacter = HasFreeSlot && CharSelectLayout.NewCharHotspot(Context.GraphicsDevice.Viewport).Contains(mouse.X, mouse.Y);
+        _hoverNewCharacter = HasFreeSlot && CharSelectLayout.NewCharHotspot(UiViewport).Contains(UiPoint(mouse));
         _scene.SetRosterHighlight(_hoveredIndex, _selectedIndex);
 
         if (!Clicked(mouse))
@@ -299,7 +319,7 @@ public sealed class CharacterSelectScreen : GameScreen
             return;
         }
 
-        if (HandleSelectButtons(cursor))
+        if (HandleSelectButtons(UiCursor(mouse)))
         {
             return;
         }
@@ -330,7 +350,7 @@ public sealed class CharacterSelectScreen : GameScreen
 
     private bool HandleSelectButtons(Vector2 cursor)
     {
-        var viewport = Context.GraphicsDevice.Viewport;
+        var viewport = UiViewport;
         var y = CharSelectLayout.ButtonRowY(viewport);
         var hasChars = _scene.RosterCount > 0;
 
@@ -463,14 +483,15 @@ public sealed class CharacterSelectScreen : GameScreen
 
     private void UpdateRaceSelect(MouseState mouse)
     {
-        var cursor = new Vector2(mouse.X, mouse.Y);
-        var viewport = Context.GraphicsDevice.Viewport;
+        var cursor = UiCursor(mouse);
+        var point = UiPoint(mouse);
+        var viewport = UiViewport;
         _raceHovered = -1;
-        if (CharSelectLayout.TempscronMark(viewport).Contains(mouse.X, mouse.Y))
+        if (CharSelectLayout.TempscronMark(viewport).Contains(point))
         {
             _raceHovered = 0;
         }
-        else if (CharSelectLayout.MorionMark(viewport).Contains(mouse.X, mouse.Y))
+        else if (CharSelectLayout.MorionMark(viewport).Contains(point))
         {
             _raceHovered = 1;
         }
@@ -549,7 +570,7 @@ public sealed class CharacterSelectScreen : GameScreen
             return;
         }
 
-        if (HandleCreateButtons(cursor))
+        if (HandleCreateButtons(UiCursor(mouse)))
         {
             return;
         }
@@ -595,11 +616,14 @@ public sealed class CharacterSelectScreen : GameScreen
 
     private void UpdateFaceSelect(MouseState mouse, ReadOnlySpan<char> typed, double dtSeconds)
     {
+        NameFieldTapped = false;
         _nameField.Update(typed, dtSeconds);
+        var viewport = UiViewport;
+        var point = UiPoint(mouse);
         _faceHovered = -1;
         for (var index = 0; index < CharSelectLayout.FacesPerJob; index++)
         {
-            if (CharSelectLayout.FaceThumbHit(Context.GraphicsDevice.Viewport, index).Contains(mouse.X, mouse.Y))
+            if (CharSelectLayout.FaceThumbHit(viewport, index).Contains(point))
             {
                 _faceHovered = index;
                 break;
@@ -610,11 +634,17 @@ public sealed class CharacterSelectScreen : GameScreen
         {
             return;
         }
-        var cursor = new Vector2(mouse.X, mouse.Y);
+
+        // On a touch screen, as on the login panel, a tap on the name opens the keyboard and a tap anywhere else closes it.
+        if (TouchKeyboard)
+        {
+            _nameField.Focused = CharSelectLayout.NameField(viewport).Contains(point);
+            NameFieldTapped = _nameField.Focused;
+        }
 
         for (var i = 0; i < CharSelectLayout.FacesPerJob; i++)
         {
-            if (CharSelectLayout.FaceThumbHit(Context.GraphicsDevice.Viewport, i).Contains((int)cursor.X, (int)cursor.Y))
+            if (CharSelectLayout.FaceThumbHit(viewport, i).Contains(point))
             {
                 if (_faceIndex != i)
                 {
@@ -625,15 +655,12 @@ public sealed class CharacterSelectScreen : GameScreen
             }
         }
 
-        if (HandleCreateButtons(cursor))
-        {
-            return;
-        }
+        HandleCreateButtons(UiCursor(mouse));
     }
 
     private bool HandleCreateButtons(Vector2 cursor)
     {
-        var viewport = Context.GraphicsDevice.Viewport;
+        var viewport = UiViewport;
         var y = CharSelectLayout.ButtonRowY(viewport);
 
         if (InButton(cursor, _assets.BtSelect, CharSelectLayout.ThreeButtonOkX(viewport), y, CharacterSelectButton.Select))
@@ -764,7 +791,7 @@ public sealed class CharacterSelectScreen : GameScreen
     {
         var viewport = Context.GraphicsDevice.Viewport;
         var viewModel = BuildViewModel();
-        viewModel.FacePortrait = RenderFacePortrait(viewport);
+        viewModel.FacePortrait = RenderFacePortrait();
 
         Context.GraphicsDevice.Clear(LoginClearColor);
         _renderer.Draw(_cameraCtl.Camera);
@@ -780,15 +807,16 @@ public sealed class CharacterSelectScreen : GameScreen
         _view.Draw(viewport, viewModel);
     }
 
-    private Texture2D RenderFacePortrait(Viewport viewport)
+    private Texture2D RenderFacePortrait()
     {
         if (_state is not State.FaceSelect and not State.Name || _jobSelected < 0 || _jobSelected >= _scene.JobCount)
         {
             return null;
         }
 
-        var size = CharSelectLayout.FacePortrait(viewport).Size;
-        return _portrait.Render(_renderer, _scene.FacePreviewHandles, size.X, size.Y);
+        // Rendered at the size it is shown on the real screen, so the enlarged layer does not blur it.
+        var size = CharSelectLayout.FacePortrait(UiViewport).Size;
+        return _portrait.Render(_renderer, _scene.FacePreviewHandles, (int)(size.X * UiScale), (int)(size.Y * UiScale));
     }
 
     private CharSelectViewModel BuildViewModel()
@@ -832,7 +860,7 @@ public sealed class CharacterSelectScreen : GameScreen
         }
 
         var hit = CharSelectLayout.ButtonHit(texture, x, y, kind);
-        return CharSelectLayout.ScaleButton(hit, Context.GraphicsDevice.Viewport, ButtonScale, kind == CharacterSelectButton.Delete)
+        return CharSelectLayout.ScaleButton(hit, UiViewport, ButtonScale, kind == CharacterSelectButton.Delete)
             .Contains((int)cursor.X, (int)cursor.Y);
     }
 

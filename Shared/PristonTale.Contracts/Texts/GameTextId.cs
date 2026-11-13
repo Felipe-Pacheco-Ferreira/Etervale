@@ -306,5 +306,14 @@ public enum GameTextId : ushort
     BellatraStygian = 794,
     BellatraGuardian = 795,
     BellatraPoints = 796,
-    BellatraSealIdle = 797
+    BellatraSealIdle = 797,
+
+    // The answers of a claim in the events and rewards window.
+    RewardClaimed = 800,
+    RewardAlreadyClaimed = 801,
+    RewardExpired = 802,
+    RewardGoldLimit = 803,
+    RewardLevelTooLow = 804,
+    RewardBusy = 805,
+    RewardNotReady = 806
 }

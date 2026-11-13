@@ -13,6 +13,19 @@ public interface IActorScene
     void SetActorAttachOffset(ActorHandle child, Matrix offset, float lift) { }
     ActorHandle AddActor(PristonActorInstance instance);
     void SetActorWorld(ActorHandle handle, Matrix world);
+    void SetActorSeated(ActorHandle handle, bool seated) { }
+
+    bool TryGetActorSaddle(ActorHandle handle, string boneName, float behind, float skinShare, out Vector3 saddle)
+    {
+        saddle = default;
+        return false;
+    }
+
+    bool TryGetActorBoneWorld(ActorHandle handle, string boneName, out Matrix world)
+    {
+        world = Matrix.Identity;
+        return false;
+    }
     void SetActorColorAdd(ActorHandle handle, Vector3 colorAdd) { }
     bool TryGetActorMotion(ActorHandle handle, out PristonMotionInfo motion, out float ticks)
     {

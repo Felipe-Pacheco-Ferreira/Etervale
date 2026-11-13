@@ -164,7 +164,7 @@ public sealed class HudSkillsPanel(SpriteFont font, HudSprites sprites)
             }
 
             var entry = _entries[index];
-            var rank = Rank(state, entry.Skill.Code);
+            var rank = state.SkillRank(entry.Skill.Code);
             if (!CanTrain(index, state))
             {
                 return;
@@ -445,11 +445,9 @@ public sealed class HudSkillsPanel(SpriteFont font, HudSprites sprites)
         }
 
         var skills = Classes.Get(_class).Skills;
-        return SkillLearning.CanTrain(skills, index, code => Rank(state, code), state.Level, state.Tier, state.SkillPoints, state.EliteSkillPoints)
-            && state.Money >= SkillLearning.Price(index, Rank(state, skills[index].Code), Tax);
+        return SkillLearning.CanTrain(skills, index, state.SkillRank, state.Level, state.Tier, state.SkillPoints, state.EliteSkillPoints)
+            && state.Money >= SkillLearning.Price(index, state.SkillRank(skills[index].Code), Tax);
     }
-
-    private static int Rank(OwnerState state, uint code) => Owned(state, code) is var at and >= 0 ? state.Skills[at].Rank : 0;
 
     // The owner's entry for the skill (an index loop: the list is read every frame), or -1.
     private static int Owned(OwnerState state, uint code)
@@ -518,7 +516,7 @@ public sealed class HudSkillsPanel(SpriteFont font, HudSprites sprites)
                 continue;
             }
 
-            var rank = Rank(state, entry.Skill.Code);
+            var rank = state.SkillRank(entry.Skill.Code);
             var shownRank = Math.Max(1, rank);
             var cost = CostLine(entry.Skill, shownRank);
             var status = rank == 0 ? ClientText.Get("SkillWindow.Unlearned") : ClientText.Format("SkillWindow.Learned", rank, SkillLearning.MaxRank);
@@ -544,7 +542,7 @@ public sealed class HudSkillsPanel(SpriteFont font, HudSprites sprites)
 
     // The mana and stamina a skill costs at a rank; a passive skill, one never used by mouse, and one without its ranks'
     // costs has none.
-    private static string CostLine(Skill skill, int rank) =>
+    public static string CostLine(Skill skill, int rank) =>
         skill.Category == SkillCategory.Passive || skill.MouseUse == SkillMouseUse.None || skill.ManaByRank.Count != SkillLearning.MaxRank
             ? ClientText.Get("SkillWindow.NoCost")
             : ClientText.Format("SkillWindow.Cost", rank, skill.ManaForRank(rank), skill.StaminaForRank(rank));

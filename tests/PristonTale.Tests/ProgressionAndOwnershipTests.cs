@@ -19,6 +19,7 @@ internal static class ProgressionAndOwnershipTests
     public static IEnumerable<(string, Func<Task>)> Cases()
     {
         yield return ("original XP thresholds, multi-level rewards and job gate", ProgressionAsync);
+        yield return ("each class names the attribute its own weapon's damage grows with, and spending points there raises it", DamageAttributeAsync);
         yield return ("inventory footprints, split identities and rejected swaps are atomic", GridAsync);
         yield return ("an item set down over one other takes its place and the other moves where it was or to free space", SwapAsync);
         yield return ("items received fill the bag down each column before the next, as the original sets them", FillAsync);
@@ -63,6 +64,44 @@ internal static class ProgressionAndOwnershipTests
             && PremiumRules.BoostExperience(ulong.MaxValue / 2, new PremiumTimers()) == ulong.MaxValue / 2, "kill experience wrapped");
         Assert.True(!character.TryChangeMoney(-1) && character.TryChangeMoney(10) && !character.TryChangeMoney(long.MaxValue), "money overflow/overdraft accepted");
         return Task.CompletedTask;
+    }
+
+    private static Task DamageAttributeAsync()
+    {
+        var classes = new CharacterClassRegistry();
+        var expected = new Dictionary<PlayerClass, CharacterAttribute>
+        {
+            [PlayerClass.Fighter] = CharacterAttribute.Strength, [PlayerClass.Mechanician] = CharacterAttribute.Strength,
+            [PlayerClass.Archer] = CharacterAttribute.Agility, [PlayerClass.Pikeman] = CharacterAttribute.Strength,
+            [PlayerClass.Atalanta] = CharacterAttribute.Agility, [PlayerClass.Knight] = CharacterAttribute.Strength,
+            [PlayerClass.Magician] = CharacterAttribute.Spirit, [PlayerClass.Priestess] = CharacterAttribute.Spirit,
+            [PlayerClass.Assassin] = CharacterAttribute.Strength, [PlayerClass.Shaman] = CharacterAttribute.Spirit,
+            [PlayerClass.MartialArtist] = CharacterAttribute.Strength
+        };
+        foreach (var (job, attribute) in expected)
+        {
+            Assert.True(classes.DamageAttribute(job) == attribute, $"{job} names the wrong damage attribute");
+            var known = ItemEquipmentMetadata.KindOf(ClassProfiles.Of(job).BeginnerWeapon);
+            Assert.True(known is not null, $"{job}'s beginner weapon has no known kind");
+            var kind = known.GetValueOrDefault();
+            var trained = WithWeapon(job, kind, attribute);
+            var untrained = WithWeapon(job, kind, CharacterAttribute.Health);
+            Assert.True(WeaponDamage.Compute(trained).Max > WeaponDamage.Compute(untrained).Max, $"{job}'s damage attribute does not raise its weapon damage");
+        }
+
+        return Task.CompletedTask;
+
+        PlayerCharacter WithWeapon(PlayerClass job, ItemKind kind, CharacterAttribute trained)
+        {
+            var player = classes.CreatePlayer(job, "Points", 40);
+            player.Equip(EquipmentSlot.Weapon, new ItemInstance(new ItemDefinition(1, "Fixture", kind, EquipmentSlot.Weapon)
+            {
+                BaseStats = new ItemStatBlock(37, 73, 0, 0, 0, 0, 0, 0, 0, 0)
+            }));
+            player.RestoreProgress(0, 0, 300);
+            Assert.True(player.TryAllocateAttribute(trained, 300), "available points refused");
+            return player;
+        }
     }
 
     private static Task GridAsync()

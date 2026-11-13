@@ -1,4 +1,5 @@
 using PristonTale.Simulation.Characters;
+using PristonTale.Simulation.Events;
 using PristonTale.Simulation.Items;
 using PristonTale.Simulation.Items.Usable;
 using PristonTale.Simulation.Modifiers;
@@ -56,6 +57,9 @@ public sealed partial class PlayerCharacter
         StarterGiftsReceived = received is >= 0 and <= StarterGifts.Count
             ? received
             : throw new ArgumentOutOfRangeException(nameof(received), "A character received 0 to StarterGifts.Count starter gifts.");
+
+    // The welcome login days, weekly and daily goals and level rewards (RewardEvents).
+    public RewardEventBook Events { get; } = new();
 
     // The beginner's pet (HelpPets): its kind (0 before one is drawn) and whether the player hid it.
     public int HelpPet { get; private set; }
@@ -708,6 +712,7 @@ public sealed partial class PlayerCharacter
         clone.Quests = Quests.Clone();
         clone.RestoreStarterGifts(StarterGiftsReceived);
         clone.RestoreHelpPet(HelpPet, HelpPetHidden);
+        clone.Events.CopyFrom(Events);
         clone.Premium.CopyFrom(Premium);
         clone.ItemUses.CopyFrom(ItemUses);
         clone.Recompute();

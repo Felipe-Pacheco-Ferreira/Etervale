@@ -48,7 +48,8 @@ internal static class GroundPickupTransactions
             }
 
             long gold = drop!.Gold ? drop.Amount : 0;
-            var shares = PartyRules.SharesGold(gold, field.GroundLoot.FromMonster(dropId)) ? Shares(gold, sharers, out gold) : [];
+            var fromMonster = field.GroundLoot.FromMonster(dropId);
+            var shares = PartyRules.SharesGold(gold, fromMonster) ? Shares(gold, sharers, out gold) : [];
             if (!candidate.ReceiveGroundLoot(item, (int)gold, command.Destination == InventoryCommand.PickupToBag))
             {
                 return new(original, null, null, new(false, original.InventoryRevision, GameText.Of(GameTextId.PickupNoRoom)));
@@ -57,7 +58,8 @@ internal static class GroundPickupTransactions
             candidate.RecordInventoryOperation(command);
             var snapshot = CharacterRecordFactory.Capture(session.Loaded!, candidate, field.FieldId, player.Position);
             var result = new PreparedPickupOperation(original, candidate, snapshot,
-                new(true, candidate.InventoryRevision, GameText.None), field.GroundLoot, drop.Id, command.OperationId, gold, shares);
+                new(true, candidate.InventoryRevision, GameText.None), field.GroundLoot, drop.Id, command.OperationId, gold, shares,
+                fromMonster ? item : null);
             prepared = true;
             return result;
         }

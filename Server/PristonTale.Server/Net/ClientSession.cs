@@ -52,6 +52,7 @@ internal sealed record SessionServices(
     Application.Clans.ClanAppService Clans,
     Application.Castle.CastleAppService Castle,
     Application.Bellatra.BellatraClanAppService BellatraClans,
+    RewardEventAppService Rewards,
     GameServerControl Control)
 {
     // Shared by every connection so a flood from many peers still yields one warning per interval.
@@ -329,8 +330,14 @@ internal sealed partial class ClientSession : IMovementVerdictSink
                 case EtervaleOpcodes.BellatraClanRequest:
                     await BellatraClanAsync(BellatraClanRequestPacket.Read(memory.Span));
                     break;
+                case EtervaleOpcodes.RewardEventsRequest:
+                    await RewardEventsAsync(RewardEventsRequestPacket.Read(memory.Span));
+                    break;
                 case EtervaleOpcodes.BellatraResultRequest:
                     await BellatraResultAsync(BellatraResultRequestPacket.Read(memory.Span));
+                    break;
+                case EtervaleOpcodes.EventCalendarRequest:
+                    SendEventCalendar(EventCalendarRequestPacket.Read(memory.Span));
                     break;
                 case EtervaleOpcodes.ContactChange:
                     await ChangeContactAsync(ContactChangePacket.Read(memory.Span));

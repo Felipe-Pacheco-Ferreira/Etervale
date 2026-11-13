@@ -163,17 +163,20 @@ public static class QuestInventory
         : context.Fail(QuestStatus.NoSpace, QuestTexts.NotEnoughSpace);
 
     // Creates and places the items of a reward list; the codes missing from the catalog are skipped.
-    public static bool TryGrant(QuestContext context, IReadOnlyList<QuestGrant> grants)
+    public static bool TryGrant(QuestContext context, IReadOnlyList<QuestGrant> grants) => TryGiveAll(context, Create(context.Items, context.Character, grants));
+
+    // The items of a reward list for the character; the codes missing from the catalog are skipped.
+    public static List<ItemInstance> Create(IQuestItemSource items, PlayerCharacter character, IReadOnlyList<QuestGrant> grants)
     {
         var created = new List<ItemInstance>(grants.Count);
         foreach (var grant in grants)
         {
-            var spec = grant.ClassSpecific ? QuestClasses.JobMask(context.Character) : 0u;
+            var spec = grant.ClassSpecific ? QuestClasses.JobMask(character) : 0u;
             for (var copy = 0; copy < grant.Copies; copy++)
             {
                 if (grant.QuestVariant)
                 {
-                    if (context.Items.TryCreateQuestVariant(grant.Code, spec, out var variant))
+                    if (items.TryCreateQuestVariant(grant.Code, spec, out var variant))
                     {
                         created.Add(variant);
                     }
@@ -181,7 +184,7 @@ public static class QuestInventory
                     continue;
                 }
 
-                if (context.Items.TryCreate(grant.Code, grant.Count, spec, out var stack))
+                if (items.TryCreate(grant.Code, grant.Count, spec, out var stack))
                 {
                     created.Add(stack);
                     continue;
@@ -190,7 +193,7 @@ public static class QuestInventory
                 // An item that does not stack that far comes as single units.
                 for (var unit = 0; unit < grant.Count && grant.Count > 1; unit++)
                 {
-                    if (context.Items.TryCreate(grant.Code, 1, spec, out var single))
+                    if (items.TryCreate(grant.Code, 1, spec, out var single))
                     {
                         created.Add(single);
                     }
@@ -198,7 +201,7 @@ public static class QuestInventory
             }
         }
 
-        return TryGiveAll(context, created);
+        return created;
     }
 }
 

@@ -9,7 +9,7 @@ using PristonTale.Simulation.Quests;
 
 // The quest card at the top right: the running quest's step, a bar for its kills, what the automatic quest is doing, a
 // compass to the guide while it is paused, and the button that starts or pauses it. A tap on the card folds it down to the
-// kill bar (or to the title when nothing is counted) and opens it again.
+// title over the kill bar (the title alone when nothing is counted) and opens it again.
 internal sealed class VulkanQuestTracker
 {
     private static readonly string[] Compass = ["↑ Norte", "↗ Nordeste", "→ Leste", "↘ Sudeste", "↓ Sul", "↙ Sudoeste", "← Oeste", "↖ Noroeste"];
@@ -132,7 +132,6 @@ internal sealed class VulkanQuestTracker
         var counting = quest is { KillsNeeded: > 0 };
         _bar.Visibility = counting ? ViewStates.Visible : ViewStates.Gone;
         _title.Text = _titleText + (_collapsed ? "  ▸" : "  ▾");
-        _title.Visibility = _collapsed && counting ? ViewStates.Gone : ViewStates.Visible;
         _objective.Visibility = _collapsed ? ViewStates.Gone : ViewStates.Visible;
         if (counting)
         {

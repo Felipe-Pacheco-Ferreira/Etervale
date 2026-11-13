@@ -29,14 +29,14 @@ internal static class VulkanPanelArt
     }
 
     // A section heading: a gold diamond, the serif title, an optional note on the right and a gold line fading out
-    // between them.
-    public static LinearLayout Section(Activity activity, string title, TextView note = null)
+    // between them; size: the title's in sp.
+    public static LinearLayout Section(Activity activity, string title, TextView note = null, float size = VulkanPanel.HeadingSize)
     {
         var row = new LinearLayout(activity);
         row.SetGravity(GravityFlags.CenterVertical);
         var diamond = new View(activity) { Background = new OrnamentDrawable(diamondOnly: true) };
         row.AddView(diamond, new LinearLayout.LayoutParams(Dp(activity, 10), Dp(activity, 10)) { RightMargin = Dp(activity, 6) });
-        row.AddView(VulkanPanel.Heading(activity, title));
+        row.AddView(VulkanPanel.Heading(activity, title, size));
         var line = new View(activity) { Background = new OrnamentDrawable(diamondOnly: false) };
         row.AddView(line, new LinearLayout.LayoutParams(0, Dp(activity, 8), 1) { LeftMargin = Dp(activity, 8), RightMargin = Dp(activity, 6) });
         if (note is not null)
@@ -193,7 +193,7 @@ internal static class VulkanPanelArt
         }
     }
 
-    // The equipment backdrop: a recessed panel with the faint outline of a figure the slots stand around.
+    // The equipment backdrop: a recessed panel with a faint gold glow the slots stand around.
     public sealed class FigureDrawable(float radius, float line) : TranslucentDrawable
     {
         private readonly RectF _bounds = new();
@@ -208,26 +208,6 @@ internal static class VulkanPanelArt
                 [Color.Argb(70, 240, 208, 140).ToArgb(), Color.Argb(0, 240, 208, 140).ToArgb()], null, Shader.TileMode.Clamp!));
             canvas.DrawRoundRect(_bounds, radius, radius, Fill);
             Fill.SetShader(null);
-
-            // Head, shoulders and body, then the legs, in a faint gold.
-            var x = _bounds.CenterX();
-            var top = _bounds.Top;
-            var height = _bounds.Height();
-            var width = _bounds.Width();
-            Fill.Color = Color.Argb(38, 240, 208, 140);
-            canvas.DrawCircle(x, top + height * .14f, width * .1f, Fill);
-            Shape.Reset();
-            Shape.MoveTo(x - width * .22f, top + height * .3f);
-            Shape.QuadTo(x, top + height * .22f, x + width * .22f, top + height * .3f);
-            Shape.LineTo(x + width * .16f, top + height * .6f);
-            Shape.LineTo(x + width * .12f, top + height * .94f);
-            Shape.LineTo(x + width * .03f, top + height * .94f);
-            Shape.LineTo(x, top + height * .66f);
-            Shape.LineTo(x - width * .03f, top + height * .94f);
-            Shape.LineTo(x - width * .12f, top + height * .94f);
-            Shape.LineTo(x - width * .16f, top + height * .6f);
-            Shape.Close();
-            canvas.DrawPath(Shape, Fill);
             Stroke.StrokeWidth = line;
             Stroke.Color = Bronze;
             _bounds.Inset(line / 2f, line / 2f);
@@ -281,18 +261,22 @@ internal static class VulkanPanelArt
     }
 }
 
-// A HUD gauge as a view (VulkanHudArt.Bar), for windows: the fill up to a fraction with its text centred.
-internal sealed class VulkanGaugeView(Context context) : View(context)
+// A HUD gauge as a view (VulkanHudArt.Bar), for windows: the fill up to a fraction with its text centred. An eased gauge
+// glides to each new fraction (from empty when it first shows) and leaves a fading trail where it drops (EasedGauge).
+internal sealed class VulkanGaugeView(Context context, bool eased = false) : View(context)
 {
     private readonly RectF _bounds = new();
+    private readonly EasedGauge _eased = new();
     private VulkanHudArt.Gauge _gauge = VulkanHudArt.Experience;
     private float _fraction;
     private string _text = "";
+    private long _lastFrame;
 
     public void Set(VulkanHudArt.Gauge gauge, float fraction, string text)
     {
         _gauge = gauge;
         _fraction = Math.Clamp(fraction, 0f, 1f);
+        _eased.Set(_fraction, 1d);
         _text = text ?? "";
         Invalidate();
     }
@@ -300,6 +284,24 @@ internal sealed class VulkanGaugeView(Context context) : View(context)
     protected override void OnDraw(Canvas canvas)
     {
         _bounds.Set(0, 0, Width, Height);
-        VulkanHudArt.Bar(canvas, _bounds, _gauge, _fraction, _fraction, _text, Height * .58f);
+        if (!eased)
+        {
+            VulkanHudArt.Bar(canvas, _bounds, _gauge, _fraction, _fraction, _text, Height * .58f);
+            return;
+        }
+
+        var now = Android.OS.SystemClock.ElapsedRealtimeNanos();
+        var elapsed = _lastFrame == 0 ? 0f : Math.Min(.1f, (now - _lastFrame) / 1e9f);
+        _lastFrame = now;
+        var moving = _eased.Step(elapsed);
+        VulkanHudArt.Bar(canvas, _bounds, _gauge, _eased.Shown, _eased.Trail, _text, Height * .58f);
+        if (moving)
+        {
+            PostInvalidateOnAnimation();
+        }
+        else
+        {
+            _lastFrame = 0;
+        }
     }
 }

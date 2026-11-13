@@ -384,6 +384,13 @@ seguem para a torre alta.</value></data>
   <data name="Game.QuestTitle" xml:space="preserve"><value> Q U E S T </value></data>
   <data name="Game.RegisteredClanOnly" xml:space="preserve"><value>Só membros de um clã registrado podem usar este item</value></data>
   <data name="Game.RequestRefused" xml:space="preserve"><value>O pedido foi recusado</value></data>
+  <data name="Game.RewardAlreadyClaimed" xml:space="preserve"><value>Esta recompensa já foi recebida.</value></data>
+  <data name="Game.RewardBusy" xml:space="preserve"><value>Outra ação está em andamento; tente de novo.</value></data>
+  <data name="Game.RewardClaimed" xml:space="preserve"><value>Recompensa recebida.</value></data>
+  <data name="Game.RewardExpired" xml:space="preserve"><value>Este evento terminou.</value></data>
+  <data name="Game.RewardGoldLimit" xml:space="preserve"><value>Você não pode carregar tanto ouro.</value></data>
+  <data name="Game.RewardLevelTooLow" xml:space="preserve"><value>Seu nível é baixo demais para esta recompensa.</value></data>
+  <data name="Game.RewardNotReady" xml:space="preserve"><value>Esta recompensa ainda não está pronta.</value></data>
   <data name="Game.RewardReceived" xml:space="preserve"><value>Itens recebidos como recompensa.</value></data>
   <data name="Game.SameAttributeRunning" xml:space="preserve"><value>Um item com o mesmo atributo já está em uso</value></data>
   <data name="Game.SellerNotFound" xml:space="preserve"><value>O vendedor não foi encontrado</value></data>

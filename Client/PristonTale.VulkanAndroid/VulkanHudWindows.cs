@@ -5,10 +5,9 @@ using Android.Views;
 using Android.Widget;
 using PristonTale.Engine3D.Rendering;
 using PristonTale.Mobile;
-using PristonTale.Simulation.Characters;
 
-// The HUD's small windows, in the HUD's own look (VulkanPanel): the character's status (a tap on the portrait), the chat
-// and the graphics quality.
+// The HUD's small windows, in the HUD's own look (VulkanPanel): the chat and the graphics quality. The status is
+// VulkanStatusPanel.
 internal static class VulkanHudWindows
 {
     private static readonly (GraphicsQuality Quality, string Name, string Hint)[] Qualities =
@@ -18,87 +17,6 @@ internal static class VulkanHudWindows
         (GraphicsQuality.High, "Alto", "Sombras e luz"),
         (GraphicsQuality.Ultra, "Ultra", "Máximo")
     ];
-
-    // The character's status: name, level and class in the header, the attributes on the left and the combat values and
-    // vitals on the right.
-    public static void Status(Activity activity, FrameLayout overlay, VulkanWorldSession session)
-    {
-        if (session.Owner is not { } owner)
-        {
-            return;
-        }
-
-        var panel = new VulkanPanel(activity, overlay, session.Character.Name, 620);
-        int Dp(int value) => (int)MathF.Round(value * (activity.Resources?.DisplayMetrics?.Density ?? 1f));
-        var profile = ClassProfiles.Of(session.Character.Class);
-        panel.Content.AddView(VulkanPanel.Body(activity, $"Nível {owner.Level}  ·  {profile.TitleAt(owner.Tier)}", 15, VulkanPanel.Muted));
-
-        var columns = new LinearLayout(activity);
-        panel.Content.AddView(columns, new LinearLayout.LayoutParams(-1, -2) { TopMargin = Dp(10) });
-        var attributes = Column(columns, "Atributos", rightMargin: 12);
-        var strongest = Math.Max(1, new[] { owner.Strength, owner.Spirit, owner.Talent, owner.Agility, owner.Health }.Max());
-        Attribute(attributes, "Força", owner.Strength, strongest, Color.Rgb(236, 110, 80));
-        Attribute(attributes, "Espírito", owner.Spirit, strongest, Color.Rgb(120, 170, 255));
-        Attribute(attributes, "Talento", owner.Talent, strongest, Color.Rgb(200, 150, 255));
-        Attribute(attributes, "Agilidade", owner.Agility, strongest, Color.Rgb(140, 220, 120));
-        Attribute(attributes, "Vitalidade", owner.Health, strongest, Color.Rgb(255, 196, 90));
-        if (owner.StatPoints > 0)
-        {
-            Add(attributes, VulkanPanel.LabelValue(activity, "Pontos livres", owner.StatPoints.ToString(), VulkanHudArt.EdgeLight));
-        }
-
-        var combat = Column(columns, "Combate", rightMargin: 0);
-        Add(combat, VulkanPanel.LabelValue(activity, "Ataque", $"{owner.DamageMin} – {owner.DamageMax}"));
-        Add(combat, VulkanPanel.LabelValue(activity, "Defesa", owner.Defence.ToString()));
-        Add(combat, VulkanPanel.LabelValue(activity, "Absorção", owner.Absorption.ToString()));
-        Add(combat, VulkanPanel.LabelValue(activity, "Precisão", owner.AttackRating.ToString()));
-        Add(combat, VulkanPanel.LabelValue(activity, "Crítico", $"{owner.CriticalChance}%"));
-        Add(combat, VulkanPanel.LabelValue(activity, "Bloqueio", $"{owner.BlockChance}%"));
-        Add(combat, VulkanPanel.LabelValue(activity, "Vida", $"{owner.Life} / {owner.MaxLife}", Color.Rgb(255, 140, 120)));
-        Add(combat, VulkanPanel.LabelValue(activity, "Mana", $"{owner.Mana} / {owner.MaxMana}", Color.Rgb(140, 180, 255)));
-        Add(combat, VulkanPanel.LabelValue(activity, "Estamina", $"{owner.Stamina} / {owner.MaxStamina}", Color.Rgb(160, 225, 120)));
-
-        LinearLayout Column(LinearLayout parent, string title, int rightMargin)
-        {
-            var column = new LinearLayout(activity) { Orientation = Orientation.Vertical };
-            column.AddView(VulkanPanel.Heading(activity, title), new LinearLayout.LayoutParams(-2, -2) { BottomMargin = Dp(6) });
-            parent.AddView(column, new LinearLayout.LayoutParams(0, -2, 1) { RightMargin = Dp(rightMargin) });
-            return column;
-        }
-
-        void Add(LinearLayout column, View row) => column.AddView(row, new LinearLayout.LayoutParams(-1, -2) { BottomMargin = Dp(3) });
-
-        // An attribute's row: its name and value over a bar as long as the value is against the strongest attribute.
-        void Attribute(LinearLayout column, string name, int value, int top, Color tint)
-        {
-            var row = new LinearLayout(activity) { Orientation = Orientation.Vertical };
-            row.SetPadding(Dp(10), Dp(5), Dp(10), Dp(6));
-            row.SetBackgroundColor(VulkanPanel.Row);
-            var line = new LinearLayout(activity);
-            line.AddView(VulkanPanel.Body(activity, name, 14, VulkanPanel.Muted), new LinearLayout.LayoutParams(0, -2, 1));
-            line.AddView(VulkanPanel.Text(activity, value.ToString(), 15, Color.White, serif: true));
-            row.AddView(line);
-            var bar = new FrameLayout(activity) { Background = Rounded(Color.Argb(200, 6, 7, 10)) };
-            var fill = new View(activity) { Background = Rounded(tint) };
-            bar.AddView(fill, new FrameLayout.LayoutParams(0, -1));
-            row.AddView(bar, new LinearLayout.LayoutParams(-1, Dp(5)) { TopMargin = Dp(4) });
-            bar.Post(() =>
-            {
-                var layout = fill.LayoutParameters!;
-                layout.Width = bar.Width * value / top;
-                fill.LayoutParameters = layout;
-            });
-            Add(column, row);
-        }
-
-        Drawable Rounded(Color color)
-        {
-            var shape = new GradientDrawable();
-            shape.SetColor(color.ToArgb());
-            shape.SetCornerRadius(Dp(3));
-            return shape;
-        }
-    }
 
     // The chat: the last lines seen in their channels' colours, newest at the bottom, the switch that shows or hides them
     // on the screen (feedShown, feedChanged) and a field to write in with its send button.

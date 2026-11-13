@@ -69,7 +69,7 @@ internal sealed class VulkanTargetFrame : View
         var centerX = HudPlacement.TargetPortraitLeft(Width, h) + size / 2f;
         var centerY = HudPlacement.TargetPortraitY * h + size / 2f;
         _box.Set(left, HudPlacement.TargetFrameTop * h, right, FrameBottom * h);
-        VulkanHudArt.Plate(canvas, _box, .045f * h, centerX, centerY, size / 2f, target.MaxLife > 0 ? Color.Rgb(214, 40, 52) : Color.Rgb(70, 160, 255));
+        VulkanHudArt.Plate(canvas, _box, .045f * h, centerX, centerY, size / 2f, target.MaxLife > 0 ? Color.Rgb(214, 40, 52) : VulkanHudArt.NpcGem);
 
         var textLeft = centerX + size / 2f + .03f * h;
         var textRight = right - .03f * h;

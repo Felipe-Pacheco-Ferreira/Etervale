@@ -85,7 +85,7 @@ public sealed class CastleAppService
     private long _announcedEnd;
     private (long Owner, int Skill, int Tax) _toldWorld = (0, 0, 0);
     private long _taxGold;
-    private CastleMode _mode = CastleOptions.Default.Mode;
+    private CastleOptions _options = CastleOptions.Default;
     private bool _storageFailed;
 
     public CastleAppService(ICastleRepository repository, IClanDirectory clans, ChatDirectory chat, ICastleWorld world, TimeProvider? clock = null,
@@ -107,6 +107,9 @@ public sealed class CastleAppService
     public long OwnerClanId => Volatile.Read(ref _record).OwnerClanId;
 
     public SiegeState Siege => Volatile.Read(ref _siege).State;
+
+    // The settings of the last tick (the defaults before the first).
+    public CastleOptions Options => Volatile.Read(ref _options);
 
     // A player in the world: told the castle now and on every change until it leaves.
     public void Attach(ulong entityId, ICastleLink link)
@@ -166,7 +169,7 @@ public sealed class CastleAppService
         try
         {
             _storageFailed = false;
-            _mode = options.Mode;
+            Volatile.Write(ref _options, options);
             var now = _clock.GetUtcNow();
             var minute = now.ToUnixTimeSeconds() / 60;
             var first = _lastMinute < 0 ? minute : Math.Max(_lastMinute + 1, minute - CatchUpMinutes + 1);
@@ -512,7 +515,7 @@ public sealed class CastleAppService
             return;
         }
 
-        var start = NextSiege(local, options);
+        var start = CastleRules.NextSiege(local, options.SiegeDay, options.SiegeHour);
         if (Same(local, start.AddHours(-1)))
         {
             Notice(GameTextId.SiegeInAnHour);
@@ -732,7 +735,7 @@ public sealed class CastleAppService
         var record = Volatile.Read(ref _record);
         var siege = _siege;
         var world = _world.Siege;
-        var league = _mode == CastleMode.League;
+        var league = _options.Mode == CastleMode.League;
         var running = siege.State == SiegeState.Running;
         var end = running ? siege.EndsAt.ToUnixTimeSeconds() : 0;
         var tax = CastleRules.TaxInForce(record.OwnerClanId, record.Tax);
@@ -793,15 +796,6 @@ public sealed class CastleAppService
     }
 
     private void Notice(GameTextId text) => _chat.Broadcast(new ChatLine(ChatKind.Notice, 0, "", GameText.Of(text)));
-
-    // The coming siege: its day and hour this week, or next week's once that minute has passed. A siege hour that a
-    // daylight-saving change skips does not come that week.
-    public static DateTimeOffset NextSiege(DateTimeOffset local, CastleOptions options)
-    {
-        var today = new DateTimeOffset(local.Year, local.Month, local.Day, 0, 0, 0, local.Offset);
-        var start = today.AddDays((options.SiegeDay - (int)local.DayOfWeek + 7) % 7).AddHours(options.SiegeHour);
-        return start.AddMinutes(1) <= local ? start.AddDays(7) : start;
-    }
 
     private static bool Same(DateTimeOffset a, DateTimeOffset b) =>
         a.Year == b.Year && a.Month == b.Month && a.Day == b.Day && a.Hour == b.Hour && a.Minute == b.Minute;

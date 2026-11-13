@@ -13,6 +13,8 @@ internal sealed class VulkanActionOrb : View
     private Bitmap _picture;
     private string _caption = "";
     private string _count = "";
+    private int _badge;
+    private string _badgeText = "";
     private readonly RectF _box = new();
 
     public VulkanActionOrb(Context context, HudGlyph glyph, bool prominent = false) : base(context)
@@ -45,6 +47,17 @@ internal sealed class VulkanActionOrb : View
         {
             _caption = caption ?? "";
             _count = count ?? "";
+            Invalidate();
+        }
+    }
+
+    // A red badge with the number at the upper right; 0 hides it.
+    public void SetBadge(int count)
+    {
+        if (count != _badge)
+        {
+            _badge = count;
+            _badgeText = count > VulkanHudArt.MostBadge ? VulkanHudArt.MostBadgeText : count.ToString();
             Invalidate();
         }
     }
@@ -92,6 +105,11 @@ internal sealed class VulkanActionOrb : View
         if (_count.Length > 0)
         {
             VulkanHudArt.Label(canvas, _count, x + radius * .55f, y + radius * .62f, radius * .36f, Color.White, Paint.Align.Center!);
+        }
+
+        if (_badge > 0)
+        {
+            VulkanHudArt.RedBadge(canvas, x + radius * .68f, y - radius * .68f, radius * .3f, _badgeText);
         }
     }
 }

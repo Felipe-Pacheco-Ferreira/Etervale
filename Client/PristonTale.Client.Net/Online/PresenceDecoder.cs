@@ -153,6 +153,14 @@ internal sealed class PresenceDecoder : IEventHandleReader
             {
                 BellatraClanResult = BellatraClanResultPacket.Read(packet) is var bellatra ? new BellatraClanResultInfo(bellatra.Action, (Contracts.Social.BellatraClanStatus)bellatra.Status) : null
             },
+            EtervaleOpcodes.RewardEvents => new PresenceUpdate(_tick, [], [], [], [], FieldId) { Rewards = Rewards(RewardEventsPacket.Read(packet)) },
+            EtervaleOpcodes.RewardEventsResult => new PresenceUpdate(_tick, [], [], [], [], FieldId)
+            {
+                RewardResult = RewardEventsResultPacket.Read(packet) is var reward
+                    ? new RewardEventsResultInfo(reward.Action, (Simulation.Events.RewardTrack)reward.Track, (Simulation.Events.RewardClaimStatus)reward.Status,
+                        reward.Claimed, reward.Message)
+                    : null
+            },
             EtervaleOpcodes.CastleOwnerResult => new PresenceUpdate(_tick, [], [], [], [], FieldId)
             {
                 CastleOwnerResult = CastleOwnerResultPacket.Read(packet) is var result
@@ -263,6 +271,35 @@ internal sealed class PresenceDecoder : IEventHandleReader
     private static BellatraResultInfo BellatraResult(BellatraResultPacket packet) =>
         new(packet.Final, [.. packet.Lines.Select(static line => new BellatraResultLineInfo(line.Name, (Contracts.Characters.PlayerClass)line.Class,
             (long)Math.Min(line.Score, long.MaxValue), (int)Math.Min(line.Kills, int.MaxValue)))]);
+
+    // A track this client does not know (from a newer server) is left out; an entry keeps its place (claims name it by
+    // index), shown locked when its state is unknown.
+    private static RewardEventsInfo Rewards(RewardEventsPacket packet)
+    {
+        var tracks = new List<RewardTrackInfo>(packet.Tracks.Count);
+        foreach (var track in packet.Tracks)
+        {
+            if (!Simulation.Events.RewardEvents.IsTrack(track.Track))
+            {
+                continue;
+            }
+
+            var entries = new List<RewardEntryInfo>(track.Entries.Count);
+            foreach (var entry in track.Entries)
+            {
+                var state = (Simulation.Events.RewardEntryState)entry.State;
+                state = Enum.IsDefined(state) ? state : Simulation.Events.RewardEntryState.Locked;
+                entries.Add(new RewardEntryInfo((Simulation.Events.RewardGoal)entry.Goal, state,
+                    (int)Math.Min(entry.Progress, int.MaxValue), (int)Math.Min(entry.Target, int.MaxValue), (long)Math.Min(entry.Gold, long.MaxValue),
+                    [.. entry.Items.Select(static item => new RewardItemInfo(item.Code, item.Count, item.Name))]));
+            }
+
+            tracks.Add(new RewardTrackInfo((Simulation.Events.RewardTrack)track.Track, track.MinLevel,
+                track.SecondsLeft is { } seconds ? (long)Math.Min(seconds, long.MaxValue) : Simulation.Events.RewardTrackView.NoDeadline, entries));
+        }
+
+        return new RewardEventsInfo(tracks);
+    }
 
     private static BellatraClanInfo BellatraClan(BellatraClanStatePacket packet) => !packet.HasView ? BellatraClanInfo.None
         : new BellatraClanInfo(true, (long)Math.Min(packet.OperatingClanId, long.MaxValue), packet.OperatingName, packet.Chief, packet.Tax,

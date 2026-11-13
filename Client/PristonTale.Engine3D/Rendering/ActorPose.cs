@@ -21,6 +21,9 @@ public sealed class ActorPose
     public bool NeedsSample(bool refresh, float frame, PristonMotionInfo motion) =>
         !Taken || !ReferenceEquals(Motion, motion) || refresh && Frame != frame;
 
+    // The next palette samples again: the skeleton's pose changed without its frame or motion (a rider sits down).
+    public void Forget() => Frame = float.NaN;
+
     public Matrix[] Take(Matrix[] evaluated, float frame, PristonMotionInfo motion)
     {
         if (_transforms.Length != evaluated.Length)

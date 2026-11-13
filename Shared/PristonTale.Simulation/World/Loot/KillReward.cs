@@ -3,9 +3,11 @@ namespace PristonTale.Simulation.World.Loot;
 public static class KillReward
 {
     // The experience event is a plain percent of each kill (100 = x1, 500 = x5); a setting that is not positive is x1.
-    public static int EventPercent(int setting) => setting > 0 ? setting : 100;
+    public const int NoEventPercent = 100;
 
-    public static ulong ExpForKill(ulong baseExp, int monsterLevel, int playerLevel, int multiplier = 1, int eventPercent = 100)
+    public static int EventPercent(int setting) => setting > 0 ? setting : NoEventPercent;
+
+    public static ulong ExpForKill(ulong baseExp, int monsterLevel, int playerLevel, int multiplier = 1, int eventPercent = NoEventPercent)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(multiplier);
         long difference = Math.Abs((long)monsterLevel - playerLevel);

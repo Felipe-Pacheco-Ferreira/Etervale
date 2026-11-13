@@ -66,6 +66,9 @@ public sealed record RouteExit(int From, int To, RoutePoint Point, bool Seam);
 
 public sealed record TribeRoute(string GuideName, RoutePoint Guide, int HuntField, IReadOnlyList<RouteExit> Exits, IReadOnlyList<RoutePoint> HuntPoints)
 {
+    // Where the hunt happens, as the maps mark it in red.
+    public HuntArea HuntArea { get; } = HuntArea.Around(HuntPoints);
+
     // The exit to take from a field towards another, or null when there is none.
     public RouteExit ExitTowards(int from, int to)
     {
@@ -78,5 +81,36 @@ public sealed record TribeRoute(string GuideName, RoutePoint Guide, int HuntFiel
         }
 
         return null;
+    }
+}
+
+// A round area in a field's planar (x, z): centred on the points' mean, reaching Margin past the farthest point. Empty
+// (radius 0) without points.
+public readonly record struct HuntArea(float X, float Z, float Radius)
+{
+    // Room around the hunting places inside the area, in field units.
+    public const float Margin = 260f;
+
+    public static HuntArea Around(IReadOnlyList<RoutePoint> points)
+    {
+        if (points.Count == 0)
+        {
+            return default;
+        }
+
+        var centre = System.Numerics.Vector2.Zero;
+        foreach (var point in points)
+        {
+            centre += new System.Numerics.Vector2(point.X, point.Z);
+        }
+
+        centre /= points.Count;
+        var reach = 0f;
+        foreach (var point in points)
+        {
+            reach = MathF.Max(reach, System.Numerics.Vector2.Distance(centre, new System.Numerics.Vector2(point.X, point.Z)));
+        }
+
+        return new HuntArea(centre.X, centre.Y, reach + Margin);
     }
 }

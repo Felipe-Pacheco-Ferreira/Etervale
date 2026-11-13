@@ -36,7 +36,7 @@ public sealed class RemoteEntity : RemoteEntityBase
 
     protected override void ApplyWorld(Matrix world)
     {
-        _handles.SetWorld(_scene, Lift > 0f ? world * Matrix.CreateTranslation(0f, Lift, 0f) : world);
+        _handles.SetWorld(_scene, Lift > 0f ? world * Matrix.CreateTranslation(0f, Lift, 0f) : world, Lift > 0f);
     }
 
     protected override void ApplyMotionCommand(MotionCommand command)

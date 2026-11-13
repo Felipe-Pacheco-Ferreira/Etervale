@@ -18,6 +18,11 @@ internal sealed class MobileMinimap : View
     private IReadOnlyList<Vector2> _route = [];
     // Dots along the route are this many field units apart.
     private const float RouteDotSpacing = 72f;
+    // The hunting area in field coordinates; a radius of 0 hides it.
+    private Vector2 _huntCentre;
+    private float _huntRadius;
+    private readonly Paint _huntFill = new() { AntiAlias = true, Color = Color.Argb(80, 255, 50, 36) };
+    private readonly Paint _huntEdge = new() { AntiAlias = true, Color = Color.Argb(230, 255, 96, 72) };
     public event Action<Vector2>? DestinationSelected;
 
     // The field's map image and the field rectangle it covers, in field coordinates (for a full-screen map).
@@ -35,10 +40,22 @@ internal sealed class MobileMinimap : View
         }
     }
 
+    // The round hunting area to show in red under the route and the arrow, in field coordinates; radius 0 hides it.
+    public void SetHuntArea(Vector2 centre, float radius)
+    {
+        if (_huntCentre != centre || _huntRadius != radius)
+        {
+            _huntCentre = centre;
+            _huntRadius = radius;
+            Invalidate();
+        }
+    }
+
     private MobileMinimap(Context context, Bitmap image, RectF world) : base(context)
     {
         _image = image;
         _world = world;
+        _huntEdge.SetStyle(Paint.Style.Stroke);
         ContentDescription = "Minimapa. Toque para marcar um destino.";
         Clickable = true;
     }
@@ -94,6 +111,15 @@ internal sealed class MobileMinimap : View
         _destination.Set(cx + (_world.Left - _position.X) * scale, cy + (_position.Z - _world.Bottom) * scale,
             cx + (_world.Right - _position.X) * scale, cy + (_position.Z - _world.Top) * scale);
         canvas.DrawBitmap(_image, null, _destination, _paint);
+        if (_huntRadius > 0f)
+        {
+            var huntX = cx + (_huntCentre.X - _position.X) * scale;
+            var huntY = cy - (_huntCentre.Y - _position.Z) * scale;
+            canvas.DrawCircle(huntX, huntY, _huntRadius * scale, _huntFill);
+            _huntEdge.StrokeWidth = Math.Max(1.5f, Width * .014f);
+            canvas.DrawCircle(huntX, huntY, _huntRadius * scale, _huntEdge);
+        }
+
         _paint.Color = Color.Rgb(233, 196, 117);
         _paint.SetStyle(Paint.Style.Stroke);
         _paint.StrokeWidth = 2;
@@ -148,6 +174,8 @@ internal sealed class MobileMinimap : View
             _world.Dispose();
             _destination.Dispose();
             _paint.Dispose();
+            _huntFill.Dispose();
+            _huntEdge.Dispose();
             _arrow.Dispose();
         }
         base.Dispose(disposing);

@@ -19,7 +19,7 @@ internal sealed class VulkanWorldMap
         [PristonTale.Simulation.World.FieldCodes.Ricarten] = "Ricarten",
         [PristonTale.Simulation.World.FieldCodes.Pillai] = "Pillai",
         [PristonTale.Simulation.World.FieldCodes.ForeverFall1] = "Forever Fall 1",
-        [2] = "Floresta 1"
+        [PristonTale.Simulation.World.Fields.Forest1Field.Definition.FieldCode] = "Floresta 1"
     };
 
     private readonly Activity _activity;
@@ -37,6 +37,11 @@ internal sealed class VulkanWorldMap
     }
 
     public static string FieldTitle(int code) => FieldTitles.TryGetValue(code, out var title) ? title : $"Campo {code}";
+
+    // The red hunting area the maps (this one and the minimap) mark in a field: the route's, while the quest still counts
+    // kills and the field is the route's hunting field.
+    public static HuntArea? HuntAreaIn(int field, TribeRoute route, QuestView quest) =>
+        quest is { KillsNeeded: > 0 } && field == route.HuntField && route.HuntArea.Radius > 0 ? route.HuntArea : null;
 
     public void Open(MobileMinimap minimap, string title)
     {
@@ -122,8 +127,6 @@ internal sealed class VulkanWorldMap
     {
         private const float RouteDotSpacing = 96f;
         private const float MostZoom = 8f;
-        // Room around the hunting places inside the red area, in field units.
-        private const float HuntMargin = 260f;
 
         private readonly MobileMinimap _minimap;
         private readonly VulkanWorldSession _session;
@@ -273,34 +276,21 @@ internal sealed class VulkanWorldMap
 
         private void DrawObjectives(Canvas canvas, int field, TribeRoute route, QuestView quest, float size, Func<float, float> x, Func<float, float> y)
         {
-            if (quest is { KillsNeeded: > 0 } && field == route.HuntField && route.HuntPoints.Count > 0)
+            if (HuntAreaIn(field, route, quest) is { } area)
             {
-                var centre = Vector2.Zero;
-                foreach (var point in route.HuntPoints)
-                {
-                    centre += new Vector2(point.X, point.Z);
-                }
-
-                centre /= route.HuntPoints.Count;
-                var reach = 0f;
-                foreach (var point in route.HuntPoints)
-                {
-                    reach = Math.Max(reach, Vector2.Distance(centre, new Vector2(point.X, point.Z)));
-                }
-
-                var radius = (reach + HuntMargin) * Scale();
-                _paint.SetShader(new RadialGradient(x(centre.X), y(centre.Y), radius,
+                var radius = area.Radius * Scale();
+                _paint.SetShader(new RadialGradient(x(area.X), y(area.Z), radius,
                     [Color.Argb(110, 255, 60, 40).ToArgb(), Color.Argb(60, 220, 30, 20).ToArgb()], null, Shader.TileMode.Clamp!));
-                canvas.DrawCircle(x(centre.X), y(centre.Y), radius, _paint);
+                canvas.DrawCircle(x(area.X), y(area.Z), radius, _paint);
                 _paint.SetShader(null);
                 _paint.SetStyle(Paint.Style.Stroke);
                 _paint.StrokeWidth = 4f;
                 _paint.Color = Color.Rgb(255, 90, 70);
                 _paint.SetPathEffect(new DashPathEffect([18f, 10f], 0f));
-                canvas.DrawCircle(x(centre.X), y(centre.Y), radius, _paint);
+                canvas.DrawCircle(x(area.X), y(area.Z), radius, _paint);
                 _paint.SetPathEffect(null);
                 _paint.SetStyle(Paint.Style.Fill);
-                Label(canvas, $"Caça: {quest.TargetName} {Math.Min(quest.Kills, quest.KillsNeeded)}/{quest.KillsNeeded}", x(centre.X), y(centre.Y), size,
+                Label(canvas, $"Caça: {quest.TargetName} {Math.Min(quest.Kills, quest.KillsNeeded)}/{quest.KillsNeeded}", x(area.X), y(area.Z), size,
                     Color.Rgb(255, 190, 170), always: true);
             }
             else if (quest is { KillsNeeded: > 0 } && route.ExitTowards(field, route.HuntField) is { } exit)

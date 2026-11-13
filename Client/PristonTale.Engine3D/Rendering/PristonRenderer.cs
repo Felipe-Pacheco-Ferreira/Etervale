@@ -1013,10 +1013,30 @@ public sealed partial class PristonRenderer : IDisposable
             if (_sampledFrame != Frame)
             {
                 _sampledTransforms = Animator.Evaluate(Frame, Motion.EndFrame * GameUnits.FrameTicks);
+                Seat?.Apply(_sampledTransforms);
                 _sampledFrame = Frame;
             }
 
             return _sampledTransforms;
+        }
+
+        // A rider's seat over its clip (ActorSeat), or null when it stands.
+        public ActorSeat Seat { get; private set; }
+
+        private bool _seated;
+
+        // A skeleton with no biped legs stays standing.
+        public void SetSeated(bool seated)
+        {
+            if (seated == _seated || Instance.Actor.Gltf is not null)
+            {
+                return;
+            }
+
+            _seated = seated;
+            Seat = seated ? ActorSeat.TryCreate(Instance.Actor.Skeleton) : null;
+            _sampledFrame = float.NaN;
+            Pose.Forget();
         }
 
         // The pose of the palette: sampled again as Pose.NeedsSample says, otherwise the one it shows.

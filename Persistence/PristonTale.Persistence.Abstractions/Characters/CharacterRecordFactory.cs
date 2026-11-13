@@ -60,7 +60,8 @@ public static class CharacterRecordFactory
             Quests: JsonText.EmptyObject,
             Premium: JsonText.EmptyObject,
             LastPlayedAt: null,
-            StarterGiftsReceived: 0);
+            StarterGiftsReceived: 0,
+            Events: JsonText.EmptyObject);
     }
 
     public static CharacterRecord FromLiveSession(
@@ -107,6 +108,7 @@ public static class CharacterRecordFactory
             CharacterStateCodec.CaptureEquipment(character),
             CharacterStateCodec.CaptureSkills(character),
             SavedPremium.Capture(character),
-            QuestStateCodec.Capture(character.Quests));
+            QuestStateCodec.Capture(character.Quests),
+            RewardEventStateCodec.Capture(character.Events));
     }
 }

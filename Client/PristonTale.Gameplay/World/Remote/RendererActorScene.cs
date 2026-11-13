@@ -17,6 +17,10 @@ public sealed class RendererActorScene(PristonRenderer renderer) : IActorScene
     public void SetActorAttachOffset(ActorHandle child, Matrix offset, float lift) => _renderer.SetActorAttachOffset(child, offset, lift);
     public ActorHandle AddActor(PristonActorInstance instance) => _renderer.AddActor(instance);
     public void SetActorWorld(ActorHandle handle, Matrix world) => _renderer.SetActorWorld(handle, world);
+    public void SetActorSeated(ActorHandle handle, bool seated) => _renderer.SetActorSeated(handle, seated);
+    public bool TryGetActorSaddle(ActorHandle handle, string boneName, float behind, float skinShare, out Vector3 saddle) =>
+        _renderer.TryGetActorSaddle(handle, boneName, behind, skinShare, out saddle);
+    public bool TryGetActorBoneWorld(ActorHandle handle, string boneName, out Matrix world) => _renderer.TryGetActorBoneWorld(handle, boneName, out world);
     public void SetActorColorAdd(ActorHandle handle, Vector3 colorAdd) => _renderer.SetActorColorAdd(handle, colorAdd);
     public bool TryGetActorMotion(ActorHandle handle, out PristonMotionInfo motion, out float ticks) => _renderer.TryGetActorMotion(handle, out motion, out ticks);
     public void SetActorMotion(ActorHandle handle, MotionCode motion) => _renderer.SetActorMotion(handle, motion);

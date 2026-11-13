@@ -13,10 +13,6 @@ public static class MountRules
     // A swing, a cast or a hit keeps the player in combat this long; it may not mount meanwhile.
     public const float CombatHoldMs = 5000f;
 
-    // The planar radius of the mounted body, wider than the player on foot: the hound reaches about 40 units ahead of and
-    // behind the rider, so a route for a mounted player keeps this far from walls.
-    public const float BodyRadius = 40f;
-
     public static float UnitsPerSecond(int moveSpeed) => Locomotion.RunUnitsPerSecond(moveSpeed) * SpeedFactor;
 
     public static bool FieldAllows(FieldState state) => state != FieldState.Action;

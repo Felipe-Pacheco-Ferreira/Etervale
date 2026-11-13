@@ -31,7 +31,7 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
     private const double RepeatTalkSeconds = 30;
     private const double InventoryCooldownSeconds = 2;
     private const int MostRouteFailures = 3;
-    // A monster this close is fought first, whatever the quest hunts: it is the one hitting the player.
+    // With none of the quest's monsters in view, a monster this close is fought rather than walked past.
     private const float DefendRange = 140f;
     // Life fraction under which a belt potion is drunk, and the pause between two.
     private const float DrinkBelow = .45f;
@@ -47,16 +47,12 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
     private int _replan;
     // A search that found no way from here is tried again only after this long.
     private const double NoRouteRetrySeconds = 2;
-    // Walks longer than this ride the travel mount; a refused mount (combat) is asked again after MountRetrySeconds, and
-    // a goal the hound cannot reach is walked on foot for OnFootSeconds.
+    // Journeys longer than this ride the travel mount; a refused mount (combat) is asked again after MountRetrySeconds.
     private const float MountDistance = 500f;
     private const double MountRetrySeconds = 10;
-    private const double OnFootSeconds = 30;
     private double _mountRetryAt;
     private string _ridingStatus;
     private string _ridingStatusOf;
-    private double _onFootUntil;
-    private float _routeRadius;
     private double _retryAt;
     private string _status = "";
     private Step _step;
@@ -70,7 +66,8 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
     private Vector3 _lastPosition;
     private double _drankAt = double.NegativeInfinity;
     private Task _drinking = Task.CompletedTask;
-    private RouteMarks _marks = new(0, []);
+    private static readonly RouteMarks NoMarks = new(0, []);
+    private RouteMarks _marks = NoMarks;
     // A monster the attack could not reach in a straight line, walked to along a route instead.
     private ulong _chasing;
     private double _attackStillSince = double.NaN;
@@ -98,7 +95,7 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
     public void SetEnabled(bool value)
     {
         Volatile.Write(ref _replan, 1);
-        Volatile.Write(ref _marks, new RouteMarks(0, []));
+        Volatile.Write(ref _marks, NoMarks);
         Volatile.Write(ref _enabled, value ? 1 : 0);
         if (!value)
         {
@@ -266,7 +263,7 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
             && (distance <= WaypointReach || scene.WalksStraightTo(new XnaVector2(target.X, -target.Y)));
         if (!beside)
         {
-            Walk(scene, pose, route.Guide.FieldCode, target, 0, $"Indo até {GuideName(route)}", 0f);
+            Walk(scene, pose, route.Guide.FieldCode, target, 0, $"Indo até {GuideName(route)}", 0f, ride: true);
             return;
         }
 
@@ -291,39 +288,40 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
 
         session.KeepHunting = collecting;
         Show(collecting ? $"Procurando o Cristal de {quest.TargetName}" : $"Caçando {quest.TargetName}  {quest.Kills}/{quest.KillsNeeded}");
-        // A monster at the player's side is fought before the quest's own, so the hunt is not worn down on the way.
-        if (session.ClosestMonster(DefendRange, quest.TargetQuestCode) is { } attacker)
-        {
-            session.SetAutoHunt(false);
-            ClearRoute();
-            if (scene.AttackTargetId != attacker)
-            {
-                scene.SetQuestHuntTarget(attacker);
-            }
-
-            return;
-        }
-
         if (_chasing != 0)
         {
             Chase(scene, pose, route);
             return;
         }
 
-        session.SetAutoHunt(true);
+        // Between fights the drops in reach are gathered first (the crystal the guide wants is one of them), and a walk to
+        // one (not a route) is not cut short by the next target.
+        if (scene.AttackTargetId == 0 && (scene.AutoMoving && _route.Count == 0 || scene.PickUpNear(LootRadius)))
+        {
+            session.SetAutoHunt(false);
+            ClearRoute();
+            return;
+        }
+
+        // The quest's monster comes first; another monster is fought only when none of the quest's is in view.
+        var questTargetInView = session.HasHuntTarget(quest.TargetQuestCode);
+        session.SetAutoHunt(questTargetInView);
+        if (!questTargetInView && scene.AttackTargetId == 0 && session.ClosestMonster(DefendRange) is { } other)
+        {
+            ClearRoute();
+            scene.SetQuestHuntTarget(other);
+            return;
+        }
+
         if (scene.AttackTargetId != 0)
         {
+            ClearRoute();
             WatchAttack(scene, pose);
             return;
         }
 
         _attackStillSince = double.NaN;
-        if (scene.AutoMoving && _route.Count == 0)
-        {
-            return;
-        }
-
-        if (scene.PickUpNear(LootRadius) || session.HasHuntTarget(quest.TargetQuestCode))
+        if (questTargetInView)
         {
             ClearRoute();
             return;
@@ -388,12 +386,13 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
             return;
         }
 
-        Walk(scene, pose, exit.From, new Vector2(exit.Point.X, exit.Point.Z), exit.Seam ? exit.To : 0, status);
+        Walk(scene, pose, exit.From, new Vector2(exit.Point.X, exit.Point.Z), exit.Seam ? exit.To : 0, status, ride: true);
     }
 
-    // Follows a route to a point of a field (its own planar x, z); true once there.
+    // Follows a route to a point of a field (its own planar x, z); true once there. ride: a journey (to the guide, to
+    // another field) that takes the travel mount when long; the hunt's short walks between fights stay on foot.
     private bool Walk(GameScene scene, VulkanWorldSession.WorldMapPose pose, int field, Vector2 goal, int joinWith, string status,
-        float reach = WaypointReach)
+        float reach = WaypointReach, bool ride = false)
     {
         var here = new Vector2(pose.Position.X, pose.Position.Z);
         if (Vector2.Distance(here, goal) <= reach)
@@ -403,18 +402,21 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
         }
 
         var now = _clock.Elapsed.TotalSeconds;
-        Ride(scene, Vector2.Distance(here, goal), now);
+        if (ride)
+        {
+            Ride(scene, Vector2.Distance(here, goal), now);
+        }
+
         Show(scene.Mounted ? RidingStatus(status) : status);
-        // Only a mount the server agreed to is planned for: a refused prediction falls back within a moment.
-        var radius = scene.MountConfirmed ? MountRules.BodyRadius : GameScene.WalkingBodyRadius;
-        if (_routeField != field || _routeGoal != goal || _routeRadius != radius || (_route.Count == 0 && _routing is null && now >= _retryAt))
+        // Routes are planned for the rider's own body, mounted or not: a route for the hound's width failed in narrow streets
+        // and left the mount on and off; the hound may brush a wall instead.
+        if (_routeField != field || _routeGoal != goal || (_route.Count == 0 && _routing is null && now >= _retryAt))
         {
             _routeField = field;
             _routeGoal = goal;
-            _routeRadius = radius;
             _route = [];
             var renderGoal = new XnaVector2(goal.X, -goal.Y);
-            _routing = scene.PlanRouteAsync(renderGoal, session.NpcPoints(renderGoal, TalkReach), radius);
+            _routing = scene.PlanRouteAsync(renderGoal, session.NpcPoints(renderGoal, TalkReach), GameScene.WalkingBodyRadius);
         }
 
         if (_routing is { IsCompleted: true } search)
@@ -422,16 +424,6 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
             var routing = search.IsCompletedSuccessfully ? search.Result : null;
             _routing = null;
             LogRoute(routing, search.Exception);
-            if (routing is not { Points.Count: > 0, ReachesGoal: true } && _routeRadius > GameScene.WalkingBodyRadius)
-            {
-                // Too narrow for the hound, all the way or past a gate or stair: the same goal is searched again at once on
-                // foot.
-                scene.Dismount();
-                _onFootUntil = now + OnFootSeconds;
-                _retryAt = now;
-                return false;
-            }
-
             if (routing is not { Points.Count: > 0 })
             {
                 // No walkable way from here: never walk blind at the goal, which runs into the walls between.
@@ -495,7 +487,7 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
     // Mounts the travel mount for a long walk; the mount itself refuses in combat, and attacking leaves it.
     private void Ride(GameScene scene, float distance, double now)
     {
-        if (scene.Mounted || distance < MountDistance || now < _onFootUntil || now < _mountRetryAt)
+        if (scene.Mounted || distance < MountDistance || now < _mountRetryAt)
         {
             return;
         }
@@ -551,11 +543,13 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
         }
 
         _drankAt = _clock.Elapsed.TotalSeconds;
-        var command = new ItemUseCommand(Guid.NewGuid(), owner.InventoryRevision, potion.InstanceId);
+        // A potion is drunk through the inventory's potion command, as the desktop belt does; the item-use command is for
+        // scrolls, crystals and the like, and refuses a potion.
+        var command = new InventoryCommand(Guid.NewGuid(), owner.InventoryRevision, InventoryAction.ConsumePotion, potion.InstanceId, 0, 1, default);
         _drinking = Task.Run(async () =>
         {
             using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(8));
-            await play.UseItemAsync(command, timeout.Token);
+            await play.ApplyInventoryAsync(command, timeout.Token);
         });
     }
 
@@ -565,7 +559,7 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
         _routing = null;
         _routeField = 0;
         _routeFailures = 0;
-        Volatile.Write(ref _marks, new RouteMarks(0, []));
+        Volatile.Write(ref _marks, NoMarks);
     }
 
     // Puts a weapon in the hand and a potion in the belt when the guide asks for them; true while it does.

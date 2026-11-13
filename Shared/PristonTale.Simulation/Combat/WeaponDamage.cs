@@ -8,6 +8,15 @@ namespace PristonTale.Simulation.Combat;
 
 public static class WeaponDamage
 {
+    // The attribute a weapon's damage grows with: spirit for a caster's staff or phantom, agility for bows and throwing
+    // weapons, strength for the rest (and for no known weapon).
+    public static CharacterAttribute DamageAttribute(ItemKind? weapon, CharacterFunctionProfile function) => weapon switch
+    {
+        ItemKind.Staff or ItemKind.Phantom when function.MagicDamageFunction > 0 => CharacterAttribute.Spirit,
+        ItemKind.Bow or ItemKind.ThrowingWeapon => CharacterAttribute.Agility,
+        _ => CharacterAttribute.Strength
+    };
+
     public static (int Min, int Max) Compute(PlayerCharacter character)
     {
         var weapon = character.GetEquipped(EquipmentSlot.Weapon);
@@ -25,13 +34,14 @@ public static class WeaponDamage
         int primary;
         int divisor;
         int secondary;
-        if (weapon.Definition.Kind is ItemKind.Staff or ItemKind.Phantom && function.MagicDamageFunction > 0)
+        var attribute = DamageAttribute(weapon.Definition.Kind, function);
+        if (attribute == CharacterAttribute.Spirit)
         {
             primary = attributes.Spirit;
             divisor = function.MagicDamageFunction == 1 ? 150 : 170;
             secondary = attributes.Talent / 30;
         }
-        else if (weapon.Definition.Kind is ItemKind.Bow or ItemKind.ThrowingWeapon)
+        else if (attribute == CharacterAttribute.Agility)
         {
             primary = attributes.Agility;
             divisor = function.RangedDamageFunction == 1 ? 130 : 190;

@@ -32,6 +32,11 @@ public sealed class CharacterClassRegistry
 
     public CharacterClass Get(PlayerClass playerClass) => _byClass[playerClass];
 
+    // The attribute the class's damage grows with, by the kind of its own weapon (the family of its beginner weapon).
+    public CharacterAttribute DamageAttribute(PlayerClass playerClass) =>
+        Combat.WeaponDamage.DamageAttribute(Items.ItemEquipmentMetadata.KindOf(ClassProfiles.Of(playerClass).BeginnerWeapon),
+            Get(playerClass).Definition.FunctionProfile);
+
     public PlayerCharacter CreatePlayer(PlayerClass playerClass, string name, int level = 1) =>
         new(Get(playerClass), name, level);
 }

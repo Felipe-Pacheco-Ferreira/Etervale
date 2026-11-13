@@ -18,7 +18,32 @@ public sealed record ItemEventRates
     public int Puzzle { get; init; }
     public int GiftBox { get; init; }
 
-    public bool Any => Mandoo || ValentineDay > 0 || Watermelon > 0 || Valentine > 0 || CandyDays > 0 || WhiteDay > 0 || Puzzle > 0 || GiftBox > 0;
+    public bool Any => Running != DropEvents.None;
+
+    public DropEvents Running =>
+        (Mandoo ? DropEvents.Mandoo : 0)
+        | (ValentineDay > 0 ? DropEvents.ValentineDay : 0)
+        | (Watermelon > 0 ? DropEvents.Watermelon : 0)
+        | (Valentine > 0 ? DropEvents.Valentine : 0)
+        | (CandyDays > 0 ? DropEvents.CandyDays : 0)
+        | (WhiteDay > 0 ? DropEvents.WhiteDay : 0)
+        | (Puzzle > 0 ? DropEvents.Puzzle : 0)
+        | (GiftBox > 0 ? DropEvents.GiftBox : 0);
+}
+
+// The item events running (ItemEventRates), a bit each; a wire code: append only.
+[Flags]
+public enum DropEvents : ushort
+{
+    None = 0,
+    Mandoo = 1,
+    ValentineDay = 2,
+    Watermelon = 4,
+    Valentine = 8,
+    CandyDays = 16,
+    WhiteDay = 32,
+    Puzzle = 64,
+    GiftBox = 128
 }
 
 // Event items replace a monster's main drop roll. The events are tried in a fixed order and the first that hits gives the

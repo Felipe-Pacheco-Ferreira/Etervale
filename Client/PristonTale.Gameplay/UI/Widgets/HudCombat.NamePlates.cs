@@ -82,6 +82,52 @@ public sealed partial class HudCombat
         }
     }
 
+    // The marker over the monster the player attacks, for a client that asks for it (the Android one): a red arrow in a
+    // gold rim and a dark outline pointing down at the top of the monster's one-line name box, whether or not the box is
+    // shown, bobbing and glowing on a loop. A dead or unseen monster, or one whose marker would leave the screen, has none.
+    public void DrawTargetMarker(HudPainter painter, HudLayout layout, Func<ulong, HudOverheadPoint?> project, ulong target, long nowMs, bool classic)
+    {
+        if (target == 0 || !_entities.TryGetValue(target, out var entity) || entity.Spawn.Kind != EntityKind.Monster || entity.Life <= 0
+            || project(target) is not { } point)
+        {
+            return;
+        }
+
+        var scale = Math.Max(1, layout.Scale);
+        var x = (int)(point.Screen.X / scale);
+        var anchorY = (int)(point.Screen.Y / scale);
+        var plateTop = classic ? anchorY - ClassicPlateLift : anchorY - PlateLift - HudPainter.NameBoxExtent(0, painter.NameBoxText(PlateTextScale, PlatePadY).Line, 1).Y;
+        var (sin, _) = MathF.SinCos(nowMs % MarkerLoopMs / (float)MarkerLoopMs * MathF.Tau);
+        var pulse = .5f + .5f * sin;
+        var tip = plateTop - MarkerGap + (int)MathF.Round(MarkerBob * sin);
+        var top = tip - MarkerHeight - MarkerGlow;
+        if (x - MarkerHalfWidth - MarkerGlow < 0 || x + MarkerHalfWidth + MarkerGlow >= layout.Width || top < 0 || tip + MarkerGlow >= layout.Height)
+        {
+            return;
+        }
+
+        painter.DownTriangle(x, tip + MarkerGlow, MarkerHalfWidth + MarkerGlow + 1, MarkerHeight + MarkerGlow * 2, MarkerGlowColor * (.2f + .3f * pulse));
+        painter.DownTriangle(x, tip + 2, MarkerHalfWidth + 3, MarkerHeight + 4, MarkerOutline);
+        painter.DownTriangle(x, tip + 1, MarkerHalfWidth + 2, MarkerHeight + 2, MarkerRim);
+        painter.DownTriangle(x, tip, MarkerHalfWidth, MarkerHeight, Color.Lerp(MarkerRed, MarkerRedLit, pulse));
+        painter.Fill(new Rectangle(x - MarkerHalfWidth + 2, tip - MarkerHeight + 2, 2 * MarkerHalfWidth - 3, 2), MarkerShine * (.5f + .5f * pulse));
+    }
+
+    // The target marker: the arrow's red body (half width and height), its gap above the name box, how far it bobs, how
+    // far its glow reaches and how long one bob and glow take.
+    private const int MarkerHalfWidth = 9;
+    private const int MarkerHeight = 12;
+    private const int MarkerGap = 3;
+    private const float MarkerBob = 3f;
+    private const int MarkerGlow = 3;
+    private const int MarkerLoopMs = 1100;
+    private static readonly Color MarkerGlowColor = new(255, 200, 90);
+    private static readonly Color MarkerOutline = new(30, 12, 6);
+    private static readonly Color MarkerRim = new(236, 196, 104);
+    private static readonly Color MarkerRed = new(150, 20, 16);
+    private static readonly Color MarkerRedLit = new(255, 72, 48);
+    private static readonly Color MarkerShine = new(255, 170, 140);
+
     // "(owner)" under a summon's name, formatted once per summon; null while its owner is not in view.
     private string OwnerLabel(Entity summon)
     {

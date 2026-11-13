@@ -384,6 +384,13 @@ go on to the high tower.</value></data>
   <data name="Game.QuestTitle" xml:space="preserve"><value> Q U E S T </value></data>
   <data name="Game.RegisteredClanOnly" xml:space="preserve"><value>Only members of a registered clan can use this item</value></data>
   <data name="Game.RequestRefused" xml:space="preserve"><value>The request was refused</value></data>
+  <data name="Game.RewardAlreadyClaimed" xml:space="preserve"><value>This reward was already received.</value></data>
+  <data name="Game.RewardBusy" xml:space="preserve"><value>Another action is in progress; try again.</value></data>
+  <data name="Game.RewardClaimed" xml:space="preserve"><value>Reward received.</value></data>
+  <data name="Game.RewardExpired" xml:space="preserve"><value>This event has ended.</value></data>
+  <data name="Game.RewardGoldLimit" xml:space="preserve"><value>You cannot carry that much gold.</value></data>
+  <data name="Game.RewardLevelTooLow" xml:space="preserve"><value>Your level is too low for this reward.</value></data>
+  <data name="Game.RewardNotReady" xml:space="preserve"><value>This reward is not ready yet.</value></data>
   <data name="Game.RewardReceived" xml:space="preserve"><value>Acquierd items in compensation.</value></data>
   <data name="Game.SameAttributeRunning" xml:space="preserve"><value>An item with the same attribute is already in use</value></data>
   <data name="Game.SellerNotFound" xml:space="preserve"><value>The seller is not found</value></data>

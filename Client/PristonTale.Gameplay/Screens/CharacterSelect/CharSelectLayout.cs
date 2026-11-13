@@ -36,6 +36,9 @@ internal static class CharSelectLayout
 
     public static int FaceNameDecorationY(Viewport vp) => CharacterSelectLayout.FaceNameDecorationY(vp.Height);
 
+    // Where a tap gives the name the keyboard: the name line between its two ornaments, with room for a finger.
+    public static Rectangle NameField(Viewport vp) => new(vp.Width / 2 - 110, FaceNameDecorationY(vp) - 14, 220, 40);
+
     public static Rectangle FaceThumbHit(Viewport vp, int index) => Rect(CharacterSelectLayout.FaceThumbHit(vp.Width, vp.Height, index));
     public static Rectangle FaceThumbDraw(Viewport vp, int index) => Rect(CharacterSelectLayout.FaceThumbDraw(vp.Width, vp.Height, index));
 

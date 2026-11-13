@@ -21,7 +21,7 @@ public sealed record WorldServerOptions
 
     public int ExperienceMultiplier { get; init; } = DefaultExperienceMultiplier;
 
-    public int ExperienceEventPercent { get; init; } = 100;
+    public int ExperienceEventPercent { get; init; } = KillReward.NoEventPercent;
 
     public AgingSettings Aging { get; init; } = AgingSettings.Default;
 

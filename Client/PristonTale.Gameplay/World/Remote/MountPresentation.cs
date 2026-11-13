@@ -9,22 +9,30 @@ using PristonTale.Simulation.World.Ai;
 
 namespace PristonTale.Gameplay.World.Remote;
 
-// The travel mount (MountRules) under every rider in view: the hound stands where its rider stands, facing its way, set
-// back so the rider sits over the middle of its spine, and plays its stand loop while still and its walk or run loop while
-// moving, at a rate that follows the ground speed. The rider is lifted onto the hound's back (Lift) and shown standing;
-// the owner of the rider's model applies both through the lift callback.
+// The travel mount (MountRules) under every rider in view: a Hopy, drawn at MountScale, stands where its rider stands,
+// facing its way, set ahead so the rider clings to its back, and plays its stand loop while still and its hopping walk
+// while moving (it has no run), at a rate that follows the ground speed. The rider sits astride with its arms around the
+// mount (ActorSeat puts its pelvis at its origin) and rides the gait: each frame it is lifted to the saddle bone's height
+// plus the back's skin above it (taken once from the first mount shown, IActorScene.TryGetActorSaddle); the owner of the
+// rider's model applies both through the lift callback.
 public sealed class MountPresentation : IDisposable
 {
-    private const string HoundInfo = "char/monster/Hound/Hound.inx";
-    // The spine bone the rider sits over, and how far the back reaches above it.
-    private const string SaddleBone = "Bip01 Spine2";
-    private const float BackThickness = 4f;
-    // Until the model is read: the saddle of the shipped hound.
-    private static readonly Vector3 DefaultSaddle = new(0f, 39f, 24f);
-    // Ground speeds (units per second) below which the hound stands, and above which it runs rather than walks.
+    private const string MountInfo = "char/monster/hopy/hopy.inx";
+    // The monster stands a little lower than a player; at this scale the rider's arms reach round its shoulders.
+    private const float MountScale = 1.6f;
+    // The rider clings to the back: SeatBehind units behind the saddle bone, at the height of the back's skin there under
+    // its crest and horn (SkinShare of the skin's points lie below it), with the rider's pelvis SeatDepth above it.
+    private const string SaddleBone = "Bip02";
+    private const float SeatBehind = 6.5f;
+    private const float SkinShare = .4f;
+    private const float SeatDepth = 3f;
+    // Until the first mount's skin is read: the shipped Hopy's.
+    private static readonly Vector3 DefaultSaddle = new(0f, 7f, -6.5f);
+    // A lift that moved less than this is not passed on.
+    private const float LiftStep = .25f;
+    // Ground speed (units per second) below which the mount stands, and the speed its walk loop is authored for.
     private const float StillSpeed = 5f;
     private const float WalkSpeed = MonsterLocomotion.BaseUnitsPerSecond;
-    private const float RunSpeed = MonsterLocomotion.BaseUnitsPerSecond * 2f;
     private const float MinRate = 0.5f;
     private const float MaxRate = 3f;
     // A frame's speed sample moves the shown speed this share of the way, so a hitch in the pose does not flicker the gait.
@@ -32,30 +40,25 @@ public sealed class MountPresentation : IDisposable
 
     private readonly IActorScene _scene;
     private readonly IClientLog _log;
-    private readonly Task<(PristonActor Actor, Vector3 Saddle)> _hound;
+    private readonly Task<PristonActor> _mount;
     private readonly Dictionary<ulong, Rider> _riders = new();
     private readonly List<ulong> _leaving = new();
+    private Vector3 _saddle = DefaultSaddle;
+    private bool _saddleFound;
 
     public MountPresentation(IActorScene scene, PristonActorLoader loader, string assetRoot, IClientLog log)
     {
         _scene = scene;
         _log = log;
-        _hound = Task.Run(async () =>
+        _mount = Task.Run(async () =>
         {
-            var actor = loader.Load(assetRoot, AssetFiles.Resolve(AssetFiles.Combine(assetRoot, HoundInfo)));
+            var actor = loader.Load(assetRoot, AssetFiles.Resolve(AssetFiles.Combine(assetRoot, MountInfo)));
             await _scene.PrepareActorResourcesAsync(actor);
-            var bone = actor.Skeleton.ObjectIndex(SaddleBone);
-            var saddle = bone >= 0 ? actor.Skeleton.Objects[bone].Transform.Translation : DefaultSaddle;
-            return (actor, saddle);
+            return actor;
         });
-        _ = _hound.ContinueWith(failed => _log.Warn($"[Mount] {HoundInfo} unavailable: {failed.Exception?.GetBaseException().Message}"),
+        _ = _mount.ContinueWith(failed => _log.Warn($"[Mount] {MountInfo} unavailable: {failed.Exception?.GetBaseException().Message}"),
             CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted, TaskScheduler.Default);
     }
-
-    // How high the rider stands above its feet: the hound's back.
-    public float Lift => (_hound.IsCompletedSuccessfully ? _hound.Result.Saddle.Y : DefaultSaddle.Y) + BackThickness;
-
-    public bool IsRiding(ulong entityId) => _riders.ContainsKey(entityId);
 
     // Other players' mounts from their descriptions; the local player's is set by its scene (SetRider), which predicts it.
     public void Observe(PresenceUpdate update)
@@ -97,13 +100,12 @@ public sealed class MountPresentation : IDisposable
         }
 
         _leaving.Clear();
-        if (!_hound.IsCompletedSuccessfully)
+        if (!_mount.IsCompletedSuccessfully)
         {
             return;
         }
 
-        var (actor, saddle) = _hound.Result;
-        var back = Lift;
+        var actor = _mount.Result;
         foreach (var (entityId, rider) in _riders)
         {
             if (pose(entityId) is not { } at)
@@ -117,26 +119,39 @@ public sealed class MountPresentation : IDisposable
                 rider.HasActor = true;
                 rider.Motion = MotionCode.Stand;
                 rider.Last = at.Position;
-                lift(entityId, back);
+            }
+
+            if (!_saddleFound && _scene.TryGetActorSaddle(rider.Handle, SaddleBone, SeatBehind, SkinShare, out var saddle))
+            {
+                _saddle = saddle;
+                _saddleFound = true;
             }
 
             rider.Step(at.Position, dt);
-            var motion = rider.Speed < StillSpeed ? MotionCode.Stand : rider.Speed < RunSpeed ? MotionCode.Walk : MotionCode.Run;
+            var motion = rider.Speed < StillSpeed ? MotionCode.Stand : MotionCode.Walk;
             if (motion != rider.Motion)
             {
                 rider.Motion = motion;
                 _scene.SetActorMotion(rider.Handle, motion);
             }
 
-            var rate = motion switch
-            {
-                MotionCode.Walk => Math.Clamp(rider.Speed / WalkSpeed, MinRate, MaxRate),
-                MotionCode.Run => Math.Clamp(rider.Speed / RunSpeed, MinRate, MaxRate),
-                _ => 1f
-            };
+            // The walk loop plays faster with the ground speed (a mount scaled up takes longer strides).
+            var rate = motion == MotionCode.Walk ? Math.Clamp(rider.Speed / (WalkSpeed * MountScale), MinRate, MaxRate) : 1f;
             _scene.SetActorPlaybackRate(rider.Handle, rate);
-            _scene.SetActorWorld(rider.Handle,
-                Matrix.CreateTranslation(0f, 0f, -saddle.Z) * Matrix.CreateRotationY(at.Facing) * Matrix.CreateTranslation(at.Position));
+            _scene.SetActorWorld(rider.Handle, Matrix.CreateTranslation(-_saddle.X, 0f, -_saddle.Z) * Matrix.CreateScale(MountScale)
+                * Matrix.CreateRotationY(at.Facing) * Matrix.CreateTranslation(at.Position));
+
+            if (!_scene.TryGetActorBoneWorld(rider.Handle, SaddleBone, out var spine))
+            {
+                continue;
+            }
+
+            var back = spine.Translation.Y - at.Position.Y + _saddle.Y * MountScale + SeatDepth;
+            if (MathF.Abs(rider.Lift - back) >= LiftStep)
+            {
+                rider.Lift = back;
+                lift(entityId, back);
+            }
         }
     }
 
@@ -155,6 +170,8 @@ public sealed class MountPresentation : IDisposable
     {
         public ActorHandle Handle { get; set; }
         public bool HasActor { get; set; }
+        // The height the rider's owner was last told (lift callback).
+        public float Lift { get; set; }
         public MotionCode Motion { get; set; }
         public Vector3 Last { get; set; }
         public float Speed { get; private set; }

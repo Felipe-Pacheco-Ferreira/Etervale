@@ -22,6 +22,7 @@ internal static class QuestTests
         yield return ("quest grants respect the carried-weight limit and leave the quest unchanged when refused", WeightAsync);
         yield return ("beginner quests run in order with deliveries, hunts, tribe finishers and class rewards", ElementaryAsync);
         yield return ("Avalon adventurer journey validates the guide, belt, hunt and crystal", AdventurerJourneyAsync);
+        yield return ("the journey's hunting area is centred on its hunt points and holds each with its margin", HuntAreaAsync);
         yield return ("the first Tempskron rank-up needs the home master, level and skills and gathers one trophy of each", TrophiesAsync);
         yield return ("the first Morion rank-up follows the name branch, brews at the aging master and promotes after delivery", PotionAsync);
         yield return ("the second rank-up buys a quest weapon with vamps, grows it by stage and expires it with its ring", QuestWeaponAsync);
@@ -32,6 +33,25 @@ internal static class QuestTests
         yield return ("the wing exchange takes the held wing, crystals and gold for the next wing", WingAsync);
         yield return ("quest drops come only from allowed sources and while a running quest wants them", DropsAsync);
         yield return ("class tier changes only through rank-up quests and masters of a lower group stop at the first", TierAuthorityAsync);
+    }
+
+    private static Task HuntAreaAsync()
+    {
+        var square = HuntArea.Around([new RoutePoint(2, 0, 0), new RoutePoint(2, 600, 0), new RoutePoint(2, 600, 800), new RoutePoint(2, 0, 800)]);
+        Assert.True(square == new HuntArea(300, 400, 500 + HuntArea.Margin), $"the area round a rectangle is {square}");
+        Assert.True(HuntArea.Around([]).Radius == 0, "an area without points has a radius");
+        foreach (var route in new[] { AdventurerJourneyRoute.Tempskron, AdventurerJourneyRoute.Morion })
+        {
+            var area = route.HuntArea;
+            foreach (var point in route.HuntPoints)
+            {
+                var distance = MathF.Sqrt((point.X - area.X) * (point.X - area.X) + (point.Z - area.Z) * (point.Z - area.Z));
+                Assert.True(point.FieldCode == route.HuntField && distance <= area.Radius - HuntArea.Margin + .5f,
+                    $"{route.GuideName}'s hunt point ({point.X}, {point.Z}) lies outside its area's margin");
+            }
+        }
+
+        return Task.CompletedTask;
     }
 
     private static Task AdventurerJourneyAsync()
@@ -65,10 +85,17 @@ internal static class QuestTests
                 && QuestInventory.Count(player, ItemCodes.Parse("PL101")) == 16, "preparation reward differs");
             Assert.True(player.Quests.Active.Target == target, "hunt target differs by tribe");
             Kill(player, QuestMonsters.Bargon, field: field);
-            Kill(player, target, 3, field);
+            Assert.True(!QuestTick.OnKill(Context(player, QuestNpc.None, field), target) && !QuestTick.OnKill(Context(player, QuestNpc.None, field), target),
+                "a crystal was owed before the hunt was done");
+            Assert.True(QuestTick.OnKill(Context(player, QuestNpc.None, field), target), "the hunt's last kill did not owe the crystal");
             Assert.True(Talk(player, guide).Prompt is { Followup: QuestFollowup.Close }, "delivery accepted without a crystal");
-            var item = new ItemInstance(new ItemDefinition(crystal, "Hopy Crystal", ItemKind.Misc));
-            Assert.True(player.Inventory.TryAdd(item), "test crystal could not be collected");
+            Assert.True(QuestTick.OnKill(Context(player, QuestNpc.None, field), QuestMonsters.Bargon) == false
+                && QuestTick.OnKill(Context(player, QuestNpc.None, field), target) == false, "a crystal was owed twice");
+            QuestDrops.Upkeep(Context(player, QuestNpc.None, field), []);
+            Assert.True(QuestInventory.Count(player, crystal) == 1, "the upkeep did not place the owed crystal");
+            QuestDrops.Upkeep(Context(player, QuestNpc.None, field), []);
+            Assert.True(QuestInventory.Count(player, crystal) == 1 && !QuestTick.OnKill(Context(player, QuestNpc.None, field), target),
+                "a crystal was placed again once the bag held it");
             var result = Expect(player, guide, QuestAction.Proceed, code, 2, "delivery failed");
             Assert.True(result.Experience == levelSpan * 20 / 100 && player.Money == 800
                 && player.Quests.HasFinished(code) && !QuestInventory.Has(player, crystal), "delivery did not settle");

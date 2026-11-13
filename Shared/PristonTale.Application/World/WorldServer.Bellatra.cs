@@ -46,6 +46,7 @@ public sealed partial class WorldServer
 
         _bellatra.Entrants[character.Name] = new BellatraGame.Entrant(team, character.Class.Class);
         _bellatra.TeamLevels[team] += character.Level;
+        character.Events.Count(Simulation.Events.RewardGoal.BellatraEntries, 1, _rewardDate, character.Level);
     }
 
     private void StepBellatra(long nowMs)

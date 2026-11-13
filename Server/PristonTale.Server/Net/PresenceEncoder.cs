@@ -95,6 +95,7 @@ internal sealed partial class PresenceEncoder : IEventHandleWriter
     private WeatherState? _weather;
     private PartyRequest? _partyRequest;
     private BellatraView? _bellatra;
+    private Simulation.Events.RewardBoard? _rewards;
     private TradeView? _trade;
     private TradeRequest? _tradeRequest;
     private PresenceFrame? _heldFrame;
@@ -356,6 +357,7 @@ internal sealed partial class PresenceEncoder : IEventHandleWriter
         SendParty(snapshot, connection);
         SendTrade(snapshot, connection);
         SendBellatra(snapshot, connection);
+        SendRewards(snapshot.Rewards, connection);
         if (snapshot.Quest is not null)
         {
             SendQuest(snapshot.Quest, connection);

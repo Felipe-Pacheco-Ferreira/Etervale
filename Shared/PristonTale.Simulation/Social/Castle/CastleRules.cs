@@ -37,6 +37,18 @@ public static class CastleRules
     public const int LeagueMinutes = 120;
     public const int LeagueRestartMinutes = 3;
     public const int OverSeconds = 5;
+
+    // The coming siege of the week's siegeDay (0 Sunday .. 6 Saturday) at siegeHour, in local time: this week's, or next
+    // week's once that minute has passed. A siege hour that a daylight-saving change skips does not come that week.
+    public static DateTimeOffset NextSiege(DateTimeOffset local, int siegeDay, int siegeHour)
+    {
+        var today = new DateTimeOffset(local.Year, local.Month, local.Day, 0, 0, 0, local.Offset);
+        var start = today.AddDays((siegeDay - (int)local.DayOfWeek + 7) % 7).AddHours(siegeHour);
+        return start.AddMinutes(1) <= local ? start.AddDays(7) : start;
+    }
+
+    // How long a siege that starts on schedule runs: the league's restarts fill LeagueMinutes, a weekly siege SiegeMinutes.
+    public static int ScheduledMinutes(CastleMode mode) => mode == CastleMode.League ? LeagueMinutes : SiegeMinutes;
     public const int FountainMaxPotions = 1440;
     public const int FountainPotionSeconds = 60;
 

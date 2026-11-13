@@ -408,16 +408,23 @@ MonoGame Native on Android. Its own Android HUD views lie over the Vulkan surfac
 movement feed the desktop camera and locomotion code, and the desktop presence stream supplies actors,
 equipment, pets, weather, the server clock, and effects.
 
-Vulkan Android uses a closer initial world orbit and a shorter selection-camera rail. The character selection and
-creation action buttons use 1.8 times the desktop size, with hit targets scaled to match. Selection taps use the
+Vulkan Android uses a closer initial world orbit and a shorter selection-camera rail. The selection screens' whole 2D
+layer (frame, title, tribe marks and captions, descriptions, class labels, faces, name and buttons) is laid out on a
+screen 620 pixels tall and drawn enlarged to the phone's height (`CharacterSelectScreen.UiScale`, taps divided by the
+same factor; the 3D picks keep the real screen), and the action buttons are 1.3 times larger again, with hit targets
+scaled to match. The name takes the keyboard as the login panel does (`TouchKeyboard`): it opens when the face step
+starts, a tap on the name (`CharSelectLayout.NameField`) opens or reopens it, and a tap anywhere else closes it without
+clearing the name. Selection taps use the
 normalized SDL touch position mapped to the rendered viewport. A character answers a tap in a pick box 2.5 times the
 desktop's (`CharacterSelectScreen.PickScale`), reaching past its feet and head by the extra width; where these wider
-boxes overlap, the character whose feet are nearest the tap's column wins. The character information card uses larger art and text. A roster tap selects the character and Confirm requests world entry. The enlarged card stays centered below the character.
+boxes overlap, the character whose feet are nearest the tap's column wins. The character information card grows with
+the layer (no extra enlargement of its own) and stays centered below the character, above the buttons. A roster tap selects the character and Confirm requests world entry.
 The client prepares shared sky assets before selection and uses the server's spawn coordinates when loading the field.
 Tap a world target to interact; dragging or pinching controls the camera.
 Quest NPCs and server-opened dialogs use the original desktop quest documents and the shared quest commands.
-Vulkan Android uses the desktop overhead name plates and shows quest text, NPC speech and choices in a side panel while the world remains visible.
-The panel draws the live 3D portrait for an NPC opened by touch. A stationary tap in the joystick region still picks the world.
+Vulkan Android uses the desktop overhead name plates and shows quest text, NPC speech and choices in the NPC dialog at the
+bottom of the screen while the world remains visible (see "World HUD"). The dialog shows the live 3D portrait of an NPC
+opened by touch. A stationary tap in the joystick region still picks the world.
 The Vulkan world uses the quality chosen in the menu (see "Graphics quality") with +0.45 stops of exposure compensation.
 The game draws only while its activity is resumed (`SurfaceGate`): onPause closes the gate and waits for a frame being
 drawn to end, onResume opens it (`VulkanHudLifecycle`), and `RicartenProbe.BeginDraw` skips frames meanwhile. Drawing
@@ -434,8 +441,9 @@ Fetch the pinned SDL2 and FAudio dependencies using the runtime build instructio
 On Windows, if Ninja runs a child command but never returns in a restricted shell, verify it in a regular PowerShell session and pass the working executable with `-Ninja`.
 Use `-SkipNativeBuild` to package existing ARM64 and x86_64 libraries from `obj/vulkan` after compiling them separately.
 The signed APK is copied to Etervale-<version>.apk in the Vulkan Android project's Release output. The asset package covers Ricarten,
-the character selection, player classes, city NPCs, the speech-bubble frames (`StartImage/MessageBox`) and the Hound
-travel-mount model (`char/monster/Hound`). Original game assets are supplied separately.
+the character selection, player classes, city NPCs, the speech-bubble frames (`StartImage/MessageBox`) and an
+unused Hound model (`char/monster/Hound`, the earlier travel mount; the Hopy mount comes with the journey archive).
+Original game assets are supplied separately.
 Use forward slashes for entry paths in the asset archive so the same archive extracts correctly on Android.
 For on-device quest and Auto-caça verification, connect to a running server that publishes quest target codes
 and select a character with a hunt objective in the packaged field.
@@ -511,9 +519,11 @@ to the guide meanwhile), and the journal's auto-hunt action does too. The joysti
     bag uses), then talk to the guide.
   - State 2 with kills left: travel to the hunting field and hunt the quest's monster (`QuestCode`), walking from one
     spawn point to the next while none is in view and picking up drops within reach.
-  - State 2 with the kills done: the guide takes a Hopy Crystal gathered after the hunt began. The navigator keeps the
-    crystal count it saw while hunting; when the guide answers without moving the quest on, it hunts and gathers again
-    (`VulkanWorldSession.KeepHunting` keeps Auto Hunt running past the kill count).
+  - State 2 with the kills done: the guide takes a Hopy Crystal gathered after the hunt began. The hunt's last kill
+    leaves that crystal in the bag (`AdventurerJourney.OnKill` owes it, the quest upkeep places it), since the
+    monster's own drop is under one kill in a hundred; a later kill of the prey owes it again while the bag lacks it.
+    The navigator keeps the crystal count it saw while hunting; when the guide answers without moving the quest on, it
+    hunts and gathers again (`VulkanWorldSession.KeepHunting` keeps Auto Hunt running past the kill count).
 - **Walking.** Routes come from `GroundRoute` (`Client/PristonTale.Gameplay/World`): an A* over 32-unit cells, searched
   off the game thread over a snapshot of the loaded fields (`GameScene.PlanRouteAsync`; their collision meshes are
   read-only). Cells are told apart by height (`Storey`), so stairs and bridges are their own places. Each leg is a walk
@@ -538,15 +548,14 @@ to the guide meanwhile), and the journal's auto-hunt action does too. The joysti
   than the legs it replaces and is cramped only where one of them was; each round of shortening looks at most 24
   points ahead and rounds repeat until none drops a point, so a long route is not tried leg against every later point.
   Every rule above is measured in the radius of the body that walks the route: `PlanRouteAsync(goal, avoid,
-  bodyRadius)` defaults to `GameScene.WalkingBodyRadius` (the player on foot), and a mounted player passes its
-  mount's wider radius (`MountRules.BodyRadius`).
-  The automatic quest rides the travel mount (`GameScene.TryMount`) for every walk of more than 500 units, shows
-  "Montado!" before its status, and plans with the mount's radius while mounted; a change of mount plans the route
-  again. A goal the mount finds no way to dismounts and is searched again at once on foot, which stays on foot for 30 s.
-  Taking the joystick dismounts; attacking, casting and being hurt dismount through the mount's own rules, and a mount
-  the server refuses is asked again after 10 s. The route is planned with the mount's radius only once the server
-  agreed to the mount (`GameScene.MountConfirmed`), and a mounted search that does not reach its goal (a gate or
-  stair too narrow for the hound) is searched again on foot. Pausing or finishing the automatic quest dismounts.
+  bodyRadius)` takes it, and the automatic quest always passes `GameScene.WalkingBodyRadius` (the player on foot),
+  mounted or not. Planning for a mount's width failed in Ricarten's narrow streets and turned the mount on and off;
+  the mount may brush a wall instead.
+  The automatic quest rides the travel mount (`GameScene.TryMount`) on journeys of more than 500 units (to the guide,
+  through the exits to another field: `Walk(..., ride: true)`); the hunt's walks between spawn points and the chase
+  stay on foot, as a fight would end the ride at once. It shows "Montado!" before its status. Taking the joystick
+  dismounts; attacking, casting and being hurt dismount through the mount's own rules, and a mount the server refuses
+  is asked again after 10 s. Pausing or finishing the automatic quest dismounts.
   The grid is anchored to the world (cell centres at multiples of 32 units), so every search meets the same legs
   between cells. `RouteLegCache` keeps what the collision decided for each of them (walkable, end height, climb,
   cramped), keyed by the cell, its storey, the direction and the height walked from; `GameScene` keeps one cache per
@@ -580,11 +589,18 @@ to the guide meanwhile), and the journal's auto-hunt action does too. The joysti
   (`GameScene.WalksStraightTo`, the route's leg check at the body's own width): near the guide but on a terrace above it
   or behind a wall, the route goes on to the guide itself, down the stairs or around the wall. Within `WaypointReach`
   the approach starts whatever the check says. It goes for drops with `GameScene.PickUpNear`, each as the matching tap.
-- **Fighting.** A monster within `DefendRange` of the player is fought before the quest's own, and a belt potion is
-  drunk under 45% life. The game's attack walks straight at its target; when that leaves the player standing for
-  `AttackStuckSeconds` out of reach, the navigator drops the attack, walks to the target along a route and attacks again.
-- **Minimap.** The route shows as yellow dots on the field's minimap (`MobileMinimap.SetRoute`); Ricarten, Pillai and
-  Forever Fall 1 have one.
+- **Fighting.** Between fights the drops within `LootRadius` are gathered first, and a walk to a drop is not cut short
+  by the next target. Then the quest's monster in view is hunted; only when none is in view is another monster within
+  `DefendRange` fought, rather than walked past. A belt potion is drunk under 45% life, through the inventory's
+  `InventoryAction.ConsumePotion` as the desktop belt does (the item-use command refuses potions with "Este item não
+  pode ser usado"); the action wheel's belt buttons use the same command. The game's attack walks
+  straight at its target; when that leaves the player standing for `AttackStuckSeconds` out of reach, the navigator
+  drops the attack, walks to the target along a route and attacks again.
+- **Minimap.** The route shows as yellow dots on the field's minimap (`MobileMinimap.SetRoute`); Ricarten, Pillai,
+  Forever Fall 1 and Forest 1 (`forest-01-minimap`, the Tempskron hunting field) have one. While the quest counts kills
+  and the player is in its hunting field, the minimap also shows the hunting area as the full map does
+  (`MobileMinimap.SetHuntArea`, from `VulkanWorldMap.HuntAreaIn`): a translucent red disc with a brighter red edge,
+  under the route and the player's arrow.
 - **Dialogs.** While it runs, a quest dialog shows for `AutoAnswerMilliseconds` and answers its first choice.
 - **HUD.** `VulkanQuestTracker` replaces the old quest card: the journey's title, the objective, a kill bar, what the
   automatic quest is doing (or the compass to the guide while paused) and the Auto-missão button.
@@ -595,8 +611,9 @@ to the guide meanwhile), and the journal's auto-hunt action does too. The joysti
 ### Character window (0.34)
 
 `VulkanInventoryPanel` is a HUD window (`VulkanPanel`, drawn with `VulkanPanelArt`): on the left the equipment slots as
-wells around the faint figure of the character (weapon, ring, gloves and bracelet down one side; shield, ring, boots and
-sheltom down the other; amulet at the neck, armour on the chest) with the gold (a coin) and the weight gauge, red when
+wells on a recessed panel with a faint gold glow, no figure drawn (weapon, ring, gloves and bracelet down one side;
+shield, ring, boots and sheltom down the other; amulet at the neck, armour on the chest) with the gold (a coin) and
+the weight gauge, red when
 overweight, under them; in the middle the 12 x 6 bag as a field of recessed wells with each item's own sprite at its
 footprint (`VulkanItemIcons`: the desktop's `ItemIconFiles` sprites, decoded off the UI thread), the cells used out of
 72 beside its heading and the potion belt under it; on the right, once an item is chosen, its sheet (values from
@@ -640,24 +657,40 @@ The HUD is drawn by Android views laid out in fractions of the screen height, th
 
 - **Player frame** (`VulkanPlayerFrame`, top left): a plate with a round window over the live 3D portrait, the level on
   a badge, the name, and the life, mana and stamina gauges with their values. Gauges ease to a new value and leave
-  a fading trail where they drop (`EasedGauge`). A tap on it opens the character's status (strength, spirit, talent,
-  agility, vitality, attack and defence). The shared drawing (plate, ring, gauge, badge, outlined text, round
+  a fading trail where they drop (`EasedGauge`). A tap on it opens the Status window (`VulkanStatusPanel`, under
+  Windows). The shared drawing (plate, ring, gauge, badge, outlined text, round
   button face) is `VulkanHudArt`. The frame animates all the time (every 40 ms, smoothly while a gauge eases): a glow
   breathes around the portrait with three sparks circling it (`VulkanHudArt.Aura`); a band of light sweeps along each
-  gauge every three seconds. Gauges are glassy: a bright top edge, a soft gloss and a lit tip. The level badge's metal
-  climbs with the level against `ExperienceTable.MaximumLevel`: gold, then emerald from a quarter, sapphire from half
-  and crimson from three quarters, pulsing; at the highest level it burns, with flickering flames and rising embers
-  (`VulkanHudArt.LevelBadge`).
+  gauge every three seconds. Gauges are glassy: a bright top edge, a soft gloss and a lit tip. The level is a medallion
+  in the HUD's make (a dark plate in the gold ring of the portrait bezel, a gold numeral); its stone, an inner line
+  tinting the plate, climbs with the level against `ExperienceTable.MaximumLevel`: amber, then emerald from a quarter,
+  sapphire from half and crimson from three quarters, with a breathing glow; at the highest level it burns, with
+  flickering flames and rising embers (`VulkanHudArt.LevelBadge`).
 - **Target frame** (`VulkanTargetFrame`, top centre): the entity the player attacks, or else the one picked, with its
   live 3D portrait, name and level and, for monsters, the life gauge with the percentage left. The game thread
   publishes it each frame (`VulkanWorldSession.PublishTarget`, from `HudCombat.TryGetTargetState`); NPCs show no gauge.
+- **Target marker:** over the head of the monster the player attacks (`GameScene.AttackTargetId`, or else
+  `VulkanWorldSession.AttackTarget`), above its name box, a red arrow in a gold rim points down, bobbing and glowing,
+  while it lives (`HudCombat.DrawTargetMarker`, drawn by `RicartenProbe.Draw` after the name plates; see
+  [client.md](client.md)).
 - **Portraits:** `RicartenProbe.Draw` renders the player's and the target's heads (`HudTargetPortrait`) at the places
   `HudPlacement` defines; the frames leave a round window over them. Change both together through `HudPlacement`.
+- **NPC dialog** (`VulkanNpcPanel`, bottom): one HUD plate between the menu buttons and the action wheel at their
+  default places (`LeftClear`, `RightClear`, set by `VulkanHudLifecycle`), up to 420 dp wide, 24 dp above the bottom;
+  where that gap is under 300 dp it is centred instead. At its left the NPC's live 3D portrait sits in a round window
+  in the bezel with blue gems (`VulkanHudArt.NpcGem`) under a breathing glow (`VulkanHudArt.Aura`): the panel
+  publishes the window's square (`VulkanWorldSession.SetNpcPortrait`, fractions of the screen) and
+  `RicartenProbe.Draw` draws the head there. Beside it, the NPC's name as a section heading (`VulkanPanelArt.Section`),
+  the quest title when it differs, the line in a recessed card (`VulkanPanelArt.Inset`) that scrolls past 84 dp, and
+  the choices as 44 dp buttons, the first highlighted, then Fechar. A dialog with no NPC (a prompt the server opens)
+  has no portrait. Taps on the plate do not reach the world. While the automatic quest runs, the dialog answers its
+  first choice after `VulkanHudLifecycle.AutoAnswerMilliseconds`.
 - **Action wheel** (`VulkanActionWheel`, bottom right): the large attack button, four skill buttons on an arc around
   it and the potion belt beside them (`VulkanActionOrb` buttons). The skill buttons fill with the learned skills in
-  order; a long press picks another skill for one. A skill that needs an enemy is cast at the current target, or the
-  attack button's search picks one first. The belt shows each potion's sprite (`VulkanItemIcons`, shared with the
-  character window) and its count.
+  order; a long press, or the Habilidades window, puts another skill on one (`VulkanActionWheel.Assign`; a button that
+  held that skill gives it up). The choice lasts for the session. A skill that needs an enemy is cast at the current
+  target, or the attack button's search picks one first. The belt shows each potion's sprite (`VulkanItemIcons`,
+  shared with the character window) and its count.
 - **Combat feed** (`VulkanCombatFeed`, right, above the wheel): kills, experience, gold, level-ups and quest counts rise
   and fade; a counter of this session's kills flares at each one. A kill is a monster the player struck
   (`CombatEventKind.Hit` from the player) whose life then reaches 0 (`VulkanWorldSession.TryReadKill`).
@@ -665,7 +698,8 @@ The HUD is drawn by Android views laid out in fractions of the screen height, th
   percentage in the middle.
 - **Buttons:** Menu, Missões and Bolsa as round buttons at the bottom left (the bag is a drawstring pouch,
   `HudGlyph.Bag`); chat under the player frame; the quest card and the menu on the HUD plate (`PlateDrawable`). The
-  menu holds Inventário, Missões, Movimento, Rever tutorial, Gráficos, Editar HUD and Sair do jogo.
+  menu holds Inventário, Missões, Eventos, Habilidades, Movimento, Rever tutorial, Gráficos, Editar HUD, Calendário and
+  Sair do jogo.
 - **Chat:** the last five lines show under the chat button, each in its channel's colour with the speaker's name
   brighter (`VulkanChatText`); quest notices show below them in gold. The chat window lists the last 50 lines the same
   way and has a switch, Mostrando/Ocultas, that keeps the lines off the screen (`HudLayoutEditor.ChatHidden`, kept in
@@ -676,8 +710,8 @@ The HUD is drawn by Android views laid out in fractions of the screen height, th
   (`VulkanHudArt.OrnateRing`; ruby for the player and monsters, blue for NPCs); the player's also has gold rays behind
   it, a laurel branch up each side and a crown with a gem on top (`VulkanHudArt.Crest`). The attack button is crossed swords on a
   steel disc in the same bezel, over a red glow (`VulkanHudArt.AttackFace`). Skill slots with no learned skill stay in place, dimmed.
-- **Quest card:** a tap folds it down to the kill bar (or the title when nothing is counted) and opens it again; the
-  choice is kept.
+- **Quest card:** a tap folds it down to the title over the kill bar (the title alone when nothing is counted) and opens it
+  again; the choice is kept.
 - **Editing the HUD:** Menu, Editar HUD outlines every part on its own (player frame, target frame, chat, chat lines, each menu
   button, minimap, quest card, attack button, each skill button, each potion, combat feed, experience bar); a drag moves
   one, Salvar keeps the places, Padrão puts them back and
@@ -690,19 +724,54 @@ The HUD is drawn by Android views laid out in fractions of the screen height, th
   pulsing gold ring marks it and a card explains the step; only that button answers touches, the step moves on once
   its goal is met (Entendi on steps that only explain) and Pular tutorial ends it. Lessons, each shown once: the HUD on
   arrival (with a tap on the portrait for the status); equipping the starter kit (Bolsa, the piece, Equipar, for each piece); putting a potion on the belt; the
-  automatic quest's button; the first attack. None starts while the automatic quest runs. Menu, Rever tutorial shows them
+  automatic quest's button; the first attack; spending free attribute points (with points to spend: the portrait, then
+  in the Status window the free points counter with what each attribute does for the class, then the class's damage
+  attribute's "+", ending when a point is spent; closing the window midway goes back to the portrait). None starts
+  while the automatic quest runs. Menu, Rever tutorial shows them
   all again; raising `HudLayoutEditor.TutorialRound` clears what was seen for every player once.
 - **Full map** (`VulkanWorldMap`): a tap on the minimap opens the field's map over most of the screen. It zooms (pinch,
   + and -, 1 to 8 times the whole field) and pans (drag), and ◎ centres it on the player. Over it: the automatic quest's
   route, every NPC in view (`VulkanWorldSession.NpcMarks`; a name is drawn only where it covers no other, so zooming in
   shows more), the player's arrow and the quest's objectives from `AdventurerJourneyRoute`: the guide as a gold star,
-  while hunting the way out towards the hunting field, and in the hunting field a red round area over its hunting places.
+  while hunting the way out towards the hunting field, and in the hunting field a red round area over its hunting places
+  (`TribeRoute.HuntArea`: centred on the hunt points' mean, reaching `HuntArea.Margin`, 260 units, past the farthest;
+  shown while the quest counts kills, `VulkanWorldMap.HuntAreaIn`, the rule the minimap uses too).
   The side lists the objective (with the kill count) and the NPCs, nearest first.
-- **Windows** (`VulkanPanel`, `VulkanHudWindows`): the status (a tap on the portrait: attributes with bars, combat values
-  and vitals), the chat (the last 50 lines, the on-screen switch and a field to write in) and the graphics quality are HUD windows: the dimmed
-  screen, the gold-edged plate, a serif gold title and light text with a shadow, instead of Android's white dialogs.
-  Their pieces (ornamented section headings, inset cards, pill tabs, state chips, item wells, gauges, the gold coin)
-  are `VulkanPanelArt`. The inventory is described under Character window.
+- **Windows** (`VulkanPanel`, `VulkanHudWindows`): the status, the chat (the last 50 lines, the on-screen switch and a
+  field to write in) and the graphics quality are HUD windows: the dimmed screen, the gold-edged plate, a serif gold
+  title and light text with a shadow, instead of Android's white dialogs. Their pieces (ornamented section headings,
+  inset cards, pill tabs, state chips, item wells, gauges that can ease to each value, the gold coin) are
+  `VulkanPanelArt`. The inventory is described under Character window.
+- **Status** (`VulkanStatusPanel`, a tap on the portrait): the character's name as the title; on the left the level
+  medallion (`VulkanHudArt.LevelBadge`), the class title and level, experience, and life, mana, stamina and carried
+  weight as gauges; in the middle the five attributes, each with its emblem (sword, flame, star, bolt, heart), its
+  value, a glowing bar against the strongest attribute, what it raises and a round gold "+"; on the right the combat
+  values as tiles (attack, attack rating, defence, absorption, critical, block, movement, skill points) and a line for
+  tips and answers. The attribute the class's damage grows with (`CharacterClassRegistry.DamageAttribute`, by its
+  beginner weapon's kind and `WeaponDamage.DamageAttribute`) is lit and marked Dano. The heading shows the free points;
+  the "+" buttons breathe while there are points and none is in flight. A tap sends one point
+  (`ProgressionAction.AllocateAttribute`, amount 1, at the owner's `ProgressionRevision`) and disables them until the
+  answer and the owner state with that revision arrive; the window then redraws from the owner state, the bar easing
+  and the value swelling, and shows "+1 em …" or the server's refusal (its text, or the connection error). The
+  attribute rows scroll if the screen is too short for them. The command and its answer go through
+  `VulkanProgression.ApplyAsync` (8 s at most), shared with the skills window; the "+" is `VulkanPointButton`.
+- **Habilidades** (`VulkanSkillsPanel`, Menu, Habilidades with `HudGlyph.Skill`; it also opens when a talk with a
+  skill master ends, unless the automatic quest runs): the class's skills in window order (`ClassSkillCatalog`). Pill
+  tabs for the class tiers, each titled with the class's title at it (`DataText.ClassTitle`; tiers not reached
+  dimmed but open to look at), chips with the free skill points and, from the fourth tier or with any, the elite
+  points. On the left the tier's four skills as cards: the desktop's skill button in a well (`HudArt.SkillButton`, its
+  gray variant until learned, decoded by `VulkanItemIcons.Picture`), the name and description in Portuguese
+  (`DataText`), "Rank r/10" or Não aprendida with Ativa or Passiva, a "Botão n" chip when it is on the action wheel and
+  a "+" when the next rank can be trained (dimmed without the gold). On the right the chosen skill's sheet: the
+  description, its kind and cost (`HudSkillsPanel.CostLine`), its numbers at its rank (`HudSkillDetails`), what the
+  next rank needs or why it cannot be trained (`SkillLearning.Check`: price and point kind, the tier's class title,
+  the skill before it, the level from `SkillLearning.LevelFor`, no points, the last rank) and, for a learned active
+  skill, the buttons 1 to 4 that put it on the wheel (`VulkanActionWheel.Assign`); then a line for tips and answers.
+  The price shown leaves out a castle's tax, which the server adds. A "+" sends `ProgressionAction.LearnSkill` with
+  the skill and the last skill master talked to (`VulkanSkillsPanel.Master`, set when an NPC's interaction offers
+  `NpcServiceKind.SkillMaster`; 0 before any) at the owner's `ProgressionRevision`; the server refuses away from the
+  town's skill master ("Aproxime-se, vivo, do mestre de habilidades da sua cidade"), and the window shows the refusal
+  or the new rank and redraws from the owner state that follows.
 - **Missões** (`VulkanQuestJournal`): Em andamento and Concluídas as pill tabs (with a chip while the automatic quest
   runs); on the left a card per entry (the running quest's steps, current first, or the finished quests, newest
   first) with its state chip and, on the current step, the hunt's count as a gauge; on the right the chosen entry: the
@@ -711,6 +780,34 @@ The HUD is drawn by Android views laid out in fractions of the screen height, th
   the rewards as gold chips, read from the description's "Recompensa ...:" sentence. On the current step, Ir starts the
   automatic quest and closes the window (Pausar auto-missão while it runs). The older client's `MobileQuestJournal`
   stays with that client.
+- **Calendário de eventos** (`VulkanEventCalendar`, Menu, Calendário with `HudGlyph.Calendar`): opening it asks
+  the server for the calendar (`IPlayChannel.RequestEventCalendarAsync`, 8 s at most,
+  [protocol.md](protocol.md#event-calendar)); the tabs on the left are Agora (a red badge with the number of events
+  running), Semana and Ajuda. Agora lists "Acontecendo agora" (the running events, "O tempo todo" or "Termina em …")
+  and "Nas próximas 24 horas" ("Começa em …", the day and time, and on the boss card the coming calls as time chips
+  and the bosses of the next call as "Chefe — Mapa"); Semana the next seven days under "Amanhã" or "ter., 17/11"
+  headings, a day's boss calls as one card of time chips (a later day's call shows its hour alone, "15h"). The pages
+  come from `CalendarPages` in the device's time zone, whose id the footer shows ("Horários no seu fuso (…)"); the
+  countdowns are rebuilt every 30 seconds while the window is open, and the calendar is asked again on each opening.
+  The window has the panel's close button, no back arrow.
+- **Eventos & Recompensas** (`VulkanRewardsPanel`, the Eventos orb with `HudGlyph.Gift` beside the bag and the Menu's
+  Eventos): the orb carries a red badge with every ready reward (`VulkanActionOrb.SetBadge`, `VulkanHudArt.RedBadge`).
+  The server pushes the window on entering the world and whenever it changes (`PresenceUpdate.Rewards`,
+  `VulkanWorldSession.Rewards`, [protocol.md](protocol.md#events-and-rewards)); while open the window asks for it
+  every 5 s (`IPlayChannel.SendRewardEventsAsync`, Open), so counts below their targets move too. Tabs on the left, each
+  with a red badge of its ready entries: 7 Dias de Boas-vindas (absent once the campaign ended), Caçada da Semana,
+  Tarefas do Dia, Corrida de Nível; a strip with the clock pill ("Encerra em 27d 8h", "Reinicia em 2d 8h", "Sem
+  prazo"), counted down from the window's arrival, and PROGRESSO (entries ready or received) with a gauge. The welcome
+  days are seven cards (icon in a round well with its count, the item's name, a chip Disponível, Próximo with a dashed
+  edge, Bloqueado dimmed or Recebido with a green check; day 7 larger, RECOMPENSA FINAL); a tap on a ready card claims
+  it. The weekly and daily goals are rows (title and description worded from the goal and target, a gauge with
+  N / target, the RECOMPENSA chips of items and gold, and Bloqueado, Receber or Recebido); the level race is a timeline
+  of NÍVEL diamonds beside "Alcance o nível N" cards. The footer shows "N recompensas prontas" or "Nada pronto para
+  receber agora.", the track's note (the welcome days count each different day the character entered; the weekly and
+  daily resets and their levels) and RECEBER TUDO (claims every ready entry of the tab; disabled with none). A claim's
+  answer shows as a toast (`ClientText`). The ? button shows the tab's help.
 
 Not verified on the device: the layout on the phone, the portraits' alignment with their windows, and whether a monster's
-death always arrives as a life of 0 before it leaves view (a kill that leaves at once is not counted).
+death always arrives as a life of 0 before it leaves view (a kill that leaves at once is not counted). Nor the target
+marker's size and place over the phone's monsters, the minimap's hunting area, or the Habilidades window (its layout,
+the skill buttons' sprites and training at a skill master).

@@ -10,6 +10,12 @@ internal static class VulkanHudArt
     public static readonly Color Edge = Color.Argb(235, 176, 138, 72);
     public static readonly Color EdgeLight = Color.Argb(255, 240, 208, 140);
     public static readonly Color Trough = Color.Argb(235, 6, 7, 10);
+    // The gem studding an NPC's portrait bezel.
+    public static readonly Color NpcGem = Color.Rgb(70, 160, 255);
+
+    // Animated HUD art redraws every AnimationFrameMs; its phase, in seconds, wraps after AnimationLoop so it keeps its precision.
+    public const int AnimationFrameMs = 40;
+    private const float AnimationLoop = 600f;
 
     public static readonly Gauge Life = new(Color.Rgb(236, 74, 62), Color.Rgb(138, 18, 22));
     public static readonly Gauge Mana = new(Color.Rgb(84, 156, 255), Color.Rgb(24, 58, 150));
@@ -27,6 +33,9 @@ internal static class VulkanHudArt
         Stroke.SetStyle(Paint.Style.Stroke);
         Text.SetTypeface(Typeface.Create(Typeface.SansSerif, TypefaceStyle.Bold));
     }
+
+    // The animation phase, in seconds, at this SystemClock.ElapsedRealtimeNanos time.
+    public static float Phase(long nanos) => nanos % (long)(AnimationLoop * 1e9f) / 1e9f;
 
     // The top and bottom colours of a gauge's fill.
     public sealed record Gauge(Color Top, Color Bottom);
@@ -283,8 +292,9 @@ internal static class VulkanHudArt
     private const int AuraSparks = 3;
     private const int AuraTail = 8;
 
-    // The level on a badge whose metal climbs with the level against the highest one: gold, emerald, sapphire, crimson;
-    // the highest level burns, its flames flickering with phase (seconds).
+    // The level on a medallion in the HUD's own make: a dark plate in a gold ring with a gold numeral. The stone it is set
+    // with climbs with the level against the highest one (amber, emerald, sapphire, crimson), as an inner line and a
+    // breathing glow; the highest level burns, its flames flickering with phase (seconds).
     public static void LevelBadge(Canvas canvas, float x, float y, float radius, string text, int level, int highest, float phase)
     {
         var top = level >= highest;
@@ -307,16 +317,23 @@ internal static class VulkanHudArt
             Fill.SetShader(null);
         }
 
-        Fill.SetShader(new RadialGradient(x, y - radius * .4f, radius * 1.4f, [light.ToArgb(), dark.ToArgb()], null, Shader.TileMode.Clamp!));
-        canvas.DrawCircle(x, y, radius, Fill);
+        var band = Math.Max(2f, radius * .2f);
+        var inner = radius - band;
+        Stroke.StrokeWidth = band * .7f;
+        Stroke.Color = Color.Argb(235, 8, 6, 4);
+        canvas.DrawCircle(x, y, radius + band * .2f, Stroke);
+        Fill.SetShader(new RadialGradient(x, y - inner * .5f, inner * 1.6f, [Color.Argb(250, dark.R / 3 + 24, dark.G / 3 + 22, dark.B / 3 + 26).ToArgb(),
+            PlateBottom.ToArgb()], null, Shader.TileMode.Clamp!));
+        canvas.DrawCircle(x, y, inner, Fill);
         Fill.SetShader(null);
-        Fill.Color = Color.Argb(90, 255, 255, 255);
-        Box.Set(x - radius * .7f, y - radius * .85f, x + radius * .7f, y - radius * .1f);
+        Ring(canvas, x, y, inner, band);
+        Stroke.StrokeWidth = Math.Max(1f, radius * .07f);
+        Stroke.Color = Color.Argb(230, light.R, light.G, light.B);
+        canvas.DrawCircle(x, y, inner - Stroke.StrokeWidth, Stroke);
+        Fill.Color = Color.Argb(40, 255, 240, 200);
+        Box.Set(x - inner * .7f, y - inner * .88f, x + inner * .7f, y - inner * .15f);
         canvas.DrawOval(Box, Fill);
-        Stroke.StrokeWidth = Math.Max(1.5f, radius * .12f);
-        Stroke.Color = Color.Rgb(40, 26, 10);
-        canvas.DrawCircle(x, y, radius, Stroke);
-        Label(canvas, text, x, y, radius * (text.Length > 2 ? .85f : 1.05f), top ? Color.Rgb(255, 250, 220) : Color.White, Paint.Align.Center!);
+        Label(canvas, text, x, y, inner * (text.Length > 2 ? 1.05f : 1.3f), top ? Color.Rgb(255, 246, 210) : EdgeLight, Paint.Align.Center!);
     }
 
     // Tongues of fire around a circle, each rising and swaying on its own beat.
@@ -435,6 +452,22 @@ internal static class VulkanHudArt
         Text.SetStyle(Paint.Style.Fill);
         Text.Color = color;
         canvas.DrawText(text, x, baseline, Text);
+    }
+
+    // A red badge shows counts up to MostBadge, then MostBadgeText.
+    public const int MostBadge = 9;
+    public const string MostBadgeText = "9+";
+    public static readonly Color BadgeRed = Color.Rgb(200, 40, 40);
+
+    // A round red badge with a white edge and its count: something waits for the player.
+    public static void RedBadge(Canvas canvas, float x, float y, float radius, string text)
+    {
+        Fill.Color = BadgeRed;
+        canvas.DrawCircle(x, y, radius, Fill);
+        Stroke.StrokeWidth = Math.Max(1.5f, radius * .14f);
+        Stroke.Color = Color.White;
+        canvas.DrawCircle(x, y, radius, Stroke);
+        Label(canvas, text, x, y, radius * 1.1f, Color.White, Paint.Align.Center!);
     }
 
     // A round badge filled gold, with its text.

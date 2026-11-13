@@ -43,6 +43,8 @@ into it is described in [server.md](server.md); skill resolution details are in 
 | `World/WorldServerOptions.cs` | `ExperienceMultiplier`, `ExperienceEventPercent`, `ClockOffsetMinutes`, `CrystalEvent`, `ItemEvents`, `Aging`, `Mixing`, `Bellatra` (`BellatraOptions`), `Weather`, `WeatherCycleMinutes`, `MaxPendingCommandsPerPlayer`, `GiveStarterGifts`, `CheckpointSeconds`; `WorldBusyException` |
 | `World/WorldServer.Bellatra.cs`, `World/BellatraGame.cs`, `World/BellatraBooth.cs`, `World/FieldInstance.Bellatra.cs`, `Services/BellatraAppService.cs`, `Bellatra/BellatraClanAppService.cs` | Bellatra's game: the rounds on the tick, the team booths, the arena's monsters and scores, the prizes paid off the tick, the operating clan and its income ([Bellatra](#bellatra)) |
 | `World/WorldServer.StarterGifts.cs`, `Services/StarterGiftAppService.cs` | The starter gifts of new characters: their offers on the tick, prepare and commit, the durable operation and its chat line ([Starter gifts](#starter-gifts)) |
+| `World/WorldServer.Rewards.cs`, `Services/RewardEventAppService.cs` | The events and rewards window: the server-local date of the tick, login days, the window each snapshot carries, claims ([Events and rewards](#events-and-rewards)) |
+| `Calendar/EventCalendarQuery.cs`, `World/WorldServer.Calendar.cs` | The event calendar a player opens: the world's bosses and event settings with the castle's siege schedule ([Event calendar](#event-calendar)) |
 | `Settings/` | `ServerSettings`, `ServerSettingCatalog` (every row of the settings table), `ServerSettingsAppService` (read, apply, write) |
 | [`World/FieldInstance.cs`](../Shared/PristonTale.Application/World/FieldInstance.cs) | One live field: players, monsters, NPCs, spawner, AI, collision index, step order, views |
 | `World/FieldCombat.cs` | Basic attack and monster attack resolution, damage log, kill payout, corpses |
@@ -412,6 +414,7 @@ A prepared operation with `Snapshot == null` is final (rejection or replay) and 
 | NPC services | `NpcServiceTransactions.Prepare` (`PreparedNpcOperation`) | inventory, gold delta, open warehouse, teleport arrival |
 | Quest requests | `QuestTransactions.Prepare` (`PreparedQuestOperation`); follow-ups must answer a step the NPC still offers | inventory, equipment, quest journal (merging tick kills), tier, stat/skill point and gold deltas, travel, arena duel |
 | Starter gift | `WorldServer.PrepareStarterGiftAsync`, run by the server's `StarterGiftService` ([Starter gifts](#starter-gifts)) | inventory and equipment, the gift count |
+| Reward claim | `WorldServer.PrepareRewardClaimAsync` (`RewardClaims.Claim` on a copy: items into the bag or none, gold, the claim), run by `RewardEventAppService` ([Events and rewards](#events-and-rewards)) | inventory, the gold, the claims marked on the live book |
 | Bellatra prize | `WorldServer.PrepareBellatraPrizeAsync`, run by the server's `BellatraService` ([Bellatra](#bellatra)) | gold |
 | Quest upkeep | `QuestTransactions.PrepareUpkeep`, run by the server's `QuestUpkeepService` | quest drops into the pack, quest weapon growth and expiry, leftovers removed; a busy save gate defers the work to the field's next check |
 | Item use | `ItemUseTransactions.Prepare` with the item's `ItemUseAction` (`PreparedItemUseOperation`) | inventory, premium state, resets and mastery re-applied with the prepared clock, item effects, hair, arrival |
@@ -847,6 +850,42 @@ characters, so a relog keeps a player's place and score.
   path of every character change, a fixed gold amount, tried again a few times while the player is busy with another
   change; the player is told the prize, the gold limit that refused it or why it failed. A prize still waiting when the
   server stops, or owed to a player who left, is lost.
+
+## Event calendar
+
+`EventCalendarQuery.For(world, castle, language)` answers the client's `EventCalendarRequest` off the tick: it reads
+`WorldServer.CalendarRules` (the field bosses of the loaded world data whose monster is known and whose hours include
+one of 0 to 23, named in the player's language with their field's name, by field code; today's `BossMinute`;
+`bellatra.mode`, `events.crystal`, `experience.event_percent` and the item events in force) and adds the castle's
+`CastleAppService.Options` (the last tick's settings; no sieges while the castle is unavailable) and the siege running
+now (`CastleView`). `EventSchedule.Calendar` then lists the occurrences over `EventSchedule.Horizon` from the server's
+UTC clock in the server's time zone ([world.md](world.md#event-calendar)). Nothing is stored and no per-player counter
+is sent: Etervale keeps none for these events.
+
+## Events and rewards
+
+The window "Eventos & Recompensas" (`RewardEvents`, [simulation.md](simulation.md#events-and-rewards)) is kept per
+character in its `RewardEventBook` and stored with it (`characters.events`, [persistence.md](persistence.md)), so a
+player's other characters each have their own campaign; the account has no table of its own for it.
+
+- The tick takes the server's local date once (`RewardDate.Of(_clock.GetLocalNow())`, `WorldServer.StepRewardCalendar`)
+  and hands it to every field (`FieldInstance.RewardDate`). Joining the world counts the day as a login day, and so
+  does a new day for everyone playing across midnight.
+- Counts on the tick, on the live character (stored with its next capture, as experience is): a kill credited to the
+  player (`FieldInstance.CreditQuests`) counts `MonsterKills`; a ticket's entry into Bellatra (`EnterBellatra`)
+  `BellatraEntries`; a committed pickup of an item a monster dropped (`PreparedPickupOperation.MonsterItem`)
+  `MonsterDrops`, and a sheltom also its count in `Sheltoms`; a drunk potion's commit `Potions`. Items a player threw
+  count nothing.
+- Each snapshot carries the owner's window (`WorldSnapshot.Rewards`, `RewardsOf`): `RewardEventBook.Observe` moves the
+  book's revision when a level target was reached or the day changed, and a new `RewardBoard` is built only when the
+  revision moved, so the encoder sends it only then.
+- A claim (`RewardEventAppService.ClaimAsync`) is a durable operation without a store: the tick claims on a copy
+  (`RewardClaims.Claim`: the items through `QuestInventory.Create` and `Check`, all or none; the gold within
+  `MoneyLimits.CanCarry`; the claim marked), the commit applies the inventory and the gold and marks the claims on the
+  live book (whose counts moved on since the prepare), and the snapshot goes to the save queue. A bag without room
+  (`NoSpace`), too much weight or gold refuses the claim and changes nothing, so it stays claimable; a claim of all
+  claims in order until one does not fit and answers what it took. A held save gate answers `Busy`. Claims need no
+  operation id: a claimed entry answers `AlreadyClaimed`.
 
 ## Published outcomes and events
 

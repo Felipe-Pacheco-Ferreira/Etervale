@@ -17,9 +17,12 @@ public readonly record struct PlayerActorHandles(ActorHandle Body, ActorHandle H
     // The off-hand actor is a second copy of the weapon (the Assassin's left dagger), glowing as the weapon does.
     public bool Twin { get; init; }
 
-    // The body and the head move and play as one (the weapons follow by attachment).
-    public void SetWorld(IActorScene scene, Matrix world)
+    // The body and the head move and play as one (the weapons follow by attachment). seated: astride a mount, the pelvis
+    // at the world's origin (ActorSeat).
+    public void SetWorld(IActorScene scene, Matrix world, bool seated = false)
     {
+        scene.SetActorSeated(Body, seated);
+        scene.SetActorSeated(Head, seated);
         scene.SetActorWorld(Body, world);
         scene.SetActorWorld(Head, world);
     }

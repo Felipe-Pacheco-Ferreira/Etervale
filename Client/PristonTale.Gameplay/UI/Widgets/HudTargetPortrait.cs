@@ -19,8 +19,9 @@ public readonly record struct HudPortraitSubject(ulong EntityId, int CorrectionY
 public readonly record struct HudPortraitCamera(Vector3 Position, Vector3 Target, Vector3 Up, float FieldOfView, float AspectRatio, float Near, float Far);
 
 // The target frame's live 3D portrait, rendered into its own target before the world each frame. As in the original the
-// camera sits in front of the actor, level with its head bone (taken once per target, at the stand pose) plus three units,
-// 100 units plus the head height away, both corrected by the model's authored portrait offset; the projection is the
+// camera sits in front of the actor, level with its head bone plus three units, 100 units plus the head height away, both
+// corrected by the model's authored portrait offset. The head is taken at the stand pose, then followed as the actor moves
+// (unlike the original, whose fixed camera lost the face during a swing); the projection is the
 // screen's actor projection centred on the frame and narrowed to a head close-up, so the framing scales with the HUD.
 public sealed class HudTargetPortrait : IDisposable
 {
@@ -35,6 +36,7 @@ public sealed class HudTargetPortrait : IDisposable
     // The portrait is a head close-up: the frame shows this much less than the screen's actor projection would.
     public const float CloseUp = 1.15f;
     private const float MinimumDistance = 10f;
+    private const float HeadFollow = .2f;
     private const int MultiSampleCount = 4;
 
     // Studio light in units of the metered daylight (a white surface facing the key displays at 1 before exposure).
@@ -52,6 +54,10 @@ public sealed class HudTargetPortrait : IDisposable
     private ulong _anchorEntity;
     private bool _hasAnchor;
     private ulong _drawnEntity;
+    // The head bone in the actor's space, followed a share (HeadFollow) of the way each frame so a swing or a duck keeps
+    // the face in the window without the camera jerking.
+    private Vector3 _head;
+    private bool _followingHead;
 
     public HudTargetPortrait(GraphicsDevice device)
     {
@@ -100,6 +106,7 @@ public sealed class HudTargetPortrait : IDisposable
         {
             _anchorEntity = subject.EntityId;
             _hasAnchor = false;
+            _followingHead = false;
         }
 
         var renderer = scene?.Renderer;
@@ -134,13 +141,22 @@ public sealed class HudTargetPortrait : IDisposable
             return;
         }
 
+        var anchor = _anchor;
+        if (anchor.HasBone && renderer.TryGetActorBoneWorld(handles[0], HeadBone, out var head))
+        {
+            var local = Vector3.Transform(head.Translation, Matrix.Invert(world));
+            _head = _followingHead ? Vector3.Lerp(_head, local, HeadFollow) : local;
+            _followingHead = true;
+            anchor = anchor with { Bone = _head };
+        }
+
         var frame = HudCombat.TargetFrame(layout).Portrait;
         if (frame.Width <= 0 || frame.Height <= 0)
         {
             return;
         }
 
-        var camera = Camera(_anchor, world, subject, frame, layout.Height);
+        var camera = Camera(anchor, world, subject, frame, layout.Height);
         EnsureTarget(frame.Width * layout.Scale, frame.Height * layout.Scale);
         var view = Matrix.CreateLookAt(camera.Position, camera.Target, camera.Up);
         var projection = PristonDepth.Perspective(camera.FieldOfView, camera.AspectRatio, camera.Near, camera.Far);

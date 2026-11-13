@@ -101,9 +101,16 @@ public interface IPlayChannel : IAsyncDisposable
     // A request of Bellatra's secretary (a redemption's gold), answered by a BellatraClanResult and the window's state.
     Task SendBellatraClanAsync(Protocol.Packets.BellatraClanAction action, ulong npcId, long amount, CancellationToken ct = default);
 
+    // A request of the events and rewards window: open it (the window comes back), claim one entry or every entry ready
+    // in the track; answered by a RewardEventsResult and the window.
+    Task SendRewardEventsAsync(Protocol.Packets.RewardEventsAction action, Simulation.Events.RewardTrack track, int index, CancellationToken ct = default);
+
     // Asks a Bellatra result (BellatraResultRequestPacket.OwnGame the player's game, 1 to 4 a team booth's live one),
     // answered by a BellatraResult.
     Task SendBellatraResultAsync(int team, CancellationToken ct = default);
+
+    // The event calendar: the server's timed events running now and over the coming week, in UTC.
+    Task<Simulation.World.Calendar.EventCalendar> RequestEventCalendarAsync(CancellationToken ct = default);
 
     // Trade requests: ask a player to trade, answer a request (PresenceUpdate.TradeRequest), the side's whole offer, lock it,
     // cancel. None is answered: the window (PresenceUpdate.Trade) and chat lines show what changed.

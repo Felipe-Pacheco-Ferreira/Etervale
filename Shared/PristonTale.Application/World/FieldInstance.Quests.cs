@@ -28,6 +28,9 @@ public sealed partial class FieldInstance
     // Wall-clock milliseconds for quest item lifetimes; the world sets it from its time provider.
     internal Func<long> QuestClock { get; set; } = static () => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
+    // The server-local date of the tick, for the weekly and daily goals the field counts (RewardEvents).
+    internal Simulation.Events.RewardDate RewardDate { get; set; }
+
     // Called when a player has quest work the upkeep must store; the world forwards it to the upkeep worker.
     internal Action<WorldPlayer>? QuestUpkeepRequested { get; set; }
 
@@ -120,6 +123,7 @@ public sealed partial class FieldInstance
 
         if (killed is not null && credited is not null)
         {
+            credited.Character.Events.Count(Simulation.Events.RewardGoal.MonsterKills, 1, RewardDate, credited.Character.Level);
             var context = TickContext(credited);
             var revision = credited.Character.Quests.Revision;
             if (QuestTick.OnKill(context, killed.Def.QuestCode))

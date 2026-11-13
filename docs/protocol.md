@@ -27,6 +27,8 @@ The codecs live in `Shared/PristonTale.Protocol`; the server edge is `Server/Pri
 | `Packets/IFramePacket.cs` | `IFramePacket`: a message that writes itself as one frame; every client-to-server message implements it. |
 | `Packets/CastlePackets.cs` | `CastleState` (Bless Castle's owner, league mode and siege board), the owner's window (`CastleOwnerRequest`, `CastleOwnerState`, `CastleOwnerResult`). |
 | `Packets/BellatraPackets.cs` | Bellatra's secretary (`BellatraClanRequest`, `BellatraClanState`, `BellatraClanResult`). |
+| `Packets/RewardPackets.cs` | The events and rewards window (`RewardEventsRequest`, `RewardEvents`, `RewardEventsResult`). |
+| `Packets/EventCalendarPackets.cs` | The event calendar (`EventCalendarRequest`, `EventCalendar`, `CalendarOccurrenceWire` in whole UTC minutes). |
 | `Packets/AccountPackets.cs` | `ProtocolVersion`, `ServerHello`, `Login`/`LoginResult`, `CharacterList`, `CharacterCommand`/`CharacterResult`, `Heartbeat`. |
 | `Packets/PlayerActionPackets.cs` | `MovementReport`, `AttackRequest` and `FieldWarp`. |
 | `Packets/WingGatePackets.cs` | `WingGateRequest` and `WingGateResult`. |
@@ -232,6 +234,10 @@ Every message code has the high word `0x4554` ("ET"); every message keeps the `{
 | `0x45541303` | `BellatraBoard` | S→C | The player's Bellatra board whenever it changes while the player is in the arena, hidden once it leaves ([application.md](application.md#bellatra)). |
 | `0x45541304` | `BellatraResultRequest` | C→S | A Bellatra result window: the player's game's (or every team's) or a team booth's. |
 | `0x45541305` | `BellatraResult` | S→C | A Bellatra result window, best score first: the game's final result or a team's live one. |
+| `0x45541400` | `RewardEventsRequest` | C→S | The events and rewards window: open it, claim one entry or every entry ready in a track (see below). |
+| `0x45541401` | `RewardEvents` | S→C | The events and rewards window: on entering the world, after each change and answering every request (see below). |
+| `0x45541402` | `RewardEventsResult` | S→C | How a claim ended (`RewardClaimStatus`, 0 done), the entries it claimed and the line for the player. |
+| `0x45541A00` / `0x45541A01` | `EventCalendarRequest` / `EventCalendar` | C→S / S→C | The event calendar of a player in the world, correlated by operation id (see below). |
 | `0x45540A00` / `0x45540A01` | `RestartRequest` / `RestartResult` | C→S / S→C | A dead player's restart (field, town, exit), correlated by operation id; a stored restart also sends a forced `FieldWarp`. |
 | `0x45540A02` | `RestartOffer` | S→C | While the owner is dead, what a restart would cost, whenever it changes. |
 | `0x45540B00` / `0x45540B01` | `GroundItems` / `GroundItemsRemoved` | S→C | Drops entering and leaving the receiver's view: within the ground-item range (squared `0xC8000` units, about 905 units), private drops only to their owner. |
@@ -591,6 +597,38 @@ The server answers a request only after a changed character is stored; the prese
 notices of the tick (kill counts, timers, duel results) to the owner alone. A step that sends the player to or from the
 quest arena arrives as the usual field confirmation `FieldWarp`.
 
+### Event calendar
+
+- `EventCalendarRequest` (28 bytes): `{uint16 Version = 1, uint16 0, Guid OperationId}`.
+- `EventCalendar`: `{uint16 Version = 1, uint16 0, Guid OperationId, int32 ExperiencePercent, uint16 Drops (DropEvents),
+  uint8 BossCount, uint8 BossSetCount, (text Name, text FieldName) x BossCount (32 B each), uint64 x BossSetCount,
+  int32 OccurrenceCount, (uint8 Kind, uint8 Flags, uint8 BossSet, uint8 0, uint32 StartMinute, uint32 Minutes) x
+  OccurrenceCount}`, the occurrences filling the rest exactly. `Kind` is `CalendarEventKind`, `Flags`
+  `CalendarOccurrenceFlags` (1 always running, 2 a boss call whose minute is not drawn yet); `StartMinute` is the Unix
+  minute (UTC) of the start rounded down and `Minutes` the length rounded up (0 for a moment such as a boss call, both 0
+  for an event always running). `BossSet` indexes the distinct boss bit sets (bit i for boss i), 255 for none. At most
+  64 bosses, 24 sets and 288 occurrences (`EventCalendarWire`), so the largest calendar (8040 bytes) fits one frame.
+
+### Events and rewards
+
+`Packets/RewardPackets.cs`; bodies start with `{uint16 Version = 1, uint16 0}` (`RewardWire`). Track, goal, entry state
+and claim status are the Simulation's `RewardTrack`, `RewardGoal`, `RewardEntryState` and `RewardClaimStatus`
+([application.md](application.md#events-and-rewards)), mapped at the edges.
+
+- `RewardEventsRequest` (15 bytes): `{uint8 Action (RewardEventsAction: 0 open, 1 claim, 2 claim all), uint8 Track,
+  uint8 Index (a claim's entry)}`.
+- `RewardEvents`: `{uint8 TrackCount, tracks}`; a track is `{uint8 Track, uint8 Flags (1 has a deadline), uint16
+  MinLevel, [varuint SecondsLeft], uint8 EntryCount, entries}` and an entry `{uint8 Goal, uint8 State, varuint
+  Progress, varuint Target (a level for the level race), varuint Gold, uint8 ItemCount, (uint32 Code, uint16 Count,
+  text Name (64 B)) x ItemCount}`. At most 4 tracks, 8 entries a track and 3 items an entry, so the largest window
+  (`RewardEventsPacket.MaxSize`) fits one frame. `SecondsLeft` counts from when the server built the window; the
+  welcome track is absent once its campaign ended. Item names are in the session's language.
+- `RewardEventsResult`: `{uint8 Action, uint8 Track, uint8 Status, uint8 Claimed (the entries claimed, a bit an
+  index), game text Message}`; every request is then answered with the window.
+
+The encoder sends `RewardEvents` whenever the owner's snapshot carries a new window (a claim, a goal reaching its
+target, a login day, a level reached, a new day or week); counts below a target travel only when the client asks.
+
 ## Server capacity
 
 The original server ran all game logic on one thread under one lock, scanned every connection and monster slot for
@@ -694,7 +732,7 @@ connection every `Server:ReportSeconds` (30 by default).
    `0x455404xx` usable items, `0x455405xx` quests, `0x455406xx` personal shops, `0x455407xx` parties, `0x455408xx`
    trades, `0x455409xx` presence, `0x45540Axx` restart, `0x45540Bxx` ground items, `0x45540Cxx` chat, `0x45540Dxx` player
    actions, `0x45540Exx` world entry, `0x45540Fxx` account, `0x455410xx` contacts, `0x455411xx` clans, `0x455412xx` Bless
-   Castle, `0x455413xx` Bellatra).
+   Castle, `0x455413xx` Bellatra, `0x455414xx` events and rewards, `0x45541Axx` event calendar).
 2. **Packet type.** Add a record in `Packets/` with `Size` or `HeaderSize` constants, `int Write(Span<byte>)` built on
    `PacketWriter` (returning `Finish()`), and `static Read(ReadOnlySpan<byte>)` built on `PacketReader(packet,
    minimum)`. Start new bodies with `{uint16 Version, uint16 Flags}`, reject version 0, append fields only at the end,

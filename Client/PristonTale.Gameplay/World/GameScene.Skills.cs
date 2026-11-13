@@ -377,23 +377,7 @@ public sealed partial class GameScene : ISkillSceneHost
 
     // The summon of a new cast starts in its skill's own mode.
     private void ResetSummonMode(uint skillCode) => _summonAggressive.Remove(skillCode);
-    private int Rank(uint code)
-    {
-        if (Owner is null)
-        {
-            return 0;
-        }
-
-        foreach (var skill in Owner.Skills)
-        {
-            if (skill.Code == code)
-            {
-                return skill.Rank;
-            }
-        }
-
-        return 0;
-    }
+    private int Rank(uint code) => Owner?.SkillRank(code) ?? 0;
 
     private Skill FindSkill(uint code)
     {

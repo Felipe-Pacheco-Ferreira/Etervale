@@ -1,5 +1,6 @@
 using Android.App;
 using Android.Widget;
+using PristonTale.Gameplay.Localization;
 using PristonTale.Mobile;
 using PristonTale.Mobile.CharacterSelect;
 using PristonTale.Simulation.Characters;
@@ -9,8 +10,8 @@ using PristonTale.Simulation.Skills;
 
 // The combat controls at the bottom right: the large attack button, the skill buttons on an arc around it and the
 // potion belt beside them. The skill buttons fill with the learned skills in order (a slot without one is dimmed); a long press on one picks another
-// skill for it. A skill that needs an enemy is cast at the current target, or asks for one. Belt and skill use are the
-// commands the server validates.
+// skill for it, as the skills window does (Assign). A skill that needs an enemy is cast at the current target, or asks for one. Belt and skill
+// use are the commands the server validates.
 internal sealed class VulkanActionWheel
 {
     private const int SkillSlots = 4;
@@ -171,17 +172,35 @@ internal sealed class VulkanActionWheel
 
         using var builder = new AlertDialog.Builder(_activity);
         builder.SetTitle($"Habilidade do botão {slot + 1}");
-        builder.SetItems(options.Select(skill => SkillName(skill.Code)).ToArray(), (_, args) =>
-        {
-            _skillCodes[slot] = options[args.Which].Code;
-            _chosen[slot] = true;
-            Update(owner);
-        });
+        builder.SetItems(options.Select(skill => SkillName(skill.Code)).ToArray(), (_, args) => Assign(slot, options[args.Which].Code));
         builder.SetNegativeButton("Fechar", (_, _) => { });
         builder.Show();
     }
 
-    private static string SkillName(uint code) => SkillRuleCatalog.TryGet(code, out var rule) ? rule.Name : "Habilidade";
+    // The skill on a skill button, or 0.
+    public uint SkillOn(int slot) => _skillCodes[slot];
+
+    // Puts a learned skill on a skill button, as a long press does; a button that held it before gives it up.
+    public void Assign(int slot, uint code)
+    {
+        for (var other = 0; other < SkillSlots; other++)
+        {
+            if (other != slot && _skillCodes[other] == code)
+            {
+                _skillCodes[other] = 0;
+                _chosen[other] = false;
+            }
+        }
+
+        _skillCodes[slot] = code;
+        _chosen[slot] = true;
+        if (_owner is not null)
+        {
+            Update(_owner);
+        }
+    }
+
+    private static string SkillName(uint code) => SkillRuleCatalog.TryGet(code, out var rule) ? DataText.SkillName(code, rule.Name) : "Habilidade";
 
     // The first word of a skill's name, cut to fit a button.
     private static string Short(string name)
@@ -221,9 +240,12 @@ internal sealed class VulkanActionWheel
             return;
         }
 
+        // A belt potion is drunk through the inventory's potion command, as the desktop belt does (the item-use command
+        // refuses potions).
         await SendAsync(async () =>
         {
-            var result = await _session.Play.UseItemAsync(new ItemUseCommand(Guid.NewGuid(), owner.InventoryRevision, item.InstanceId), _ct);
+            var command = new InventoryCommand(Guid.NewGuid(), owner.InventoryRevision, InventoryAction.ConsumePotion, item.InstanceId, 0, 1, default);
+            var result = await _session.Play.ApplyInventoryAsync(command, _ct);
             if (!result.Ok)
             {
                 _notice.Text = CharSelectText.Format(result.Message);

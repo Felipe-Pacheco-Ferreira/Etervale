@@ -14,6 +14,7 @@ using PristonTale.Application.Sessions;
 using PristonTale.Persistence.Abstractions.Characters;
 using PristonTale.Simulation.Combat;
 using PristonTale.Simulation.Characters;
+using PristonTale.Simulation.Events;
 using PristonTale.Simulation.Items;
 using PristonTale.Simulation.PersonalShops;
 using PristonTale.Simulation.Skills;
@@ -83,6 +84,10 @@ public sealed partial class WorldServer
         // The tick the next starter gift is due on, and whether the gift service holds a request for it.
         public uint NextGiftTick { get; set; }
         public bool GiftRequested { get; set; }
+
+        // The events and rewards window last published and the book revision it shows.
+        public RewardBoard? Rewards { get; set; }
+        public long RewardRevision { get; set; } = -1;
     }
 
     public WorldServer(
@@ -213,6 +218,7 @@ public sealed partial class WorldServer
 
             var field = GetField(fieldId);
             player.Character.MeetHelpPet(field.Rng);
+            player.Character.Events.CountLogin(RewardDate.Of(_clock.GetLocalNow()));
             // A saved place without a floor (outside the stage) enters at the field's first start point instead.
             if (!field.Terrain.TryPlaceOnFloor(player.Position, out var position))
             {
@@ -594,6 +600,7 @@ public sealed partial class WorldServer
 
                 pickup.Ground.Resolve(pickup.DropId, pickup.OperationId, committed: true);
                 Log(pickedUp);
+                CountPickup(operation.Original, pickup.MonsterItem);
             }
             if (operation is PreparedThrowOperation thrown)
             {
@@ -619,6 +626,7 @@ public sealed partial class WorldServer
             if (operation is PreparedPotionOperation potion && TryGetOwnConnection(session, out var connection))
             {
                 connection.Player.QueuePotion(potion.Potion);
+                operation.Original.Events.Count(RewardGoal.Potions, 1, _rewardDate, operation.Original.Level);
                 // A seller may drink the potions it offers.
                 connection.Player.PruneShop();
             }
@@ -757,6 +765,7 @@ public sealed partial class WorldServer
         RefreshParties(serverTick);
         var localNow = _clock.GetLocalNow();
         bool bossPassDue = _bossSchedule.TryBeginPass(localNow, _clock.GetElapsedTime(_clockOrigin));
+        StepRewardCalendar(localNow);
         int? bossHour = bossPassDue ? localNow.Hour : null;
 
         _activeFields.Clear();
@@ -791,6 +800,7 @@ public sealed partial class WorldServer
     private void StepField(FieldInstance field, float dt, uint serverTick, int? bossHour, long nowSeconds, bool night, WeatherState weather)
     {
         field.Premium.NowSeconds = nowSeconds;
+        field.RewardDate = _rewardDate;
         field.Night = night;
         field.SetWeather(weather);
         field.Step(dt, bossHour);
@@ -833,7 +843,8 @@ public sealed partial class WorldServer
                     PartyRequest = connection.Player.PartyRequest,
                     Trade = connection.Player.Trade?.ViewFor(entityId),
                     TradeRequest = connection.Player.TradeRequest,
-                    Bellatra = BellatraViewOf(connection)
+                    Bellatra = BellatraViewOf(connection),
+                    Rewards = RewardsOf(connection)
                 });
                 // Only an outbox pins and releases frames; any other writer may keep the snapshot forever.
                 frame.Retained |= connection.Outbound is not WorldOutbox.OutboxWriter;

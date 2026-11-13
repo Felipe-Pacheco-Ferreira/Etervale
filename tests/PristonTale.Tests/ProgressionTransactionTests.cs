@@ -27,6 +27,36 @@ internal static class ProgressionTransactionTests
         yield return ("a skill master trains only its own town's classes: Ricarten's the Tempskron, not the Morion", HomeMasterAsync);
         yield return ("Bless Castle's tax on training is the one its stored candidate paid, even when it changes before the commit", CastleTaxAsync);
         yield return ("a gained level and a trained skill rank each give one cue for the effects everyone near sees", ProgressCuesAsync);
+        yield return ("a skill's training check names what holds its next rank back, and only Ready can train", TrainingCheckAsync);
+    }
+
+    private static Task TrainingCheckAsync()
+    {
+        var skills = ClassSkillCatalog.For(PlayerClass.Fighter);
+        var ranks = new Dictionary<uint, int>();
+        int RankOf(uint code) => ranks.TryGetValue(code, out var rank) ? rank : 0;
+        SkillTrainingCheck Check(int index, int level, int tier = 0, int points = 5, int elite = 5) =>
+            SkillLearning.Check(skills, index, RankOf, level, tier, points, elite);
+
+        Assert.True(Check(-1, 100) == SkillTrainingCheck.Unavailable && Check(skills.Count, 100) == SkillTrainingCheck.Unavailable, "a skill outside the window");
+        Assert.True(Check(4, 100) == SkillTrainingCheck.TierLocked, "a second-tier skill before the rank-up");
+        Assert.True(Check(1, 100) == SkillTrainingCheck.NeedsPrevious, "the second skill before the first");
+        Assert.True(Check(0, skills[0].RequiredLevel - 1) == SkillTrainingCheck.NeedsLevel, "the first skill under its level");
+        Assert.True(Check(0, 100, points: 0) == SkillTrainingCheck.NoPoints, "the first skill without points");
+        Assert.True(Check(0, 100) == SkillTrainingCheck.Ready && SkillLearning.CanTrain(skills, 0, RankOf, 100, 0, 5, 5), "the first skill");
+        ranks[skills[0].Code] = 3;
+        Assert.True(SkillLearning.LevelFor(skills[0], 3) == skills[0].RequiredLevel + 6
+            && Check(0, SkillLearning.LevelFor(skills[0], 3) - 1) == SkillTrainingCheck.NeedsLevel, "rank 4 needs two levels a rank");
+        ranks[skills[0].Code] = SkillLearning.MaxRank;
+        Assert.True(Check(0, 200) == SkillTrainingCheck.MaxRank && !SkillLearning.CanTrain(skills, 0, RankOf, 200, 0, 5, 5), "a skill at its last rank");
+        foreach (var skill in skills.Take(SkillLearning.EliteStart))
+        {
+            ranks[skill.Code] = 1;
+        }
+
+        Assert.True(Check(SkillLearning.EliteStart, 200, tier: 3, points: 5, elite: 0) == SkillTrainingCheck.NoPoints
+            && Check(SkillLearning.EliteStart, 200, tier: 3, points: 0, elite: 1) == SkillTrainingCheck.Ready, "a fourth-tier skill spends elite points");
+        return Task.CompletedTask;
     }
 
     private static Task ProgressCuesAsync()

@@ -84,7 +84,7 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
     }
 
     // The nearest living monster within range, or null; called on the game thread.
-    public ulong? ClosestMonster(float range, int questCode)
+    public ulong? ClosestMonster(float range)
     {
         ulong? closest = null;
         var best = range * range;
@@ -126,6 +126,12 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
     public void SelectNpc(ulong id) => npcs.Enqueue(id);
     public bool TryReadNpc(out ulong id) => npcs.TryDequeue(out id);
     public bool TryReadPrompt(out QuestPrompt prompt) => prompts.TryDequeue(out prompt);
+
+    // The events and rewards window as the server last sent it, and how each request of it ended.
+    private readonly ConcurrentQueue<RewardEventsResultInfo> rewardResults = new();
+    private RewardEventsInfo rewards;
+    public RewardEventsInfo Rewards => Volatile.Read(ref rewards);
+    public bool TryReadRewardResult(out RewardEventsResultInfo result) => rewardResults.TryDequeue(out result);
     private GameScene scene;
     private int runToggle;
     public void ToggleRun() => Interlocked.Increment(ref runToggle);
@@ -260,6 +266,14 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
                 SetAutoHunt(false);
             }
             Volatile.Write(ref quest, view);
+        }
+        if (update.Rewards is { } rewardWindow)
+        {
+            Volatile.Write(ref rewards, rewardWindow);
+        }
+        if (update.RewardResult is { } rewardResult)
+        {
+            rewardResults.Enqueue(rewardResult);
         }
         if (update.QuestPrompt is { } prompt)
         {

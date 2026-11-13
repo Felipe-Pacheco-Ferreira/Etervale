@@ -64,6 +64,64 @@ public sealed partial class PristonRenderer
         return true;
     }
 
+    // Where a rider sits on a mount, in its model space at the first frame of its stand motion: behind the named bone by
+    // the given distance (X, Z), and how far the skin there rises above that bone (Y: the height under which skinShare of
+    // the mesh's points within SaddleReach of that column lie, so a horn or a crest above the back does not count). The
+    // skin keeps that height over the bone in every motion, so a rider lifted to the bone's current height plus it rides
+    // the gait. False until the geometry is resident or when the bone or skin is missing. Taken once per mount model.
+    public bool TryGetActorSaddle(ActorHandle handle, string boneName, float behind, float skinShare, out Vector3 saddle)
+    {
+        saddle = default;
+        if (!TryResolveActor(handle, out var runtime) || runtime.Batches.Count == 0)
+        {
+            return false;
+        }
+
+        var actor = runtime.Instance.Actor;
+        var seat = actor.Skeleton.ObjectIndex(boneName);
+        if (seat < 0)
+        {
+            return false;
+        }
+
+        var stand = SelectActorMotion(actor, MotionCode.Stand, runtime.Instance.MotionContext);
+        var frame = stand.EndFrame > stand.StartFrame ? stand.StartFrame * GameUnits.FrameTicks : runtime.Frame;
+        var bones = runtime.SampleSkeletonAt(frame, stand.EndFrame * GameUnits.FrameTicks);
+        // Actor models face +Z, so behind is toward -Z.
+        var spot = bones[seat].Translation - Vector3.UnitZ * behind;
+        var lookup = actor.Skeleton.ObjectIndexByName();
+        var heights = new List<float>();
+        foreach (var obj in actor.Mesh.Objects)
+        {
+            for (var vertex = 0; vertex < obj.Vertices.Count; vertex++)
+            {
+                var bone = PristonModelGeometry.ResolvePhysiqueBone(obj, vertex, lookup);
+                if (bone < 0 || bone >= bones.Length)
+                {
+                    continue;
+                }
+
+                var point = Vector3.Transform(obj.Vertices[vertex].Position, bones[bone]);
+                if (new Vector2(point.X - spot.X, point.Z - spot.Z).LengthSquared() <= SaddleReach * SaddleReach)
+                {
+                    heights.Add(point.Y);
+                }
+            }
+        }
+
+        if (heights.Count == 0)
+        {
+            return false;
+        }
+
+        heights.Sort();
+        var skin = heights[(int)((heights.Count - 1) * Math.Clamp(skinShare, 0f, 1f))];
+        saddle = new Vector3(spot.X, skin - bones[seat].Translation.Y, spot.Z);
+        return true;
+    }
+
+    private const float SaddleReach = 8f;
+
     // How far a held item reaches along its length (the model's Y) from its grip, in its model units: the authored bounds
     // when the file records them, else the resident geometry's; false until the geometry is resident.
     public bool TryGetActorReach(ActorHandle handle, out float reach)

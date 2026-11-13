@@ -102,6 +102,20 @@ public sealed record OwnerState(
 
     public bool Overweight => CarriedWeight > MaxWeight;
 
+    // The rank of a skill, 0 when unlearned (an index loop: HUDs read it every frame).
+    public int SkillRank(uint code)
+    {
+        for (var index = 0; index < Skills.Count; index++)
+        {
+            if (Skills[index].Code == code)
+            {
+                return Skills[index].Rank;
+            }
+        }
+
+        return 0;
+    }
+
     // The running premium timers, their revision and the world clock (Unix seconds) they were captured at.
     public long PremiumRevision { get; init; } = -1;
     public IReadOnlyList<PremiumTimer> PremiumTimers { get; init; } = Array.Empty<PremiumTimer>();

@@ -49,9 +49,6 @@ public sealed partial class GameScene
         return true;
     }
 
-    // Riding with the server's agreement, not only the prediction: what a route for the mounted body waits for.
-    public bool MountConfirmed => _mounted && _serverMounted;
-
     public void Dismount()
     {
         if (_mounted || _mountAsked && _mountWanted)
@@ -145,15 +142,17 @@ public sealed partial class GameScene
             return;
         }
 
+        // The lift follows the hound's gait every few frames; the shown motion changes only on getting on or off.
+        var seated = _riderLift > 0f;
         _riderLift = lift;
         ApplyPlayerWorld();
-        if (_playerController.Current is MotionCode.Walk or MotionCode.Run)
+        if (seated != lift > 0f && _playerController.Current is MotionCode.Walk or MotionCode.Run)
         {
             SetPlayerMotion(_playerController.Current);
         }
     }
 
-    // A rider stands on its hound while the hound walks or runs under it.
+    // A rider sits still on its hound while the hound walks or runs under it.
     private MotionCode ShownPlayerMotion(MotionCode motion) =>
         _riderLift > 0f && motion is MotionCode.Walk or MotionCode.Run ? MotionCode.Stand : motion;
 }

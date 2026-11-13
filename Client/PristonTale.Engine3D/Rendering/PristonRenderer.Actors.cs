@@ -79,6 +79,15 @@ public sealed partial class PristonRenderer
         runtime.PlaybackRate = MathF.Max(rateFactor, 1e-3f);
     }
 
+    // A biped actor seated on a mount (ActorSeat): its pelvis at its origin, legs astride. Others stay as they are.
+    public void SetActorSeated(ActorHandle handle, bool seated)
+    {
+        if (TryResolveActor(handle, out var runtime))
+        {
+            runtime.SetSeated(seated);
+        }
+    }
+
     public void SetActorWorld(ActorHandle handle, Matrix world)
     {
         if (!TryResolveActor(handle, out var runtime) || runtime.World == world)

@@ -31,7 +31,7 @@ progression, regeneration and movement rates. `World/`, `Physics/` and `Skills/`
 | `Characters/Regeneration.cs` | Per-second life/mana/stamina recovery and the `RegenerationState` accumulator |
 | `Characters/Locomotion.cs`, `AnimationRate.cs` | Move-speed stat to world units per second; walk/run/attack animation rates |
 | `Characters/DestinationMovement.cs` | Straight-line step toward a destination (client player and NPC walking) |
-| `Characters/MountRules.cs` | The travel mount: mounted speed (`UnitsPerSecond` = run speed x `SpeedFactor` 1.6, whatever the walk or run setting, but an overweight rider walks as on foot: `RidesFast`), who may mount (`MayMount`: alive, idle, not overweight, `CombatHoldMs` 5 s after the last swing, cast or hit, not in an action field, `FieldAllows`) and the mounted body's planar radius for routes (`BodyRadius` 40, a player on foot is 24) |
+| `Characters/MountRules.cs` | The travel mount: mounted speed (`UnitsPerSecond` = run speed x `SpeedFactor` 1.6, whatever the walk or run setting, but an overweight rider walks as on foot: `RidesFast`), who may mount (`MayMount`: alive, idle, not overweight, `CombatHoldMs` 5 s after the last swing, cast or hit, not in an action field, `FieldAllows`) |
 | `Characters/HelpPets.cs` | The beginner's helper pet: one of the four helper dragons drawn below level 10 (`PlayerCharacter.MeetHelpPet`), active while shown and below level 10 behind a premium helper pet (`HelpPets.Active`), its chat commands |
 | `Characters/StarterGifts.cs` | The starter gifts of a new character: the class's weapon, armour and off-hand (handed over by the Adventurer's Journey guide, `FromGuide`) and the crystals, created perfect with the class's specialization, their pace and chat line |
 | `Characters/OwnerState.cs` | `OwnerState.Capture`: the owner-only character snapshot sent to the client |
@@ -55,9 +55,10 @@ progression, regeneration and movement rates. `World/`, `Physics/` and `Skills/`
 | `Trades/` | Trades: `TradeRules` (what may pass, the 9x4 grid, an offer's check and the exchange of two offers on candidates), `TradeOffer`, `TradeStatus` and the original's `TradeMessages` |
 | `Social/ContactBook.cs` | A character's friends and ignored players: the lists' rules (`ContactLimits`), `ContactStatus` and `ContactMessages` |
 | `Social/Clans/Clan.cs`, `Social/Clans/ClanRules.cs` | A clan, its members (`ClanMember`, `ClanRank`), state (`ClanState`) and tag (`ClanTag`); the rules: founding at level 40 for 500,000 gold, capacity by the chief's level (20 at 40, one per level, at most 80), registration at six members within ten days (`Recount`, `Expired`), entrusting (`CheckEntrust`), names, `ClanStatus` |
-| `Social/Castle/CastleRules.cs` | Bless Castle: `CastleMode`, `SiegeState`, `CastleClanSkill` and the times (siege and league minutes, the league's restart, the tax hour, the fountain's potions) |
+| `Social/Castle/CastleRules.cs` | Bless Castle: `CastleMode`, `SiegeState`, `CastleClanSkill` and the times (siege and league minutes, the league's restart, the tax hour, the fountain's potions); the coming weekly siege (`NextSiege`) and a scheduled siege's length (`ScheduledMinutes`) |
 | `Social/Castle/CastleSiege.cs` | The siege's defenders (`CastleObject`, `CastleTower`, `CastleSiegeRules`: places, the mercenaries' posts, the monsters by key, an ownerless castle's defenders) and the clans' damage (`CastleDamageBoard`, `CastleClanScore`) |
 | `Social/Castle/CastleOwnerRules.cs`, `Social/Castle/CastleClanSkills.cs` | The owner's setup (`CastleSetup`) and what a change costs (`CastleOwnerRules`, `CastleOwnerStatus`); the clan skills' statuses, effects, names and icons |
+| `Events/RewardEvents.cs`, `RewardEventBook.cs`, `RewardClaims.cs` | The events and rewards window: the reward tables (`RewardEvents`), `RewardDate`, a character's book of login days, goal counts and claims, claims on a candidate and the window (`RewardBoard`) ([Events and rewards](#events-and-rewards)) |
 | `Parties/` | Parties: `PartyRules` (level gap, experience shares, share range, gold split, request time) and the original's `PartyMessages` |
 | `PersonalShops/` | Personal shops: `PersonalShopRules` (listing, opening, a sale on candidates), `PersonalShop` (an open listing), purchases, outcomes, listings and texts |
 | [`Combat/CombatResolver.cs`](../Shared/PristonTale.Simulation/Combat/CombatResolver.cs) | Hit, block, damage, critical, element and absorption resolution |
@@ -229,7 +230,8 @@ weight per unit, gold nothing.
 
 With no weapon it returns the derived bare-hand range (modifiers already applied). Otherwise `wMin`/`wMax` are the
 damage of every usable worn item (`EquipmentTotals.DamageMin/DamageMax`; a held weapon the character cannot use adds
-nothing):
+nothing). The primary attribute is `WeaponDamage.DamageAttribute`; `CharacterClassRegistry.DamageAttribute` names a
+class's by the kind of its beginner weapon (the status window marks it):
 
 | Weapon | Primary | Divisor | Secondary |
 | --- | --- | --- | --- |
@@ -528,7 +530,8 @@ totals.
 - `SkillLearning` (skill master): the class window has 20 skills in order; tier `t` opens the first `4 * (t + 1)`.
   A skill trains when it has ten ranks of costs, rank < 10, its point kind is available (indices 12-19, the fourth and
   fifth tiers, share the elite points, the rest spend skill points), `level >= RequiredLevel + 2 * rank`, and the
-  previous window skill has a rank.
+  previous window skill has a rank; `Check` returns the first unmet condition (`SkillTrainingCheck`), `CanTrain` is its
+  `Ready`.
   Price = `BasePrices[index] + RankPrices[index] * currentRank`. `ApplyProgression` requires a non-zero
   `NpcEntityId`; proximity to the master is checked by the Application.
 
@@ -547,6 +550,39 @@ server steps it per player in `FieldSkills.StepEffects` and resets it on death. 
 | Stamina, walking | 0.6 x standing |
 | Stamina, running | `-((1000 + carried) / max(1, MaxWeight + Str/2 + 500) + 0.4)` (integer division) |
 | Stamina, acting | 0 (attacking, casting, flinching, eating) |
+
+## Events and rewards
+
+`Events/`: the window "Eventos & Recompensas". Every rule and table is here; the world only feeds it the date and the
+counts ([application.md](application.md#events-and-rewards)), the client only draws it.
+
+- `RewardDate`: a moment of the server's local calendar as `{Day (DateOnly.DayNumber), SecondOfDay}`; `WeekStart` is the
+  Monday of its week (day number 0 is a Monday). A day starts at 00:00 and a week on Monday 00:00 server time.
+- `RewardEventBook` (`PlayerCharacter.Events`, copied with the character): `CountLogin` counts a day the character
+  entered (or played across midnight) once, days need not follow each other, at most seven; the first counted day
+  starts the welcome campaign, which lasts `RewardEvents.WelcomeCampaignDays` (30) days, after which nothing counts,
+  nothing unclaimed can be claimed and the track is not shown. `Count(goal, amount, date, level)` adds to the weekly
+  and daily goals of that kind from their track's `MinLevel` on, up to the target, and not to a claimed goal; a count
+  or claim dated in a later week or day first starts that period afresh (periods only move forward). `State`: welcome
+  days are ready once reached (the next one `Next`), goals once their count reaches the target at the track's level,
+  level race entries once the level is reached; a claimed entry is `Claimed`. `Revision` moves on every change the
+  window shows except a count below its target; `Observe` moves it when a level target is passed or the day changes.
+- `RewardClaims.Claim` on a candidate: `Check` (`Unknown`, `Expired`, `AlreadyClaimed`, `LevelTooLow`, `NotReady`), the
+  items through `QuestInventory.Create` (codes the catalog lacks are skipped) placed all or none (`NoSpace`,
+  `OverWeight`), the gold within `MoneyLimits.CanCarry` (`GoldLimit`), then the claim; `All` claims every ready entry of
+  the track in order until one does not fit. `Board` builds the window: the tracks shown with their time left
+  (`RewardTrackView.NoDeadline` for the level race), each entry's goal, state, progress, target, items and gold.
+  `RewardEvents.Message` is the line of each status.
+
+The reward tables (`RewardEvents`; item keys checked against the catalog; `RewardItem.ClassCostume` is the class's
+costume, `ManufactureWork.Costume`, Black Gaia or Black Iris armour or robe):
+
+| Track | Min level | Entries |
+| --- | --- | --- |
+| Welcome | 1 | Day 1 Teleport Core BI108 x3; 2 EXPup30% potion (1 day) BI113; 3 Terry (1 day) BI169; 4 Vampiric Cuspid (3 h) BI119 x2; 5 Mana Reduce potion (3 h) BI258 x3; 6 Copper Ore BI111 x3; 7 the class costume |
+| Weekly | 25 | 3000 monster kills: Third Eyes (1 day) BI112 and 100,000 gold; 7 Bellatra entries: BI113 and Rebirth Scroll BI104 x3; 300 items picked up from monsters' drops: BI111 x3 and 50,000 gold |
+| Daily | 20 | 300 monster kills: Medium Life Potion PL102 x20 and 10,000 gold; 10 sheltoms picked up: BI111; 30 potions drunk: Medium Mana Potion PM102 x20 |
+| Level race | 1 | Level 10: BI108 x3, BI104 x3; 25: BI113, 20,000 gold; 40: Aging Stone BI110 x3, 100,000 gold; 55: BI169, 200,000 gold; 70: BI110 x3, 500,000 gold; 80: BI111 x4, 500,000 gold; 90: Super Aging Stone BI161, 1,000,000 gold |
 
 ## Consumers
 

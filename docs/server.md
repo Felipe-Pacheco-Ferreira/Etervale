@@ -37,7 +37,8 @@ layouts live in [protocol.md](protocol.md).
 | `Net/PresenceEncoder.cs` | Turns the receiver's `WorldSnapshot` into presence packets (presence entries, events, drops, owner state, the restart offer); the crowd cap, the movement budget and descriptions. |
 | `Net/SharedPresenceWire.cs` | The entity descriptions of one presence frame, encoded once for every receiver into pooled buffers. |
 | `Net/VisibleSet.cs`, `Net/MotionCandidates.cs` | The receiver's visible crowd (nearest 100 players and up to 256 entities in all, plus essentials, keep band) and its most overdue position updates. |
-| `Net/WireMapping.cs`, `Net/NpcWireMapping.cs`, `Net/QuestWireMapping.cs` | Authoritative views to wire structs (presence entries, descriptions, events, NPC service state, quest messages). |
+| `Net/WireMapping.cs`, `Net/NpcWireMapping.cs`, `Net/QuestWireMapping.cs`, `Net/RewardWireMapping.cs` | Authoritative views to wire structs (presence entries, descriptions, events, NPC service state, quest messages, the events and rewards window). |
+| `Net/ClientSession.Rewards.cs`, `Net/PresenceEncoder.Rewards.cs` | The events and rewards window: requests and claims, and the window each snapshot carries when it changed. |
 | `Net/NetworkLimits.cs` | `Network:*` settings with defaults and validation; IPv4-mapped address normalisation. |
 | `Net/ConnectionGuards.cs` | `PacketRateLimiter`, `TokenBucket`, `ConnectionLimiter`, `LoginThrottle`, `LogSampler`. |
 | `Application/README.md` | Placeholder rule: server-only orchestration goes here; use cases stay in `Shared/PristonTale.Application`. |
@@ -268,6 +269,8 @@ required per opcode; both envelopes reach the same switch.
 | `YahooKey` | inline | `WorldServer.YahooAsync` | None; the cheer arrives as presence. |
 | `MountRequest` | inline | `WorldServer.MountAsync` | None; the mount arrives as the player's `EntityDescription`. |
 | `DismissCrystalPets` | inline | `WorldServer.DismissCrystalPetsAsync` | None; the pets' end arrives as presence. |
+| `EventCalendarRequest` | `SendEventCalendar` (`ClientSession.Calendar.cs`) | `EventCalendarQuery.For` (world and castle, the session's language) | `EventCalendar` with the request's operation id ([application.md](application.md#event-calendar)). |
+| `RewardEventsRequest` | `RewardEventsAsync` (`ClientSession.Rewards.cs`) | `RewardEventAppService.ClaimAsync` (a claim), then `ViewAsync` | `RewardEventsResult` for a claim, then `RewardEvents` (the window, item names in the session's language, `RewardWireMapping`); the encoder also sends `RewardEvents` whenever a snapshot carries a new window ([application.md](application.md#events-and-rewards)). |
 | `LeaveWorld` | inline | `ClosePlayAsync` (leave, save) | `LeaveWorld` with `Saved` true when the character was stored. |
 | a code without a handler | ignored | none | none |
 

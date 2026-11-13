@@ -315,7 +315,7 @@ public sealed partial class RemoteEntityManager
         _entities[spawn.EntityId] = replacement;
     }
 
-    // A player riding its travel mount is drawn this high and standing (MountPresentation); 0 sets it back on its feet.
+    // A player riding its travel mount is drawn seated this high (MountPresentation); 0 sets it back on its feet.
     public void SetRiderLift(ulong entityId, float lift)
     {
         if (_entities.TryGetValue(entityId, out var entity) && entity is RemoteEntity player)

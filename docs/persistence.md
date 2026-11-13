@@ -31,7 +31,7 @@ FluentMigrator migrations, the schema, and the SQLite and PostgreSQL providers. 
 | `.../Security/PasswordHasher.cs` | PBKDF2-SHA256 hashes: `pbkdf2-sha256$<iterations>$<salt b64>$<key b64>` |
 | `Persistence/PristonTale.Persistence/Repositories/` | `Dapper*Repository` implementations shared by both providers |
 | `Persistence/PristonTale.Persistence/PersistenceServiceCollectionExtensions.cs` | `AddPristonRepositories`: the repositories and the migration runner both providers register, given the provider's migration processor |
-| `Persistence/PristonTale.Persistence/Migrations/` | `M013Baseline`, `M014PortraitData`, `M015NpcServices`, `M016QuestData`, `M019GameMasters`, `M021MonsterSkillData`, `M022MonsterExperience64`, `M023ItemFootprints`, `M024WorldDataFields`, `M026Contacts`, `M027CatalogIdentities`, `M028WorldCatalog`, `M029NpcPlacementFacts`, `M030CharacterSaveSequence`, `M031GameLogs`, `M032StarterGifts`, `M033HelpPet`, `M034StarterOffHand`, `M035FieldOrder`, `M036CatalogPortuguese`, `M037Clans`, `M038Castle`, `M039CastleTreasury`, `M040Bellatra`, `FluentMigratorDatabaseMigrator` |
+| `Persistence/PristonTale.Persistence/Migrations/` | `M013Baseline`, `M014PortraitData`, `M015NpcServices`, `M016QuestData`, `M019GameMasters`, `M021MonsterSkillData`, `M022MonsterExperience64`, `M023ItemFootprints`, `M024WorldDataFields`, `M026Contacts`, `M027CatalogIdentities`, `M028WorldCatalog`, `M029NpcPlacementFacts`, `M030CharacterSaveSequence`, `M031GameLogs`, `M032StarterGifts`, `M033HelpPet`, `M034StarterOffHand`, `M035FieldOrder`, `M036CatalogPortuguese`, `M037Clans`, `M038Castle`, `M039CastleTreasury`, `M040Bellatra`, `M041RewardEvents`, `FluentMigratorDatabaseMigrator` |
 | `Persistence/PristonTale.Persistence.Sqlite/` | `AddPristonSqlite`, connection factory (WAL), Dapper type handlers |
 | `Persistence/PristonTale.Persistence.Postgres/` | `AddPristonPostgres`, `NpgsqlDataSource` factory, `jsonb` handler for `JsonText` |
 | `docker-compose.yml` | Local PostgreSQL 17 for development |
@@ -117,8 +117,8 @@ and its account warehouse are always written together, so a gold or item move be
 
 ## Owned-state JSON
 
-`CharacterStateCodec`, `SavedPremium`, `QuestStateCodec` and `WarehouseStateCodec` own the JSON stored in
-`characters.inventory`, `equipment`, `skills`, `premium`, `quests` and `warehouses.items`.
+`CharacterStateCodec`, `SavedPremium`, `QuestStateCodec`, `RewardEventStateCodec` and `WarehouseStateCodec` own the
+JSON stored in `characters.inventory`, `equipment`, `skills`, `premium`, `quests`, `events` and `warehouses.items`.
 
 | Column | Shape | Limits on restore |
 | --- | --- | --- |
@@ -128,6 +128,7 @@ and its account warehouse are always written together, so a gold or item move be
 | `warehouses.items` | `SavedItems` v1 with anchors in the warehouse grid | `WarehouseStorage.MaxItems` |
 | `premium` | `SavedPremium` v1 (`PremiumStateCodec.cs`): premium timers `(Kind, Value, DurationSeconds, ExpiresAtSeconds)` with Unix-second expiry, item-use `Operations`, `GravityScrolls`, head mode (1-2 big head, 3 soccer ball) and expiry, `SavedAtSeconds` (the last tick's clock); `{}` is empty | 17 timers; expired timers and heads are dropped on restore; boosters and skill delay move their expiry by the time since `SavedAtSeconds` |
 | `quests` | `SavedQuests` v1: the running quest (`SavedQuest`, with an elite quest's `Flags`), level, beginner and elite (`EliteLog`) logs, finished codes, `FinishedCount`, the redistribution offer, `Revision` and quest `Operations` (see [quests.md](quests.md)); `{}` reads as an idle journal | 32 finished codes, 64 operations, defined quest codes and timer kinds, non-negative counts |
+| `events` | `SavedRewardEvents` v1 (`RewardEventStateCodec.cs`): the welcome campaign's first and last counted day, login days and claimed days, the week (its Monday) and day the weekly and daily progress belong to with their counts and claims, the level race's claims; days are `DateOnly` day numbers of the server's local calendar, claims a bit an entry (see [application.md](application.md#events-and-rewards)); `{}` reads as a book that counted nothing | at most 7 login days, a Monday week start, counts and claims only for the entries the tables have, non-negative counts |
 
 - Restore is strict: unknown JSON members are rejected, constructor parameters without defaults are required, max
   depth 16, at most `CharacterStateCodec.MaxStateLength` (4 MiB) characters, `Version` must be 1, instance ids must be unique and non-empty, the item code must
@@ -178,14 +179,15 @@ FluentMigrator scans `PristonTale.Persistence` for `[Migration(n)]` classes. Ver
 | 38 | `M038Castle` | `castle` (one row: owner clan, tax and next tax, tower elements as digits, mercenaries of three kinds, clan skill chosen and in force, fountain potions, treasury) |
 | 39 | `M039CastleTreasury` | `castle_treasury`, the clan money ledger (each movement: clan, kind `TreasuryKind` 0 Bellatra income / 1 castle tax / 2 castle withdrawal / 3 Bellatra redemption, amount, receiving character, time; indexed by clan) |
 | 40 | `M040Bellatra` | `bellatra_state` (one row: the day as yyyymmdd and its operating clan), `bellatra_points` (a day's points per clan, keyed by day and clan), `bellatra_balances` (each clan's Bellatra income) |
+| 41 | `M041RewardEvents` | `characters.events` (JSON, `jsonb` on PostgreSQL, default `{}`): the character's events and rewards; characters stored before start the welcome campaign on their next entry |
 
 Upgrade path: databases from the earlier migration set at version 12 upgrade in place. Databases at
 versions 1-11 make `M013Baseline` throw; bring them to 12 with the previous release or back up and recreate them.
 After upgrading, run `import` again so existing rows receive the new columns (display names, services, portrait data).
 
-The PostgreSQL `jsonb` columns are exactly `M013Baseline.JsonColumns`: `characters.inventory`, `equipment`, `skills`,
-`quests`, `premium`, `warehouses.items` (`derived_stats` and `mailboxes.items` until M028, `npcs.dialog` until M027). The `*_json`
-columns of the `world_*` tables are plain text on both providers.
+The PostgreSQL `jsonb` columns are `M013Baseline.JsonColumns` and M041's: `characters.inventory`, `equipment`,
+`skills`, `quests`, `premium`, `events` (M041), `warehouses.items` (`derived_stats` and `mailboxes.items` until M028,
+`npcs.dialog` until M027). The `*_json` columns of the `world_*` tables are plain text on both providers.
 
 ## Schema
 
@@ -203,8 +205,7 @@ columns of the `world_*` tables are plain text on both providers.
 
 | Table | Columns and constraints |
 | --- | --- |
-| `characters` | `id` int64 identity PK; `account_id` FK `accounts`; `name` globally unique; `slot` int16, unique with `account_id`; `job_code` (`PlayerClass`); `level`, `exp` int64 holding the unsigned 64-bit experience's bit pattern (past 2^63 it reads negative in SQL), `money` int64, `brood`; attributes `strength`, `spirit`, `talent`, `agility`, `health`, `stat_points`; vitals `life`, `mana`, `stamina`; `field_id`, `pos_x`, `pos_z` float; `model_name`, `model_name2` (head model for the chosen face); `face_index`, `tier` int16, `hair_index`, `size_level`; JSON `inventory`, `equipment`, `skills`, `quests`, `premium`; `save_seq` int64 (M030); `starter_gifts_received` int (M032; 0 for a new character, `StarterGifts.Count` once served); `help_pet` int16 (0 until
-drawn, 1 to 4) and `help_pet_hidden` bool (M033); `created_at`, `last_played_at` nullable. Index `characters_account_id_idx` |
+| `characters` | `id` int64 identity PK; `account_id` FK `accounts`; `name` globally unique; `slot` int16, unique with `account_id`; `job_code` (`PlayerClass`); `level`, `exp` int64 holding the unsigned 64-bit experience's bit pattern (past 2^63 it reads negative in SQL), `money` int64, `brood`; attributes `strength`, `spirit`, `talent`, `agility`, `health`, `stat_points`; vitals `life`, `mana`, `stamina`; `field_id`, `pos_x`, `pos_z` float; `model_name`, `model_name2` (head model for the chosen face); `face_index`, `tier` int16, `hair_index`, `size_level`; JSON `inventory`, `equipment`, `skills`, `quests`, `premium`; `save_seq` int64 (M030); `starter_gifts_received` int (M032; 0 for a new character, `StarterGifts.Count` once served); `help_pet` int16 (0 until drawn, 1 to 4) and `help_pet_hidden` bool (M033); JSON `events` (M041); `created_at`, `last_played_at` nullable. Index `characters_account_id_idx` |
 | `character_contacts` | `id` int64 identity PK (the order added); `character_id` FK `characters`; `list` int16 (`ContactList`); `name`; unique (`character_id`, `list`, `name`) (M026) |
 
 ### Inventory and warehouse

@@ -49,19 +49,26 @@ internal sealed class CharacterSelectView
     private readonly CharacterSelectCamera _camera;
 
     private readonly float _buttonScale;
+    private readonly float _uiScale;
+    private Viewport _screen;
 
-    public CharacterSelectView(SpriteBatch spriteBatch, SpriteFont font, CharSelectAssets assets, CharacterSelectCamera camera, float buttonScale)
+    // uiScale: the 2D layer is laid out on a screen this many times smaller and drawn this many times larger.
+    public CharacterSelectView(SpriteBatch spriteBatch, SpriteFont font, CharSelectAssets assets, CharacterSelectCamera camera, float buttonScale,
+        float uiScale)
     {
         _sb = spriteBatch;
         _font = font;
         _assets = assets;
         _camera = camera;
         _buttonScale = buttonScale;
+        _uiScale = uiScale;
     }
 
-    public void Draw(Viewport viewport, CharSelectViewModel m)
+    public void Draw(Viewport screen, CharSelectViewModel m)
     {
-        _sb.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.LinearClamp);
+        _screen = screen;
+        var viewport = new Viewport(0, 0, (int)(screen.Width / _uiScale), (int)(screen.Height / _uiScale));
+        _sb.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.LinearClamp, transformMatrix: Matrix.CreateScale(_uiScale));
 
         DrawFrame(viewport);
         DrawTitle(viewport, m.StateIndex);
@@ -212,7 +219,7 @@ internal sealed class CharacterSelectView
             var job = m.Jobs[index];
             if (_assets.TryClassLabel(job.Class, job.Hovered || job.Selected, out var label) && label != null)
             {
-                var head = viewport.Project(job.HeadWorld, _camera.Projection, _camera.View, Matrix.Identity);
+                var head = _screen.Project(job.HeadWorld, _camera.Projection, _camera.View, Matrix.Identity) / _uiScale;
                 _sb.Draw(label, new Vector2(head.X - 64f, head.Y - 30f), Color.White);
             }
 
@@ -300,9 +307,10 @@ internal sealed class CharacterSelectView
 
     private void DrawInfoPanel(Viewport viewport, CharSelectInfo info)
     {
-        var scale = _buttonScale > 1f ? MathF.Min(1.6f, viewport.Width / 950f) : 1f;
+        // A phone enlarges the whole layer (uiScale) and the card with it; only a phone drawn at its own size enlarges the card.
+        var scale = _buttonScale > 1f && _uiScale <= 1f ? MathF.Min(1.6f, viewport.Width / 950f) : 1f;
         var boxX = viewport.Width / 2 - (int)(128 * scale);
-        var boxY = _buttonScale > 1f ? (int)(viewport.Height * .68f) : viewport.Height / 2 + viewport.Height / 5;
+        var boxY = scale > 1f ? (int)(viewport.Height * .68f) : viewport.Height / 2 + viewport.Height / 5;
         Rectangle PanelRect(int x, int y, int width, int height) =>
             new(boxX + (int)(x * scale), boxY + (int)(y * scale), (int)(width * scale), (int)(height * scale));
         var rect = PanelRect(0, 0, 256, 128);

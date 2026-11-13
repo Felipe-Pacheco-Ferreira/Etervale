@@ -265,6 +265,9 @@ public readonly struct WorldSnapshot
     // The receiver's Bellatra board while it is in the arena (null elsewhere); a new one each time it changes.
     public BellatraView? Bellatra { get; init; }
 
+    // The receiver's events and rewards window; the same instance until it changes (WorldServer.RewardsOf).
+    public Simulation.Events.RewardBoard? Rewards { get; init; }
+
     // The receiver's trade window (null when it trades with nobody) and the request to trade it has not answered.
     public TradeView? Trade { get; init; }
     public TradeRequest? TradeRequest { get; init; }
@@ -304,6 +307,7 @@ public readonly struct WorldSnapshot
         Trade = Trade,
         TradeRequest = TradeRequest,
         Bellatra = Bellatra,
+        Rewards = Rewards,
         Pinned = Pinned,
         PinKey = PinKey
     };
@@ -322,6 +326,7 @@ public readonly struct WorldSnapshot
         PartyRequest = PartyRequest,
         Trade = Trade,
         TradeRequest = TradeRequest,
-        Bellatra = Bellatra
+        Bellatra = Bellatra,
+        Rewards = Rewards
     };
 }

@@ -51,6 +51,7 @@ public sealed class GameServerConnection : IGameBackend
     private readonly PendingReplies<ulong, NpcInteraction> _npcDialogs = new();
     private readonly PendingReplies<Guid, NpcServiceReply> _services = new();
     private readonly PendingReplies<Guid, QuestOutcome> _quests = new();
+    private readonly PendingReplies<Guid, EventCalendarPacket> _calendars = new();
     // The state messages of a service request, collected until its result: they precede it on the same connection.
     private readonly ConcurrentDictionary<Guid, NpcServiceReply> _serviceParts = new();
     private readonly Channel<PresenceUpdate> _presenceUpdates = Channel.CreateBounded<PresenceUpdate>(new BoundedChannelOptions(4096)
@@ -288,6 +289,36 @@ public sealed class GameServerConnection : IGameBackend
         return new RestartOutcome((RestartStatus)result.Status, (RestartChoice)result.Choice, result.ExperienceLost, result.GoldLost, result.ScrollUsed);
     }
 
+    // The event calendar, its occurrences back in UTC (an always-running event has no start or end).
+    internal async Task<Simulation.World.Calendar.EventCalendar> RequestEventCalendarAsync(CancellationToken ct)
+    {
+        ThrowIfDisconnected();
+        var packet = new EventCalendarRequestPacket(Guid.NewGuid());
+        var reply = await _calendars.RequestAsync(packet.OperationId, () => Send(packet), ct);
+        return ToCalendar(reply);
+    }
+
+    internal static Simulation.World.Calendar.EventCalendar ToCalendar(EventCalendarPacket reply)
+    {
+        var bosses = new Simulation.World.Calendar.CalendarBoss[reply.Bosses.Count];
+        for (var index = 0; index < bosses.Length; index++)
+        {
+            bosses[index] = new Simulation.World.Calendar.CalendarBoss(reply.Bosses[index].Name, reply.Bosses[index].FieldName);
+        }
+
+        var occurrences = new Simulation.World.Calendar.CalendarOccurrence[reply.Occurrences.Count];
+        for (var index = 0; index < occurrences.Length; index++)
+        {
+            var wire = reply.Occurrences[index];
+            var flags = (Simulation.World.Calendar.CalendarOccurrenceFlags)wire.Flags;
+            var always = (flags & Simulation.World.Calendar.CalendarOccurrenceFlags.Always) != 0;
+            occurrences[index] = new Simulation.World.Calendar.CalendarOccurrence((Simulation.World.Calendar.CalendarEventKind)wire.Kind,
+                always ? default : wire.Start, always ? default : wire.End, flags, wire.Bosses);
+        }
+
+        return new Simulation.World.Calendar.EventCalendar(bosses, occurrences, reply.ExperiencePercent, (Simulation.World.Loot.DropEvents)reply.Drops);
+    }
+
     // A trip through the wing warp gates; the new place arrives as a forced FieldWarp.
     internal async Task<WingGateOutcome> TravelWingGateAsync(int destination, CancellationToken ct)
     {
@@ -464,6 +495,7 @@ public sealed class GameServerConnection : IGameBackend
             _npcDialogs.FailAll(error);
             _services.FailAll(error);
             _quests.FailAll(error);
+            _calendars.FailAll(error);
             PersonalShops.FailAll(error);
 
             _presenceUpdates.Writer.TryComplete(error);
@@ -586,6 +618,12 @@ public sealed class GameServerConnection : IGameBackend
             case EtervaleOpcodes.NpcServiceResult:
                 OnServiceMessage(code, packet);
                 break;
+            case EtervaleOpcodes.EventCalendar:
+            {
+                var calendar = EventCalendarPacket.Read(packet);
+                _calendars.Complete(calendar.OperationId, calendar);
+                break;
+            }
             case EtervaleOpcodes.QuestResult:
             {
                 var result = QuestResultPacket.Read(packet);

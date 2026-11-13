@@ -248,7 +248,7 @@ public sealed partial class GameScene
     {
         if (!_playerBodyActor.IsValid)
             return;
-        PlayerActors.SetWorld(_actorScene, PlayerWorld());
+        PlayerActors.SetWorld(_actorScene, PlayerWorld(), _riderLift > 0f);
     }
 
     private Matrix PlayerWorld()

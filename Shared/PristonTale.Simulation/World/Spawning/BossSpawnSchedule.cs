@@ -2,8 +2,13 @@ using PristonTale.Simulation.World.Ai;
 
 namespace PristonTale.Simulation.World.Spawning;
 
+// The field bosses' call: once each server-local hour, at the day's minute, drawn each day from FirstMinute to
+// LastMinute.
 public sealed class BossSpawnSchedule
 {
+    public const int FirstMinute = 1;
+    public const int LastMinute = 45;
+
     private readonly ISimRng _rng;
     private DateOnly _date;
     private DateTime _lastSlot = DateTime.MinValue;
@@ -15,7 +20,7 @@ public sealed class BossSpawnSchedule
     {
         _rng = rng ?? throw new ArgumentNullException(nameof(rng));
         _date = DateOnly.FromDateTime(localNow.DateTime);
-        Minute = _rng.NextInclusive(1, 45);
+        Minute = _rng.NextInclusive(FirstMinute, LastMinute);
     }
 
     public bool TryBeginPass(DateTimeOffset localNow, TimeSpan elapsed)
@@ -29,7 +34,7 @@ public sealed class BossSpawnSchedule
         if (date > _date)
         {
             _date = date;
-            Minute = _rng.NextInclusive(1, 45);
+            Minute = _rng.NextInclusive(FirstMinute, LastMinute);
         }
 
         var slot = new DateTime(date.Year, date.Month, date.Day, localNow.Hour, Minute, 0);

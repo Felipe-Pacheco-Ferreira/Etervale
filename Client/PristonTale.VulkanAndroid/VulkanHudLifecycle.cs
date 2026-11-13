@@ -18,7 +18,8 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
     [
         (PristonTale.Simulation.World.FieldCodes.Ricarten, "ricarten", "Ricarten"),
         (PristonTale.Simulation.World.FieldCodes.Pillai, "pillai", "Pillai"),
-        (PristonTale.Simulation.World.FieldCodes.ForeverFall1, "forever-fall-01", "Forever Fall 1")
+        (PristonTale.Simulation.World.FieldCodes.ForeverFall1, "forever-fall-01", "Forever Fall 1"),
+        (PristonTale.Simulation.World.Fields.Forest1Field.Definition.FieldCode, "forest-01", "Floresta 1")
     ];
 
     public void OnActivityCreated(Activity activity, Bundle state)
@@ -92,11 +93,12 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
         var player = new VulkanPlayerFrame(activity, session.Character.Name, screenHeight);
         overlay.AddView(player, Pixels(player.FrameWidth, player.FrameHeight, GravityFlags.Top | GravityFlags.Left));
         player.Clickable = true;
+        var status = new VulkanStatusPanel(activity, overlay, session);
         var statusSeen = false;
         player.Click += (_, _) =>
         {
             statusSeen = true;
-            VulkanHudWindows.Status(activity, overlay, session);
+            status.Open();
         };
         var experience = new VulkanExperienceBar(activity);
         overlay.AddView(experience, Place(-1, 18, GravityFlags.Bottom, 0));
@@ -131,6 +133,7 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
         overlay.AddView(mapBox, Place(124, 124, GravityFlags.Top | GravityFlags.Right));
         // A minimap for each field one is packaged for, shown while the player is in it.
         var maps = new Dictionary<int, MobileMinimap>();
+        var journeyRoute = PristonTale.Simulation.Quests.AdventurerJourneyRoute.For(session.Character.Class);
         var worldMap = new VulkanWorldMap(activity, overlay, session);
         foreach (var (code, name, title) in MinimapFields)
         {
@@ -154,6 +157,9 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
         journalOrb.Click += (_, _) => OpenJournal();
         var bagOrb = MenuOrb(HudGlyph.Bag, "Bolsa");
         bagOrb.Click += (_, _) => inventory.Toggle();
+        var rewards = new VulkanRewardsPanel(activity, overlay, session, icons);
+        var eventsOrb = MenuOrb(HudGlyph.Gift, "Eventos");
+        eventsOrb.Click += (_, _) => rewards.Open();
         VulkanActionOrb MenuOrb(HudGlyph glyph, string caption)
         {
             var orb = new VulkanActionOrb(activity, glyph) { ContentDescription = caption };
@@ -196,12 +202,18 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
         var firstRow = AddMenuRow();
         AddMenuAction(firstRow, "Inventário", HudGlyph.Bag, inventory.Toggle);
         AddMenuAction(firstRow, "Missões", HudGlyph.Journal, OpenJournal);
+        AddMenuAction(firstRow, "Eventos", HudGlyph.Gift, rewards.Open);
         var secondRow = AddMenuRow();
+        // The skills window needs the action wheel, made further down.
+        VulkanSkillsPanel skills = null;
+        AddMenuAction(secondRow, "Habilidades", HudGlyph.Skill, () => skills.Open());
         AddMenuAction(secondRow, "Movimento", HudGlyph.Run, session.ToggleRun);
         var thirdRow = AddMenuRow();
         AddMenuAction(thirdRow, "Gráficos", HudGlyph.Menu, () => VulkanHudWindows.Graphics(activity, overlay, session), stacked: false);
         AddMenuAction(thirdRow, "Editar HUD", HudGlyph.Menu, () => editor.Open(), stacked: false);
         AddMenuAction(secondRow, "Rever tutorial", HudGlyph.Journal, editor.ReplayTutorials);
+        var calendar = new VulkanEventCalendar(activity, overlay, session);
+        AddMenuAction(AddMenuRow(), "Calendário", HudGlyph.Calendar, calendar.Open, stacked: false);
         var footer = AddMenuRow();
         AddMenuAction(footer, "Sair do jogo", HudGlyph.Exit, activity.FinishAffinity, stacked: false);
 
@@ -265,8 +277,14 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
         var questDialog = new MobileQuestDialog(activity, session.Play, messages, Present);
         var questLifetime = new CancellationTokenSource();
         overlay.ViewDetachedFromWindow += (_, _) => questLifetime.Cancel();
-        var wheel = new VulkanActionWheel(activity, session, icons, messages, screenHeight, Dp(8), Dp(20), questLifetime.Token);
+        var wheelRight = Dp(8);
+        var wheel = new VulkanActionWheel(activity, session, icons, messages, screenHeight, wheelRight, Dp(20), questLifetime.Token);
         overlay.AddView(wheel.View, new FrameLayout.LayoutParams(-1, -1));
+        skills = new VulkanSkillsPanel(activity, overlay, session, icons, wheel);
+        // NPC dialogs sit between the menu buttons and the wheel, at their default places.
+        var lastOrb = (FrameLayout.LayoutParams)menuOrbs[^1].LayoutParameters!;
+        npcPanel.LeftClear = lastOrb.LeftMargin + lastOrb.Width;
+        npcPanel.RightClear = wheelRight + wheel.BoxPixelsWide;
         var feed = new VulkanCombatFeed(activity, screenHeight);
         var feedLayout = Pixels((int)(screenHeight * .6f), (int)(screenHeight * .3f), GravityFlags.Bottom | GravityFlags.Right);
         feedLayout.BottomMargin = wheel.BoxPixelsHigh + Dp(20);
@@ -285,6 +303,7 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
         editor.Register("menu", "Menu", mainMenu);
         editor.Register("journal", "Missões", journalOrb);
         editor.Register("bag", "Bolsa", bagOrb);
+        editor.Register("events", "Eventos", eventsOrb);
         editor.Register("minimap", "Minimapa", mapBox);
         editor.Register("quest", "Missão", tracker.View);
         editor.Register("attack", "Atacar", wheel.Attack);
@@ -301,7 +320,7 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
         editor.Register("feed", "Abates", feed);
         editor.Register("experience", "Experiência", experience);
         var tutorial = new VulkanTutorial(activity, overlay, editor,
-            VulkanTutorial.Lessons(session, player, tracker.View, mainMenu, bagOrb, wheel, tracker, inventory, () => statusSeen));
+            VulkanTutorial.Lessons(session, player, tracker.View, mainMenu, bagOrb, wheel, tracker, inventory, status, () => statusSeen));
 
         var readingNpc = false;
         async Task OpenNpcAsync(ulong id)
@@ -314,10 +333,22 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
                 {
                     npcPanel.EntityId = id;
                     npcPanel.NpcName = interaction.Name;
+                    var master = interaction.Offers(PristonTale.Simulation.World.Npcs.NpcServiceKind.SkillMaster);
+                    if (master)
+                    {
+                        skills.Master = id;
+                    }
+
                     var handled = await questDialog.TalkAsync(id, interaction.Name, questLifetime.Token);
                     if (!handled && interaction.Dialog.Count > 0)
                     {
                         await npcPanel.ShowAsync(interaction.Name, string.Join("\n\n", interaction.Dialog), ["OK"], questLifetime.Token);
+                    }
+
+                    // A skill master opens the skills window once the talk ends, unless the automatic quest is playing.
+                    if (master && session.Navigator is not { Enabled: true })
+                    {
+                        skills.Open();
                     }
                 }
             }
@@ -338,6 +369,7 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
 
         PristonTale.Simulation.Quests.QuestView previousQuest = null;
         PristonTale.Simulation.Characters.OwnerState previousOwner = null;
+        PristonTale.Client.Net.Presence.RewardEventsInfo previousRewards = null;
         TargetView lastTarget = null;
         void Refresh()
         {
@@ -354,7 +386,21 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
                 feed.Observe(owner);
                 wheel.Update(owner);
                 inventory.Update(owner);
+                status.Update(owner);
+                skills.Update(owner);
                 previousOwner = owner;
+            }
+
+            if (session.Rewards is { } rewardWindow && !ReferenceEquals(previousRewards, rewardWindow))
+            {
+                previousRewards = rewardWindow;
+                rewards.Update(rewardWindow);
+                eventsOrb.SetBadge(rewardWindow.Ready);
+            }
+
+            while (session.TryReadRewardResult(out var rewardResult))
+            {
+                rewards.Result(rewardResult);
             }
 
             if (session.Quest is { } quest && !ReferenceEquals(previousQuest, quest))
@@ -381,6 +427,7 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
             if (session.MapPose is { } pose)
             {
                 var marks = session.Navigator?.Marks;
+                var hunt = VulkanWorldMap.HuntAreaIn(pose.FieldId, journeyRoute, session.Quest);
                 foreach (var (code, fieldMap) in maps)
                 {
                     var here = code == pose.FieldId;
@@ -389,6 +436,7 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
                     {
                         fieldMap.UpdatePosition(pose.Position, pose.Facing);
                         fieldMap.SetRoute(marks is { } shown && shown.FieldCode == code ? shown.Points : []);
+                        fieldMap.SetHuntArea(hunt is { } area ? new System.Numerics.Vector2(area.X, area.Z) : default, hunt?.Radius ?? 0f);
                     }
                 }
             }

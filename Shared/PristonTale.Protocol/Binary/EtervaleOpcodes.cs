@@ -80,6 +80,12 @@ public static class EtervaleOpcodes
     public const uint BellatraBoard = 0x45541303;
     public const uint BellatraResultRequest = 0x45541304;
     public const uint BellatraResult = 0x45541305;
+    public const uint EventCalendarRequest = 0x45541A00;
+    public const uint EventCalendar = 0x45541A01;
+
+    public const uint RewardEventsRequest = 0x45541400;
+    public const uint RewardEvents = 0x45541401;
+    public const uint RewardEventsResult = 0x45541402;
 
     public const uint PresenceEntries = 0x45540900;
     public const uint DescribeEntity = 0x45540901;

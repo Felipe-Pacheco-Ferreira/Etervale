@@ -117,8 +117,13 @@ public static class MonsterCrystals
 
     public static int PetBonusLife(int ownerLevel) => ownerLevel is >= 1 and <= 99 ? ownerLevel * 3 : 0;
 
-    // The crystal event runs from 12:00 to 23:59 server time (mode 1) or all day (mode 2).
-    public static bool EventActive(int mode, int hour) => mode == 2 || mode == 1 && hour >= 12;
+    // The crystal event's modes (the events.crystal setting, 0 off): from EventStartHour to the day's end, server time,
+    // or all day.
+    public const int EventAfternoons = 1;
+    public const int EventAllDay = 2;
+    public const int EventStartHour = 12;
+
+    public static bool EventActive(int mode, int hour) => mode == EventAllDay || mode == EventAfternoons && hour >= EventStartHour;
 
     private static Dictionary<string, MonsterCrystalDefinition> Build()
     {

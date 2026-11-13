@@ -44,12 +44,28 @@ public static class BellatraRules
     public const int PulseMs = 2000;
     public const int BannerMs = 8000;
 
+    // In BellatraMode.Hours, the server-local hours Bellatra is open: each window from its first hour up to its last.
+    public static readonly ImmutableArray<(int From, int To)> OpenWindows = [(0, 6), (12, 18)];
+
     public static bool IsOpen(BellatraMode mode, int localHour) => mode switch
     {
         BellatraMode.Always => true,
-        BellatraMode.Hours => localHour is >= 0 and < 6 or >= 12 and < 18,
+        BellatraMode.Hours => InOpenWindow(localHour),
         _ => false
     };
+
+    private static bool InOpenWindow(int localHour)
+    {
+        foreach (var (from, to) in OpenWindows)
+        {
+            if (localHour >= from && localHour < to)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     public static bool SellsTickets(int gameHour) => gameHour is TicketHour or TicketHour + 1;
 

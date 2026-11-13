@@ -37,6 +37,10 @@ using PristonTale.Simulation.World.Fields;
 internal sealed class RicartenProbe : Game
 {
     private const string Tag = "EtervaleVulkanProbe";
+    // The character screens' 2D layer is laid out on a screen this tall and enlarged to the phone's (CharacterSelectScreen
+    // .UiScale); their buttons grow this much more again, for a finger.
+    private const float SelectionUiHeight = 620f;
+    private const float SelectionButtonScale = 1.3f;
     private readonly GraphicsDeviceManager graphics;
     private readonly TouchOrbit orbit = new();
     private GameScene scene;
@@ -185,7 +189,9 @@ internal sealed class RicartenProbe : Game
         selection = new CharacterSelectScreen(screen)
         {
             PointerInput = ReadWorldPointer,
-            ButtonScale = 1.8f,
+            ButtonScale = SelectionButtonScale,
+            UiScale = MathF.Max(1f, GraphicsDevice.Viewport.Height / SelectionUiHeight),
+            TouchKeyboard = true,
             PickScale = 2.5f,
             CameraDistanceScale = .82f,
             WorldEntered = (character, entered) =>
@@ -309,7 +315,7 @@ internal sealed class RicartenProbe : Game
             selection.Update(gameTime);
             if (session is null)
             {
-                UpdateKeyboard(selection.IsNameInputActive);
+                UpdateKeyboard(selection.IsNameInputActive, selection.NameFieldTapped);
                 return;
             }
 
@@ -460,6 +466,8 @@ internal sealed class RicartenProbe : Game
         nameSprites.Update();
         namePainter.Begin(layout);
         namePlates.DrawNamePlates(namePainter, layout, overhead, scene.HoveredTargetId, scene.TracedTargetId, classic: true);
+        var attacked = scene.AttackTargetId != 0 ? scene.AttackTargetId : session.AttackTarget;
+        namePlates.DrawTargetMarker(namePainter, layout, overhead, attacked, Environment.TickCount64, classic: true);
         chat.Bubbles.Draw(namePainter, layout, Environment.TickCount64, overhead, speakerColor, scene.SelectedTargetId);
         namePainter.End();
         var viewHeight = viewport.Height;
