@@ -51,9 +51,14 @@ internal static class QuestTests
             var levelSpan = Simulation.Progression.ExperienceTable.ForLevel(2) - Simulation.Progression.ExperienceTable.ForLevel(1);
             var welcome = Expect(player, guide, QuestAction.Proceed, code, 0, "starter failed");
             Assert.True(welcome.Experience == levelSpan * 15 / 100, "welcome XP differs");
+            var kit = player.Inventory.Items().Where(item => item.Definition.EquipSlot is EquipmentSlot.Weapon or EquipmentSlot.Armor).ToArray();
+            Assert.True(kit.Length == 2 && player.GetEquipped(EquipmentSlot.Weapon) is null && player.GetEquipped(EquipmentSlot.Armor) is null,
+                "the guide did not hand over the weapon and armour into the bag");
             Assert.True(Talk(player, guide).Prompt is { Followup: QuestFollowup.Close }, "preparation was skipped");
-            player.Equip(EquipmentSlot.Weapon, new ItemInstance(new ItemDefinition(ItemCodes.Parse("WA101"), "Training weapon", ItemKind.Axe, EquipmentSlot.Weapon)));
-            var potion = player.Inventory.Occupied().Single().Item;
+            var weapon = kit.Single(item => item.Definition.EquipSlot == EquipmentSlot.Weapon);
+            Assert.True(player.TryEquipFromInventory(player.Inventory.Occupied().Single(entry => entry.Item == weapon).Anchor, EquipmentSlot.Weapon),
+                "the kit's weapon could not be equipped");
+            var potion = player.Inventory.Items().Single(item => item.Definition.Kind == ItemKind.Potion);
             Assert.True(potion.Definition.Code == ItemCodes.Parse("PL101") && player.TryPutOnBelt(potion.InstanceId, 0, 1), "tutorial potion could not be belted");
             var preparation = Expect(player, guide, QuestAction.Proceed, code, 1, "hunt did not start");
             Assert.True(preparation.Experience == levelSpan * 30 / 100 && player.Money == 500

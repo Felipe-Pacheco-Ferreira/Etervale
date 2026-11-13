@@ -664,6 +664,11 @@ static MGG_Buffer* MGVK_Buffer_Create(MGG_GraphicsDevice* device, MGBufferType t
 static void MGVK_DestroyPipelines(MGG_GraphicsDevice* device, std::function<bool(const MGVK_PipelineState&)> compare);
 static void MGVK_DestroyFrameResources(MGG_GraphicsDevice* device, FrameCounter currentFrame, mgbyte free_all);
 static void MGVK_UpdateRenderPass(MGG_GraphicsDevice* device, FrameCounter currentFrame, VkCommandBuffer commandBuffer);
+#if defined(__ANDROID__)
+// Etervale fork (issue 020): the graphics device, for MGVK_AndroidSurfaceReady.
+static MGG_GraphicsDevice* s_androidDevice = nullptr;
+static void* MGVK_AndroidWindowOf(SDL_Window* window);
+#endif
 static VkCommandBuffer MGVK_BeginNewCommandBuffer(MGG_GraphicsDevice* device, VkCommandPool pool = VK_NULL_HANDLE);
 static void MGVK_ExecuteAndFreeCommandBuffer(MGG_GraphicsDevice* device, VkCommandBuffer commandBuffer, VkCommandPool pool = VK_NULL_HANDLE);
 static void MGVK_ProcessDescriptorCaches(MGG_GraphicsDevice* device, FrameCounter currentFrame);
@@ -1507,6 +1512,9 @@ MGG_GraphicsDevice* MGG_GraphicsDevice_Create(MGG_GraphicsSystem* system, MGG_Gr
 	assert(adapter != nullptr);
 
 	auto device = new MGG_GraphicsDevice();
+#if defined(__ANDROID__)
+	s_androidDevice = device; // Etervale fork: MGVK_AndroidSurfaceReady
+#endif
 	device->renderThread = std::this_thread::get_id(); // Etervale fork: in-frame texture uploads (MGG_Texture_SetData)
 
 	device->instance = system->instance;
@@ -1875,6 +1883,10 @@ static void MGVK_CleanupSwapChain(MGG_GraphicsDevice* device)
 void MGG_GraphicsDevice_Destroy(MGG_GraphicsDevice* device)
 {
 	assert(device != nullptr);
+#if defined(__ANDROID__)
+	if (s_androidDevice == device)
+		s_androidDevice = nullptr;
+#endif
 
 	// Be sure we're done drawing.
 	// Prevents some exceptions while shutting down.
@@ -2008,7 +2020,8 @@ void MGVK_RecreateSwapChain(
 	// Create the surface.
 #if defined(MG_SDL2)
 	auto sdl_window = (SDL_Window*)nativeWindowHandle;
-	if (sdl_window != device->window)
+	// Etervale fork (issue 020): a surface dropped for a new Android window is made again for the same SDL window.
+	if (sdl_window != device->window || device->surface == VK_NULL_HANDLE)
 	{
 		MGVK_CleanupSwapChain(device);
 
@@ -2480,6 +2493,67 @@ mgbyte MGG_GraphicsDevice_ResizeSwapchain(
 
 	return 1;
 }
+
+
+#if defined(__ANDROID__)
+// Etervale fork (issue 020): the ANativeWindow SDL draws into now; null while the activity has no surface.
+static void* MGVK_AndroidWindowOf(SDL_Window* window)
+{
+	SDL_SysWMinfo info;
+	SDL_VERSION(&info.version);
+	if (window == nullptr || !SDL_GetWindowWMInfo(window, &info))
+		return nullptr;
+
+	return info.info.android.window;
+}
+
+// Etervale fork (issue 020): called by the platform before every frame on Android; false skips the frame. Android takes
+// the activity's window away when it goes to the background and gives it a new one when it comes back. Going away, a
+// present finds the swapchain out of date and cannot make a new one, so the frames after it would draw into no target;
+// coming back (stale), the surface, the swapchain and the image the frame begun before the pause acquired belong to the
+// old window, and submitting to them crashed the driver. Without a window nothing is drawn; without a swapchain, or
+// stale, the frame's commands are dropped unsubmitted (it drew nothing yet) and the surface and the swapchain are made
+// again for the window SDL holds now.
+bool MGVK_AndroidSurfaceReady(bool stale)
+{
+	auto device = s_androidDevice;
+	if (device == nullptr || device->window == nullptr)
+		return true;
+
+	if (MGVK_AndroidWindowOf(device->window) == nullptr)
+		return false;
+
+	if (!stale && device->swapchain != VK_NULL_HANDLE)
+		return true;
+
+	vkDeviceWaitIdle(device->device);
+	bool isSwapchainBound = device->targets.targets[0] != nullptr && device->targets.targets[0]->isSwapchain;
+	auto& frame = device->frames[device->frameIndex];
+	if (frame.is_recording)
+	{
+		MGVK_EndRenderPass(device, frame.commandBuffer);
+		VkResult res = vkEndCommandBuffer(frame.commandBuffer);
+		VK_CHECK_RESULT(res);
+		frame.is_recording = false;
+	}
+
+	device->renderTargetDirty = true;
+	device->pipelineStateDirty = true;
+
+	// Without a surface MGVK_RecreateSwapChain makes one for the window.
+	MGVK_CleanupSwapChain(device);
+	if (device->surface != VK_NULL_HANDLE)
+		vkDestroySurfaceKHR(device->instance, device->surface, nullptr);
+	device->surface = VK_NULL_HANDLE;
+	MGVK_RecreateSwapChain(device, device->window, device->swapchainWidth, device->swapchainHeight, device->colorFormat, device->depthFormat,
+		device->multiSampleCount, device->syncInterval);
+	MGVK_PrepareFrame(device);
+	if (isSwapchainBound)
+		MGG_GraphicsDevice_SetRenderTargets(device, nullptr, nullptr, 0);
+
+	return device->swapchain != VK_NULL_HANDLE;
+}
+#endif
 
 
 static void MGVK_ProcessDescriptorCaches(MGG_GraphicsDevice* device, FrameCounter currentFrame)

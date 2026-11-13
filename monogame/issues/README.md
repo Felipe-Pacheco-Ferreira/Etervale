@@ -31,3 +31,4 @@ upstream notes, in `../upstream/`.
 | 017 | [window-maximize](017-window-maximize.md) | runtime, framework |
 | 018 | [window-size-before-swapchain](018-window-size-before-swapchain.md) | framework |
 | 019 | [mono-pan](019-mono-pan.md) | runtime |
+| 020 | [android-surface-after-background](020-android-surface-after-background.md) | runtime |

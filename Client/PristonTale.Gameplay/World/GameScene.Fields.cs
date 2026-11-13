@@ -99,6 +99,7 @@ public sealed partial class GameScene
         _actorScene = new RendererActorScene(_renderer);
         CreateSkillPresentation();
         CreateItemEffects();
+        CreateMount();
         CreateRain();
         var actorScene = _actorScene;
         _playerComposer = new PlayerActorComposer(actorScene, _actorLoader);

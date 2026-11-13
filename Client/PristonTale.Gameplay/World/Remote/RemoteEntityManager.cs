@@ -187,9 +187,10 @@ public sealed partial class RemoteEntityManager
             return;
         }
 
-        // A new sign alone changes no model.
+        // A new sign or mount alone changes no model (MountPresentation draws the mount).
         if (_entities.ContainsKey(spawn.EntityId) && !publish
-            && (spawn.Player is null || (_playerAppearances.TryGetValue(spawn.EntityId, out var known) && known with { ShopSign = spawn.Player.ShopSign } == spawn.Player)))
+            && (spawn.Player is null || (_playerAppearances.TryGetValue(spawn.EntityId, out var known)
+                && known with { ShopSign = spawn.Player.ShopSign, Mounted = spawn.Player.Mounted } == spawn.Player)))
         {
             if (spawn.Player is not null)
             {
@@ -308,9 +309,19 @@ public sealed partial class RemoteEntityManager
             EntityId = spawn.EntityId
         };
         replacement.MotionStarted += OnMotionStarted;
+        replacement.Ride((previous as RemoteEntity)?.Lift ?? 0f);
         replacement.SetRates(spawn.MoveSpeed, spawn.AttackRate);
         replacement.SetTarget(sampleTime, (XnaVector3)spawn.Position, spawn.Facing, spawn.MoveState, spawn.Life);
         _entities[spawn.EntityId] = replacement;
+    }
+
+    // A player riding its travel mount is drawn this high and standing (MountPresentation); 0 sets it back on its feet.
+    public void SetRiderLift(ulong entityId, float lift)
+    {
+        if (_entities.TryGetValue(entityId, out var entity) && entity is RemoteEntity player)
+        {
+            player.Ride(lift);
+        }
     }
 
     private ModelRenderInfo ModelInfo(EntitySpawnInfo spawn)

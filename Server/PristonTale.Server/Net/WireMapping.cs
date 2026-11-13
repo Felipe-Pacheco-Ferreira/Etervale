@@ -42,6 +42,7 @@ internal static class WireMapping
                 {
                     WeaponGlow = Glow(appearance.WeaponGlow),
                     OffHandGlow = Glow(appearance.OffHandGlow),
+                    Mounted = appearance.Mounted,
                     ShopSign = appearance.ShopSign,
                     ClanId = (ulong)Math.Max(0, appearance.ClanId),
                     ClanName = appearance.ClanName,

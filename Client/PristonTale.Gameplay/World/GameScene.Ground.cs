@@ -253,6 +253,6 @@ public sealed partial class GameScene
 
     private Matrix PlayerWorld()
     {
-        return Matrix.CreateRotationY(PlayerYaw) * Matrix.CreateTranslation(GroundTraversal.ToVisualPosition(_playerBody.Position));
+        return Matrix.CreateRotationY(PlayerYaw) * Matrix.CreateTranslation(GroundTraversal.ToVisualPosition(_playerBody.Position) + Vector3.Up * _riderLift);
     }
 }

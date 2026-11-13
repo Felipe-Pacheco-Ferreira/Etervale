@@ -31,8 +31,9 @@ progression, regeneration and movement rates. `World/`, `Physics/` and `Skills/`
 | `Characters/Regeneration.cs` | Per-second life/mana/stamina recovery and the `RegenerationState` accumulator |
 | `Characters/Locomotion.cs`, `AnimationRate.cs` | Move-speed stat to world units per second; walk/run/attack animation rates |
 | `Characters/DestinationMovement.cs` | Straight-line step toward a destination (client player and NPC walking) |
+| `Characters/MountRules.cs` | The travel mount: mounted speed (`UnitsPerSecond` = run speed x `SpeedFactor` 1.6, whatever the walk or run setting, but an overweight rider walks as on foot: `RidesFast`), who may mount (`MayMount`: alive, idle, not overweight, `CombatHoldMs` 5 s after the last swing, cast or hit, not in an action field, `FieldAllows`) and the mounted body's planar radius for routes (`BodyRadius` 40, a player on foot is 24) |
 | `Characters/HelpPets.cs` | The beginner's helper pet: one of the four helper dragons drawn below level 10 (`PlayerCharacter.MeetHelpPet`), active while shown and below level 10 behind a premium helper pet (`HelpPets.Active`), its chat commands |
-| `Characters/StarterGifts.cs` | The starter gifts of a new character: the class's weapon, armour and off-hand and the crystals, created perfect with the class's specialization, their pace and chat line |
+| `Characters/StarterGifts.cs` | The starter gifts of a new character: the class's weapon, armour and off-hand (handed over by the Adventurer's Journey guide, `FromGuide`) and the crystals, created perfect with the class's specialization, their pace and chat line |
 | `Characters/OwnerState.cs` | `OwnerState.Capture`: the owner-only character snapshot sent to the client |
 | `Characters/CharacterHead*.cs`, `CharacterVisuals.cs` | Head/face/hair model path resolution per class and tier; `CharacterVisualSet` |
 | `Items/Item.cs` | `ItemKind`, `ItemStatBlock`, `ItemDefinition`, `ItemInstance` |
@@ -555,7 +556,7 @@ server steps it per player in `FieldSkills.StepEffects` and resets it on death. 
   (loot, shops, warehouse); see [world.md](world.md).
 - `Shared/PristonTale.Application` drives everything on the authoritative tick (`FieldCombat`, `FieldSkills.*`,
   `WorldPlayer`, transactions); see [application.md](application.md).
-- The client uses `Locomotion`, `AnimationRate`, `DestinationMovement`, `CharacterHead` and `OwnerState`
+- The client uses `Locomotion`, `MountRules`, `AnimationRate`, `DestinationMovement`, `CharacterHead` and `OwnerState`
   (`OwnerState.Capture` reuses unchanged lists by revision and returns the previous instance when the new capture is
   equal as a record, so the encoder sends only changes); see [client.md](client.md).
 

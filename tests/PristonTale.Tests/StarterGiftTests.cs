@@ -17,8 +17,8 @@ internal static class StarterGiftTests
 {
     public static IEnumerable<(string, Func<Task>)> Cases()
     {
-        yield return ("a new Mechanician receives a perfect claw, armour and shield of its class and three Hopy crystals, seconds apart, worn", GiftsAsync);
-        yield return ("each class's weapon is of its own family, and a class without an off-hand beside its weapon skips it", KitAsync);
+        yield return ("a new Mechanician receives three Hopy crystals seconds apart, and none of its kit, which its guide hands over", GiftsAsync);
+        yield return ("each class's weapon is of its own family, and a class without an off-hand beside its weapon has none", KitAsync);
         yield return ("a new record holds no starter gift, a stored count is read back, and a count out of range is refused", CountAsync);
         yield return ("a full bag leaves the gift for the next offer, and the setting off offers none", WaitAsync);
     }
@@ -71,6 +71,8 @@ internal static class StarterGiftTests
     private static readonly ItemCatalog Items = new([Claw, Axe, Bow, Suit, Shield, Crystal]);
 
     private static readonly int OfferTicks = (int)StarterGifts.Interval.TotalSeconds * WorldServer.TickHz;
+    // The gifts the server times; the weapon, armour and off-hand come from the Adventurer's Journey guide.
+    private static readonly int Timed = Enumerable.Range(0, StarterGifts.Count).Count(index => !StarterGifts.FromGuide(index));
 
     private static async Task GiftsAsync()
     {
@@ -79,7 +81,7 @@ internal static class StarterGiftTests
         var ticks = new List<int>();
         var effects = new List<ItemEffectView>();
         var tick = 0;
-        while (ticks.Count < StarterGifts.Count && tick < (OfferTicks + WorldServer.TickHz) * (StarterGifts.Count + 1))
+        while (ticks.Count < Timed && tick < (OfferTicks + WorldServer.TickHz) * (Timed + 1))
         {
             fixture.Tick(1);
             tick++;
@@ -95,16 +97,14 @@ internal static class StarterGiftTests
             }
         }
 
-        Assert.True(ticks.Count == StarterGifts.Count && ticks[0] >= StarterGifts.FirstDelay.TotalSeconds * WorldServer.TickHz
+        Assert.True(ticks.Count == Timed && ticks[0] >= StarterGifts.FirstDelay.TotalSeconds * WorldServer.TickHz
             && ticks.Zip(ticks.Skip(1)).All(pair => pair.Second - pair.First >= OfferTicks), $"the gifts came at ticks {string.Join(", ", ticks)}");
-        (ItemDefinition Definition, EquipmentSlot Slot)[] worn = [(Claw, EquipmentSlot.Weapon), (Suit, EquipmentSlot.Armor), (Shield, EquipmentSlot.OffHand)];
-        Assert.True(worn.All(entry => character.GetEquipped(entry.Slot) is { } item && item.Definition == entry.Definition
-                && item.DurabilityMax == entry.Definition.Template!.Durability.Max && item.Roll.SpecJob == (uint)JobBitCode.Mechanician),
-            $"the claw, the armour and the shield were not worn, perfect and specialized for the Mechanician alone: "
-            + string.Join(", ", worn.Select(entry => $"{character.GetEquipped(entry.Slot)?.Definition.Name} {character.GetEquipped(entry.Slot)?.Roll.SpecJob}")));
+        Assert.True(new[] { EquipmentSlot.Weapon, EquipmentSlot.Armor, EquipmentSlot.OffHand }.All(slot => character.GetEquipped(slot) is null)
+            && !character.Inventory.Items().Any(item => item.Definition == Claw || item.Definition == Suit || item.Definition == Shield),
+            "the timed gifts brought a piece of the kit the guide hands over");
         Assert.True(character.Inventory.Occupied().Count(entry => entry.Item.Definition == Crystal) == 3 && character.StarterGiftsReceived == StarterGifts.Count
             && fixture.Characters.Records["Fresh"].StarterGiftsReceived == StarterGifts.Count, "the crystals or the stored count are wrong");
-        Assert.True(fresh.Link.Lines.Count(line => line.Line == StarterGifts.Message("Claw")) == 1
+        Assert.True(fresh.Link.Lines.Count(line => line.Line == StarterGifts.Message("Claw")) == 0
             && fresh.Link.Lines.Count(line => line.Line == StarterGifts.Message("Hopy Crystal")) == 3, "each gift was not told in the chat");
 
         fixture.Tick(2);
@@ -113,8 +113,8 @@ internal static class StarterGiftTests
             effects.AddRange(snapshot.ItemEffects.Where(effect => effect.Effect == ItemEffectKind.StarterGift));
         }
 
-        Assert.True(effects.Select(effect => (effect.EntityId, effect.Variant)).SequenceEqual(Enumerable.Range(0, StarterGifts.Count).Select(index => (fresh.Id, index)))
-            && effects[0].ItemCode == Claw.Code, $"the gifts' effects for the beginner's guide are wrong: {string.Join(", ", effects.Select(effect => effect.Variant))}");
+        Assert.True(effects.Select(effect => (effect.EntityId, effect.Variant)).SequenceEqual(Enumerable.Range(0, StarterGifts.Count).Where(index => !StarterGifts.FromGuide(index)).Select(index => (fresh.Id, index)))
+            && effects[0].ItemCode == Crystal.Code, $"the gifts' effects for the beginner's guide are wrong: {string.Join(", ", effects.Select(effect => effect.Variant))}");
 
         fixture.Tick(OfferTicks * 2);
         Assert.True(!fixture.World.StarterGiftRequests.TryRead(out _), "a character with every gift was offered another");
@@ -126,8 +126,9 @@ internal static class StarterGiftTests
         Assert.True(families[PlayerClass.Fighter] == "WA" && families[PlayerClass.Mechanician] == "WC" && families[PlayerClass.Pikeman] == "WP"
             && families[PlayerClass.Knight] == "WS" && families[PlayerClass.Assassin] == "WD" && families[PlayerClass.Shaman] == "WN"
             && families[PlayerClass.Magician] == "WM", $"a class's weapon is not of its family: {string.Join(", ", families)}");
-        Assert.True(StarterGifts.Next(Items, PlayerClass.Mechanician, StarterGifts.OffHand) == StarterGifts.OffHand
-            && StarterGifts.Next(Items, PlayerClass.Archer, StarterGifts.OffHand) == StarterGifts.OffHand + 1
+        Assert.True(StarterGifts.ItemKey(Items, PlayerClass.Mechanician, StarterGifts.OffHand) == "DS101"
+            && StarterGifts.ItemKey(Items, PlayerClass.Archer, StarterGifts.OffHand) is null
+            && StarterGifts.Next(Items, PlayerClass.Mechanician, 0) == StarterGifts.OffHand + 1
             && StarterGifts.Create(Items, PlayerClass.Archer, StarterGifts.Weapon)!.Roll.SpecJob == (uint)JobBitCode.Archer,
             "the archer's two-handed bow took a shield, or the Mechanician had none");
         Assert.True(StarterGifts.Create(Items, PlayerClass.Fighter, StarterGifts.OffHand)!.Roll.SpecJob == (uint)JobBitCode.Fighter
@@ -155,7 +156,7 @@ internal static class StarterGiftTests
     {
         var (fixture, gifts, fresh) = await NewcomerAsync();
         var character = fresh.Session.Character!;
-        // A worn weapon keeps the claw off its slot, so only the bag could take it.
+        // The first timed gift is a crystal, which only the bag can take.
         var held = new ItemInstance(Claw);
         character.Equip(EquipmentSlot.Weapon, held);
         foreach (var page in new[] { character.Inventory, character.HiddenBag })

@@ -1082,7 +1082,7 @@ internal sealed partial class PresenceEncoder : IEventHandleWriter
         return HashCode.Combine(view.MaxLife, view.Level, view.TemplateId, view.MoveSpeed, view.AttackRate,
             HashCode.Combine(appearance.WeaponKey, appearance.ArmorKey, appearance.OffHandKey, appearance.InVillage, appearance.Tier, appearance.HairIndex,
                 HashCode.Combine(appearance.HelperPet, appearance.Phoenix, appearance.BigHead, appearance.WeaponGlow, appearance.OffHandGlow, appearance.ShopSign,
-                    appearance.ClanId, HashCode.Combine(appearance.ClanName, appearance.ClanMark))),
+                    appearance.ClanId, HashCode.Combine(appearance.ClanName, appearance.ClanMark, appearance.Mounted))),
             view.OwnerId,
             view.ModelScale);
     }

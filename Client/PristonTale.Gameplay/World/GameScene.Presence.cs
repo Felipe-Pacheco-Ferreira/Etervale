@@ -172,6 +172,7 @@ public sealed partial class GameScene
         ObserveCombatSounds(update);
         ObserveSkills(update);
         ObserveItems(update);
+        ObserveMounts(update);
         ObserveProgression(update);
         ObserveRestart(update);
         ObserveWeather(update);

@@ -295,6 +295,11 @@ public sealed partial class WorldServer
             }
             else
             {
+                if (!MountRules.FieldAllows(destination.State))
+                {
+                    player.Dismount();
+                }
+
                 player.CrossGate(inVillage);
             }
 
@@ -347,6 +352,27 @@ public sealed partial class WorldServer
     public Task<bool> SwingAtNothingAsync(int fieldId, ulong entityId) =>
         EnqueueAsync(entityId, () => _catalog.TryGetFieldByCode(fieldId, out var definition) && definition.State == FieldState.Action
             && _fields.TryGetValue(fieldId, out var field) && field.SwingAtNothing(entityId));
+
+    // The player asks to ride its travel mount (mount true) or to leave it; false when it may not mount now (MountRules).
+    // The answer every viewer sees is the Mounted flag of the player's description.
+    public Task<bool> MountAsync(ulong entityId, bool mount)
+    {
+        return EnqueueAsync(entityId, () =>
+        {
+            if (!_connections.TryGetValue(entityId, out var connection))
+            {
+                return false;
+            }
+
+            if (!mount)
+            {
+                connection.Player.Dismount();
+                return true;
+            }
+
+            return _catalog.TryGetFieldByCode(connection.FieldId, out var definition) && connection.Player.TryMount(definition.State);
+        });
+    }
 
     public Task<CharacterSaveSnapshot?> CaptureForSaveAsync(PlayerSession session)
     {

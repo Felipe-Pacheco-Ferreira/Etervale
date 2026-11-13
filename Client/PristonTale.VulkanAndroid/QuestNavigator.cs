@@ -47,6 +47,16 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
     private int _replan;
     // A search that found no way from here is tried again only after this long.
     private const double NoRouteRetrySeconds = 2;
+    // Walks longer than this ride the travel mount; a refused mount (combat) is asked again after MountRetrySeconds, and
+    // a goal the hound cannot reach is walked on foot for OnFootSeconds.
+    private const float MountDistance = 500f;
+    private const double MountRetrySeconds = 10;
+    private const double OnFootSeconds = 30;
+    private double _mountRetryAt;
+    private string _ridingStatus;
+    private string _ridingStatusOf;
+    private double _onFootUntil;
+    private float _routeRadius;
     private double _retryAt;
     private string _status = "";
     private Step _step;
@@ -108,6 +118,12 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
     {
         if (!Enabled)
         {
+            // The travel mount belongs to the automatic quest: pausing it, finishing it or taking the joystick leaves it.
+            if (scene.Mounted)
+            {
+                scene.Dismount();
+            }
+
             return;
         }
 
@@ -379,27 +395,43 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
     private bool Walk(GameScene scene, VulkanWorldSession.WorldMapPose pose, int field, Vector2 goal, int joinWith, string status,
         float reach = WaypointReach)
     {
-        Show(status);
         var here = new Vector2(pose.Position.X, pose.Position.Z);
         if (Vector2.Distance(here, goal) <= reach)
         {
+            Show(status);
             return true;
         }
 
         var now = _clock.Elapsed.TotalSeconds;
-        if (_routeField != field || _routeGoal != goal || (_route.Count == 0 && _routing is null && now >= _retryAt))
+        Ride(scene, Vector2.Distance(here, goal), now);
+        Show(scene.Mounted ? RidingStatus(status) : status);
+        // Only a mount the server agreed to is planned for: a refused prediction falls back within a moment.
+        var radius = scene.MountConfirmed ? MountRules.BodyRadius : GameScene.WalkingBodyRadius;
+        if (_routeField != field || _routeGoal != goal || _routeRadius != radius || (_route.Count == 0 && _routing is null && now >= _retryAt))
         {
             _routeField = field;
             _routeGoal = goal;
+            _routeRadius = radius;
             _route = [];
             var renderGoal = new XnaVector2(goal.X, -goal.Y);
-            _routing = scene.PlanRouteAsync(renderGoal, session.NpcPoints(renderGoal, TalkReach));
+            _routing = scene.PlanRouteAsync(renderGoal, session.NpcPoints(renderGoal, TalkReach), radius);
         }
 
         if (_routing is { IsCompleted: true } search)
         {
             var routing = search.IsCompletedSuccessfully ? search.Result : null;
             _routing = null;
+            LogRoute(routing, search.Exception);
+            if (routing is not { Points.Count: > 0, ReachesGoal: true } && _routeRadius > GameScene.WalkingBodyRadius)
+            {
+                // Too narrow for the hound, all the way or past a gate or stair: the same goal is searched again at once on
+                // foot.
+                scene.Dismount();
+                _onFootUntil = now + OnFootSeconds;
+                _retryAt = now;
+                return false;
+            }
+
             if (routing is not { Points.Count: > 0 })
             {
                 // No walkable way from here: never walk blind at the goal, which runs into the walls between.
@@ -459,6 +491,49 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
 
         return false;
     }
+
+    // Mounts the travel mount for a long walk; the mount itself refuses in combat, and attacking leaves it.
+    private void Ride(GameScene scene, float distance, double now)
+    {
+        if (scene.Mounted || distance < MountDistance || now < _onFootUntil || now < _mountRetryAt)
+        {
+            return;
+        }
+
+        // A mount the server refuses falls back after a moment; asking again only after a while keeps the moments ridden
+        // too fast within the server's movement tolerance.
+        scene.TryMount();
+        _mountRetryAt = now + MountRetrySeconds;
+    }
+
+    // The status with "Montado!" before it, made again only when the status changes.
+    private string RidingStatus(string status)
+    {
+        if (status != _ridingStatusOf)
+        {
+            _ridingStatusOf = status;
+            _ridingStatus = $"Montado! {status}";
+        }
+
+        return _ridingStatus;
+    }
+
+    // One logcat line per planned route (tag Etervale.Route), to measure the search on the device.
+    private static void LogRoute(GroundRoute route, AggregateException failure)
+    {
+        if (route is null)
+        {
+            Android.Util.Log.Warn(RouteLogTag, $"route search failed: {failure?.GetBaseException().Message}");
+            return;
+        }
+
+        var timing = route.Timing;
+        Android.Util.Log.Info(RouteLogTag, $"route {(route.ReachesGoal ? "reaches" : "short")}, {route.Points.Count} points: search "
+            + $"{timing.SearchMilliseconds:0} ms, walks {timing.WalkMilliseconds:0} ms, {timing.Searches} searches, {timing.Cells} cells, "
+            + $"{timing.LegsWalked} legs walked, {timing.LegsReused} reused");
+    }
+
+    private const string RouteLogTag = "Etervale.Route";
 
     // Drinks the first belt potion when life runs low.
     private void DrinkIfHurt()

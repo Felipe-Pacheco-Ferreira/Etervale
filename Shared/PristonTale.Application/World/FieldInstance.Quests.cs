@@ -1,3 +1,4 @@
+using PristonTale.Contracts.Characters;
 using PristonTale.Simulation.World.Spawning;
 using System.Numerics;
 using PristonTale.Simulation.Characters;
@@ -90,6 +91,8 @@ public sealed partial class FieldInstance
             item = null!;
             return false;
         }
+
+        public ItemInstance StarterGift(PlayerClass playerClass, int index) => null!;
     }
 
     private QuestContext TickContext(WorldPlayer player) =>

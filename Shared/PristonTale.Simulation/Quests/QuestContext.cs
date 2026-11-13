@@ -1,3 +1,4 @@
+using PristonTale.Contracts.Characters;
 using PristonTale.Simulation.Characters;
 using PristonTale.Simulation.Items;
 using PristonTale.Simulation.World.Ai;
@@ -28,10 +29,15 @@ public interface IQuestItemSource
 
     // The quest variant of a code (its own name and stats), or the regular item when the code has no variant.
     bool TryCreateQuestVariant(uint code, uint jobSpecMask, out ItemInstance item);
+
+    // The starter kit's gift at the index for the class (StarterGifts), or null when the class has none there.
+    ItemInstance StarterGift(PlayerClass playerClass, int index);
 }
 
 public sealed class CatalogQuestItemSource(ItemCatalog catalog) : IQuestItemSource
 {
+    public ItemInstance StarterGift(PlayerClass playerClass, int index) => StarterGifts.Create(catalog, playerClass, index);
+
     public bool TryCreate(uint code, int count, uint jobSpecMask, out ItemInstance item)
     {
         item = null;

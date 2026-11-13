@@ -25,9 +25,18 @@ public sealed class RemoteEntity : RemoteEntityBase
 
     public override int CopyActorHandles(Span<ActorHandle> destination) => _handles.CopyTo(destination);
 
+    // How high the model is drawn above the player's feet: the back of its travel mount while it rides one (MountPresentation).
+    public float Lift { get; private set; }
+
+    public void Ride(float lift)
+    {
+        Lift = lift;
+        Riding = lift > 0f;
+    }
+
     protected override void ApplyWorld(Matrix world)
     {
-        _handles.SetWorld(_scene, world);
+        _handles.SetWorld(_scene, Lift > 0f ? world * Matrix.CreateTranslation(0f, Lift, 0f) : world);
     }
 
     protected override void ApplyMotionCommand(MotionCommand command)

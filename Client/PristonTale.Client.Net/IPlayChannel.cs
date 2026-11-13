@@ -70,6 +70,10 @@ public interface IPlayChannel : IAsyncDisposable
     // Space with nothing ahead in an action field: the server swings at nothing; the swing arrives on the presence timeline.
     Task SendSwingAsync(CancellationToken ct = default);
 
+    // Ride the travel mount (mount true) or leave it; the server's answer is the Mounted flag of the player's own
+    // description (PlayerAppearanceInfo.Mounted).
+    Task SendMountAsync(bool mount, CancellationToken ct = default);
+
     // The owner confirmed dismissing the pet of one status (the code its icon shows); the icon goes with the status's
     // removal.
     Task SendDismissCrystalPetsAsync(uint statusCode, CancellationToken ct = default);

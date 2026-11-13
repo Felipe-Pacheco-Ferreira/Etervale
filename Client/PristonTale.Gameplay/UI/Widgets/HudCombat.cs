@@ -326,6 +326,24 @@ public sealed partial class HudCombat
         return entity.ClanLabel;
     }
 
+    // What a target frame shows of an entity in view, for a client that draws its own frame: maxLife is 0 for those that
+    // cannot be fought (NPCs), as DrawTarget shows them without a life bar.
+    public bool TryGetTargetState(ulong id, out string name, out int level, out int life, out int maxLife)
+    {
+        if (id == 0 || !_entities.TryGetValue(id, out var entity))
+        {
+            name = null;
+            level = life = maxLife = 0;
+            return false;
+        }
+
+        name = Name(id);
+        level = Level(entity);
+        life = entity.Life;
+        maxLife = entity.Spawn.Kind == EntityKind.Npc ? 0 : entity.Spawn.MaxLife;
+        return true;
+    }
+
     // A player's name while it is in view; null otherwise.
     public string PlayerName(ulong id) => _entities.TryGetValue(id, out var entity) && entity.Spawn.Player is { } player ? player.Name : null;
 

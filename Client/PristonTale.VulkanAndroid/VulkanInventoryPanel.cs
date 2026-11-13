@@ -1,59 +1,65 @@
 using Android.App;
 using Android.Graphics;
-using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Widget;
 using PristonTale.Mobile;
 using PristonTale.Simulation.Characters;
 using PristonTale.Simulation.Items;
 
-// The character window: equipment around the character on the left, the 12 x 6 bag with each item's own sprite at its
-// footprint on the right, the potion belt under it, gold and weight in the header, and the chosen item's sheet with
-// what can be done with it. Every change is an inventory command the server validates (InventoryCommand); the window
-// redraws from the server's answer.
+// The character window, a HUD window (VulkanPanel): on the left the equipment slots around the faint figure of the
+// character with gold and weight under them; in the middle the 12 x 6 bag as a field of item wells with each item's own
+// sprite at its footprint and the potion belt under it; on the right, once an item is chosen, its sheet with what can be
+// done with it. Wells take the item's tint (unique, enhanced, not for this class). Every change is an inventory command
+// the server validates (InventoryCommand); the window redraws from the server's answer.
 internal sealed class VulkanInventoryPanel
 {
-    private static readonly Color Parchment = Color.Rgb(236, 225, 203);
-    private static readonly Color SlotFill = Color.Argb(235, 22, 20, 19);
-    private static readonly Color SlotEdge = Color.Argb(220, 120, 94, 52);
-    private static readonly Color Selected = Color.Rgb(255, 214, 64);
-    private static readonly Color Muted = Color.Rgb(140, 128, 108);
+    private static readonly Color Unique = Color.Rgb(255, 164, 64);
+    private static readonly Color Enhanced = Color.Rgb(120, 172, 255);
+    private const int SlotSize = 44;
+    private const int SlotPitch = 53;
+    private const int FigureMargin = 6;
 
-    // The equipment slots as they stand around the character: rings and amulet above, the hands and armour across the
-    // middle, gloves, bracelet and boots below, the sheltom under them.
-    private static readonly (EquipmentSlot Slot, string Label, int Column, int Row)[] Doll =
+    // The equipment slots around the figure: weapon, ring, gloves and bracelet down the left; shield, ring, boots and
+    // sheltom down the right; the amulet at the neck and the armour on the chest. Row may fall between rows.
+    private static readonly (EquipmentSlot Slot, string Label, int Column, float Row)[] Doll =
     [
-        (EquipmentSlot.RingLeft, "Anel", 0, 0), (EquipmentSlot.Amulet, "Amuleto", 1, 0), (EquipmentSlot.RingRight, "Anel", 2, 0),
-        (EquipmentSlot.Weapon, "Arma", 0, 1), (EquipmentSlot.Armor, "Armadura", 1, 1), (EquipmentSlot.OffHand, "Escudo", 2, 1),
-        (EquipmentSlot.Gloves, "Luvas", 0, 2), (EquipmentSlot.Bracelet, "Bracelete", 1, 2), (EquipmentSlot.Boots, "Botas", 2, 2),
-        (EquipmentSlot.Sheltom, "Sheltom", 1, 3)
+        (EquipmentSlot.Weapon, "Arma", 0, 0), (EquipmentSlot.RingLeft, "Anel", 0, 1), (EquipmentSlot.Gloves, "Luvas", 0, 2),
+        (EquipmentSlot.Bracelet, "Bracelete", 0, 3), (EquipmentSlot.OffHand, "Escudo", 2, 0), (EquipmentSlot.RingRight, "Anel", 2, 1),
+        (EquipmentSlot.Boots, "Botas", 2, 2), (EquipmentSlot.Sheltom, "Sheltom", 2, 3), (EquipmentSlot.Amulet, "Amuleto", 1, .85f),
+        (EquipmentSlot.Armor, "Armadura", 1, 1.85f)
     ];
 
     private readonly Activity _activity;
     private readonly FrameLayout _overlay;
     private readonly VulkanWorldSession _session;
     private readonly VulkanItemIcons _icons;
-    private FrameLayout _window;
+    private VulkanPanel _panel;
     private FrameLayout _equipment;
     private FrameLayout _bag;
     private LinearLayout _belt;
     private LinearLayout _sheet;
     private TextView _gold;
-    private TextView _weight;
+    private TextView _bagNote;
+    private VulkanGaugeView _weight;
     private OwnerState _owner;
     private Guid _selected;
     private bool _pending;
     private long _expectedRevision;
+    private int _bagWidth;
+    private int _bagHeight;
+    // The bag's item tiles and the chosen item's action buttons as drawn last, for the tutorial to point at.
+    private readonly Dictionary<Guid, View> _tiles = [];
+    private readonly List<Button> _actions = [];
 
-    public VulkanInventoryPanel(Activity activity, FrameLayout overlay, VulkanWorldSession session)
+    public VulkanInventoryPanel(Activity activity, FrameLayout overlay, VulkanWorldSession session, VulkanItemIcons icons)
     {
         _activity = activity;
         _overlay = overlay;
         _session = session;
-        _icons = new VulkanItemIcons(session.AssetRoot, action => activity.RunOnUiThread(action));
+        _icons = icons;
         _icons.Loaded += () =>
         {
-            if (_window is not null)
+            if (_panel is not null)
             {
                 Render();
             }
@@ -62,9 +68,9 @@ internal sealed class VulkanInventoryPanel
 
     public void Toggle()
     {
-        if (_window is not null)
+        if (_panel is not null)
         {
-            Close();
+            _panel.Close();
             return;
         }
 
@@ -73,12 +79,22 @@ internal sealed class VulkanInventoryPanel
         Render();
     }
 
+    public bool IsOpen => _panel is not null;
+
+    public Guid SelectedItem => _selected;
+
+    // The tile of an item in the bag, or null while the window is closed or the item is elsewhere.
+    public View TileOf(Guid instanceId) => _panel is not null && _tiles.TryGetValue(instanceId, out var tile) ? tile : null;
+
+    // The first action button of the chosen item whose label starts with prefix, or null.
+    public View ActionStartingWith(string prefix) => _panel is null ? null : _actions.FirstOrDefault(button => button.Text?.StartsWith(prefix, StringComparison.Ordinal) == true);
+
     public void Update(OwnerState state)
     {
         var changed = _owner?.InventoryRevision != state.InventoryRevision || !ReferenceEquals(_owner?.Items, state.Items)
             || _owner?.Money != state.Money;
         _owner = state;
-        if (_window is not null && changed)
+        if (_panel is not null && changed)
         {
             Render();
         }
@@ -86,77 +102,80 @@ internal sealed class VulkanInventoryPanel
 
     private void Open()
     {
-        // The dimmed screen behind the window closes it when touched.
-        _window = new FrameLayout(_activity) { Clickable = true };
-        _window.SetBackgroundColor(Color.Argb(150, 0, 0, 0));
-        _window.Click += (_, _) => Close();
-
-        var frame = new LinearLayout(_activity) { Orientation = Orientation.Vertical, Clickable = true };
-        frame.SetPadding(Dp(14), Dp(10), Dp(14), Dp(12));
-        frame.Background = Panel();
-        var width = Math.Min(Dp(820), _overlay.Width - Dp(24));
-        var height = Math.Min(Dp(392), _overlay.Height - Dp(20));
-        _window.AddView(frame, new FrameLayout.LayoutParams(width, height, GravityFlags.Center));
-
-        var header = new LinearLayout(_activity);
-        header.SetGravity(GravityFlags.CenterVertical);
-        var title = Label("Inventário", 20, MobileHudTheme.Gold);
-        title.Typeface = Typeface.Create("serif", TypefaceStyle.Bold);
-        header.AddView(title, new LinearLayout.LayoutParams(0, -2, 1));
-        _gold = Label("", 14, Color.Rgb(255, 214, 64));
-        header.AddView(_gold, new LinearLayout.LayoutParams(-2, -2) { RightMargin = Dp(16) });
-        _weight = Label("", 14, Parchment);
-        header.AddView(_weight, new LinearLayout.LayoutParams(-2, -2) { RightMargin = Dp(12) });
-        var close = MobileHudTheme.Button(_activity, "✕");
-        close.ContentDescription = "Fechar inventário";
-        close.Click += (_, _) => Close();
-        header.AddView(close, new LinearLayout.LayoutParams(Dp(42), Dp(38)));
-        frame.AddView(header);
-        frame.AddView(Divider(), new LinearLayout.LayoutParams(-1, Dp(1)) { TopMargin = Dp(6), BottomMargin = Dp(8) });
-
+        _panel = new VulkanPanel(_activity, _overlay, "Inventário", 820, 392);
+        _panel.Closed += () =>
+        {
+            _panel = null;
+            _selected = Guid.Empty;
+            _tiles.Clear();
+            _actions.Clear();
+        };
         var body = new LinearLayout(_activity);
-        frame.AddView(body, new LinearLayout.LayoutParams(-1, 0, 1));
+        _panel.Content.AddView(body, new LinearLayout.LayoutParams(-1, -1));
 
         var left = new LinearLayout(_activity) { Orientation = Orientation.Vertical };
-        left.SetGravity(GravityFlags.CenterHorizontal);
-        left.AddView(Label("Equipamento", 13, MobileHudTheme.Gold));
-        _equipment = new FrameLayout(_activity);
-        left.AddView(_equipment, new LinearLayout.LayoutParams(Dp(3 * 58), Dp(4 * 58)) { TopMargin = Dp(4) });
-        body.AddView(left, new LinearLayout.LayoutParams(-2, -1) { RightMargin = Dp(14) });
+        left.AddView(VulkanPanelArt.Section(_activity, "Equipamento"));
+        _equipment = new FrameLayout(_activity) { Background = new VulkanPanelArt.FigureDrawable(Dp(10), Dp(1)) };
+        var figureWidth = Dp(FigureMargin * 2 + SlotPitch * 2 + SlotSize);
+        left.AddView(_equipment, new LinearLayout.LayoutParams(figureWidth, Dp(FigureMargin * 2 + SlotPitch * 3 + SlotSize)) { TopMargin = Dp(5) });
+        var purse = new LinearLayout(_activity);
+        purse.SetGravity(GravityFlags.CenterVertical);
+        var coin = new View(_activity) { Background = new VulkanPanelArt.CoinDrawable(Dp(16)) };
+        purse.AddView(coin, new LinearLayout.LayoutParams(Dp(16), Dp(16)) { RightMargin = Dp(6) });
+        purse.AddView(VulkanPanel.Body(_activity, "Ouro", 13, VulkanPanel.Muted), new LinearLayout.LayoutParams(0, -2, 1));
+        _gold = VulkanPanel.Text(_activity, "", 15, VulkanHudArt.EdgeLight, serif: true);
+        purse.AddView(_gold);
+        left.AddView(purse, new LinearLayout.LayoutParams(-1, -2) { TopMargin = Dp(8) });
+        _weight = new VulkanGaugeView(_activity);
+        left.AddView(_weight, new LinearLayout.LayoutParams(-1, Dp(16)) { TopMargin = Dp(6) });
+        body.AddView(left, new LinearLayout.LayoutParams(figureWidth, -1) { RightMargin = Dp(14) });
 
-        var right = new LinearLayout(_activity) { Orientation = Orientation.Vertical };
-        right.AddView(Label("Bolsa", 13, MobileHudTheme.Gold));
+        var middle = new LinearLayout(_activity) { Orientation = Orientation.Vertical };
+        _bagNote = VulkanPanel.Body(_activity, "", 12, VulkanPanel.Muted);
+        middle.AddView(VulkanPanelArt.Section(_activity, "Bolsa", _bagNote));
         _bag = new FrameLayout(_activity);
-        right.AddView(_bag, new LinearLayout.LayoutParams(-1, 0, 1) { TopMargin = Dp(4) });
+        // The bag's cells take the room the layout gives it, which changes when the sheet opens or closes.
+        _bag.LayoutChange += (_, _) =>
+        {
+            if (_bag.Width != _bagWidth || _bag.Height != _bagHeight)
+            {
+                _bag.Post(Render);
+            }
+        };
+        middle.AddView(_bag, new LinearLayout.LayoutParams(-1, 0, 1) { TopMargin = Dp(5) });
         var beltRow = new LinearLayout(_activity);
         beltRow.SetGravity(GravityFlags.CenterVertical);
-        beltRow.AddView(Label("Cinto", 13, MobileHudTheme.Gold), new LinearLayout.LayoutParams(-2, -2) { RightMargin = Dp(8) });
+        beltRow.AddView(VulkanPanel.Heading(_activity, "Cinto"), new LinearLayout.LayoutParams(-2, -2) { RightMargin = Dp(10) });
         _belt = new LinearLayout(_activity);
         beltRow.AddView(_belt);
-        right.AddView(beltRow, new LinearLayout.LayoutParams(-1, -2) { TopMargin = Dp(6) });
-        body.AddView(right, new LinearLayout.LayoutParams(0, -1, 1));
+        middle.AddView(beltRow, new LinearLayout.LayoutParams(-1, -2) { TopMargin = Dp(6) });
+        body.AddView(middle, new LinearLayout.LayoutParams(0, -1, 1));
 
         _sheet = new LinearLayout(_activity) { Orientation = Orientation.Vertical, Clickable = true, Visibility = ViewStates.Gone };
-        _sheet.SetPadding(Dp(12), Dp(10), Dp(12), Dp(10));
-        _sheet.Background = Panel();
-        body.AddView(_sheet, new LinearLayout.LayoutParams(Dp(214), -1) { LeftMargin = Dp(12) });
-
-        _overlay.AddView(_window, new FrameLayout.LayoutParams(-1, -1));
-        // The bag's cells take the room the layout gives it.
-        _bag.Post(Render);
+        _sheet.SetPadding(Dp(10), Dp(10), Dp(10), Dp(10));
+        _sheet.Background = VulkanPanelArt.Inset(_activity, lit: true);
+        body.AddView(_sheet, new LinearLayout.LayoutParams(Dp(212), -1) { LeftMargin = Dp(12) });
     }
 
     private void Render()
     {
-        if (_window is null)
+        if (_panel is null)
         {
             return;
         }
 
         var items = _owner?.Items ?? [];
-        _gold.Text = _owner is null ? "" : $"Ouro {_owner.Money:N0}";
-        _weight.Text = _owner is null ? "" : $"Peso {_owner.CarriedWeight}/{_owner.MaxWeight}";
-        _weight.SetTextColor(_owner?.Overweight == true ? Color.Rgb(240, 110, 90) : Parchment);
+        _gold.Text = _owner is null ? "—" : $"{_owner.Money:N0}";
+        if (_owner is { MaxWeight: > 0 } owner)
+        {
+            _weight.Set(owner.Overweight ? VulkanPanelArt.Overweight : VulkanHudArt.Stamina, owner.CarriedWeight / (float)owner.MaxWeight,
+                $"Peso {owner.CarriedWeight}/{owner.MaxWeight}");
+        }
+        else
+        {
+            _weight.Set(VulkanHudArt.Stamina, 0f, "Peso");
+        }
+
         RenderEquipment(items);
         RenderBag(items);
         RenderBelt(items);
@@ -166,15 +185,13 @@ internal sealed class VulkanInventoryPanel
     private void RenderEquipment(IReadOnlyList<OwnedItemView> items)
     {
         _equipment.RemoveAllViews();
-        var size = Dp(58);
         foreach (var (slot, label, column, row) in Doll)
         {
             var item = OwnedItemView.InSlot(items, (int)slot);
-            var cell = Slot(item, label);
-            _equipment.AddView(cell, new FrameLayout.LayoutParams(size - Dp(4), size - Dp(4))
+            _equipment.AddView(Slot(item, label), new FrameLayout.LayoutParams(Dp(SlotSize), Dp(SlotSize))
             {
-                LeftMargin = column * size + Dp(2),
-                TopMargin = row * size + Dp(2)
+                LeftMargin = Dp(FigureMargin + column * SlotPitch),
+                TopMargin = (int)MathF.Round((FigureMargin + row * SlotPitch) * Density)
             });
         }
     }
@@ -182,13 +199,26 @@ internal sealed class VulkanInventoryPanel
     private void RenderBag(IReadOnlyList<OwnedItemView> items)
     {
         _bag.RemoveAllViews();
-        if (_bag.Width == 0 || _bag.Height == 0)
+        _tiles.Clear();
+        _bagWidth = _bag.Width;
+        _bagHeight = _bag.Height;
+        var used = 0;
+        foreach (var item in items)
+        {
+            if (item.InBag && item.Anchor >= 0)
+            {
+                used += item.Width * item.Height;
+            }
+        }
+
+        _bagNote.Text = $"{used}/{Inventory.DefaultWidth * Inventory.DefaultHeight}";
+        if (_bagWidth == 0 || _bagHeight == 0)
         {
             return;
         }
 
-        var cell = Math.Min(_bag.Width / Inventory.DefaultWidth, _bag.Height / Inventory.DefaultHeight);
-        var grid = new View(_activity) { Background = new BagGrid(cell, Inventory.DefaultWidth, Inventory.DefaultHeight, Dp(1)) };
+        var cell = Math.Min(_bagWidth / Inventory.DefaultWidth, _bagHeight / Inventory.DefaultHeight);
+        var grid = new View(_activity) { Background = new VulkanPanelArt.GridDrawable(cell, Inventory.DefaultWidth, Inventory.DefaultHeight, Dp(2), Dp(1)) };
         _bag.AddView(grid, new FrameLayout.LayoutParams(cell * Inventory.DefaultWidth, cell * Inventory.DefaultHeight));
         foreach (var item in items)
         {
@@ -197,11 +227,12 @@ internal sealed class VulkanInventoryPanel
                 continue;
             }
 
-            var tile = Tile(item, Dp(2));
-            _bag.AddView(tile, new FrameLayout.LayoutParams(cell * item.Width, cell * item.Height)
+            var tile = Tile(item, Dp(3));
+            _tiles[item.InstanceId] = tile;
+            _bag.AddView(tile, new FrameLayout.LayoutParams(cell * item.Width - Dp(2), cell * item.Height - Dp(2))
             {
-                LeftMargin = item.Anchor % Inventory.DefaultWidth * cell,
-                TopMargin = item.Anchor / Inventory.DefaultWidth * cell
+                LeftMargin = item.Anchor % Inventory.DefaultWidth * cell + Dp(1),
+                TopMargin = item.Anchor / Inventory.DefaultWidth * cell + Dp(1)
             });
         }
     }
@@ -212,32 +243,31 @@ internal sealed class VulkanInventoryPanel
         for (var box = 0; box < PotionBelt.Boxes; box++)
         {
             var item = OwnedItemView.InBox(items, box);
-            var cell = Slot(item, $"{box + 1}");
-            _belt.AddView(cell, new LinearLayout.LayoutParams(Dp(46), Dp(46)) { RightMargin = Dp(6) });
+            _belt.AddView(Slot(item, $"{box + 1}"), new LinearLayout.LayoutParams(Dp(42), Dp(42)) { RightMargin = Dp(6) });
         }
     }
 
-    // An equipment or belt box: the item's sprite and count, or the box's name while empty.
+    // An equipment or belt box: the item's sprite and count, or an empty well with the box's name.
     private View Slot(OwnedItemView item, string label)
     {
         if (item is not null)
         {
-            return Tile(item, Dp(3));
+            return Tile(item, Dp(4));
         }
 
-        var empty = Label(label, 10, Muted);
+        var empty = VulkanPanel.Body(_activity, label, 10, Color.Argb(150, 168, 199, 193));
         empty.Gravity = GravityFlags.Center;
-        empty.Background = Box(SlotFill, SlotEdge, Dp(1));
+        empty.SetSingleLine(true);
+        empty.Background = new VulkanPanelArt.WellDrawable(Dp(6), Dp(1), Color.Transparent, selected: false);
         return empty;
     }
 
-    // An item's sprite in its box, framed in gold when it is the chosen one, with its count when it stacks.
+    // An item's sprite in its well, tinted by what the item is and lit gold when it is the chosen one, with its upgrade
+    // level at the top left and its count at the bottom right.
     private View Tile(OwnedItemView item, int padding)
     {
-        var tile = new FrameLayout(_activity) { Clickable = true };
-        tile.Background = Box(Color.Argb(150, 40, 34, 28), item.InstanceId == _selected ? Selected : SlotEdge,
-            item.InstanceId == _selected ? Dp(2) : Dp(1));
-        tile.ContentDescription = item.Name;
+        var tile = new FrameLayout(_activity) { Clickable = true, ContentDescription = item.Name };
+        tile.Background = new VulkanPanelArt.WellDrawable(Dp(6), Dp(1), Tint(item), item.InstanceId == _selected);
         var image = new ImageView(_activity);
         image.SetPadding(padding, padding, padding, padding);
         image.SetScaleType(ImageView.ScaleType.FitCenter!);
@@ -251,11 +281,17 @@ internal sealed class VulkanInventoryPanel
         }
 
         tile.AddView(image, new FrameLayout.LayoutParams(-1, -1));
+        if (item.Details is { UpgradeLevel: > 0 } details)
+        {
+            var upgrade = VulkanPanel.Text(_activity, $"+{details.UpgradeLevel}", 10, VulkanHudArt.EdgeLight, serif: true);
+            tile.AddView(upgrade, new FrameLayout.LayoutParams(-2, -2, GravityFlags.Top | GravityFlags.Left) { LeftMargin = Dp(3), TopMargin = Dp(2) });
+        }
+
         if (item.Count > 1)
         {
-            var count = Label($"{item.Count}", 10, Color.White);
-            count.SetShadowLayer(2f, 0f, 1f, Color.Black);
-            tile.AddView(count, new FrameLayout.LayoutParams(-2, -2, GravityFlags.Bottom | GravityFlags.Right) { RightMargin = Dp(3) });
+            var count = VulkanPanel.Text(_activity, $"{item.Count}", 11, Color.White, serif: false);
+            count.Typeface = Typeface.Create(Typeface.SansSerif, TypefaceStyle.Bold);
+            tile.AddView(count, new FrameLayout.LayoutParams(-2, -2, GravityFlags.Bottom | GravityFlags.Right) { RightMargin = Dp(4), BottomMargin = Dp(2) });
         }
 
         tile.Click += (_, _) =>
@@ -266,10 +302,12 @@ internal sealed class VulkanInventoryPanel
         return tile;
     }
 
-    // The chosen item's sheet: its sprite and name, its values, and what can be done with it here.
+    // The chosen item's sheet: its sprite, name and kind, its values on alternating bands, its durability as a gauge and
+    // what can be done with it here.
     private void RenderSheet(OwnedItemView item)
     {
         _sheet.RemoveAllViews();
+        _actions.Clear();
         _sheet.Visibility = item is null ? ViewStates.Gone : ViewStates.Visible;
         if (item is null)
         {
@@ -280,57 +318,109 @@ internal sealed class VulkanInventoryPanel
         heading.SetGravity(GravityFlags.CenterVertical);
         var picture = new ImageView(_activity);
         picture.SetScaleType(ImageView.ScaleType.FitCenter!);
-        picture.Background = Box(SlotFill, SlotEdge, Dp(1));
+        picture.SetPadding(Dp(5), Dp(5), Dp(5), Dp(5));
+        picture.Background = new VulkanPanelArt.WellDrawable(Dp(8), Dp(1), Tint(item), selected: false);
         if (_icons.Get(item.CatalogKey) is { } icon)
         {
             picture.SetImageBitmap(icon);
         }
 
-        heading.AddView(picture, new LinearLayout.LayoutParams(Dp(44), Dp(44)) { RightMargin = Dp(8) });
-        var name = Label(item.Name, 14, MobileHudTheme.Gold);
-        name.Typeface = Typeface.Create("serif", TypefaceStyle.Bold);
-        heading.AddView(name, new LinearLayout.LayoutParams(0, -2, 1));
+        heading.AddView(picture, new LinearLayout.LayoutParams(Dp(50), Dp(50)) { RightMargin = Dp(8) });
+        var identity = new LinearLayout(_activity) { Orientation = Orientation.Vertical };
+        var name = VulkanPanel.Text(_activity, item.Name, 15, Tint(item) is { A: > 0 } tint ? tint : MobileHudTheme.Gold, serif: true);
+        name.SetMaxLines(2);
+        name.Ellipsize = Android.Text.TextUtils.TruncateAt.End;
+        identity.AddView(name);
+        var chips = new LinearLayout(_activity);
+        chips.AddView(VulkanPanelArt.Chip(_activity, KindName(item.Kind), VulkanPanel.Muted), new LinearLayout.LayoutParams(-2, -2) { RightMargin = Dp(4) });
+        if (Rank(item) is { } rank)
+        {
+            chips.AddView(VulkanPanelArt.Chip(_activity, rank, Tint(item)));
+        }
+
+        identity.AddView(chips, new LinearLayout.LayoutParams(-2, -2) { TopMargin = Dp(4) });
+        heading.AddView(identity, new LinearLayout.LayoutParams(0, -2, 1));
         _sheet.AddView(heading);
+        if (item.Details is { ClassAllowed: false })
+        {
+            _sheet.AddView(VulkanPanelArt.Chip(_activity, "Sua classe não pode usar", VulkanPanelArt.Warning),
+                new LinearLayout.LayoutParams(-2, -2) { TopMargin = Dp(6) });
+        }
 
         var lines = new LinearLayout(_activity) { Orientation = Orientation.Vertical };
         var scroll = new ScrollView(_activity);
         scroll.AddView(lines);
-        _sheet.AddView(scroll, new LinearLayout.LayoutParams(-1, 0, 1) { TopMargin = Dp(6) });
+        _sheet.AddView(scroll, new LinearLayout.LayoutParams(-1, 0, 1) { TopMargin = Dp(8) });
+        var band = 0;
         foreach (var (label, value) in Values(item))
         {
             var row = new LinearLayout(_activity);
-            row.AddView(Label(label, 12, Muted), new LinearLayout.LayoutParams(0, -2, 1));
-            row.AddView(Label(value, 12, Parchment));
+            row.SetGravity(GravityFlags.CenterVertical);
+            row.SetPadding(Dp(8), Dp(4), Dp(8), Dp(4));
+            if (band++ % 2 == 0)
+            {
+                row.SetBackgroundColor(VulkanPanel.Row);
+            }
+
+            row.AddView(VulkanPanel.Body(_activity, label, 12, VulkanPanel.Muted), new LinearLayout.LayoutParams(0, -2, 1));
+            row.AddView(VulkanPanel.Text(_activity, value, 13, Color.White, serif: true));
             lines.AddView(row);
         }
 
+        if (item.Details is { DurabilityMax: > 0 } details)
+        {
+            var fraction = details.DurabilityCurrent / (float)details.DurabilityMax;
+            var durability = new VulkanGaugeView(_activity);
+            durability.Set(fraction < .25f ? VulkanHudArt.Life : VulkanHudArt.Experience, fraction,
+                $"Durabilidade {details.DurabilityCurrent}/{details.DurabilityMax}");
+            lines.AddView(durability, new LinearLayout.LayoutParams(-1, Dp(16)) { TopMargin = Dp(6) });
+        }
+
         var actions = new LinearLayout(_activity);
-        _sheet.AddView(actions, new LinearLayout.LayoutParams(-1, -2) { TopMargin = Dp(6) });
+        _sheet.AddView(actions, new LinearLayout.LayoutParams(-1, -2) { TopMargin = Dp(8) });
         var items = _owner?.Items ?? [];
         var slot = item.Equipped ? (EquipmentSlot?)item.Slot
             : ItemEquipmentMetadata.DefaultSlot(item.Kind, ItemEquipmentMetadata.SlotOf(item.Kind),
                 candidate => OwnedItemView.InSlot(items, (int)candidate) is not null);
         if (item.BeltBox >= 0)
         {
-            AddAction(actions, "Guardar", item, InventoryAction.BeltTake, -1, slot);
+            AddAction(actions, "Guardar na bolsa", item, InventoryAction.BeltTake, -1, slot, prominent: true);
         }
         else if (item.InBag && item.Kind == ItemKind.Potion)
         {
             for (var box = 0; box < PotionBelt.Boxes; box++)
             {
-                AddAction(actions, $"Cinto {box + 1}", item, InventoryAction.BeltPut, box, slot);
+                AddAction(actions, $"Cinto {box + 1}", item, InventoryAction.BeltPut, box, slot, prominent: false);
             }
         }
         else if ((item.Equipped || item.InBag) && slot.HasValue)
         {
             AddAction(actions, item.Equipped ? "Retirar" : "Equipar", item, item.Equipped ? InventoryAction.Unequip : InventoryAction.Equip,
-                item.Equipped ? -1 : 0, slot);
+                item.Equipped ? -1 : 0, slot, prominent: true);
         }
     }
 
+    // An item's tint: red when the character's class cannot use it, amber for a unique item, blue for an upgraded, aged
+    // or mixed one, none otherwise (and while its details have not arrived).
+    private static Color Tint(OwnedItemView item) => item.Details switch
+    {
+        { ClassAllowed: false } => VulkanPanelArt.Warning,
+        { UniqueItem: not 0 } => Unique,
+        { UpgradeLevel: > 0 } or { AgingCount: > 0 } or { MixSheltom: > 0 } => Enhanced,
+        _ => Color.Transparent
+    };
+
+    private static string Rank(OwnedItemView item) => item.Details switch
+    {
+        { UniqueItem: not 0 } => "Único",
+        { MixSheltom: > 0 } => "Misturado",
+        { UpgradeLevel: > 0 } details => $"Aprimorado +{details.UpgradeLevel}",
+        { AgingCount: > 0 } => "Em envelhecimento",
+        _ => null
+    };
+
     private static IEnumerable<(string Label, string Value)> Values(OwnedItemView item)
     {
-        yield return ("Tipo", KindName(item.Kind));
         if (item.Count > 1)
         {
             yield return ("Quantidade", $"{item.Count}");
@@ -387,11 +477,6 @@ internal sealed class VulkanInventoryPanel
             yield return ("PV", $"+{roll.AddLife}");
         }
 
-        if (details.DurabilityMax > 0)
-        {
-            yield return ("Durabilidade", $"{details.DurabilityCurrent}/{details.DurabilityMax}");
-        }
-
         if (roll.RequiredLevel > 0)
         {
             yield return ("Nível", $"{roll.RequiredLevel}");
@@ -400,11 +485,6 @@ internal sealed class VulkanInventoryPanel
         if (details.Weight > 0)
         {
             yield return ("Peso", $"{details.Weight}");
-        }
-
-        if (!details.ClassAllowed)
-        {
-            yield return ("Classe", "não pode usar");
         }
     }
 
@@ -426,12 +506,23 @@ internal sealed class VulkanInventoryPanel
         };
     }
 
-    private void AddAction(LinearLayout row, string label, OwnedItemView item, InventoryAction action, int destination, EquipmentSlot? slot)
+    private void AddAction(LinearLayout row, string label, OwnedItemView item, InventoryAction action, int destination, EquipmentSlot? slot,
+        bool prominent)
     {
-        var button = MobileHudTheme.Button(_activity, label);
+        var button = MobileHudTheme.Button(_activity, label, prominent);
+        if (prominent)
+        {
+            button.Typeface = Typeface.Create("serif", TypefaceStyle.Bold);
+        }
+        else
+        {
+            button.SetPadding(Dp(2), Dp(4), Dp(2), Dp(4));
+        }
+
         button.Enabled = !_pending && _owner is not null && _owner.InventoryRevision >= _expectedRevision;
         button.Click += async (_, _) => await ApplyAsync(item, action, destination, slot.GetValueOrDefault());
-        row.AddView(button, new LinearLayout.LayoutParams(0, Dp(38), 1) { RightMargin = Dp(3) });
+        row.AddView(button, new LinearLayout.LayoutParams(0, Dp(40), 1) { RightMargin = Dp(3) });
+        _actions.Add(button);
     }
 
     private async Task ApplyAsync(OwnedItemView item, InventoryAction action, int destination, EquipmentSlot slot)
@@ -465,77 +556,7 @@ internal sealed class VulkanInventoryPanel
         }
     }
 
-    private void Close()
-    {
-        if (_window is not null)
-        {
-            _overlay.RemoveView(_window);
-        }
+    private float Density => _activity.Resources?.DisplayMetrics?.Density ?? 1f;
 
-        _window = null;
-        _selected = Guid.Empty;
-    }
-
-    private TextView Label(string text, float size, Color color)
-    {
-        var label = new TextView(_activity) { Text = text, TextSize = size };
-        label.SetTextColor(color);
-        return label;
-    }
-
-    private View Divider()
-    {
-        var line = new View(_activity);
-        line.SetBackgroundColor(SlotEdge);
-        return line;
-    }
-
-    private GradientDrawable Panel()
-    {
-        var shape = new GradientDrawable(GradientDrawable.Orientation.TopBottom!,
-            [Color.Argb(245, 34, 30, 27).ToArgb(), Color.Argb(245, 16, 14, 14).ToArgb()]);
-        shape.SetCornerRadius(Dp(10));
-        shape.SetStroke(Dp(2), Color.Rgb(153, 120, 65));
-        return shape;
-    }
-
-    private GradientDrawable Box(Color fill, Color edge, int stroke)
-    {
-        var shape = new GradientDrawable();
-        shape.SetColor(fill.ToArgb());
-        shape.SetCornerRadius(Dp(3));
-        shape.SetStroke(stroke, edge);
-        return shape;
-    }
-
-    private int Dp(int value) => (int)MathF.Round(value * (_activity.Resources?.DisplayMetrics?.Density ?? 1f));
-
-    // The bag's empty cells: a dark field with a thin line between cells.
-    private sealed class BagGrid(int cell, int columns, int rows, int line) : Drawable
-    {
-        private readonly Paint _fill = new() { Color = SlotFill };
-        private readonly Paint _line = new() { Color = Color.Argb(110, 120, 94, 52), StrokeWidth = line };
-
-        public override void Draw(Canvas canvas)
-        {
-            canvas.DrawRect(0, 0, cell * columns, cell * rows, _fill);
-            for (var x = 0; x <= columns; x++)
-            {
-                canvas.DrawLine(x * cell, 0, x * cell, cell * rows, _line);
-            }
-
-            for (var y = 0; y <= rows; y++)
-            {
-                canvas.DrawLine(0, y * cell, cell * columns, y * cell, _line);
-            }
-        }
-
-        public override void SetAlpha(int alpha) => _fill.Alpha = alpha;
-
-        public override void SetColorFilter(ColorFilter colorFilter) => _fill.SetColorFilter(colorFilter);
-
-#pragma warning disable CS0672 // Android marks it obsolete, but a Drawable must still answer it.
-        public override int Opacity => (int)Format.Translucent;
-#pragma warning restore CS0672
-    }
+    private int Dp(int value) => (int)MathF.Round(value * Density);
 }

@@ -19,6 +19,7 @@ internal static class GroundRouteTests
         yield return ("a goal close by behind a wall is reached around the wall, not taken as already reached", AroundWallAsync);
         yield return ("a route leg keeps the body clear of a thin post beside its line, which the wall slide's own trace misses", PostAsync);
         yield return ("a route walks around a low step it could climb, such as a hedge, and around a standing NPC", AroundHedgeAsync);
+        yield return ("a second route over the same fields reuses the legs the first walked and finds the same way", CachedLegsAsync);
     }
 
     // A hedge 20 units high across x = -16..16 for z in -100..100; the goal is straight across it. Then an NPC stands on
@@ -137,7 +138,7 @@ internal static class GroundRouteTests
         }
 
         Console.WriteLine($"{tribe.GuideName}: {stats.Reached}/{stats.Planned} routes reach their goal, {stats.Walked} walked to the end "
-            + $"without a stop, {stats.Stopped} stopped or fell; slowest search {stats.Slowest} ms");
+            + $"without a stop, {stats.Stopped} stopped or fell; first search {stats.First} ms, slowest {stats.Slowest} ms, all {stats.Total} ms");
     }
 
     private sealed class JourneyStats
@@ -147,14 +148,19 @@ internal static class GroundRouteTests
         public int Walked;
         public int Stopped;
         public long Slowest;
+        public long Total;
+        public long First;
+        public readonly RouteLegCache Legs = new(GameScene.WalkingBodyRadius);
     }
 
     private static void Leg(LoadedField[] fields, Vector3 feet, Vector2 goal, string name, JourneyStats stats)
     {
         var clock = System.Diagnostics.Stopwatch.StartNew();
-        var route = GameScene.PlanRoute(fields, feet, goal, []);
+        var route = GameScene.PlanRoute(fields, feet, goal, [], stats.Legs);
         stats.Planned++;
         stats.Slowest = Math.Max(stats.Slowest, clock.ElapsedMilliseconds);
+        stats.Total += clock.ElapsedMilliseconds;
+        stats.First = stats.Planned == 1 ? clock.ElapsedMilliseconds : stats.First;
         if (clock.ElapsedMilliseconds > 1500)
         {
             Console.WriteLine($"from ({feet.X:0},{feet.Y:0},{feet.Z:0}) to {name}: SLOW {clock.ElapsedMilliseconds} ms, "
@@ -178,7 +184,7 @@ internal static class GroundRouteTests
             normal = new System.Numerics.Vector3(facing.X, facing.Y, facing.Z);
             return found;
         };
-        if (GameScene.WalkRoute(floor, walls, feet, route.Points, out var stopped))
+        if (GameScene.WalkRoute(floor, walls, feet, route.Points, GameScene.WalkingBodyRadius, out var stopped))
         {
             stats.Walked++;
             return;
@@ -192,7 +198,7 @@ internal static class GroundRouteTests
     // A floor with a 6 x 6 post 100 units tall; the leg runs along x at z = 0, the post's centre at x = 0, z = postZ.
     private static Task PostAsync()
     {
-        static bool Walks(float postZ, float side)
+        static bool Walks(float postZ, float side, float radius = GameScene.WalkingBodyRadius)
         {
             var collision = new FieldCollisionQuery([Field(postZ)]);
             GroundFloorQuery floor = (Vector3 position, float reference, out float height) =>
@@ -204,12 +210,30 @@ internal static class GroundRouteTests
                 normal = new System.Numerics.Vector3(facing.X, facing.Y, facing.Z);
                 return found;
             };
-            return GameScene.WalksTo(new Vector3(-150f, 0f, 0f), new Vector2(150f, 0f), floor, walls, 1.25f, side, out _, out _);
+            return GameScene.WalksTo(new Vector3(-150f, 0f, 0f), new Vector2(150f, 0f), floor, walls, radius, 1.25f, side, out _, out _);
         }
 
         Assert.True(Walks(12f, 0f), "the fixture's post stood on the line the slide traces");
         Assert.True(!Walks(12f, .75f), "a leg passed a post twelve units from its line");
         Assert.True(Walks(60f, .75f), "a post sixty units away blocked the leg");
+        Assert.True(!Walks(60f, .75f, radius: 80f), "a wider body, as on a mount, passed a post sixty units from its line");
+        return Task.CompletedTask;
+    }
+
+    // A second route over the same fields, from the same place, walks no leg between cells again: it reuses the first
+    // one's from the cache and finds the same points.
+    private static Task CachedLegsAsync()
+    {
+        var fields = new[] { Field(postZ: 0f) };
+        var start = new Vector3(-150f, 0f, 10f);
+        var goal = new Vector2(150f, -10f);
+        var legs = new RouteLegCache(GameScene.WalkingBodyRadius);
+        var first = GameScene.PlanRoute(fields, start, goal, [], legs);
+        var second = GameScene.PlanRoute(fields, start, goal, [], legs);
+        Assert.True(first.ReachesGoal && first.Timing.LegsWalked > 0, "the first route walked no leg");
+        Assert.True(second.Timing.LegsWalked == 0 && second.Timing.LegsReused > 0,
+            $"the second route walked {second.Timing.LegsWalked} legs again and reused {second.Timing.LegsReused}");
+        Assert.True(first.Points.SequenceEqual(second.Points), "the second route, over the cached legs, differs from the first");
         return Task.CompletedTask;
     }
 

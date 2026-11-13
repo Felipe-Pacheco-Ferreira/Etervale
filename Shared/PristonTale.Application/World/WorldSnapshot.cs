@@ -38,6 +38,9 @@ public readonly struct PlayerAppearanceView
     public bool Phoenix { get; init; }
     public int BigHead { get; init; }
 
+    // Riding the travel mount (WorldPlayer.Mounted).
+    public bool Mounted { get; init; }
+
     // The sign of the personal shop the player sells from, empty when it sells nothing.
     public string ShopSign { get; init; } = "";
 

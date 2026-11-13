@@ -145,6 +145,40 @@ public readonly record struct YahooKeyPacket : IFramePacket
     }
 }
 
+// C->S {header, uint16 Version = 1, uint8 Flags (1 mount, 0 leave the mount), uint8 0}: the player asks to ride its
+// travel mount or to leave it. The server checks MountRules itself; the answer is the Mounted flag of the player's
+// description (EntityDescription), which every viewer receives.
+public readonly record struct MountRequestPacket(bool Mount) : IFramePacket
+{
+    public const ushort CurrentVersion = 1;
+    public const int Size = 8 + 4;
+    private const byte MountFlag = 1;
+
+    public int Write(Span<byte> destination)
+    {
+        var writer = new PacketWriter(destination, EtervaleOpcodes.MountRequest);
+        writer.UInt16(CurrentVersion);
+        writer.Byte(Mount ? MountFlag : (byte)0);
+        writer.Byte(0);
+        return writer.Finish();
+    }
+
+    public static MountRequestPacket Read(ReadOnlySpan<byte> packet)
+    {
+        var reader = new PacketReader(packet, Size);
+        WireHeader.ReadVersion(ref reader, "Mount request");
+
+        var flags = reader.Byte();
+        reader.Skip(1);
+        if (flags > MountFlag)
+        {
+            throw new InvalidDataException("Mount request has unknown flags.");
+        }
+
+        return new MountRequestPacket(flags == MountFlag);
+    }
+}
+
 // C->S {header, uint16 Version = 1, uint16 0}: Space with nothing ahead in an action field. The server swings at nothing
 // when the player stands free there; the swing shows on the presence timeline.
 public readonly record struct SwingRequestPacket : IFramePacket

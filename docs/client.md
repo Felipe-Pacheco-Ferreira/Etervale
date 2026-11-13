@@ -311,8 +311,8 @@ coordinates; their consumers mirror them with `WorldSpace` instead of negating Z
 
 The client owns its own locomotion; the server validates and corrects.
 
-- Click-to-move: `UpdatePlayerInput` advances `DestinationMovement` at `Locomotion` walk/run speed derived from the
-  server-reported move speed (local derived stats until the first self state), slides against field collision
+- Click-to-move: `UpdatePlayerInput` advances `DestinationMovement` at `Locomotion` walk/run speed (the mounted speed
+  while riding, below) derived from the server-reported move speed (local derived stats until the first self state), slides against field collision
   (`MoveWithCollision`) and entity neighbours (`ResolveEntityCollision`) and follows the floor (`GroundTraversal`).
   Target reachability is checked with `GroundTraversal.CanReachSurface`.
 - Reports: `UpdateMovementReport` sends `MovementReport` (position in PT-global, facing, moving, running, action target,
@@ -365,6 +365,22 @@ The client owns its own locomotion; the server validates and corrects.
   it opens again only after the player left the stone. Choosing a destination plays the return sparkle and the portal
   sound on the stone, and the request leaves two seconds later, as the original's wing trip does. The
   server learns the new field code from the next report, which a field change sends at once.
+- Travel mount (`GameScene.Mount.cs`): `TryMount()` checks `MountRules.MayMount` (alive, not swinging, casting or
+  frozen, out of combat, not in an action field), predicts the mount at once and sends `MountRequest`; `Dismount()`
+  sends the leave. `Mounted` is the predicted state, set back to the Mounted flag of the player's own description when
+  the server answers or after `MountAnswerMs` (2 s) without an answer (a refusal sends nothing). Ridden, the local
+  player moves at `MountRules.UnitsPerSecond` (`MovementSpeed`), the speed the server's budget allows. The client
+  leaves the mount on its own swing (`SwingBegin`), cast (`Send`), any life loss, death, a forced or long `FieldWarp`
+  and in an action field, and holds itself in combat for `MountRules.CombatHoldMs` after a swing, cast or hit, as the
+  server does. `MountPresentation` (`World/Remote/MountPresentation.cs`) draws every rider in view, the local player
+  included: the hound (`char/monster/Hound/Hound.inx`, loaded off the game thread with `PristonActorLoader`) stands at
+  the rider's feet and facing, set back so the rider is over the hound's `Bip01 Spine2` bone, plays Stand while still,
+  Walk below the monster run speed and Run above it, at a rate that follows the smoothed ground speed (0.5x to 3x);
+  the rider is lifted by the bone's height plus 4 units (`Lift`; `PlayerWorld` for the local player,
+  `RemoteEntity.Ride` for others) and shows Stand instead of Walk or Run (`ShownPlayerMotion`,
+  `RemoteEntityBase.Riding`). Other players' mounts come from their descriptions (`PlayerAppearanceInfo.Mounted`); a
+  change of the flag alone does not rebuild the player's model. Routes for a mounted player should keep
+  `MountRules.BodyRadius` (40) from walls instead of the 24 of a player on foot.
 - `ActorMotionController`: `ApplyLocomotion` is ignored while Damage, Dead, Eat, FallStand, FallDamage or Yahoo freeze
   locomotion (`LocomotionFrozen`) and while falling;
   `ApplyAuthoritative` always wins.
@@ -751,8 +767,10 @@ come from the window's text input (`Game1` to `GameClient.TypeCharacter` to `Scr
 - Level guide (`HudLevelGuide`): reaching a level the guide has a page for, or entering as a level-1 character without
   experience, shows a picture blinking every 0.7 s at the top left while the switch is on; a click opens its summary (a
   guide box with the first six lines beside the page's picture, Close, and ">>more..." opening the page in the help
-  window when it is longer). A new character's first weapon and armour gifts (`ItemEffectKind.StarterGift`, order 0
-  and 1) open the summaries of their beginner's pages at once, whatever the switch (once the guide's files are read).
+  window when it is longer). A starter gift effect of a weapon or armour (`ItemEffectKind.StarterGift`, order 0
+  and 1) opens the summaries of their beginner's pages at once, whatever the switch (once the guide's files are read).
+  The server no longer sends those two: the Adventurer's Journey guide hands the kit over instead
+  ([application.md](application.md#starter-gifts)), so this opening does not happen.
   The window and the notice sit under the dialogs, the settings and the restart window, which take their clicks. The notice waits while the helper pet's box holds the
   corner; a later offer replaces an earlier one.
 - Helper pet (`UI/HelpPet/`, `GameplayHud.HelpPet.cs`; the scene's `SelfHelperPet` gives the pet beside the player

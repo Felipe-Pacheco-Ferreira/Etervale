@@ -754,6 +754,7 @@ internal sealed class PresenceDecoder : IEventHandleReader
                 HelperPet = looks.HelperPet,
                 Phoenix = looks.Phoenix,
                 BigHead = looks.BigHead,
+                Mounted = looks.Mounted,
                 WeaponGlow = Glow(looks.WeaponGlow),
                 OffHandGlow = Glow(looks.OffHandGlow),
                 ShopSign = looks.ShopSign,

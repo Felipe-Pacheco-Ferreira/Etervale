@@ -40,16 +40,18 @@ public sealed partial class GameScene
     {
         if (_renderer == null || !_playerBodyActor.IsValid)
             return;
-        PlayerActors.SetMotion(_actorScene, motion);
-        PlayerActors.SetPlaybackRate(_actorScene, PlayerRateFor(motion));
+        var shown = ShownPlayerMotion(motion);
+        PlayerActors.SetMotion(_actorScene, shown);
+        PlayerActors.SetPlaybackRate(_actorScene, PlayerRateFor(shown));
     }
 
     private void RestartPlayerMotion(MotionCode motion)
     {
         if (_renderer == null || !_playerBodyActor.IsValid)
             return;
-        PlayerActors.RestartMotion(_actorScene, motion);
-        PlayerActors.SetPlaybackRate(_actorScene, PlayerRateFor(motion));
+        var shown = ShownPlayerMotion(motion);
+        PlayerActors.RestartMotion(_actorScene, shown);
+        PlayerActors.SetPlaybackRate(_actorScene, PlayerRateFor(shown));
     }
 
     private void ApplyPlayerCommand(MotionCommand command)
@@ -76,6 +78,7 @@ public sealed partial class GameScene
     {
         OnSelfState(new EntityStateInfo(spawn.EntityId, spawn.Position, spawn.Facing, spawn.MoveState,
             spawn.Life, spawn.MoveSpeed, spawn.AttackRate, spawn.AttackTargetId, spawn.AttackSequence));
+        ObserveOwnMount(spawn);
         PlayInitialArrival(spawn.EntityId);
     }
 
@@ -130,6 +133,11 @@ public sealed partial class GameScene
         _serverCollisionHeight = state.Position.Y;
         var wire = MotionCodes.Of(state.MoveState);
         bool wasDead = _playerController.IsDead;
+        if (state.Life < previousLife || wire is MotionCode.Attack or MotionCode.Damage or MotionCode.Dead)
+        {
+            LeaveMountForCombat();
+        }
+
         switch (wire)
         {
             case MotionCode.Eat:
@@ -189,6 +197,7 @@ public sealed partial class GameScene
         }
         else if (combatEvent.Kind == CombatEventKind.SwingBegin && !_playerController.LocomotionFrozen)
         {
+            LeaveMountForCombat();
             _selfAttacking = true;
             FaceSwingTarget(combatEvent.TargetId);
             ApplyPlayerCommand(_playerController.Retrigger(MotionCode.Attack));

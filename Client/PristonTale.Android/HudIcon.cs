@@ -64,10 +64,15 @@ internal sealed class HudIcon(HudGlyph glyph, int size) : Drawable
                 Line(4, 18, 20, 18);
                 break;
             case HudGlyph.Bag:
-                Line(7, 8, 7, 6, 9, 4, 15, 4, 17, 6, 17, 8);
-                Line(5, 8, 19, 8, 21, 20, 3, 20, 5, 8);
-                Line(4, 13, 20, 13);
-                Line(10, 13, 10, 16, 14, 16, 14, 13);
+                // A drawstring pouch: the gathered neck, the tie, the round body and its clasp.
+                Line(9, 8, 8, 4, 16, 4, 15, 8);
+                Line(7, 8, 17, 8);
+                _path.Reset();
+                _path.MoveTo(9, 8);
+                _path.CubicTo(3, 11, 3, 21, 12, 21);
+                _path.CubicTo(21, 21, 21, 11, 15, 8);
+                canvas.DrawPath(_path, _paint);
+                canvas.DrawCircle(12, 14.5f, 2f, _paint);
                 break;
             case HudGlyph.Exit:
                 Line(11, 4, 5, 4, 5, 20, 11, 20);

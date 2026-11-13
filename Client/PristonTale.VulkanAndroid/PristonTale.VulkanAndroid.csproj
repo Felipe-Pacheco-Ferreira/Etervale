@@ -4,8 +4,8 @@
     <SupportedOSPlatformVersion>26</SupportedOSPlatformVersion>
     <OutputType>Exe</OutputType><ImplicitUsings>enable</ImplicitUsings><Nullable>annotations</Nullable>
     <ApplicationId>org.etervale.vulkan.probe</ApplicationId>
-    <ApplicationVersion>45</ApplicationVersion>
-    <ApplicationDisplayVersion>0.45</ApplicationDisplayVersion>
+    <ApplicationVersion>51</ApplicationVersion>
+    <ApplicationDisplayVersion>0.51</ApplicationDisplayVersion>
     <AndroidPackageFormats>apk</AndroidPackageFormats>
     <RuntimeIdentifiers>android-arm64;android-x64</RuntimeIdentifiers><UseDefaultPublishRuntimeIdentifier>false</UseDefaultPublishRuntimeIdentifier>
     <RunAOTCompilation>false</RunAOTCompilation>
@@ -19,8 +19,8 @@
     <ProjectReference Include="../../Shared/PristonTale.Simulation/PristonTale.Simulation.csproj" />
     <ProjectReference Include="../PristonTale.Client.Net/PristonTale.Client.Net.csproj" />
     <ProjectReference Include="../PristonTale.Gameplay/PristonTale.Gameplay.csproj" />
-    <Compile Include="../PristonTale.Android/MobileWorldHud.cs;../PristonTale.Android/MobileHudTheme.cs;../PristonTale.Android/HudIcon.cs" LinkBase="MobileHud" />
-    <Compile Include="../PristonTale.Android/MobileQuestDialog.cs;../PristonTale.Android/MobileQuestJournal.cs;../PristonTale.Android/MobileShortcuts.cs;../PristonTale.Android/MobileMinimap.cs;../PristonTale.Android/CharacterSelect/CharSelectText.cs" LinkBase="MobileHud" />
+    <Compile Include="../PristonTale.Android/MobileHudTheme.cs;../PristonTale.Android/HudIcon.cs" LinkBase="MobileHud" />
+    <Compile Include="../PristonTale.Android/MobileQuestDialog.cs;../PristonTale.Android/MobileMinimap.cs;../PristonTale.Android/CharacterSelect/CharSelectText.cs" LinkBase="MobileHud" />
     <EmbeddedResource Include="../PristonTale.Gameplay/Localization/ClientText.pt-BR.resx" Link="ClientTextPtBr.resx" WithCulture="false"
       LogicalName="PristonTale.Mobile.ClientTextPtBr.resources" />
     <AndroidAsset Include="../PristonTale.Android/RicartenResources/QuestDialogs/**/*" Link="QuestDialogs/%(RecursiveDir)%(Filename)%(Extension)" />

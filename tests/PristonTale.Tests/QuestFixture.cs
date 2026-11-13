@@ -127,6 +127,12 @@ internal static class QuestFixture
             definitions.Add(new ItemDefinition(Code(key), key, ItemKind.Axe, EquipmentSlot.Weapon, GridWidth: 2, GridHeight: 3) { CatalogKey = key });
         }
 
+        // The Adventurer's Journey kit the guides hand over (StarterGifts): the Fighter's axe and suit, the Priestess's staff and robe.
+        definitions.Add(new ItemDefinition(Code("WA101"), "Stone Axe", ItemKind.Axe, EquipmentSlot.Weapon, GridWidth: 1, GridHeight: 3) { CatalogKey = "WA101" });
+        definitions.Add(new ItemDefinition(Code("WM101"), "Wand", ItemKind.Staff, EquipmentSlot.Weapon, GridWidth: 1, GridHeight: 3) { CatalogKey = "WM101" });
+        definitions.Add(new ItemDefinition(Code("DA102"), "Battle Suit", ItemKind.Armor, EquipmentSlot.Armor, GridWidth: 2, GridHeight: 3) { CatalogKey = "DA102" });
+        definitions.Add(new ItemDefinition(Code("DA202"), "Robe", ItemKind.Armor, EquipmentSlot.Armor, GridWidth: 2, GridHeight: 3) { CatalogKey = "DA202" });
+
         // Heavier than any character can carry.
         definitions.Add(new ItemDefinition(Code("WA197"), "Anvil", ItemKind.Axe, EquipmentSlot.Weapon, GridWidth: 2, GridHeight: 3)
         {

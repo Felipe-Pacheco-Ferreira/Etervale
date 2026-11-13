@@ -416,6 +416,13 @@ static MGControllerInput FromSDLAxis(Uint8 axis)
     }
 }
 
+#if defined(__ANDROID__) && defined(MG_VULKAN)
+// Etervale fork (issue 020): set when the activity comes back to the foreground; the next frame first makes the Vulkan surface
+// again for the new Android window (MGVK_AndroidSurfaceReady in MGG_Vulkan.cpp, asked before every frame).
+static bool s_androidSurfaceStale = false;
+bool MGVK_AndroidSurfaceReady(bool stale);
+#endif
+
 mgbyte MGP_Platform_PollEvent(MGP_Platform* platform, MGP_Event& event_)
 {
 	assert(platform != nullptr);
@@ -443,6 +450,12 @@ mgbyte MGP_Platform_PollEvent(MGP_Platform* platform, MGP_Event& event_)
         case SDL_QUIT:
             event_.Type = MGEventType::Quit;
             return true;
+
+#if defined(__ANDROID__) && defined(MG_VULKAN)
+        case SDL_APP_DIDENTERFOREGROUND:
+            s_androidSurfaceStale = true;
+            break;
+#endif
 
         case SDL_EventType::SDL_JOYDEVICEADDED:
             break;
@@ -723,6 +736,13 @@ mgbyte MGP_Platform_BeforeDraw(MGP_Platform* platform)
                 return false;
         }
     }
+
+#if defined(__ANDROID__) && defined(MG_VULKAN)
+    if (!MGVK_AndroidSurfaceReady(s_androidSurfaceStale))
+        return false;
+
+    s_androidSurfaceStale = false;
+#endif
 
 	return true;
 }

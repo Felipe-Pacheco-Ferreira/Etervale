@@ -8,7 +8,8 @@ using PristonTale.Mobile;
 using PristonTale.Simulation.Quests;
 
 // The quest card at the top right: the running quest's step, a bar for its kills, what the automatic quest is doing, a
-// compass to the guide while it is paused, and the button that starts or pauses it.
+// compass to the guide while it is paused, and the button that starts or pauses it. A tap on the card folds it down to the
+// kill bar (or to the title when nothing is counted) and opens it again.
 internal sealed class VulkanQuestTracker
 {
     private static readonly string[] Compass = ["↑ Norte", "↗ Nordeste", "→ Leste", "↘ Sudeste", "↓ Sul", "↙ Sudoeste", "← Oeste", "↖ Noroeste"];
@@ -24,6 +25,8 @@ internal sealed class VulkanQuestTracker
     private readonly Button _auto;
     private readonly float _density;
     private QuestView _shown;
+    private string _titleText = "";
+    private bool _collapsed;
 
     public VulkanQuestTracker(Activity activity, VulkanWorldSession session)
     {
@@ -31,7 +34,13 @@ internal sealed class VulkanQuestTracker
         _density = activity.Resources?.DisplayMetrics?.Density ?? 1f;
         View = new LinearLayout(activity) { Orientation = Orientation.Vertical };
         View.SetPadding(Dp(9), Dp(7), Dp(9), Dp(8));
-        MobileHudTheme.Card(View);
+        View.Background = new PlateDrawable(Dp(10));
+        View.Clickable = true;
+        View.Click += (_, _) =>
+        {
+            Collapsed = !Collapsed;
+            Folded?.Invoke(_collapsed);
+        };
 
         _title = new TextView(activity) { TextSize = 12 };
         _title.SetTextColor(MobileHudTheme.Gold);
@@ -75,6 +84,21 @@ internal sealed class VulkanQuestTracker
 
     public LinearLayout View { get; }
 
+    public View AutoButton => _auto;
+
+    // Raised when a tap folds or opens the card, with whether it is folded now.
+    public event Action<bool> Folded;
+
+    public bool Collapsed
+    {
+        get => _collapsed;
+        set
+        {
+            _collapsed = value;
+            Refresh(force: true);
+        }
+    }
+
     // Called a few times a second on the UI thread.
     public void Refresh(bool force = false)
     {
@@ -92,16 +116,24 @@ internal sealed class VulkanQuestTracker
         _auto.Text = running ? "Pausar auto-missão" : "Iniciar auto-missão";
         _status.Text = running ? navigator.Status : hasWork ? GuideDirection() ?? "Toque em Iniciar auto-missão para continuar" : "";
         _status.Visibility = _status.Text.Length > 0 ? ViewStates.Visible : ViewStates.Gone;
+        if (_collapsed)
+        {
+            _auto.Visibility = ViewStates.Gone;
+            _status.Visibility = ViewStates.Gone;
+        }
     }
 
     private void ShowQuest(QuestView quest)
     {
         var step = quest?.Progress.Count > 0 ? quest.Progress[^1] : null;
-        _title.Text = step is null ? "Missões" : quest.Code == AdventurerJourneyRoute.Code || step.Description is
+        _titleText = step is null ? "Missões" : quest.Code == AdventurerJourneyRoute.Code || step.Description is
             AdventurerJourneyRoute.MeetSkadiDescription or AdventurerJourneyRoute.MeetJinDescription ? "Jornada do Aventureiro" : step.Title;
         _objective.Text = step?.Title ?? "Nenhuma missão ativa";
         var counting = quest is { KillsNeeded: > 0 };
         _bar.Visibility = counting ? ViewStates.Visible : ViewStates.Gone;
+        _title.Text = _titleText + (_collapsed ? "  ▸" : "  ▾");
+        _title.Visibility = _collapsed && counting ? ViewStates.Gone : ViewStates.Visible;
+        _objective.Visibility = _collapsed ? ViewStates.Gone : ViewStates.Visible;
         if (counting)
         {
             var done = Math.Min(quest.Kills, quest.KillsNeeded);

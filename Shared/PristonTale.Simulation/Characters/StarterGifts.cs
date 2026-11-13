@@ -4,8 +4,10 @@ using PristonTale.Contracts.Texts;
 
 namespace PristonTale.Simulation.Characters;
 
-// The gifts a new character receives one at a time in its first seconds when the server gives them (the original's
-// new-user present): its class's weapon, a body armour, an off-hand, then three Hopy crystals. Etervale gives perfect
+// The starter kit of a new character (the original's new-user present): its class's weapon, a body armour, an off-hand,
+// then three Hopy crystals. The weapon, armour and off-hand are handed over by the tribe's guide at the first talk of the
+// Adventurer's Journey, into the bag, so a new character learns to equip them (FromGuide); the server gives the rest one at
+// a time in the character's first seconds. Etervale gives perfect
 // copies specialized for the class. The weapon is the first of the class's own family (the family the original's
 // low-level presents give it); the armour is a robe for the classes that wear one; the off-hand is a shield or an orb the
 // class can specialize, only beside a one-handed weapon, and a class without one skips it. A character created before
@@ -45,11 +47,15 @@ public static class StarterGifts
         _ => "GP101"
     };
 
+    // Whether the gift at the index comes from the Adventurer's Journey guide rather than with the timed gifts.
+    public static bool FromGuide(int index) => index is Weapon or Armour or OffHand;
+
+    // The index of the next timed gift the class has from the received count on; Count when none is left.
     // The index of the next gift the class has from the received count on; Count when none is left.
     public static int Next(ItemCatalog items, PlayerClass playerClass, int received)
     {
         var index = received;
-        while (index < Count && ItemKey(items, playerClass, index) is null)
+        while (index < Count && (FromGuide(index) || ItemKey(items, playerClass, index) is null))
         {
             index++;
         }

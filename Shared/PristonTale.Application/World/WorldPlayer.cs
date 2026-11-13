@@ -50,7 +50,7 @@ public sealed class WorldPlayer
     private bool _inVillage;
 
     // The client owns locomotion and reports it with MovementReport. Reports spend a distance budget that refills at
-    // 1.35 x run speed and holds at most two seconds of it plus 32 units, so many small reports in one tick cannot add
+    // 1.35 x run speed (the mounted speed while riding) and holds at most two seconds of it plus 32 units, so many small reports in one tick cannot add
     // up to more than one long report could.
     private const float ReportSpeedTolerance = 1.35f;
     private const float ReportDistanceSlack = 32f;
@@ -248,6 +248,7 @@ public sealed class WorldPlayer
             Facing = Planar.Heading(Position, facingTarget);
         }
 
+        EnterCombat();
         Action = PlayerActionState.Cast;
         MoveState = MotionState.Skill;
         CastCompleted = false;
@@ -357,7 +358,11 @@ public sealed class WorldPlayer
     // The personal shop the player sells from; while it is open the seller stays where it stands and acts on nothing else.
     public PersonalShop? Shop { get; private set; }
 
-    public void OpenShop(PersonalShop shop) => Shop = shop;
+    public void OpenShop(PersonalShop shop)
+    {
+        Shop = shop;
+        Mounted = false;
+    }
 
     public void CloseShop() => Shop = null;
 
@@ -385,6 +390,7 @@ public sealed class WorldPlayer
         HelperPet = HelpPets.Active(_character) is { } pet ? HelpPets.KindOf(pet) : 0,
         Phoenix = _character.Premium.IsActive(PremiumEffectKind.PhoenixPet),
         BigHead = _character.Premium.BigHeadMode,
+        Mounted = Mounted,
         ShopSign = Shop?.Sign ?? "",
         ClanId = Clan?.ClanId ?? 0,
         ClanName = Clan?.Name ?? "",
@@ -518,6 +524,7 @@ public sealed class WorldPlayer
     {
         var moveSpeed = _character.Derived.MoveSpeed;
         float rate = (GameMasterLevel > 0 ? Locomotion.GameMasterDashUnitsPerSecond
+                : MountRules.RidesFast(Mounted, CarriedWeight.IsOverweight(_character)) ? MountRules.UnitsPerSecond(moveSpeed)
                 : CarriedWeight.IsOverweight(_character) ? Locomotion.WalkUnitsPerSecond(moveSpeed, true) : Locomotion.RunUnitsPerSecond(moveSpeed))
             * ReportSpeedTolerance;
         if (_budgetMs < 0)
@@ -532,6 +539,32 @@ public sealed class WorldPlayer
 
         _budgetMs = nowMs;
         return _moveBudget;
+    }
+
+    // Riding the travel mount (MountRules): reports may cover the mounted speed, and every viewer draws the hound.
+    public bool Mounted { get; private set; }
+
+    private float _combatMsLeft;
+
+    // False when the player may not mount now (dead, busy, an open shop, in combat or in an action field).
+    public bool TryMount(FieldState field)
+    {
+        if (!Mounted && !MountRules.MayMount(!IsDead, !IsBusy && Shop is null, CarriedWeight.IsOverweight(_character), _combatMsLeft, field))
+        {
+            return false;
+        }
+
+        Mounted = true;
+        return true;
+    }
+
+    public void Dismount() => Mounted = false;
+
+    // A swing, a cast or a hit: the player leaves its mount and may not mount again for a while.
+    private void EnterCombat()
+    {
+        Mounted = false;
+        _combatMsLeft = MountRules.CombatHoldMs;
     }
 
     // A client that stops reporting while moving is shown standing, like the original's 1.5 s motion cut-off.
@@ -565,6 +598,7 @@ public sealed class WorldPlayer
 
         Position = position;
         ClearAttackTarget();
+        Mounted = false;
         _lastReportMs = -1;
         _budgetMs = -1;
         // A paid potion that has not restored yet is drunk again where the player arrives; one that already restored is done.
@@ -615,6 +649,7 @@ public sealed class WorldPlayer
 
     private void StartSwing(ulong targetId, float durationMs, float hitAtMs)
     {
+        EnterCombat();
         Action = PlayerActionState.Swing;
         MoveState = MotionState.Attack;
         _timeline = ActionTimeline.Start(durationMs, hitAtMs);
@@ -625,6 +660,7 @@ public sealed class WorldPlayer
     public bool TickAction(float dtMs, out ulong hitTargetId)
     {
         hitTargetId = 0;
+        _combatMsLeft = MathF.Max(0f, _combatMsLeft - dtMs);
 
         switch (Action)
         {
@@ -691,6 +727,7 @@ public sealed class WorldPlayer
             return;
         }
 
+        EnterCombat();
         int life = _character.Life - amount;
         if (life <= 0)
         {

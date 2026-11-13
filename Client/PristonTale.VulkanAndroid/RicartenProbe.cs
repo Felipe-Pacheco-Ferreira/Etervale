@@ -14,6 +14,9 @@ using PristonTale.Gameplay.Screens.CharacterSelect;
 using PristonTale.Gameplay.Screens.Framework;
 using PristonTale.Gameplay.Screens.Opening;
 using PristonTale.Gameplay.UI.Rendering;
+using PristonTale.Gameplay.UI.Chat;
+using PristonTale.Client.Net.Presence;
+using PristonTale.Simulation.Social;
 using PristonTale.Simulation.World;
 using PristonTale.Contracts.Motion;
 using PristonTale.Simulation.Characters;
@@ -43,9 +46,14 @@ internal sealed class RicartenProbe : Game
     private SpriteBatch joystickBatch;
     private HudTargetPortrait portrait;
     private HudTargetPortrait npcPortrait;
+    private HudTargetPortrait targetPortrait;
     private HudCombat namePlates;
     private HudPainter namePainter;
     private HudSprites nameSprites;
+    // The PC's speech bubbles over the speakers' heads, fed by the presence updates and the player's own lines.
+    private HudChat chat;
+    private Func<ulong, HudOverheadPoint?> overhead;
+    private Func<ulong, Color> speakerColor;
     private Texture2D joystickCircle;
     private int frames;
     private GameServerConnection connection;
@@ -63,6 +71,7 @@ internal sealed class RicartenProbe : Game
     private SpriteBatch selectionBatch;
     private string assetRoot;
     private PresentationSettings presentation;
+    private MobileGraphics quality;
     private bool keyboardShown;
 
     [DllImport("SDL2")]
@@ -122,7 +131,8 @@ internal sealed class RicartenProbe : Game
         Content = new FileContentManager(Services, Path.Combine(root, "Content"));
         assetRoot = root;
         presentation = new PresentationSettings();
-        presentation.ApplyRendering(MobileRendering());
+        quality = new MobileGraphics(Android.App.Application.Context.FilesDir!.AbsolutePath);
+        presentation.ApplyRendering(quality.Rendering);
         PristonTale.Gameplay.Localization.ClientText.Use("pt-BR");
         effects = EffectLibrary.LoadBootstrap(GraphicsDevice, Content, assetRoot, ConsoleClientLog.Instance);
         audio = PristonAudioLibrary.LoadBootstrap(assetRoot, ConsoleClientLog.Instance, loadOpeningMusic: animatedLoginEndpoint is not null);
@@ -221,7 +231,8 @@ internal sealed class RicartenProbe : Game
 
     private void LoadWorld(string root)
     {
-        presentation.ApplyRendering(MobileRendering() with { ExposureCompensation = .45f });
+        presentation.ApplyRendering(quality.Rendering with { ExposureCompensation = WorldExposure });
+        session.Graphics = quality;
         scene = new GameScene(GraphicsDevice, Content, sky: sky, effects: effects, presentation: presentation, audio: audio);
         var character = session.Character;
         var outcome = session.Entered;
@@ -235,6 +246,12 @@ internal sealed class RicartenProbe : Game
         namePainter = new HudPainter(selectionBatch, screen.Font, nameSprites);
         scene.PresenceObserved += session.Observe;
         scene.PresenceObserved += namePlates.Observe;
+        chat = new HudChat { SelfId = session.Entered.EntityId, PlayerName = character.Name };
+        chat.Lookup = id => (namePlates.KindOf(id, out var owner), owner);
+        overhead = scene.Overhead;
+        speakerColor = id => chat.NameColor(id, scene.SelectedTargetId);
+        nameSprites.Request(HudChatBubbles.Art);
+        scene.PresenceObserved += ObserveChat;
         _ = FetchCatalogAsync(scene);
         var play = connection.OpenPlayChannel();
         scene.BeginRemotePresence(play, entered);
@@ -246,6 +263,7 @@ internal sealed class RicartenProbe : Game
         joystickBatch = new SpriteBatch(GraphicsDevice);
         portrait = new HudTargetPortrait(GraphicsDevice);
         npcPortrait = new HudTargetPortrait(GraphicsDevice);
+        targetPortrait = new HudTargetPortrait(GraphicsDevice);
         const int size = 64;
         joystickCircle = new Texture2D(GraphicsDevice, size, size);
         var pixels = new Color[size * size];
@@ -312,6 +330,7 @@ internal sealed class RicartenProbe : Game
         {
             return;
         }
+        quality.Update(presentation, gameTime.ElapsedGameTime.TotalSeconds);
         orbit.Update();
         scene.PointerCaptured = orbit.JoystickActive || orbit.CameraActive;
         scene.TouchMovement = orbit.Movement;
@@ -326,7 +345,14 @@ internal sealed class RicartenProbe : Game
         var manual = orbit.Movement != Vector2.Zero;
         session.Navigator?.Update(scene, manual);
         session.UpdateAutoHunt(manual);
+        session.PublishTarget(namePlates, session.AttackTarget != 0 ? session.AttackTarget : scene.SelectedTargetId);
+        while (session.TryReadSpoken(out var line))
+        {
+            chat.Bubbles.Say(session.Entered.EntityId, line, Environment.TickCount64, ChatRules.SelfBubbleMs);
+        }
     }
+
+    private void ObserveChat(PresenceUpdate update) => chat.Observe(update, Environment.TickCount64);
 
     private void UpdateKeyboard(bool show, bool reopen = false)
     {
@@ -364,6 +390,29 @@ internal sealed class RicartenProbe : Game
             Log.Warn(Tag, exception.Message);
         }
     }
+    // A frame is drawn only while Android lets the game keep its surface (SurfaceGate).
+    protected override bool BeginDraw()
+    {
+        if (!SurfaceGate.TryEnterDraw())
+        {
+            return false;
+        }
+
+        if (base.BeginDraw())
+        {
+            return true;
+        }
+
+        SurfaceGate.LeaveDraw();
+        return false;
+    }
+
+    protected override void EndDraw()
+    {
+        base.EndDraw();
+        SurfaceGate.LeaveDraw();
+    }
+
     protected override void Draw(GameTime gameTime)
     {
         if (opening is not null)
@@ -399,18 +448,35 @@ internal sealed class RicartenProbe : Game
         {
             npcPortrait.Render(scene, new HudPortraitSubject(npc.EntityId, 0, 0), layout);
         }
+        var target = session.Target;
+        var framed = default(HudPortraitSubject);
+        var framing = target is not null && namePlates.TryGetPortraitSubject(target.Id, out framed);
+        if (framing)
+        {
+            targetPortrait.Render(scene, framed, layout);
+        }
         GraphicsDevice.Clear(scene.SkyColor);
         scene.Draw();
+        nameSprites.Update();
         namePainter.Begin(layout);
-        namePlates.DrawNamePlates(namePainter, layout, scene.Overhead, scene.HoveredTargetId, scene.TracedTargetId, classic: true);
+        namePlates.DrawNamePlates(namePainter, layout, overhead, scene.HoveredTargetId, scene.TracedTargetId, classic: true);
+        chat.Bubbles.Draw(namePainter, layout, Environment.TickCount64, overhead, speakerColor, scene.SelectedTargetId);
         namePainter.End();
+        var viewHeight = viewport.Height;
         if (portrait.Texture(entity) is { } avatar)
         {
-            var height = GraphicsDevice.Viewport.Height;
-            var size = (int)(height * .105f);
-            var inset = (int)(height * .025f);
+            var size = (int)(viewHeight * HudPlacement.PlayerPortraitSize);
             joystickBatch.Begin();
-            joystickBatch.Draw(avatar, new Rectangle(inset, inset, size, size), Color.White);
+            joystickBatch.Draw(avatar, new Rectangle((int)(viewHeight * (HudPlacement.PlayerPortraitX + HudPlacement.PlayerShiftX)),
+                (int)(viewHeight * (HudPlacement.PlayerPortraitY + HudPlacement.PlayerShiftY)), size, size), Color.White);
+            joystickBatch.End();
+        }
+        if (framing && targetPortrait.Texture(target.Id) is { } enemy)
+        {
+            var size = (int)(viewHeight * HudPlacement.TargetPortraitSize);
+            joystickBatch.Begin();
+            joystickBatch.Draw(enemy, new Rectangle((int)(HudPlacement.TargetPortraitLeft(viewport.Width, viewHeight) + viewHeight * HudPlacement.TargetShiftX),
+                (int)(viewHeight * (HudPlacement.TargetPortraitY + HudPlacement.TargetShiftY)), size, size), Color.White);
             joystickBatch.End();
         }
         if (npc is not null && npcPortrait.Texture(npc.EntityId) is { } face)
@@ -441,10 +507,8 @@ internal sealed class RicartenProbe : Game
         }
     }
 
-    private static ClientSettings MobileRendering() => new ClientSettings().WithQuality(GraphicsQuality.Low) with
-    {
-        ShadowMapSize = 1024
-    };
+    // Exposure compensation, in stops, the world is drawn with on the phone.
+    private const float WorldExposure = .45f;
 
     private void DrawJoystickDisc(Vector2 center, float radius, Color tint)
     {
@@ -464,10 +528,12 @@ internal sealed class RicartenProbe : Game
         joystickBatch?.Dispose();
         portrait?.Dispose();
         npcPortrait?.Dispose();
+        targetPortrait?.Dispose();
         if (scene is not null)
         {
             scene.PresenceObserved -= session.Observe;
             scene.PresenceObserved -= namePlates.Observe;
+            scene.PresenceObserved -= ObserveChat;
             scene.Dispose();
             session.SetClosing(scene.Closing);
         }

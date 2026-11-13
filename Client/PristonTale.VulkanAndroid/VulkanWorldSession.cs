@@ -6,10 +6,17 @@ using PristonTale.Gameplay.World;
 using PristonTale.Simulation.Characters;
 using PristonTale.Simulation.Quests;
 using PristonTale.Contracts.World;
+using PristonTale.Contracts.Combat;
+using PristonTale.Gameplay.UI.Widgets;
+using PristonTale.Gameplay.Localization;
+using PristonTale.Contracts.Social;
+using PristonTale.Simulation.Social;
 
 internal sealed class VulkanWorldSession(GameServerConnection connection, CharacterSummary character, EnterWorldOutcome entered) : IAsyncDisposable
 {
-    private readonly ConcurrentQueue<string> chat = new();
+    private readonly ConcurrentQueue<ChatEntry> chat = new();
+    // The lines the player sent, for its own speech bubble (the server does not echo them).
+    private readonly ConcurrentQueue<string> spoken = new();
     private OwnerState owner;
     private QuestView quest;
     private IPlayChannel play;
@@ -40,6 +47,9 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
 
     // The automatic quest; set once the world is loaded.
     public QuestNavigator Navigator { get; set; }
+
+    // The graphics quality the menu changes; set once the world is loaded.
+    public MobileGraphics Graphics { get; set; }
 
     // An NPC in view by name, with its place in field coordinates; called on the game thread.
     // Where the NPCs in view stand, on the render plane, leaving out those within keepFree of goal (the one walked to).
@@ -104,6 +114,11 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
     }
     private readonly ConcurrentQueue<ulong> npcs = new();
     private readonly ConcurrentQueue<QuestPrompt> prompts = new();
+    // Monsters the player struck, until they die or leave view; a death among them is a kill for the HUD.
+    private readonly HashSet<ulong> struck = new();
+    private readonly ConcurrentQueue<ulong> kills = new();
+    private TargetView target;
+    private IReadOnlyList<MapMark> npcMarks = [];
     public QuestView Quest => Volatile.Read(ref quest);
     public IPlayChannel Play => Volatile.Read(ref play);
     public bool AutoHunt => Volatile.Read(ref autoHunt) != 0;
@@ -187,9 +202,53 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
     }
     public void PublishOwner(OwnerState value) => Volatile.Write(ref owner, value);
     public void SetClosing(Task task) => closing = task;
-    public bool TryReadChat(out string line) => chat.TryDequeue(out line);
+    public bool TryReadChat(out ChatEntry line) => chat.TryDequeue(out line);
 
-    public Task SendChatAsync(string text) => Volatile.Read(ref scene)?.SendChatAsync(text, false) ?? Task.CompletedTask;
+    public bool TryReadSpoken(out string line) => spoken.TryDequeue(out line);
+    public bool TryReadKill(out ulong id) => kills.TryDequeue(out id);
+
+    // The target the HUD frames, or null; set on the game thread.
+    public TargetView Target => Volatile.Read(ref target);
+
+    // The NPCs in view with their names and places in field coordinates, for the full-screen map; read on the UI thread.
+    public IReadOnlyList<MapMark> NpcMarks => Volatile.Read(ref npcMarks);
+
+    // Publishes the entity the player fights or picked, allocating only when what the frame shows changed.
+    public void PublishTarget(HudCombat combat, ulong id)
+    {
+        var shown = Target;
+        if (!combat.TryGetTargetState(id, out var name, out var level, out var life, out var maxLife))
+        {
+            if (shown is not null)
+            {
+                Volatile.Write(ref target, null);
+            }
+
+            return;
+        }
+
+        if (shown is null || shown.Id != id || shown.Life != life || shown.MaxLife != maxLife || shown.Level != level || shown.Name != name)
+        {
+            Volatile.Write(ref target, new TargetView(id, name, level, life, maxLife));
+        }
+    }
+
+    // Sends a local line; once sent, the line shows in the chat and over the player's head, as the server does not echo it.
+    public async Task SendChatAsync(string text)
+    {
+        if (Volatile.Read(ref scene) is not { } current)
+        {
+            return;
+        }
+
+        await current.SendChatAsync(text, false);
+        if (!ChatRules.IsCommand(ChatRules.WithoutRoute(text)))
+        {
+            var shown = ChatRules.Compose(Character.Name, text);
+            chat.Enqueue(new ChatEntry(shown, ChatKind.Player));
+            spoken.Enqueue(shown);
+        }
+    }
 
     public void Observe(PresenceUpdate update)
     {
@@ -217,17 +276,44 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
                 npcPlaces[spawn.EntityId] = (spawn.Name, spawn.Position);
             }
         }
+        foreach (var combat in update.Events)
+        {
+            if (combat.Kind == CombatEventKind.Hit && combat.AttackerId == Entered.EntityId && huntMonsters.ContainsKey(combat.TargetId))
+            {
+                struck.Add(combat.TargetId);
+            }
+        }
+        for (var index = 0; index < update.States.Count; index++)
+        {
+            var state = update.States[index];
+            if (state.Life <= 0 && struck.Remove(state.EntityId))
+            {
+                kills.Enqueue(state.EntityId);
+            }
+        }
         foreach (var removed in update.Removed)
         {
+            struck.Remove(removed);
             huntMonsters.Remove(removed);
             npcPlaces.Remove(removed);
+        }
+        if (update.Spawns.Count > 0 || update.Removed.Count > 0)
+        {
+            var marks = new List<MapMark>(npcPlaces.Count);
+            foreach (var (_, place) in npcPlaces)
+            {
+                marks.Add(new MapMark(place.Name, place.Position.X, place.Position.Z));
+            }
+
+            Volatile.Write(ref npcMarks, marks);
         }
 
         foreach (var line in update.Chat)
         {
-            if (!string.IsNullOrEmpty(line.Text))
+            var text = line.Line.IsNone ? line.Text : ClientText.Format(line.Line);
+            if (!string.IsNullOrEmpty(text))
             {
-                chat.Enqueue(line.Text);
+                chat.Enqueue(new ChatEntry(text, line.Kind));
             }
         }
         while (chat.Count > 32)
@@ -235,6 +321,8 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
             chat.TryDequeue(out _);
         }
     }
+
+    internal readonly record struct ChatEntry(string Text, ChatKind Kind);
 
     internal sealed record WorldMapPose(System.Numerics.Vector3 Position, float Facing, int FieldId);
 
@@ -251,4 +339,6 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
     }
 }
 
+// A named place on the map, in field coordinates.
+internal sealed record MapMark(string Name, float X, float Z);
 internal sealed record NpcPortraitFrame(ulong EntityId, float X, float Y, float Width, float Height);

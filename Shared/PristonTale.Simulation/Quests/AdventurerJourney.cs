@@ -22,10 +22,10 @@ internal static class AdventurerJourney
         }
 
         var state = context.Journal.Active.State;
-        // The guide asks for a weapon in the hand: one who has none is given the class's first weapon.
+        // The guide asks for the kit in hand: one who lacks a piece of it is given that piece again.
         if (state == 1)
         {
-            GiveStarterWeapon(context);
+            GiveStarterKit(context);
         }
 
         if (state == 1 && (context.Journal.Active.Flags & TutorialPotionGranted) == 0 && GiveTutorialPotion(context))
@@ -62,7 +62,7 @@ internal static class AdventurerJourney
         }
         else
         {
-            if (state == 0 ? !GiveTutorialPotion(context) || !GiveStarterWeapon(context) : !GrantPotions(context, 15))
+            if (state == 0 ? !GiveTutorialPotion(context) || !GiveStarterKit(context) : !GrantPotions(context, 15))
             {
                 return QuestInventory.Refused(context);
             }
@@ -106,25 +106,33 @@ internal static class AdventurerJourney
         return context.GrantRefusal == QuestGrantCheck.Fits && context.Character.Inventory.TryPlaceFirstFree(potion);
     }
 
-    // Places the class's beginner weapon in the bag when the character carries no weapon at all; true when it has one now.
-    private static bool GiveStarterWeapon(QuestContext context)
+    // Places in the bag the pieces of the class's starter kit (StarterGifts: weapon, off-hand, armour) whose slot the
+    // character has nothing for, worn or carried; true when they all fit (or none was missing).
+    private static bool GiveStarterKit(QuestContext context)
     {
         var character = context.Character;
-        if (character.GetEquipped(EquipmentSlot.Weapon) is not null
-            || character.Inventory.Items().Any(item => ItemEquipmentMetadata.SlotOf(item.Definition.Kind) == EquipmentSlot.Weapon))
+        var playerClass = QuestClasses.ClassOf(character);
+        var kit = new List<ItemInstance>();
+        foreach (var index in StarterKit)
+        {
+            if (context.Items.StarterGift(playerClass, index) is { } piece && ItemEquipmentMetadata.SlotOf(piece.Definition.Kind) is { } slot
+                && character.GetEquipped(slot) is null
+                && !character.Inventory.Items().Any(item => ItemEquipmentMetadata.SlotOf(item.Definition.Kind) == slot))
+            {
+                kit.Add(piece);
+            }
+        }
+
+        if (kit.Count == 0)
         {
             return true;
         }
 
-        var code = QuestClasses.BeginnerWeapon(QuestClasses.ClassOf(character));
-        if (code == 0 || !context.Items.TryCreate(code, 1, 0, out var weapon))
-        {
-            return true;
-        }
-
-        context.GrantRefusal = QuestInventory.Check(character, [weapon]);
-        return context.GrantRefusal == QuestGrantCheck.Fits && character.Inventory.TryPlaceFirstFree(weapon);
+        context.GrantRefusal = QuestInventory.Check(character, kit);
+        return context.GrantRefusal == QuestGrantCheck.Fits && kit.All(character.Inventory.TryPlaceFirstFree);
     }
+
+    private static readonly int[] StarterKit = [StarterGifts.Weapon, StarterGifts.OffHand, StarterGifts.Armour];
 
     private static ulong LevelOneExperience(ulong percent) =>
         (ExperienceTable.ForLevel(2) - ExperienceTable.ForLevel(1)) * percent / 100;

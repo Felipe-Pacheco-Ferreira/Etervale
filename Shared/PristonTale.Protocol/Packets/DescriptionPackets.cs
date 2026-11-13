@@ -39,8 +39,8 @@ public readonly record struct DescribeEntityPacket(ulong EntityId) : IFramePacke
 }
 
 // A player's looks: class, tier, face, hair, head model, the equipped weapon, armour and off-hand codes, the village
-// flag, the Phoenix, the helper pet (0 none), the head look (0 normal, 1-2 big head, 3 soccer ball) and how the held
-// weapon and off-hand item glow.
+// flag, the Phoenix, the helper pet (0 none), the head look (0 normal, 1-2 big head, 3 soccer ball), how the held weapon
+// and off-hand item glow and whether the player rides its travel mount.
 public sealed record DescribedPlayer(
     PlayerClass Class,
     int Tier,
@@ -57,6 +57,9 @@ public sealed record DescribedPlayer(
 {
     public DescribedGlow WeaponGlow { get; init; } = DescribedGlow.None;
     public DescribedGlow OffHandGlow { get; init; } = DescribedGlow.None;
+
+    // Riding the travel mount.
+    public bool Mounted { get; init; }
 
     // The sign of the personal shop the player sells from; empty when it sells nothing.
     public string ShopSign { get; init; } = "";
@@ -123,7 +126,7 @@ public sealed record DescribedTemplate(
 // S->C: what a viewer needs to draw an entity, for one description revision. {header, uint16 Version = 2, uint16 Flags =
 // 0, varuint EntityId, uint8 Revision, uint8 Kind, varuint Level, varuint MoveSpeed, float32 AttackRate, text Name, text
 // Model}, then for a player {varuint Class, Tier, Face, Hair, text HeadModel, uint32 Weapon, Armor, OffHand, uint8 Flags (1
-// village, 2 Phoenix), uint8 HelperPet, uint8 BigHead, glow WeaponGlow, glow OffHandGlow (DescribedGlow), text ShopSign
+// village, 2 Phoenix, 4 mounted), uint8 HelperPet, uint8 BigHead, glow WeaponGlow, glow OffHandGlow (DescribedGlow), text ShopSign
 // (from version 2)}, else {varuint Template, float32 TemplateScale, varuint SoundCode, varint PortraitY, PortraitZ,
 // uint8 Brood, varuint Owner, float32 InstanceScale, uint32 NpcServices, varuint Class (the monster class: 1 boss, 200
 // hammer), varint ShadowSize (-1 none, 0 small to 3 large)}. Text is UTF-8 with a uint16 byte length.
@@ -168,7 +171,7 @@ public sealed record EntityDescriptionPacket(
             writer.UInt32(player.Weapon);
             writer.UInt32(player.Armor);
             writer.UInt32(player.OffHand);
-            writer.Byte((byte)((player.InVillage ? 1 : 0) | (player.Phoenix ? 2 : 0)));
+            writer.Byte((byte)((player.InVillage ? 1 : 0) | (player.Phoenix ? 2 : 0) | (player.Mounted ? 4 : 0)));
             writer.Byte((byte)Math.Clamp(player.HelperPet, 0, byte.MaxValue));
             writer.Byte((byte)Math.Clamp(player.BigHead, 0, byte.MaxValue));
             player.WeaponGlow.Write(ref writer);
@@ -236,6 +239,7 @@ public sealed record EntityDescriptionPacket(
                     {
                         WeaponGlow = weaponGlow,
                         OffHandGlow = offHandGlow,
+                        Mounted = (flags & 4) != 0,
                         ShopSign = sign,
                         ClanId = clanId,
                         ClanName = clanName,

@@ -20,6 +20,11 @@ internal sealed class MobileMinimap : View
     private const float RouteDotSpacing = 72f;
     public event Action<Vector2>? DestinationSelected;
 
+    // The field's map image and the field rectangle it covers, in field coordinates (for a full-screen map).
+    public Bitmap Image => _image;
+    public RectF World => _world;
+    public IReadOnlyList<Vector2> Route => _route;
+
     // The route to show as yellow dots, in field coordinates, as the position is; empty hides it.
     public void SetRoute(IReadOnlyList<Vector2> route)
     {

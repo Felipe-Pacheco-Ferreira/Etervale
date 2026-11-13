@@ -9,12 +9,16 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
 {
     // How long a quest dialog stays before the automatic quest answers it.
     private const int AutoAnswerMilliseconds = 2200;
+    // How many chat lines the chat window keeps.
+    private const int MostChatHistory = 50;
+    // How many chat lines show on screen under the chat button.
+    private const int ChatFeedLines = 5;
 
-    private static readonly (int Code, string Name)[] MinimapFields =
+    private static readonly (int Code, string Name, string Title)[] MinimapFields =
     [
-        (PristonTale.Simulation.World.FieldCodes.Ricarten, "ricarten"),
-        (PristonTale.Simulation.World.FieldCodes.Pillai, "pillai"),
-        (PristonTale.Simulation.World.FieldCodes.ForeverFall1, "forever-fall-01")
+        (PristonTale.Simulation.World.FieldCodes.Ricarten, "ricarten", "Ricarten"),
+        (PristonTale.Simulation.World.FieldCodes.Pillai, "pillai", "Pillai"),
+        (PristonTale.Simulation.World.FieldCodes.ForeverFall1, "forever-fall-01", "Forever Fall 1")
     ];
 
     public void OnActivityCreated(Activity activity, Bundle state)
@@ -69,73 +73,102 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
             return;
         }
 
-        var hud = new MobileWorldHud(activity, session.Character.Name);
         var overlay = new FrameLayout(activity);
-        var density = activity.Resources?.DisplayMetrics?.Density ?? 1f;
+        var metrics = activity.Resources!.DisplayMetrics!;
+        var density = metrics.Density;
+        // The HUD is laid out in fractions of the screen height (HudPlacement), the short side in landscape.
+        var screenHeight = (float)Math.Min(metrics.WidthPixels, metrics.HeightPixels);
         int Dp(int value) => (int)MathF.Round(value * density);
         FrameLayout.LayoutParams Place(int width, int height, GravityFlags gravity, int edge = 10) =>
             new(width < 0 ? width : Dp(width), height < 0 ? height : Dp(height), gravity)
             {
                 LeftMargin = Dp(edge), RightMargin = Dp(edge), TopMargin = Dp(edge), BottomMargin = Dp(edge)
             };
-        var portraitSize = (int)(Math.Min(activity.Resources!.DisplayMetrics!.WidthPixels, activity.Resources.DisplayMetrics.HeightPixels) * .105f);
-        var portraitLayout = new FrameLayout.LayoutParams(portraitSize, portraitSize, GravityFlags.Top | GravityFlags.Left)
+        FrameLayout.LayoutParams Pixels(int width, int height, GravityFlags gravity) => new(width, height, gravity);
+
+        var editor = new HudLayoutEditor(activity, overlay, screenHeight);
+        var targetFrame = new VulkanTargetFrame(activity, screenHeight);
+        overlay.AddView(targetFrame, Pixels((int)(HudPlacement.TargetFrameWidth * screenHeight) + 2, targetFrame.FrameHeight, GravityFlags.Top | GravityFlags.CenterHorizontal));
+        var player = new VulkanPlayerFrame(activity, session.Character.Name, screenHeight);
+        overlay.AddView(player, Pixels(player.FrameWidth, player.FrameHeight, GravityFlags.Top | GravityFlags.Left));
+        player.Clickable = true;
+        var statusSeen = false;
+        player.Click += (_, _) =>
         {
-            LeftMargin = (int)(portraitSize * .24f),
-            TopMargin = (int)(portraitSize * .24f)
+            statusSeen = true;
+            VulkanHudWindows.Status(activity, overlay, session);
         };
-        overlay.AddView(hud.Portrait, portraitLayout);
-        var statusLayout = Place(152, -2, GravityFlags.Top | GravityFlags.Left);
-        statusLayout.LeftMargin += portraitSize;
-        overlay.AddView(hud.Status, statusLayout);
-        overlay.AddView(hud.Experience, Place(-1, 15, GravityFlags.Bottom, 0));
+        var experience = new VulkanExperienceBar(activity);
+        overlay.AddView(experience, Place(-1, 18, GravityFlags.Bottom, 0));
 
-        var chat = MobileHudTheme.Button(activity, "Chat");
-        MobileHudTheme.Icon(chat, HudGlyph.Chat);
-        chat.Click += (_, _) => OpenChat(activity, session);
-        var chatLayout = Place(67, -2, GravityFlags.Top | GravityFlags.Left);
-        chatLayout.TopMargin = Dp(74);
+        var chat = new VulkanActionOrb(activity, HudGlyph.Chat) { ContentDescription = "Chat" };
+        var chatHistory = new List<VulkanWorldSession.ChatEntry>();
+        // The last chat lines under the chat button, unless the player hid them from the chat window.
+        var chatFeed = new TextView(activity) { TextSize = 11.5f, Clickable = false };
+        chatFeed.SetMaxLines(ChatFeedLines);
+        chatFeed.SetShadowLayer(3f, 0f, 1.2f, Color.Black);
+        chatFeed.SetLineSpacing(Dp(1), 1f);
+        chatFeed.Visibility = editor.ChatHidden ? ViewStates.Gone : ViewStates.Visible;
+        void ShowFeed()
+        {
+            using var text = VulkanChatText.Format(chatHistory, chatHistory.Count - ChatFeedLines);
+            chatFeed.SetText(text, TextView.BufferType.Spannable);
+        }
+
+        chat.Click += (_, _) => VulkanHudWindows.Chat(activity, overlay, session, chatHistory, !editor.ChatHidden, shown =>
+        {
+            editor.ChatHidden = !shown;
+            chatFeed.Visibility = shown ? ViewStates.Visible : ViewStates.Gone;
+        });
+        var chatLayout = Place(44, 44, GravityFlags.Top | GravityFlags.Left, 12);
+        chatLayout.TopMargin = player.FrameHeight + Dp(4);
         overlay.AddView(chat, chatLayout);
+        var chatFeedLayout = Place(300, -2, GravityFlags.Top | GravityFlags.Left, 12);
+        chatFeedLayout.TopMargin = player.FrameHeight + Dp(52);
+        overlay.AddView(chatFeed, chatFeedLayout);
 
-        var right = new LinearLayout(activity) { Orientation = Orientation.Vertical };
+        var mapBox = new FrameLayout(activity);
+        overlay.AddView(mapBox, Place(124, 124, GravityFlags.Top | GravityFlags.Right));
         // A minimap for each field one is packaged for, shown while the player is in it.
         var maps = new Dictionary<int, MobileMinimap>();
-        foreach (var (code, name) in MinimapFields)
+        var worldMap = new VulkanWorldMap(activity, overlay, session);
+        foreach (var (code, name, title) in MinimapFields)
         {
             if (MobileMinimap.Open(activity, name) is { } fieldMap)
             {
                 fieldMap.Visibility = ViewStates.Gone;
                 maps[code] = fieldMap;
-                right.AddView(fieldMap, new LinearLayout.LayoutParams(Dp(124), Dp(124)));
+                fieldMap.Click += (_, _) => worldMap.Open(fieldMap, title);
+                mapBox.AddView(fieldMap, new FrameLayout.LayoutParams(-1, -1));
             }
         }
-        var attack = MobileHudTheme.Button(activity, "Atacar", prominent: true);
-        MobileHudTheme.Icon(attack, HudGlyph.Attack, stacked: true);
-        attack.SetSingleLine(true);
-        attack.TextSize = 12;
-        attack.Click += (_, _) => session.AttackSelected();
-        overlay.AddView(attack, Place(72, 64, GravityFlags.Bottom | GravityFlags.Right, 20));
+        var icons = new VulkanItemIcons(session.AssetRoot, action => activity.RunOnUiThread(action));
+        var inventory = new VulkanInventoryPanel(activity, overlay, session, icons);
+        var journal = new VulkanQuestJournal(activity, overlay, session);
+        void OpenJournal() => journal.Open(() => session.Navigator?.SetEnabled(true));
 
-        var menu = new LinearLayout(activity);
-        var mainMenu = MobileHudTheme.Button(activity, "Menu");
-        MobileHudTheme.Icon(mainMenu, HudGlyph.Menu);
-        var inventory = new VulkanInventoryPanel(activity, overlay, session);
-        var bag = MobileHudTheme.Button(activity, "Bolsa");
-        MobileHudTheme.Icon(bag, HudGlyph.Bag);
-        bag.Click += (_, _) => inventory.Toggle();
-        menu.AddView(mainMenu);
-        menu.AddView(hud.Journal);
-        menu.AddView(bag);
-        overlay.AddView(menu, Place(-2, -2, GravityFlags.Bottom | GravityFlags.Left, 19));
+        // The menu buttons stand on their own, so the HUD editor moves each.
+        var menuOrbs = new List<VulkanActionOrb>();
+        var mainMenu = MenuOrb(HudGlyph.Menu, "Menu");
+        var journalOrb = MenuOrb(HudGlyph.Journal, "Missões");
+        journalOrb.Click += (_, _) => OpenJournal();
+        var bagOrb = MenuOrb(HudGlyph.Bag, "Bolsa");
+        bagOrb.Click += (_, _) => inventory.Toggle();
+        VulkanActionOrb MenuOrb(HudGlyph glyph, string caption)
+        {
+            var orb = new VulkanActionOrb(activity, glyph) { ContentDescription = caption };
+            orb.SetCaption(caption);
+            var layout = Place(58, 58, GravityFlags.Bottom | GravityFlags.Left, 22);
+            layout.LeftMargin = Dp(22 + 64 * menuOrbs.Count);
+            overlay.AddView(orb, layout);
+            menuOrbs.Add(orb);
+            return orb;
+        }
+
         var navigation = new LinearLayout(activity) { Orientation = Orientation.Vertical, Visibility = ViewStates.Gone };
         navigation.SetPadding(Dp(14), Dp(10), Dp(14), Dp(12));
         navigation.Clickable = true;
-        var menuFrame = new Android.Graphics.Drawables.GradientDrawable(
-            Android.Graphics.Drawables.GradientDrawable.Orientation.TopBottom,
-            [Color.Rgb(23, 48, 53).ToArgb(), Color.Rgb(12, 20, 28).ToArgb()]);
-        menuFrame.SetCornerRadius(Dp(12));
-        menuFrame.SetStroke(Dp(1), Color.Rgb(168, 132, 71));
-        navigation.Background = menuFrame;
+        navigation.Background = new PlateDrawable(Dp(14));
         var heading = new LinearLayout(activity);
         navigation.AddView(heading);
         var identity = new LinearLayout(activity) { Orientation = Orientation.Vertical };
@@ -155,15 +188,20 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
         closeMenu.ContentDescription = "Fechar menu";
         closeMenu.Click += (_, _) => navigation.Visibility = ViewStates.Gone;
         heading.AddView(closeMenu, new LinearLayout.LayoutParams(Dp(42), Dp(42)));
-        overlay.AddView(navigation, Place(304, -2, GravityFlags.Bottom | GravityFlags.Left, 66));
+        var navigationLayout = Place(304, -2, GravityFlags.Bottom | GravityFlags.Left, 22);
+        navigationLayout.BottomMargin = Dp(90);
+        overlay.AddView(navigation, navigationLayout);
         mainMenu.Click += (_, _) => navigation.Visibility = navigation.Visibility == ViewStates.Visible
             ? ViewStates.Gone : ViewStates.Visible;
         var firstRow = AddMenuRow();
-        AddMenuAction(firstRow, "Personagem", HudGlyph.Skill, () => OpenStatus(activity, session));
         AddMenuAction(firstRow, "Inventário", HudGlyph.Bag, inventory.Toggle);
+        AddMenuAction(firstRow, "Missões", HudGlyph.Journal, OpenJournal);
         var secondRow = AddMenuRow();
-        AddMenuAction(secondRow, "Missões", HudGlyph.Journal, () => hud.Journal.PerformClick());
         AddMenuAction(secondRow, "Movimento", HudGlyph.Run, session.ToggleRun);
+        var thirdRow = AddMenuRow();
+        AddMenuAction(thirdRow, "Gráficos", HudGlyph.Menu, () => VulkanHudWindows.Graphics(activity, overlay, session), stacked: false);
+        AddMenuAction(thirdRow, "Editar HUD", HudGlyph.Menu, () => editor.Open(), stacked: false);
+        AddMenuAction(secondRow, "Rever tutorial", HudGlyph.Journal, editor.ReplayTutorials);
         var footer = AddMenuRow();
         AddMenuAction(footer, "Sair do jogo", HudGlyph.Exit, activity.FinishAffinity, stacked: false);
 
@@ -188,14 +226,14 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
 
         var messages = new TextView(activity) { TextSize = 11 };
         messages.SetMaxLines(4);
-        messages.SetTextColor(MobileHudTheme.Ink);
-        messages.SetShadowLayer(2f, 0f, 1f, Color.Black);
-        var messageLayout = Place(225, -2, GravityFlags.Top | GravityFlags.Left);
-        messageLayout.TopMargin = Dp(114);
+        messages.SetTextColor(MobileHudTheme.Gold);
+        messages.SetShadowLayer(3f, 0f, 1.2f, Color.Black);
+        var messageLayout = Place(260, -2, GravityFlags.Top | GravityFlags.Left, 12);
+        // Below the chat lines.
+        messageLayout.TopMargin = player.FrameHeight + Dp(52 + ChatFeedLines * 17);
         overlay.AddView(messages, messageLayout);
         activity.AddContentView(overlay, new ViewGroup.LayoutParams(-1, -1));
 
-        var journal = new MobileQuestJournal(activity);
         var npcPanel = new VulkanNpcPanel(activity, overlay, session);
         // While the automatic quest runs, a dialog shows long enough to be read and answers its first choice itself.
         async Task<int?> Present(string title, string message, string[] choices, CancellationToken ct)
@@ -227,12 +265,43 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
         var questDialog = new MobileQuestDialog(activity, session.Play, messages, Present);
         var questLifetime = new CancellationTokenSource();
         overlay.ViewDetachedFromWindow += (_, _) => questLifetime.Cancel();
-        var shortcuts = new MobileShortcuts(activity, session.Play, messages, questLifetime.Token);
-        overlay.AddView(shortcuts.View, Place(-2, -2, GravityFlags.Bottom | GravityFlags.CenterHorizontal, 18));
+        var wheel = new VulkanActionWheel(activity, session, icons, messages, screenHeight, Dp(8), Dp(20), questLifetime.Token);
+        overlay.AddView(wheel.View, new FrameLayout.LayoutParams(-1, -1));
+        var feed = new VulkanCombatFeed(activity, screenHeight);
+        var feedLayout = Pixels((int)(screenHeight * .6f), (int)(screenHeight * .3f), GravityFlags.Bottom | GravityFlags.Right);
+        feedLayout.BottomMargin = wheel.BoxPixelsHigh + Dp(20);
+        feedLayout.RightMargin = Dp(12);
+        overlay.AddView(feed, feedLayout);
         var tracker = new VulkanQuestTracker(activity, session);
-        hud.Journal.Click += (_, _) => journal.Open(() => session.Navigator?.SetEnabled(true));
-        right.AddView(tracker.View, new LinearLayout.LayoutParams(Dp(172), -2) { TopMargin = Dp(5) });
-        overlay.AddView(right, Place(-2, -2, GravityFlags.Top | GravityFlags.Right));
+        var trackerLayout = Place(172, -2, GravityFlags.Top | GravityFlags.Right);
+        trackerLayout.TopMargin = Dp(10 + 124 + 5);
+        overlay.AddView(tracker.View, trackerLayout);
+        tracker.Collapsed = editor.QuestFolded;
+        tracker.Folded += folded => editor.QuestFolded = folded;
+        editor.Register("player", "Personagem", player, HudPlacement.ShiftPlayer);
+        editor.Register("target", "Alvo", targetFrame, HudPlacement.ShiftTarget);
+        editor.Register("chat", "Chat", chat);
+        editor.Register("chatFeed", "Histórico do chat", chatFeed);
+        editor.Register("menu", "Menu", mainMenu);
+        editor.Register("journal", "Missões", journalOrb);
+        editor.Register("bag", "Bolsa", bagOrb);
+        editor.Register("minimap", "Minimapa", mapBox);
+        editor.Register("quest", "Missão", tracker.View);
+        editor.Register("attack", "Atacar", wheel.Attack);
+        for (var slot = 0; slot < wheel.Skills.Count; slot++)
+        {
+            editor.Register($"skill-{slot}", $"Habilidade {slot + 1}", wheel.Skills[slot]);
+        }
+
+        for (var box = 0; box < wheel.Potions.Count; box++)
+        {
+            editor.Register($"potion-{box}", $"Poção {box + 1}", wheel.Potions[box]);
+        }
+
+        editor.Register("feed", "Abates", feed);
+        editor.Register("experience", "Experiência", experience);
+        var tutorial = new VulkanTutorial(activity, overlay, editor,
+            VulkanTutorial.Lessons(session, player, tracker.View, mainMenu, bagOrb, wheel, tracker, inventory, () => statusSeen));
 
         var readingNpc = false;
         async Task OpenNpcAsync(ulong id)
@@ -268,8 +337,8 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
         }
 
         PristonTale.Simulation.Quests.QuestView previousQuest = null;
-        var lines = new Queue<string>(4);
         PristonTale.Simulation.Characters.OwnerState previousOwner = null;
+        TargetView lastTarget = null;
         void Refresh()
         {
             if (activity.IsFinishing || activity.IsDestroyed || !overlay.IsAttachedToWindow)
@@ -280,8 +349,10 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
             var owner = session.Owner;
             if (owner is not null && !ReferenceEquals(owner, previousOwner))
             {
-                hud.UpdateOwner(owner);
-                shortcuts.Update(owner);
+                player.Update(owner);
+                experience.Update(owner);
+                feed.Observe(owner);
+                wheel.Update(owner);
                 inventory.Update(owner);
                 previousOwner = owner;
             }
@@ -290,9 +361,23 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
             {
                 previousQuest = quest;
                 journal.Update(quest);
+                feed.Observe(quest);
+            }
+
+            var target = session.Target;
+            targetFrame.Show(target);
+            lastTarget = target ?? lastTarget;
+            while (session.TryReadKill(out var killed))
+            {
+                feed.Kill(killed, lastTarget);
             }
 
             tracker.Refresh();
+            worldMap.Refresh();
+            if (!editor.IsOpen)
+            {
+                tutorial.Refresh();
+            }
             if (session.MapPose is { } pose)
             {
                 var marks = session.Navigator?.Marks;
@@ -307,7 +392,6 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
                     }
                 }
             }
-            shortcuts.SetTarget(session.AttackTarget);
             if (!readingNpc && session.TryReadNpc(out var npc))
             {
                 _ = OpenNpcAsync(npc);
@@ -320,72 +404,40 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
             var changed = false;
             while (session.TryReadChat(out var line))
             {
-                if (lines.Count == 4)
+                chatHistory.Add(line);
+                if (chatHistory.Count > MostChatHistory)
                 {
-                    lines.Dequeue();
+                    chatHistory.RemoveAt(0);
                 }
-                lines.Enqueue(line);
+
                 changed = true;
             }
             if (changed)
             {
-                messages.Text = string.Join("\n", lines);
+                ShowFeed();
             }
             overlay.PostDelayed(Refresh, 250);
         }
         overlay.Post(Refresh);
     }
 
-    private static void OpenStatus(Activity activity, VulkanWorldSession session)
+    public void OnActivityDestroyed(Activity activity) { }
+    public void OnActivityPaused(Activity activity)
     {
-        if (session.Owner is { } owner)
+        if (activity.Class.Name == "org.libsdl.app.SDLActivity")
         {
-            ShowPanel(activity, "Status", $"Nível {owner.Level}\n\nForça  {owner.Strength}\nEspírito  {owner.Spirit}\nTalento  {owner.Talent}\n"
-                + $"Agilidade  {owner.Agility}\nVitalidade  {owner.Health}\n\nAtaque  {owner.DamageMin}–{owner.DamageMax}\nDefesa  {owner.Defence}");
+            SurfaceGate.Close();
         }
     }
 
-    private static void ShowPanel(Activity activity, string title, string text)
+    public void OnActivityResumed(Activity activity)
     {
-        var content = new TextView(activity) { Text = text, TextSize = 15 };
-        content.SetTextColor(MobileHudTheme.Ink);
-        content.SetPadding(22, 16, 22, 16);
-        var scroll = new ScrollView(activity);
-        MobileHudTheme.Card(scroll);
-        scroll.AddView(content);
-        new AlertDialog.Builder(activity).SetTitle(title)!.SetView(scroll)!.SetNegativeButton("Fechar", (_, _) => { })!.Show();
+        if (activity.Class.Name == "org.libsdl.app.SDLActivity")
+        {
+            SurfaceGate.Open();
+        }
     }
 
-    private static void OpenChat(Activity activity, VulkanWorldSession session)
-    {
-        var input = new EditText(activity) { Hint = "Mensagem" };
-        input.SetSingleLine(true);
-        new AlertDialog.Builder(activity)
-            .SetTitle("Chat")!
-            .SetView(input)!
-            .SetNegativeButton("Cancelar", (_, _) => { })!
-            .SetPositiveButton("Enviar", async (_, _) =>
-            {
-                var text = input.Text?.Trim();
-                if (string.IsNullOrEmpty(text))
-                {
-                    return;
-                }
-                try
-                {
-                    await session.SendChatAsync(text);
-                }
-                catch (Exception)
-                {
-                    Toast.MakeText(activity, "Não foi possível enviar a mensagem.", ToastLength.Short)?.Show();
-                }
-            })!
-            .Show();
-    }
-
-    public void OnActivityDestroyed(Activity activity) { }
-    public void OnActivityPaused(Activity activity) { }
-    public void OnActivityResumed(Activity activity) { }
     public void OnActivitySaveInstanceState(Activity activity, Bundle state) { }
     public void OnActivityStarted(Activity activity) { }
     public void OnActivityStopped(Activity activity) { }

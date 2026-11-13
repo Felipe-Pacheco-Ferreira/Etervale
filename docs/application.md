@@ -234,8 +234,9 @@ Durable entry points (`Prepare*Async`, `Commit*Async`, `CheckNpcServiceAsync`, `
 
 ### Players (`WorldPlayer`)
 
-- Movement is client-owned and validated: a distance budget refills at 1.35 x run speed (village walk speed while the
-  character carries more than its weight limit; start 0.5 s, cap 2 s, +32 units slack); an overweight character's
+- Movement is client-owned and validated: a distance budget refills at 1.35 x run speed (the mounted speed,
+  `MountRules.UnitsPerSecond`, while the player rides its travel mount; else village walk speed while the character
+  carries more than its weight limit; start 0.5 s, cap 2 s, +32 units slack); an overweight character's
   running report counts as walking; a report is walked in pieces of at most 48 units, each following the wall slide
   within 8 units from the height the last piece reached, so a ramp's rising ground is not a wall. Within a piece the
   height follows the floor in 8-unit steps: a floor within 8 units below is stood on, a deeper one is fallen toward at
@@ -243,6 +244,13 @@ Durable entry points (`Prepare*Async`, `Commit*Async`, `CheckNpcServiceAsync`, `
   with no floor; each step may climb at most 24 units (the client climbs 10 every 4) and the report must end over a floor. The kept
   height is the server's, never the client's. Busy players (swing, flinch, eat,
   cast) ignore drift up to 192 units and reject larger. A move without an action target drops the attack lock.
+- Travel mount (`WorldPlayer.Mounted`, `TryMount`, `Dismount`; `WorldServer.MountAsync` answers the `MountRequest`):
+  mounting is refused while dead, busy (swing, flinch, eat, cheer, cast), with a personal shop open, in combat or in an
+  action field (`MountRules.MayMount`). A swing, a cast or damage the guard does not ignore dismounts the player and
+  holds it in combat for `MountRules.CombatHoldMs` (counted down by `TickAction`); death, any teleport (`Teleport`,
+  `EnterField`), opening a shop and crossing a gate into an action field dismount it too. The flag is part of the
+  player's looks (`PlayerAppearanceView.Mounted`), so a change raises the descriptor revision and reaches every viewer
+  as the player's `EntityDescription`.
 - Motion stops showing after 1.5 s without reports. Death clears actions and potion; the player stays down until it
   restarts (below) or a revive reaches it. `Revive` brings a player back in place with a damage guard.
 - Death and restart (`Simulation/Progression/DeathPenalty.cs`, `World/RestartTransactions.cs`, `WorldServer.Restart.cs`,
@@ -600,7 +608,10 @@ pets do (`FieldPremium`; 21% of attacks up to level 5, 24% to level 9). Its help
 
 With `players.starter_gifts` on, a new character (`CharacterRecordFactory.NewStarter` stores `StarterGiftsReceived`
 0; characters stored before migration 32 count as served) receives `StarterGifts`, one at a time, each a perfect copy
-(`ItemRoller.CreatePerfect`) specialized for its class:
+(`ItemRoller.CreatePerfect`) specialized for its class. The kit of the first three (`StarterGifts.FromGuide`) is not
+timed: the tribe's guide hands it over into the bag at the first talk of the Adventurer's Journey (`AdventurerJourney`,
+through `IQuestItemSource.StarterGift`), so a new character starts without equipment and equips it in the journey's
+Preparation; the server times only the crystals (`StarterGifts.Next` skips the kit).
 
 1. The first weapon of the class's own family (`StarterGifts.WeaponKey`): Fighter WA101, Mechanician WC101, Archer
    WS101, Pikeman WP101, Atalanta WT101, Knight WS201, Magician and Priestess WM101, Assassin WD101, Shaman WN101.

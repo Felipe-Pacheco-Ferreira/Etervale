@@ -110,6 +110,27 @@ public abstract class RemoteEntityBase
     // Drawn facing left or right only (an action field).
     public bool SideView { get; set; }
 
+    // A rider on its travel mount stands while the mount carries it: its walk and run show as Stand.
+    public bool Riding
+    {
+        get => _riding;
+        protected set
+        {
+            if (_riding == value)
+            {
+                return;
+            }
+
+            _riding = value;
+            if (_controller.Current is MotionCode.Walk or MotionCode.Run)
+            {
+                QueueMotion(new MotionCommand(MotionCommandKind.Set, _controller.Current), startsSound: false);
+            }
+        }
+    }
+
+    private bool _riding;
+
     public void SetTarget(double timeMs, Vector3 position, float facing, MotionState moveState, int life)
     {
         _ = _track.Add(new RemoteSample(timeMs, position, facing, moveState, life), _renderPosition);
@@ -305,7 +326,7 @@ public abstract class RemoteEntityBase
             return;
         }
 
-        if (_stalled && command.Motion is MotionCode.Walk or MotionCode.Run)
+        if ((_stalled || _riding) && command.Motion is MotionCode.Walk or MotionCode.Run)
         {
             command = new MotionCommand(MotionCommandKind.Set, MotionCode.Stand);
         }

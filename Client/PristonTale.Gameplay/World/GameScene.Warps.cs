@@ -244,6 +244,7 @@ public sealed partial class GameScene
         {
             _log.Info($"[Movement] correction {difference.Length():F1} units; field={warp.FieldId}, forced={warp.Forced}.");
             StopPredictedMovement();
+            Dismount();
             _playerBody.PlanarPosition = authoritative;
             _positionCorrection = Vector2.Zero;
             PlaceAtHeight(_playerBody, warp.Position.Y);

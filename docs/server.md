@@ -266,6 +266,7 @@ required per opcode; both envelopes reach the same switch.
 | `WingGateRequest` | `TravelWingGateAsync` | `WingGateAppService.TravelAsync` | `WingGateResult`. |
 | `PersonalShopOpen`, `PersonalShopClose`, `PersonalShopView`, `PersonalShopBuy` | `OpenPersonalShopAsync`, `ClosePersonalShopAsync`, `ViewPersonalShopAsync`, `BuyFromPersonalShopAsync` | `PersonalShopAppService` | `PersonalShopListing` and `PersonalShopDetails` for a view, then `PersonalShopResult`. |
 | `YahooKey` | inline | `WorldServer.YahooAsync` | None; the cheer arrives as presence. |
+| `MountRequest` | inline | `WorldServer.MountAsync` | None; the mount arrives as the player's `EntityDescription`. |
 | `DismissCrystalPets` | inline | `WorldServer.DismissCrystalPetsAsync` | None; the pets' end arrives as presence. |
 | `LeaveWorld` | inline | `ClosePlayAsync` (leave, save) | `LeaveWorld` with `Saved` true when the character was stored. |
 | a code without a handler | ignored | none | none |
@@ -331,7 +332,7 @@ of the regression suite ([testing.md](testing.md#multiplayer-propagation)):
 | --- | --- | --- |
 | An entity (player, monster, summon, pet, NPC) | Players of the same field within the connect range (about 1086 units); kept to 1.15 times that range; hidden game masters and other players' duel opponents never | Spawn (its `EntityDescription` pushed ahead of a presence spawn, unless it is a shared template's the receiver holds) the tick it enters the receiver's view; `RemoveObjects` the tick it leaves, dies away, logs out, disconnects or changes field |
 | Position, facing, motion | Its viewers | Motion, HP, max HP, target, attack and template changes the tick they happen; positions at 5 Hz near (543 units), 2 Hz far, within 2048 bytes per receiver per tick, most overdue first |
-| Description (level, equipment, looks, village flag, owner, size) | Its viewers | A new field-wide revision in the next entry, its `EntityDescription` pushed ahead of it |
+| Description (level, equipment, looks, village flag, mount, owner, size) | Its viewers | A new field-wide revision in the next entry, its `EntityDescription` pushed ahead of it |
 | Combat, skill and item events | The players that know its attacker or target (and the player itself) | Once, in server order, on the tick they happened; dropped only for a reader 4096 events behind, which then gets the running statuses again |
 | Statuses | The players that know the entity | `Add`, `Refresh`, `Remove` and ticks as they happen; a player that starts seeing the entity gets its running statuses with the time left |
 | Ground drops | Players within about 905 units; private drops only to their owner | `GroundItems` when they enter range, `GroundItemsRemoved` (batched) on pickup, expiry or leaving range |

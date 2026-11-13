@@ -384,6 +384,11 @@ public sealed class GameServerConnection : IGameBackend
         Send(new SwingRequestPacket());
     }
 
+    internal void SendMount(bool mount)
+    {
+        Send(new MountRequestPacket(mount));
+    }
+
     internal void SendDismissCrystalPets(uint statusCode)
     {
         Send(new DismissCrystalPetsPacket(statusCode));

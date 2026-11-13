@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using NumVector2 = System.Numerics.Vector2;
 using PristonTale.Simulation.Characters;
@@ -86,11 +87,21 @@ public sealed partial class GameScene
         return true;
     }
 
+    // The legs route searches walked over _routeFields, the fields loaded when the last route was planned, one cache per
+    // body radius; a route over another set of fields starts new caches. A field loaded again has the same collision, so
+    // fields are told apart by their definitions, which also keeps no unloaded stage alive. Game thread only.
+    private readonly Dictionary<float, RouteLegCache> _routeLegs = [];
+    private FieldDef[] _routeFields = [];
+
+    // The body radius a route is planned for when the player walks; a mounted player passes its mount's.
+    public const float WalkingBodyRadius = PlayerRadius;
+
     // A route from the player to a point of the render plane, over the same floor and walls the player collides with and
     // a little wider than the body, searched off the game thread over the fields loaded now (their collision is
     // read-only, so the search reads it alongside the frame). avoid: where standing NPCs are, on the render plane; the
-    // body collides with them, which the field's collision does not know. Null when the player is not placed yet.
-    public Task<GroundRoute> PlanRouteAsync(Vector2 goal, IReadOnlyList<Vector2> avoid = null)
+    // body collides with them, which the field's collision does not know. bodyRadius: the radius of the body that will
+    // walk the route. Null when the player is not placed yet.
+    public Task<GroundRoute> PlanRouteAsync(Vector2 goal, IReadOnlyList<Vector2> avoid = null, float bodyRadius = WalkingBodyRadius)
     {
         if (_playerBody is null)
         {
@@ -98,23 +109,53 @@ public sealed partial class GameScene
         }
 
         var fields = _fields.ToArray();
+        var definitions = fields.Select(field => field.Definition).ToArray();
+        if (!definitions.SequenceEqual(_routeFields))
+        {
+            _routeLegs.Clear();
+            _routeFields = definitions;
+        }
+
+        if (!_routeLegs.TryGetValue(bodyRadius, out var legs))
+        {
+            legs = new RouteLegCache(bodyRadius);
+            _routeLegs[bodyRadius] = legs;
+        }
+
         var feet = PlayerFeet;
-        return Task.Run(() => PlanRoute(fields, feet, goal, avoid ?? []));
+        return Task.Run(() => PlanRoute(fields, feet, goal, avoid ?? [], legs));
     }
 
     // A route the player's own movement walks to its end: each route found is walked frame by frame (WalkRoute); where
-    // the walk stops or falls, that place is avoided like an NPC and the search runs again, up to RouteWalkAttempts.
-    internal static GroundRoute PlanRoute(IReadOnlyList<LoadedField> fields, Vector3 feet, Vector2 goal, IReadOnlyList<Vector2> avoid)
+    // the walk stops or falls, that place is avoided like an NPC and the search runs again, up to RouteWalkAttempts, over
+    // the legs the first search walked. legs: the legs earlier searches over the same fields walked, whose body radius the
+    // route is planned for; without it, a fresh cache for the walking body.
+    internal static GroundRoute PlanRoute(IReadOnlyList<LoadedField> fields, Vector3 feet, Vector2 goal, IReadOnlyList<Vector2> avoid,
+        RouteLegCache legs = null)
     {
         var collision = new FieldCollisionQuery(fields);
         var floor = FloorOf(collision);
         var walls = WallsOf(collision);
+        legs ??= new RouteLegCache(WalkingBodyRadius);
         var blocked = new List<Vector2>(avoid);
+        var clock = Stopwatch.StartNew();
+        var searching = TimeSpan.Zero;
+        var cells = 0;
+        var walked = 0;
+        var reused = 0;
         GroundRoute route = null;
-        for (var attempt = 0; attempt < RouteWalkAttempts; attempt++)
+        for (var attempt = 1; attempt <= RouteWalkAttempts; attempt++)
         {
-            route = Search(CreateRoute(collision, floor, walls, feet, goal, blocked));
-            if (route.Points.Count == 0 || WalkRoute(floor, walls, feet, route.Points, out var stopped))
+            var started = clock.Elapsed;
+            route = Search(CreateRoute(collision, floor, walls, legs, feet, goal, blocked));
+            searching += clock.Elapsed - started;
+            cells += route.Examined;
+            walked += route.LegsWalked;
+            reused += route.LegsReused;
+            var stopped = Vector2.Zero;
+            var done = route.Points.Count == 0 || WalkRoute(floor, walls, feet, route.Points, legs.BodyRadius, out stopped);
+            route.Timing = new RouteTiming(searching.TotalMilliseconds, (clock.Elapsed - searching).TotalMilliseconds, attempt, cells, walked, reused);
+            if (done)
             {
                 return route;
             }
@@ -131,7 +172,8 @@ public sealed partial class GameScene
     // second (DestinationMovement, the wall slide at body height with the body's radius, the floor), each point to within
     // a unit as QuestNavigator follows it. False, and where, when the walk stops for half a second or drops past
     // GroundFall.SnapDistance between two frames (a fall).
-    internal static bool WalkRoute(GroundFloorQuery floor, WallTrace walls, Vector3 feet, IReadOnlyList<Vector2> points, out Vector2 stopped)
+    internal static bool WalkRoute(GroundFloorQuery floor, WallTrace walls, Vector3 feet, IReadOnlyList<Vector2> points, float bodyRadius,
+        out Vector2 stopped)
     {
         const float Frame = 1f / 60f;
         var speed = Locomotion.UnitsPerSecond(1, true, true);
@@ -151,7 +193,7 @@ public sealed partial class GameScene
             var step = DestinationMovement.Advance(new NumVector2(position.X, position.Y), new NumVector2(points[index].X, points[index].Y), speed, Frame);
             var wanted = new NumVector2(step.Position.X - position.X, step.Position.Y - position.Y);
             var probe = new NumVector3(position.X, height - GroundTraversal.VisualOffset + BodyProbeHeight, position.Y);
-            var slid = WallSlide.Slide(probe, wanted, PlayerRadius, PlayerRadius, walls);
+            var slid = WallSlide.Slide(probe, wanted, bodyRadius, bodyRadius, walls);
             GroundTraversal.TryFollow(new Vector3(position.X, height, position.Y), new Vector2(slid.X, slid.Z), floor, out var reached, out var drop);
             var moved = Vector2.Distance(position, new Vector2(reached.X, reached.Z));
             position = new Vector2(reached.X, reached.Z);
@@ -194,46 +236,64 @@ public sealed partial class GameScene
         return route;
     }
 
-    // The route search over these fields' collision, its legs walked as the player walks, keeping NpcRoom from the points
-    // to avoid. A leg keeps RouteBody of side room, or else, cramped and costlier, RouteNarrowBody: the route passes a stair
-    // or a gate narrower than RouteBody only where there is no other way.
-    private static GroundRoute CreateRoute(FieldCollisionQuery collision, GroundFloorQuery floor, WallTrace walls, Vector3 feet, Vector2 goal,
-        IReadOnlyList<Vector2> avoid)
+    // The route search over these fields' collision, its legs walked as a body of the cache's radius walks, keeping the
+    // NPCs' and that body's room from the points to avoid. A leg keeps RouteBody of side room, or else, cramped and
+    // costlier, RouteNarrowBody: the route passes a stair or a gate narrower than RouteBody only where there is no other
+    // way. The collision's answer is the same for every search, so legs between cells are kept in legs; the NPCs are
+    // checked on each search.
+    private static GroundRoute CreateRoute(FieldCollisionQuery collision, GroundFloorQuery floor, WallTrace walls, RouteLegCache legs, Vector3 feet,
+        Vector2 goal, IReadOnlyList<Vector2> avoid)
     {
+        var radius = legs.BodyRadius;
+        var npcRoom = NpcRadius + radius;
+        RouteLeg leg = (Vector3 from, Vector2 target, out Vector3 end, out float climb, out bool cramped) =>
+            WalksRouteLeg(from, target, floor, walls, radius, out end, out climb, out cramped);
+        RouteClear clear = (Vector3 from, Vector2 end) => ClearOf(new Vector2(from.X, from.Z), end, avoid, npcRoom);
+
         // A short leg out of where the player stands needs no side room and may pass NPCs, or a player against a wall or
         // beside an NPC could never leave; a longer one (a shortened route's first leg) keeps both.
-        return new GroundRoute(feet, goal,
-            (Vector3 from, Vector2 target, out Vector3 end, out float climb, out bool cramped) =>
+        RouteLeg startLeg = (Vector3 from, Vector2 target, out Vector3 end, out float climb, out bool cramped) =>
+        {
+            if (Vector2.Distance(new Vector2(from.X, from.Z), target) <= RouteEscape)
             {
-                var escape = from == feet && Vector2.Distance(new Vector2(from.X, from.Z), target) <= RouteEscape;
                 cramped = false;
-                if (!WalksTo(from, target, floor, walls, RouteClearance, escape ? 0f : RouteBody, out end, out climb))
-                {
-                    cramped = true;
-                    if (escape || !WalksTo(from, target, floor, walls, RouteClearance, RouteNarrowBody, out end, out climb))
-                    {
-                        return false;
-                    }
-                }
+                return WalksTo(from, target, floor, walls, radius, RouteClearance, 0f, out end, out climb);
+            }
 
-                return escape || ClearOf(new Vector2(from.X, from.Z), new Vector2(end.X, end.Z), avoid);
-            },
+            return WalksRouteLeg(from, target, floor, walls, radius, out end, out climb, out cramped) && clear(from, new Vector2(end.X, end.Z));
+        };
+
+        return new GroundRoute(feet, goal, startLeg, leg, clear, legs,
             goalOffGround: !collision.TryGetFloorHeight(new Vector3(goal.X, 0f, goal.Y), float.MaxValue, 0f, out _));
     }
 
-    // The room a route keeps from a standing NPC's centre: its body and the player's.
-    private const float NpcRoom = PlayerRadius * 2f;
+    // A leg with RouteBody of side room, or else a cramped one with RouteNarrowBody.
+    private static bool WalksRouteLeg(Vector3 from, Vector2 target, GroundFloorQuery floor, WallTrace walls, float radius, out Vector3 end,
+        out float climb, out bool cramped)
+    {
+        cramped = false;
+        if (WalksTo(from, target, floor, walls, radius, RouteClearance, RouteBody, out end, out climb))
+        {
+            return true;
+        }
+
+        cramped = true;
+        return WalksTo(from, target, floor, walls, radius, RouteClearance, RouteNarrowBody, out end, out climb);
+    }
+
+    // A standing NPC's body, as wide as the player's on foot: a route keeps it and its own body's radius from the NPC's centre.
+    private const float NpcRadius = PlayerRadius;
     // How long a leg out of the player's own place may be and still skip the side room and the NPCs: one diagonal cell.
     private const float RouteEscape = 48f;
 
-    private static bool ClearOf(Vector2 from, Vector2 to, IReadOnlyList<Vector2> avoid)
+    private static bool ClearOf(Vector2 from, Vector2 to, IReadOnlyList<Vector2> avoid, float room)
     {
         var leg = to - from;
         var lengthSquared = leg.LengthSquared();
         for (var index = 0; index < avoid.Count; index++)
         {
             var along = lengthSquared < 1e-6f ? 0f : Math.Clamp(Vector2.Dot(avoid[index] - from, leg) / lengthSquared, 0f, 1f);
-            if (Vector2.DistanceSquared(from + leg * along, avoid[index]) < NpcRoom * NpcRoom)
+            if (Vector2.DistanceSquared(from + leg * along, avoid[index]) < room * room)
             {
                 return false;
             }
@@ -252,7 +312,7 @@ public sealed partial class GameScene
         }
 
         _wallTrace ??= TraceWalls;
-        return WalksTo(PlayerFeet, goal, _groundFloorQuery, _wallTrace, 1f, RouteBody, out _, out _);
+        return WalksTo(PlayerFeet, goal, _groundFloorQuery, _wallTrace, PlayerRadius, 1f, RouteBody, out _, out _);
     }
 
     // How far ahead of the body, in body radii, a route keeps clear of walls, the length of each simulated step and the
@@ -276,8 +336,8 @@ public sealed partial class GameScene
     // the floor), a step at a time: true only when no step is turned aside or stopped, nothing stands within side radii of
     // its line, no climb is more than a step and no drop is a ledge. width: how far ahead the slide looks, in body radii.
     // climb: how far the feet rose and fell on the way, added up step by step.
-    internal static bool WalksTo(Vector3 feet, Vector2 target, GroundFloorQuery floor, WallTrace walls, float width, float side, out Vector3 end,
-        out float climb)
+    internal static bool WalksTo(Vector3 feet, Vector2 target, GroundFloorQuery floor, WallTrace walls, float radius, float width, float side,
+        out Vector3 end, out float climb)
     {
         end = feet;
         climb = 0f;
@@ -289,8 +349,8 @@ public sealed partial class GameScene
         }
 
         var direction = (target - start) / total;
-        var clearance = PlayerRadius * width;
-        var room = PlayerRadius * side;
+        var clearance = radius * width;
+        var room = radius * side;
         var across = new NumVector3(-direction.Y, 0f, direction.X);
         var current = feet;
         for (var travelled = 0f; travelled < total;)

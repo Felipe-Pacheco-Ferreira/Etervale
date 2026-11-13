@@ -103,6 +103,7 @@ public static class EtervaleOpcodes
     public const uint WingGateResult = 0x45540D05;
     public const uint YahooKey = 0x45540D06;
     public const uint SwingRequest = 0x45540D07;
+    public const uint MountRequest = 0x45540D08;
 
     public const uint EnterWorld = 0x45540E00;
     public const uint WorldEntry = 0x45540E01;

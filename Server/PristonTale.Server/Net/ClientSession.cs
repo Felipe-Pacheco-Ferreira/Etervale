@@ -241,6 +241,14 @@ internal sealed partial class ClientSession : IMovementVerdictSink
                     }
 
                     break;
+                case EtervaleOpcodes.MountRequest:
+                    var mount = MountRequestPacket.Read(memory.Span);
+                    if (_player is not null && _session is { } rider)
+                    {
+                        _ = _services.World.MountAsync(rider.EntityId, mount.Mount);
+                    }
+
+                    break;
                 case EtervaleOpcodes.DismissCrystalPets:
                     var dismissal = DismissCrystalPetsPacket.Read(memory.Span);
                     if (_player is not null && _session is { } owner)

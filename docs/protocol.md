@@ -122,6 +122,7 @@ closing.
 | `WingGateRequest` / `WingGateResult` (`0x45540D04` / `0x45540D05`) | C→S / S→C | A trip from a warp stone to a stone of the wing warp map, correlated by operation id; a trip that warped also sends a forced `FieldWarp` ([world.md](world.md#wing-warp-gates)). |
 | `YahooKey` (`0x45540D06`) | C→S | Space within the minute a yahoo word opened; the server checks the window, the motion and the stamina, and the cheer shows as the presence motion `yahoo` ([chat-and-gm.md](chat-and-gm.md#server-routing)). |
 | `SwingRequest` (`0x45540D07`) | C→S | Space with nothing ahead in an action field; the server swings at nothing, the way the player faces, when it may swing and holds no attack (`WorldServer.SwingAtNothingAsync`), and the swing shows as the presence motion `attack`. |
+| `MountRequest` (`0x45540D08`) | C→S | Ride the travel mount or leave it (`WorldServer.MountAsync`, `MountRules`); a refusal sends nothing back, the answer is the mounted flag of the player's `EntityDescription`, which every viewer receives. |
 
 ### Player actions
 
@@ -135,6 +136,7 @@ Bodies start with `uint16 Version = 1`; positions are fixed point (x256), entity
 | `CloseRequest` | `uint16 0` | 12 |
 | `YahooKey` | `uint16 0` | 12 |
 | `SwingRequest` | `uint16 0` | 12 |
+| `MountRequest` | `uint8 Flags (1 mount, 0 leave the mount), uint8 0` | 12 |
 | `WingGateRequest` | `uint16 0, Guid OperationId, uint8 Destination (map index 0..8), uint8 0, uint16 0` | 32 |
 | `WingGateResult` | `uint16 0, Guid OperationId, uint8 Status (WingGateStatus: 0 warped, 1 rejected, 2 not at a stone, 3 beyond the wing, 4 level too low, 5 not enough gold, 6 busy, 7 storage failed), uint8 Destination, uint16 0, int64 Fee` | 40 |
 
@@ -143,14 +145,15 @@ Other field values:
 
 - A presence spawn carries the descriptor revision (1 to 255) of the entity's description. The field
   keeps one revision per entity for every viewer (`FieldDescriptors`) and increments it when level, max HP, template,
-  speed, attack rate, equipment, looks (hair, face, pets, big head), village flag, tier, owner or scale change.
+  speed, attack rate, equipment, looks (hair, face, pets, big head, mount), village flag, tier, owner or scale change.
 
 ### Authority
 
 The server validates client reports instead of trusting them (`WorldPlayer.ReportMovement`):
 
-- Reports spend a distance budget that refills at 1.35 times the run speed (a game master's at 1.35 times the dash
-  speed, 3000/256 units per original tick) and holds at most two seconds of travel plus 32 units, so many small reports
+- Reports spend a distance budget that refills at 1.35 times the run speed (a mounted player's at 1.35 times the
+  mounted speed, `MountRules.UnitsPerSecond`; a game master's at 1.35 times the dash speed, 3000/256 units per original
+  tick) and holds at most two seconds of travel plus 32 units, so many small reports
   cannot add up to more than one long report could.
 - During a swing, flinch or potion, drift beyond 192 units is rejected and smaller drift is ignored. Reports from a dead
   player are ignored without a correction.
@@ -370,7 +373,7 @@ a reader fills each only from its version); text is UTF-8 with a `uint16` byte l
 | --- | --- |
 | `DescribeEntity` | `varuint EntityId` |
 | `EntityDescription` | `varuint EntityId, uint8 Revision, uint8 Kind (1 player, 2 monster, 3 NPC), varuint Level, varuint MoveSpeed, float32 AttackRate, text Name, text Model`, then the player or template part |
-| Player part | `varuint Job, Tier, Face, Hair, text HeadModel, uint32 Weapon, Armor, OffHand (item codes, 0 none), uint8 Flags (1 village, 2 Phoenix), uint8 HelperPet, uint8 BigHead, glow WeaponGlow, glow OffHandGlow, text ShopSign (128 B, empty when the player sells nothing)` |
+| Player part | `varuint Job, Tier, Face, Hair, text HeadModel, uint32 Weapon, Armor, OffHand (item codes, 0 none), uint8 Flags (1 village, 2 Phoenix, 4 mounted), uint8 HelperPet, uint8 BigHead, glow WeaponGlow, glow OffHandGlow, text ShopSign (128 B, empty when the player sells nothing)` |
 | Glow (`DescribedGlow`, 16 bytes) | `int8 Blink (0 none, below 0 steady), int16 R, G, B, A, float32 Scale, int8 Mix (-1 none), uint8 MixScroll, uint8 Flags (1 class-up light)` (`HeldItemGlow`) |
 | Template part | `varuint Template, float32 TemplateScale, varuint SoundCode, varint PortraitY, PortraitZ, uint8 Brood, varuint Owner, float32 InstanceScale, uint32 NpcServices, varuint Class, varint ShadowSize` (the monster class: 1 boss, 200 hammer; the ground shadow -1 none, 0 small to 3 large) |
 

@@ -101,7 +101,7 @@ public sealed partial class GameScene : IDisposable, IHudPortraitScene
             return Locomotion.GameMasterDashUnitsPerSecond;
         }
 
-        return Locomotion.UnitsPerSecond(moveSpeed, running, inVillage);
+        return MountRules.RidesFast(_mounted, Overweight) ? MountRules.UnitsPerSecond(moveSpeed) : Locomotion.UnitsPerSecond(moveSpeed, running, inVillage);
     }
 
     // A game master running with Shift held dashes, as the original's debug mode did; the server allows game masters
@@ -409,7 +409,7 @@ public sealed partial class GameScene : IDisposable, IHudPortraitScene
             visuals,
             faceIndex,
             PlayerWorld(),
-            _playerController.Current);
+            ShownPlayerMotion(_playerController.Current));
         _equipmentPresentation = new PlayerEquipmentPresentation(_playerComposer, _actorScene, _log,
             assetRoot, visuals, _player.Definition.MotionJobMask, handles);
         _playerBodyActor = handles.Body;
@@ -439,7 +439,7 @@ public sealed partial class GameScene : IDisposable, IHudPortraitScene
     public void Update(GameTime gameTime)
     {
         _npcAudio?.Update();
-        if (_equipmentPresentation?.Update(Owner, _activeField?.Definition.State == FieldState.Village, PlayerWorld(), _playerController.Current) == true)
+        if (_equipmentPresentation?.Update(Owner, _activeField?.Definition.State == FieldState.Village, PlayerWorld(), ShownPlayerMotion(_playerController.Current)) == true)
         {
             _playerBodyActor = _equipmentPresentation.Handles.Body;
             _playerHeadActor = _equipmentPresentation.Handles.Head;
@@ -466,6 +466,7 @@ public sealed partial class GameScene : IDisposable, IHudPortraitScene
         KeepOnFloor(frameDt);
         UpdateSkills(gameTime);
         UpdateItemEffects(frameDt);
+        UpdateMount(frameDt);
         ApplyPositionCorrection(frameDt);
         UpdatePlayerInput(gameTime);
         UpdateTargetSelection(gameTime);
@@ -622,6 +623,7 @@ public sealed partial class GameScene : IDisposable, IHudPortraitScene
         _looks?.Clear();
         _skillFx?.Dispose();
         _rain?.Dispose();
+        _mounts?.Dispose();
         _renderer?.Dispose();
         _monsterFx?.Clear();
         _combatSounds?.Dispose();
