@@ -49,6 +49,8 @@ public sealed class GroundRoute
     // How many points of the route a shortcut may pass over in one round of shortening; rounds repeat over the points
     // kept, so a long straight route still ends as a few legs, without trying a leg between every two of its points.
     private const int ShortcutReach = 24;
+    // The longest straight walk tried before the search: a failed one stops at the first wall, so its cost stays small.
+    private const float DirectReach = 2000f;
 
     private readonly RouteLeg _startLeg;
     private readonly RouteLeg _leg;
@@ -63,6 +65,7 @@ public sealed class GroundRoute
     private readonly int[] _pending = new int[Neighbours.Length];
     private Node _closest;
     private int _closestAt;
+    private bool _triedDirect;
 
     // Cramped: whether the leg into this cell passes with little room. OnGrid: false for the start, off the grid.
     private sealed record Node(Vector3 Feet, int X, int Z, float Cost, bool Cramped, Node Parent, bool OnGrid);
@@ -118,10 +121,23 @@ public sealed class GroundRoute
             return true;
         }
 
-        // Near is not reached when a wall or a ledge stands between (the goal below a terrace's parapet).
-        if (Distance(_start, _goal) <= GoalReach && _startLeg(_start, _goal, out _, out _, out _))
+        if (!_triedDirect)
         {
-            return Finish(new Node(_start, 0, 0, 0f, false, null, OnGrid: false), reachesGoal: true);
+            _triedDirect = true;
+            // Near is not reached when a wall or a ledge stands between (the goal below a terrace's parapet).
+            var distance = Distance(_start, _goal);
+            if (distance <= GoalReach && _startLeg(_start, _goal, out _, out _, out _))
+            {
+                return Finish(new Node(_start, 0, 0, 0f, false, null, OnGrid: false), reachesGoal: true);
+            }
+
+            // A goal in plain sight is walked to straight, without a search: the leg is the one the shortening would keep
+            // (open, no more rise and fall than uneven paving), so the route is the same, found at once.
+            if (distance <= DirectReach && _startLeg(_start, _goal, out var end, out var climb, out var cramped) && !cramped && climb <= ClimbTolerance)
+            {
+                var origin = new Node(_start, 0, 0, 0f, false, null, OnGrid: false);
+                return Finish(new Node(end, 0, 0, distance, false, origin, OnGrid: false), reachesGoal: true);
+            }
         }
 
         while (budget-- > 0 && Examined < MostNodes && _open.TryDequeue(out var node, out _))

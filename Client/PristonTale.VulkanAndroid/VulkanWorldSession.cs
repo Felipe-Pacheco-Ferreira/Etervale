@@ -207,6 +207,50 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
         }
     }
     public void PublishOwner(OwnerState value) => Volatile.Write(ref owner, value);
+
+    // While the player is down, what standing up again costs (the server's restart offer); null while alive. Set on the
+    // game thread, read on the UI thread.
+    public DeathView Death => Volatile.Read(ref death);
+
+    public void PublishDeath(bool dead, PristonTale.Simulation.Progression.RestartOffer? offer)
+    {
+        var shown = Death;
+        if (!dead)
+        {
+            if (shown is not null)
+            {
+                Volatile.Write(ref death, null);
+            }
+
+            return;
+        }
+
+        if (shown is null || shown.Offer != offer)
+        {
+            Volatile.Write(ref death, new DeathView(offer));
+        }
+    }
+
+    public Task<RestartOutcome> RestartAsync(RestartChoice choice) =>
+        Volatile.Read(ref scene)?.RestartAsync(choice) ?? Task.FromResult(new RestartOutcome(RestartStatus.Rejected, choice));
+
+    internal sealed record DeathView(PristonTale.Simulation.Progression.RestartOffer? Offer);
+
+    private DeathView death;
+
+    // The party as the server last sent it (PartyInfo.None outside one), and the requests to answer; read on the UI thread.
+    private PartyInfo party = PartyInfo.None;
+    private readonly ConcurrentQueue<PartyRequestInfo> partyRequests = new();
+
+    public PartyInfo Party => Volatile.Read(ref party);
+
+    public bool TryReadPartyRequest(out PartyRequestInfo request) => partyRequests.TryDequeue(out request);
+
+    public Task InviteToPartyAsync(ulong player) => Play?.InviteToPartyAsync(player) ?? Task.CompletedTask;
+
+    public Task AnswerPartyAsync(ulong from, bool accept) => Play?.AnswerPartyAsync(from, accept) ?? Task.CompletedTask;
+
+    public Task CommandPartyAsync(PartyCommand command, ulong member) => Play?.CommandPartyAsync(command, member) ?? Task.CompletedTask;
     public void SetClosing(Task task) => closing = task;
     public bool TryReadChat(out ChatEntry line) => chat.TryDequeue(out line);
 
@@ -235,7 +279,7 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
 
         if (shown is null || shown.Id != id || shown.Life != life || shown.MaxLife != maxLife || shown.Level != level || shown.Name != name)
         {
-            Volatile.Write(ref target, new TargetView(id, name, level, life, maxLife));
+            Volatile.Write(ref target, new TargetView(id, name, level, life, maxLife, combat.KindOf(id, out _) == EntityKind.Player));
         }
     }
 
@@ -258,6 +302,16 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
 
     public void Observe(PresenceUpdate update)
     {
+        if (update.Party is { } partyNow)
+        {
+            Volatile.Write(ref party, partyNow);
+        }
+
+        if (update.PartyRequest is { } request)
+        {
+            partyRequests.Enqueue(request);
+        }
+
         if (update.Quest is { } view)
         {
             var previous = Quest;

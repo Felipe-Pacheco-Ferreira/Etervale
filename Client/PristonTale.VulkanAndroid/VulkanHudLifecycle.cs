@@ -279,6 +279,8 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
         overlay.ViewDetachedFromWindow += (_, _) => questLifetime.Cancel();
         var wheelRight = Dp(8);
         var wheel = new VulkanActionWheel(activity, session, icons, messages, screenHeight, wheelRight, Dp(20), questLifetime.Token);
+        wheel.Restore(editor.SkillSlotsOf(session.Character.Name));
+        wheel.SkillsChosen += codes => editor.KeepSkillSlots(session.Character.Name, codes);
         overlay.AddView(wheel.View, new FrameLayout.LayoutParams(-1, -1));
         skills = new VulkanSkillsPanel(activity, overlay, session, icons, wheel);
         // NPC dialogs sit between the menu buttons and the wheel, at their default places.
@@ -319,6 +321,14 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
 
         editor.Register("feed", "Abates", feed);
         editor.Register("experience", "Experiência", experience);
+        var restart = new VulkanRestartPanel(activity, overlay, session);
+        var party = new VulkanPartyHud(activity, overlay, session);
+        var inviteLayout = Place(-2, 34, GravityFlags.Top | GravityFlags.CenterHorizontal, 0);
+        inviteLayout.TopMargin = targetFrame.FrameHeight + Dp(2);
+        overlay.AddView(party.Invite, inviteLayout);
+        overlay.AddView(party.Members, Place(-2, -2, GravityFlags.Bottom | GravityFlags.Left, 12));
+        ((FrameLayout.LayoutParams)party.Members.LayoutParameters!).BottomMargin = Dp(96);
+        editor.Register("party", "Grupo", party.Members);
         var tutorial = new VulkanTutorial(activity, overlay, editor,
             VulkanTutorial.Lessons(session, player, tracker.View, mainMenu, bagOrb, wheel, tracker, inventory, status, () => statusSeen));
 
@@ -420,6 +430,8 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
 
             tracker.Refresh();
             worldMap.Refresh();
+            restart.Refresh();
+            party.Refresh();
             if (!editor.IsOpen)
             {
                 tutorial.Refresh();

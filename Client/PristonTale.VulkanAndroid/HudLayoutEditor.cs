@@ -34,6 +34,8 @@ internal sealed class HudLayoutEditor
         public bool QuestFolded { get; set; }
         // Whether the last chat lines stay off the screen (they still show in the chat window).
         public bool ChatHidden { get; set; }
+        // The skills each character put on the action wheel's buttons, by character name (0 where a button fills itself).
+        public Dictionary<string, uint[]> SkillSlots { get; set; } = [];
         public List<string> Tutorials { get; set; } = [];
         // Which round of tutorials the list belongs to; an older round is cleared so the tutorials show again.
         public int TutorialRound { get; set; }
@@ -72,6 +74,14 @@ internal sealed class HudLayoutEditor
             _file.ChatHidden = value;
             Save();
         }
+    }
+
+    public IReadOnlyList<uint> SkillSlotsOf(string character) => _file.SkillSlots.TryGetValue(character, out var codes) ? codes : [];
+
+    public void KeepSkillSlots(string character, uint[] codes)
+    {
+        _file.SkillSlots[character] = codes;
+        Save();
     }
 
     public bool TutorialDone(string id) => _file.Tutorials.Contains(id);

@@ -4,8 +4,8 @@
     <SupportedOSPlatformVersion>26</SupportedOSPlatformVersion>
     <OutputType>Exe</OutputType><ImplicitUsings>enable</ImplicitUsings><Nullable>annotations</Nullable>
     <ApplicationId>org.etervale.vulkan.probe</ApplicationId>
-    <ApplicationVersion>57</ApplicationVersion>
-    <ApplicationDisplayVersion>0.57</ApplicationDisplayVersion>
+    <ApplicationVersion>58</ApplicationVersion>
+    <ApplicationDisplayVersion>0.58</ApplicationDisplayVersion>
     <AndroidPackageFormats>apk</AndroidPackageFormats>
     <RuntimeIdentifiers>android-arm64;android-x64</RuntimeIdentifiers><UseDefaultPublishRuntimeIdentifier>false</UseDefaultPublishRuntimeIdentifier>
     <RunAOTCompilation>false</RunAOTCompilation>

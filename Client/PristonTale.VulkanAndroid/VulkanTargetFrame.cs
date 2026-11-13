@@ -94,4 +94,5 @@ internal sealed class VulkanTargetFrame : View
 }
 
 // The target as the game sees it this frame: MaxLife 0 for someone that cannot be fought (an NPC).
-internal sealed record TargetView(ulong Id, string Name, int Level, int Life, int MaxLife);
+// Player: the target is another player (who can be invited to a party).
+internal sealed record TargetView(ulong Id, string Name, int Level, int Life, int MaxLife, bool Player = false);

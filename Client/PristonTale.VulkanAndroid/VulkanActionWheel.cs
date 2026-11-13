@@ -180,6 +180,33 @@ internal sealed class VulkanActionWheel
     // The skill on a skill button, or 0.
     public uint SkillOn(int slot) => _skillCodes[slot];
 
+    // The skills the player put on the buttons (0 where a button fills itself), each time one is put; kept by the HUD.
+    public event Action<uint[]> SkillsChosen;
+
+    // Puts back the skills the player chose earlier; a skill not learned (any longer) frees its button at the next update.
+    public void Restore(IReadOnlyList<uint> codes)
+    {
+        for (var slot = 0; slot < SkillSlots && slot < codes.Count; slot++)
+        {
+            if (codes[slot] != 0)
+            {
+                _skillCodes[slot] = codes[slot];
+                _chosen[slot] = true;
+            }
+        }
+    }
+
+    private uint[] ChosenSkills()
+    {
+        var codes = new uint[SkillSlots];
+        for (var slot = 0; slot < SkillSlots; slot++)
+        {
+            codes[slot] = _chosen[slot] ? _skillCodes[slot] : 0;
+        }
+
+        return codes;
+    }
+
     // Puts a learned skill on a skill button, as a long press does; a button that held it before gives it up.
     public void Assign(int slot, uint code)
     {
@@ -194,6 +221,7 @@ internal sealed class VulkanActionWheel
 
         _skillCodes[slot] = code;
         _chosen[slot] = true;
+        SkillsChosen?.Invoke(ChosenSkills());
         if (_owner is not null)
         {
             Update(_owner);

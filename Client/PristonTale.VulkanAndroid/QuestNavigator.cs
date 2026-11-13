@@ -16,6 +16,8 @@ using XnaVector2 = Microsoft.Xna.Framework.Vector2;
 internal sealed class QuestNavigator(VulkanWorldSession session)
 {
     private const float WaypointReach = 40f;
+    // How far a route's goal may move before the route is planned again.
+    private const float GoalDrift = 60f;
     // A route's point counts as passed this close: the player walks the legs the search checked and walked, never
     // cutting a corner into a planter or a lamp post.
     private const float PointReach = GameScene.RoutePointReach;
@@ -410,7 +412,9 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
         Show(scene.Mounted ? RidingStatus(status) : status);
         // Routes are planned for the rider's own body, mounted or not: a route for the hound's width failed in narrow streets
         // and left the mount on and off; the hound may brush a wall instead.
-        if (_routeField != field || _routeGoal != goal || (_route.Count == 0 && _routing is null && now >= _retryAt))
+        // A goal that moves (a monster chased) is planned for again only once it moved GoalDrift: replanning at every step
+        // of it dropped each search before it ended, and the player stood still among the monsters.
+        if (_routeField != field || Vector2.Distance(_routeGoal, goal) > GoalDrift || (_route.Count == 0 && _routing is null && now >= _retryAt))
         {
             _routeField = field;
             _routeGoal = goal;

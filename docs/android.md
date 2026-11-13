@@ -524,7 +524,12 @@ to the guide meanwhile), and the journal's auto-hunt action does too. The joysti
     monster's own drop is under one kill in a hundred; a later kill of the prey owes it again while the bag lacks it.
     The navigator keeps the crystal count it saw while hunting; when the guide answers without moving the quest on, it
     hunts and gathers again (`VulkanWorldSession.KeepHunting` keeps Auto Hunt running past the kill count).
-- **Walking.** Routes come from `GroundRoute` (`Client/PristonTale.Gameplay/World`): an A* over 32-unit cells, searched
+- **Walking.** A goal in plain sight is walked to straight: before searching, `GroundRoute.Step` tries the one leg from
+  the start to the goal (up to `DirectReach`, 2000 units; it must be open, not cramped, and rise and fall no more than
+  `ClimbTolerance`), which is the leg the shortening would keep, so the route is the same and found at once. The
+  navigator plans a moving goal (a monster it chases) again only once the goal moved `GoalDrift` (60 units); replanning
+  at every step of it dropped each search before it ended and left the player standing among the monsters.
+  Otherwise routes come from `GroundRoute` (`Client/PristonTale.Gameplay/World`): an A* over 32-unit cells, searched
   off the game thread over a snapshot of the loaded fields (`GameScene.PlanRouteAsync`; their collision meshes are
   read-only). Cells are told apart by height (`Storey`), so stairs and bridges are their own places. Each leg is a walk
   `GameScene.WalksTo` accepts, step by 12-unit step:
@@ -688,7 +693,8 @@ The HUD is drawn by Android views laid out in fractions of the screen height, th
 - **Action wheel** (`VulkanActionWheel`, bottom right): the large attack button, four skill buttons on an arc around
   it and the potion belt beside them (`VulkanActionOrb` buttons). The skill buttons fill with the learned skills in
   order; a long press, or the Habilidades window, puts another skill on one (`VulkanActionWheel.Assign`; a button that
-  held that skill gives it up). The choice lasts for the session. A skill that needs an enemy is cast at the current
+  held that skill gives it up). The choice is kept per character in `hud-layout.json` (`HudLayoutEditor.SkillSlotsOf`,
+  `KeepSkillSlots`); a kept skill no longer learned frees its button. A skill that needs an enemy is cast at the current
   target, or the attack button's search picks one first. The belt shows each potion's sprite (`VulkanItemIcons`,
   shared with the character window) and its count.
 - **Combat feed** (`VulkanCombatFeed`, right, above the wheel): kills, experience, gold, level-ups and quest counts rise
@@ -772,6 +778,19 @@ The HUD is drawn by Android views laid out in fractions of the screen height, th
   `NpcServiceKind.SkillMaster`; 0 before any) at the owner's `ProgressionRevision`; the server refuses away from the
   town's skill master ("Aproxime-se, vivo, do mestre de habilidades da sua cidade"), and the window shows the refusal
   or the new rank and redraws from the owner state that follows.
+- **Death** (`VulkanRestartPanel`): the PC's restart choice in the HUD's look, from the server's restart offer
+  (`GameScene.RestartOffer`, published with the dead state by `VulkanWorldSession.PublishDeath`). It opens
+  `HudRestartPanel.OpenDelayMs` after the fall with the death's share of experience and gold (or the Resurrection
+  Scroll that waives it), Recomeçar no mapa (a hundredth more, dimmed with "XP insuficiente para ficar no mapa" where
+  the server closes it) and Recomeçar na cidade; after `HudRestartPanel.TimeoutMs` (20 s) without a choice it chooses
+  the town, as the PC does. The choice is `GameScene.RestartAsync`; a refusal shows a message and the window again.
+- **Party** (`VulkanPartyHud`): the server's party, the same requests as the PC (`IPlayChannel.InviteToPartyAsync`,
+  `AnswerPartyAsync`, `CommandPartyAsync`), so phone and PC players party together. "Convidar p/ grupo" shows under
+  the target frame while another player outside the party is the target (and the player leads or has no party);
+  a request opens a window with Aceitar and Recusar that closes after `PartyRules.InviteMs`; the other members show as
+  plates at the lower left (name, level, life; the leader with a crown), and a tap on one gives Sair do grupo and, for
+  the leader, Passar liderança, Expulsar do grupo and Desfazer o grupo. `VulkanWorldSession` keeps the party
+  (`Party`) and queues the requests (`TryReadPartyRequest`); `TargetView.Player` marks a player target.
 - **Missões** (`VulkanQuestJournal`): Em andamento and Concluídas as pill tabs (with a chip while the automatic quest
   runs); on the left a card per entry (the running quest's steps, current first, or the finished quests, newest
   first) with its state chip and, on the current step, the hunt's count as a gauge; on the right the chosen entry: the

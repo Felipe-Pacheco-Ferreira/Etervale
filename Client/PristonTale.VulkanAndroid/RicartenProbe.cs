@@ -348,6 +348,7 @@ internal sealed class RicartenProbe : Game
         scene.Update(gameTime);
         scene.PlayInitialArrival(session.Entered.EntityId);
         session.PublishOwner(scene.Owner);
+        session.PublishDeath(scene.PlayerDead, scene.RestartOffer);
         var manual = orbit.Movement != Vector2.Zero;
         session.Navigator?.Update(scene, manual);
         session.UpdateAutoHunt(manual);
