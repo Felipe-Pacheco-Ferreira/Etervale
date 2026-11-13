@@ -45,6 +45,8 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
     // An attack that has not moved the player this long while its target is out of reach walks there along a route.
     private const double AttackStuckSeconds = 1.5;
     private const float AttackReach = 90f;
+    // A monster this near a player stuck on its way to its target is in the way.
+    private const float BlockRange = 70f;
 
     private enum Step { Idle, Guide, Prepare, Hunt, Collect, Done }
 
@@ -302,6 +304,21 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
 
         session.KeepHunting = collecting;
         Show(collecting ? $"Procurando o Cristal de {quest.TargetName}" : $"Caçando {quest.TargetName}  {quest.Kills}/{quest.KillsNeeded}");
+        // What swings at the player or stands in its way is fought first, before a chase, the drops or the quest's monster:
+        // walking past it to the quest's monster left the player hit from behind until it died.
+        if (session.FirstToClear() is not 0 and var first)
+        {
+            _chasing = 0;
+            ClearRoute();
+            session.SetAutoHunt(false);
+            if (scene.AttackTargetId != first)
+            {
+                scene.SetQuestHuntTarget(first);
+            }
+
+            return;
+        }
+
         if (_chasing != 0)
         {
             Chase(scene, pose, route);
@@ -362,6 +379,14 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
         }
 
         var target = scene.AttackTargetId;
+        if (now - _attackStillSince > AttackStuckSeconds && session.ClosestMonster(BlockRange) is { } near && near != target)
+        {
+            // Stuck against another monster: it is cleared out of the way first.
+            session.ClearFirst(near);
+            _attackStillSince = double.NaN;
+            return;
+        }
+
         if (now - _attackStillSince > AttackStuckSeconds && scene.TryGetEntityPlanar(target, out var at)
             && XnaVector2.Distance(at, scene.PlayerPlanar) > AttackReach)
         {

@@ -99,6 +99,43 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
         return closest;
     }
 
+    // Menu, Trocar personagem: asked on the UI thread, taken by the game thread, which leaves the world for the selection.
+    private int characterSelection;
+
+    public void RequestCharacterSelection() => Volatile.Write(ref characterSelection, 1);
+
+    public bool TakeCharacterSelection() => Interlocked.Exchange(ref characterSelection, 0) != 0;
+
+    // A monster in the automatic quest's way (one it stands stuck against), fought first; called on the game thread.
+    public void ClearFirst(ulong monster) => blocker = monster;
+
+    // What the automatic quest fights before the quest's monster, or 0: the monster in its way while it lives, else the
+    // nearest monster that swung at the player within AggressorMs and stands within AggressorRange. Game thread.
+    public ulong FirstToClear()
+    {
+        if (blocker != 0 && scene.TrackQuestMonster(blocker, out _))
+        {
+            return blocker;
+        }
+
+        blocker = 0;
+        var now = Environment.TickCount64;
+        var nearest = 0UL;
+        var best = AggressorRange * AggressorRange;
+        foreach (var (id, at) in attackers)
+        {
+            if (now - at <= AggressorMs && scene.TrackQuestMonster(id, out var distance) && distance < best)
+            {
+                (nearest, best) = (id, distance);
+            }
+        }
+
+        return nearest;
+    }
+
+    private const long AggressorMs = 6000;
+    private const float AggressorRange = 220f;
+
     // Whether a living monster of the quest's code is in view; called on the game thread.
     public bool HasHuntTarget(int questCode)
     {
@@ -116,6 +153,10 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
     private readonly ConcurrentQueue<QuestPrompt> prompts = new();
     // Monsters the player struck, until they die or leave view; a death among them is a kill for the HUD.
     private readonly HashSet<ulong> struck = new();
+    // The monsters that swung at the player, with when they last did; and one the automatic quest found in its way. Both
+    // are fought before the quest's monster. Game thread only.
+    private readonly Dictionary<ulong, long> attackers = new();
+    private ulong blocker;
     private readonly ConcurrentQueue<ulong> kills = new();
     private TargetView target;
     private IReadOnlyList<MapMark> npcMarks = [];
@@ -168,7 +209,13 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
         var manualAttack = Interlocked.Exchange(ref attackTap, 0) != 0 && Owner is { Life: > 0 };
         var next = 0UL;
         var code = AutoHunt ? Quest?.TargetQuestCode : null;
-        if (manualAttack || code.HasValue)
+        // The automatic quest clears what attacks it or stands in its way before going for the quest's monster.
+        var first = code.HasValue && !manualAttack ? FirstToClear() : 0UL;
+        if (first != 0)
+        {
+            next = first;
+        }
+        else if (manualAttack || code.HasValue)
         {
             var distance = float.PositiveInfinity;
             foreach (var (id, monsterCode) in huntMonsters)
@@ -350,6 +397,12 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
             {
                 struck.Add(combat.TargetId);
             }
+
+            // A monster that swings at the player, hit or miss, is fought before the quest's (FirstToClear).
+            if (combat.TargetId == Entered.EntityId && huntMonsters.ContainsKey(combat.AttackerId))
+            {
+                attackers[combat.AttackerId] = Environment.TickCount64;
+            }
         }
         for (var index = 0; index < update.States.Count; index++)
         {
@@ -362,6 +415,7 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
         foreach (var removed in update.Removed)
         {
             struck.Remove(removed);
+            attackers.Remove(removed);
             huntMonsters.Remove(removed);
             npcPlaces.Remove(removed);
         }

@@ -336,6 +336,12 @@ internal sealed class RicartenProbe : Game
         {
             return;
         }
+        if (session.TakeCharacterSelection())
+        {
+            LeaveWorld();
+            StartSelection();
+            return;
+        }
         quality.Update(presentation, gameTime.ElapsedGameTime.TotalSeconds);
         orbit.Update();
         scene.PointerCaptured = orbit.JoystickActive || orbit.CameraActive;
@@ -524,6 +530,37 @@ internal sealed class RicartenProbe : Game
     {
         var bounds = new Rectangle((int)(center.X - radius), (int)(center.Y - radius), (int)(radius * 2f), (int)(radius * 2f));
         joystickBatch.Draw(joystickCircle, bounds, tint);
+    }
+
+    // Back to the character selection on the same connection: the scene goes (closing its play channel, which leaves
+    // the world on the server and saves the character), with what was made for it; the HUD sees the world gone.
+    private void LeaveWorld()
+    {
+        UpdateKeyboard(false);
+        scene.PresenceObserved -= session.Observe;
+        scene.PresenceObserved -= namePlates.Observe;
+        scene.PresenceObserved -= ObserveChat;
+        scene.Dispose();
+        session.SetClosing(scene.Closing);
+        scene = null;
+        ProbeApplication.SetWorld(null);
+        selectionFrameReleased = false;
+        session = null;
+        namePainter.Dispose();
+        namePainter = null;
+        nameSprites.Dispose();
+        nameSprites = null;
+        joystickBatch.Dispose();
+        joystickBatch = null;
+        joystickCircle.Dispose();
+        joystickCircle = null;
+        portrait.Dispose();
+        portrait = null;
+        npcPortrait.Dispose();
+        npcPortrait = null;
+        targetPortrait.Dispose();
+        targetPortrait = null;
+        chat = null;
     }
 
     protected override void UnloadContent()

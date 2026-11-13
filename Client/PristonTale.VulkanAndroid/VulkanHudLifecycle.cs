@@ -55,16 +55,31 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
         }
 
         decor?.Post(WaitForFirstFrame);
-        void WaitForWorld()
+        WaitForWorld(activity);
+    }
+
+    // Puts the HUD over the world once one is entered; again after the player went back to the character selection.
+    private static void WaitForWorld(Activity activity)
+    {
+        var decor = activity.Window?.DecorView;
+        void Wait()
         {
             if (activity.IsFinishing || activity.IsDestroyed)
+            {
                 return;
+            }
+
             if (ProbeApplication.CurrentWorld is { Play: not null } session)
+            {
                 Attach(activity, session);
+            }
             else
-                decor?.PostDelayed(WaitForWorld, 200);
+            {
+                decor?.PostDelayed(Wait, 200);
+            }
         }
-        decor?.Post(WaitForWorld);
+
+        decor?.Post(Wait);
     }
 
     private static void Attach(Activity activity, VulkanWorldSession session)
@@ -257,6 +272,7 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
         var calendar = new VulkanEventCalendar(activity, overlay, session);
         AddMenuAction(AddMenuRow(), "Calendário", HudGlyph.Calendar, calendar.Open, stacked: false);
         var footer = AddMenuRow();
+        AddMenuAction(footer, "Trocar personagem", HudGlyph.Journal, session.RequestCharacterSelection, stacked: false);
         AddMenuAction(footer, "Sair do jogo", HudGlyph.Exit, activity.FinishAffinity, stacked: false);
 
         LinearLayout AddMenuRow()
@@ -426,6 +442,14 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
         {
             if (activity.IsFinishing || activity.IsDestroyed || !overlay.IsAttachedToWindow)
             {
+                return;
+            }
+
+            if (!ReferenceEquals(ProbeApplication.CurrentWorld, session))
+            {
+                // The player went back to the character selection: this HUD leaves with its world and the next waits.
+                (overlay.Parent as ViewGroup)?.RemoveView(overlay);
+                WaitForWorld(activity);
                 return;
             }
 

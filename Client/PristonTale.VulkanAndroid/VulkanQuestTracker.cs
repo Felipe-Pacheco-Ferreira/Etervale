@@ -131,7 +131,9 @@ internal sealed class VulkanQuestTracker
         _objective.Text = step?.Title ?? "Nenhuma missão ativa";
         var counting = quest is { KillsNeeded: > 0 };
         // A count met: the card wears the running gold border until the quest moves on.
-        VulkanAttention.Gold(View, counting && quest.Kills >= quest.KillsNeeded, Dp(10));
+        var met = counting && quest.Kills >= quest.KillsNeeded;
+        VulkanAttention.Gold(View, met, Dp(10));
+        VulkanAttention.Gold(_bar, met, Dp(4));
         _bar.Visibility = counting ? ViewStates.Visible : ViewStates.Gone;
         _title.Text = _titleText + (_collapsed ? "  ▸" : "  ▾");
         _objective.Visibility = _collapsed ? ViewStates.Gone : ViewStates.Visible;

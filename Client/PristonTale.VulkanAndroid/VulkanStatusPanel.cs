@@ -55,6 +55,11 @@ internal sealed class VulkanStatusPanel
     private readonly TextView[] _values = new TextView[Attributes.Length];
     private readonly VulkanGaugeView[] _bars = new VulkanGaugeView[Attributes.Length];
     private readonly VulkanPointButton[] _plus = new VulkanPointButton[Attributes.Length];
+    private readonly VulkanPointButton[] _minus = new VulkanPointButton[Attributes.Length];
+    // The points planned on each attribute: + and - move them, nothing reaches the server until Confirmar.
+    private readonly int[] _planned = new int[Attributes.Length];
+    private Button _confirm;
+    private Button _undo;
     private readonly TextView[] _combat = new TextView[CombatValues.Length];
     private VulkanPanel _panel;
     private LevelMedallion _medallion;
@@ -118,6 +123,7 @@ internal sealed class VulkanStatusPanel
 
         _owner = _session.Owner;
         Spent = 0;
+        Array.Clear(_planned);
         _answer = null;
         Array.Fill(_shown, -1);
         Build();
@@ -224,8 +230,12 @@ internal sealed class VulkanStatusPanel
         text.AddView(hint, new LinearLayout.LayoutParams(-1, -2) { TopMargin = Dp(2) });
         row.AddView(text, new LinearLayout.LayoutParams(0, -2, 1));
 
+        var minus = new VulkanPointButton(_activity) { Minus = true, ContentDescription = $"Tirar um ponto de {name}" };
+        minus.Click += (_, _) => Plan(index, -1);
+        _minus[index] = minus;
+        row.AddView(minus, new LinearLayout.LayoutParams(Dp(PointButtonSize), Dp(PointButtonSize)) { LeftMargin = Dp(6) });
         var plus = new VulkanPointButton(_activity) { ContentDescription = $"Somar um ponto em {name}" };
-        plus.Click += async (_, _) => await AllocateAsync(attribute);
+        plus.Click += (_, _) => Plan(index, 1);
         _plus[index] = plus;
         row.AddView(plus, new LinearLayout.LayoutParams(Dp(PointButtonSize), Dp(PointButtonSize)) { LeftMargin = Dp(6) });
         return row;
@@ -252,6 +262,18 @@ internal sealed class VulkanStatusPanel
         _note.SetPadding(Dp(8), Dp(6), Dp(8), Dp(6));
         _note.Background = VulkanPanelArt.Inset(_activity);
         column.AddView(_note, new LinearLayout.LayoutParams(-1, -2) { TopMargin = Dp(8) });
+        var actions = new LinearLayout(_activity);
+        _undo = MobileHudTheme.Button(_activity, "Desfazer");
+        _undo.Click += (_, _) =>
+        {
+            Array.Clear(_planned);
+            Render();
+        };
+        _confirm = MobileHudTheme.Button(_activity, "Confirmar", prominent: true);
+        _confirm.Click += async (_, _) => await ConfirmAsync();
+        actions.AddView(_undo, new LinearLayout.LayoutParams(0, Dp(42), 1) { RightMargin = Dp(6) });
+        actions.AddView(_confirm, new LinearLayout.LayoutParams(0, Dp(42), 1.4f));
+        column.AddView(actions, new LinearLayout.LayoutParams(-1, -2) { TopMargin = Dp(6) });
         return column;
 
         View Tile(int index)
@@ -295,22 +317,35 @@ internal sealed class VulkanStatusPanel
             strongest = Math.Max(strongest, _amounts[index]);
         }
 
-        var ready = !_pending && owner.StatPoints > 0 && owner.ProgressionRevision >= _expectedRevision;
+        var planned = Planned;
+        var free = Math.Max(0, owner.StatPoints - planned);
+        var ready = !_pending && owner.ProgressionRevision >= _expectedRevision;
         for (var index = 0; index < _amounts.Length; index++)
         {
-            _values[index].Text = _amounts[index].ToString();
-            _bars[index].Set(Attributes[index].Gauge, _amounts[index] / (float)strongest, "");
-            if (_shown[index] >= 0 && _amounts[index] > _shown[index])
+            var shown = _amounts[index] + _planned[index];
+            strongest = Math.Max(strongest, shown);
+            _values[index].Text = _planned[index] > 0 ? $"{_amounts[index]} +{_planned[index]}" : _amounts[index].ToString();
+            _values[index].SetTextColor(_planned[index] > 0 ? VulkanPanelArt.Done : Color.White);
+            _bars[index].Set(Attributes[index].Gauge, shown / (float)strongest, "");
+            if (_shown[index] >= 0 && shown > _shown[index])
             {
                 Pop(_values[index]);
             }
 
-            _shown[index] = _amounts[index];
-            _plus[index].Enabled = ready;
+            _shown[index] = shown;
+            _plus[index].Enabled = ready && free > 0;
+            _minus[index].Enabled = ready && _planned[index] > 0;
+            _minus[index].Visibility = _planned[index] > 0 ? ViewStates.Visible : ViewStates.Invisible;
         }
 
-        _points.Text = owner.StatPoints == 1 ? "1 ponto livre" : $"{owner.StatPoints} pontos livres";
-        _points.Alpha = owner.StatPoints > 0 ? 1f : .45f;
+        _points.Text = free == 1 ? "1 ponto livre" : $"{free} pontos livres";
+        _points.Alpha = free > 0 ? 1f : .45f;
+        _confirm.Enabled = ready && planned > 0;
+        _confirm.Alpha = _confirm.Enabled ? 1f : .45f;
+        _confirm.Text = planned > 0 ? $"Confirmar ({planned})" : "Confirmar";
+        _undo.Enabled = ready && planned > 0;
+        _undo.Alpha = _undo.Enabled ? 1f : .45f;
+        VulkanAttention.Gold(_confirm, _confirm.Enabled, Dp(10));
         for (var index = 0; index < CombatValues.Length; index++)
         {
             _combat[index].Text = CombatValues[index].Value(owner);
@@ -323,20 +358,41 @@ internal sealed class VulkanStatusPanel
         }
         else
         {
-            _note.Text = owner.StatPoints > 0
-                ? $"Toque em + para gastar um ponto. Para seu dano, {MainName}; para aguentar mais, Vitalidade."
-                : "Subir de nível dá pontos para distribuir aqui.";
+            _note.Text = planned > 0
+                ? "Os pontos só valem depois de Confirmar; até lá, - devolve e Desfazer limpa tudo."
+                : owner.StatPoints > 0
+                    ? $"Toque em + para reservar pontos e depois em Confirmar. Para seu dano, {MainName}; para aguentar mais, Vitalidade."
+                    : "Subir de nível dá pontos para distribuir aqui.";
             _note.SetTextColor(VulkanPanel.Muted);
         }
 
         static float Share(long value, long max) => max > 0 ? value / (float)max : 0f;
     }
 
-    // One free point on the attribute; the window answers with the server's refusal, or redraws when the owner state
-    // carrying the new revision arrives.
-    private async Task AllocateAsync(CharacterAttribute attribute)
+    // The points planned and not confirmed yet.
+    public int Planned => _planned.Sum();
+
+    // The Confirmar button, or null while the window is closed.
+    public View ConfirmView => _panel is null ? null : _confirm;
+
+    // A point planned on (step 1) or taken back from (step -1) an attribute, within the free points.
+    private void Plan(int index, int step)
     {
-        if (_pending || _owner is not { StatPoints: > 0 } owner || owner.ProgressionRevision < _expectedRevision || _session.Play is not { } play)
+        if (_owner is not { } owner || _planned[index] + step < 0 || step > 0 && Planned >= owner.StatPoints)
+        {
+            return;
+        }
+
+        _planned[index] += step;
+        _answer = null;
+        Render();
+    }
+
+    // The planned points, attribute by attribute, each as one command the server validates (its amount the points
+    // planned there); a refusal stops the rest, which stay planned. The window redraws from the owner states that follow.
+    private async Task ConfirmAsync()
+    {
+        if (_pending || Planned == 0 || _owner is not { } owner || owner.ProgressionRevision < _expectedRevision || _session.Play is not { } play)
         {
             return;
         }
@@ -344,14 +400,37 @@ internal sealed class VulkanStatusPanel
         _pending = true;
         _answer = null;
         Render();
-        var command = new ProgressionCommand(Guid.NewGuid(), owner.ProgressionRevision, ProgressionAction.AllocateAttribute, attribute, 1);
-        var answer = await VulkanProgression.ApplyAsync(play, command, "O servidor recusou o ponto.");
-        _expectedRevision = answer.Revision;
-        _answerOk = answer.Ok;
-        _answer = answer.Ok ? $"+1 em {Attributes[(int)attribute].Name}." : answer.Refusal;
-        if (answer.Ok)
+        var revision = owner.ProgressionRevision;
+        var given = 0;
+        _answerOk = true;
+        for (var index = 0; index < _planned.Length && _answerOk; index++)
         {
-            Spent++;
+            if (_planned[index] == 0)
+            {
+                continue;
+            }
+
+            var command = new ProgressionCommand(Guid.NewGuid(), revision, ProgressionAction.AllocateAttribute, Attributes[index].Attribute,
+                _planned[index]);
+            var answer = await VulkanProgression.ApplyAsync(play, command, "O servidor recusou os pontos.");
+            _answerOk = answer.Ok;
+            if (answer.Ok)
+            {
+                revision = answer.Revision;
+                _expectedRevision = answer.Revision;
+                given += _planned[index];
+                _planned[index] = 0;
+            }
+            else
+            {
+                _answer = answer.Refusal;
+            }
+        }
+
+        Spent += given;
+        if (_answerOk)
+        {
+            _answer = given == 1 ? "1 ponto confirmado." : $"{given} pontos confirmados.";
         }
 
         _pending = false;

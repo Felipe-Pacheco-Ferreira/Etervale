@@ -334,6 +334,8 @@ internal sealed class VulkanRewardsPanel(Activity activity, FrameLayout overlay,
                     Send(RewardEventsAction.Claim, RewardTrack.Welcome, index);
                 }
             };
+            // Ready to claim: the running gold border round the day's card.
+            VulkanAttention.Gold(card, true, Dp(10));
         }
 
         return card;

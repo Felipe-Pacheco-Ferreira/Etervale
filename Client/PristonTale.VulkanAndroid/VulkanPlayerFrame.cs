@@ -71,9 +71,8 @@ internal sealed class VulkanPlayerFrame : View
         VulkanHudArt.LevelBadge(canvas, centerX - size * .36f, centerY + size * .38f, .03f * h, _level, _levelValue, ExperienceTable.MaximumLevel, phase);
         if (_statPoints > 0)
         {
-            // Points to spend: a red dot with their count on the portrait (a tap opens the status).
-            VulkanHudArt.RedBadge(canvas, centerX + size * .38f, centerY - size * .36f, .026f * h,
-                _statPoints > VulkanHudArt.MostBadge ? VulkanHudArt.MostBadgeText : _statPoints.ToString());
+            // Points to spend: a plain red dot on the portrait (a tap opens the status, which counts them).
+            VulkanHudArt.RedBadge(canvas, centerX + size * .38f, centerY - size * .36f, .02f * h, "");
         }
 
         var left = centerX + size / 2f + .03f * h;

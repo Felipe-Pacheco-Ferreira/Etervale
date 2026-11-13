@@ -2,8 +2,8 @@ using Android.Content;
 using Android.Graphics;
 using Android.Views;
 
-// A round "+" that spends a point (an attribute point, a skill rank): a gold disc with a dark cross and a breathing glow
-// while it can, a dim dark one otherwise; darker while pressed.
+// A round "+" that spends a point (an attribute point, a skill rank), or with Minus a "-" that takes a planned one back:
+// a gold disc with a dark sign and a breathing glow while it can, a dim dark one otherwise; darker while pressed.
 internal sealed class VulkanPointButton : View
 {
     private readonly Paint _fill = new() { AntiAlias = true };
@@ -15,6 +15,9 @@ internal sealed class VulkanPointButton : View
     {
         Clickable = true;
     }
+
+    // A "-" instead of a "+".
+    public bool Minus { get; init; }
 
     protected override void OnSizeChanged(int width, int height, int oldWidth, int oldHeight)
     {
@@ -60,6 +63,11 @@ internal sealed class VulkanPointButton : View
         var thick = radius * .12f;
         _bar.Set(x - arm, y - thick, x + arm, y + thick);
         canvas.DrawRoundRect(_bar, thick, thick, _cross);
+        if (Minus)
+        {
+            return;
+        }
+
         _bar.Set(x - thick, y - arm, x + thick, y + arm);
         canvas.DrawRoundRect(_bar, thick, thick, _cross);
     }

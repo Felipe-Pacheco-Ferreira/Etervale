@@ -102,8 +102,10 @@ internal sealed class VulkanTutorial
                 new(() => player, "Pontos de atributo", "Você subiu de nível e ganhou pontos para fortalecer seu personagem. Toque no seu retrato "
                     + "para abrir o Status.", () => status.IsOpen),
                 new(() => status.PointsView, "Pontos livres", "Aqui ficam os pontos que você ainda não usou. " + status.Advice),
-                new(() => status.PlusOf(status.Main), "Gaste um ponto", $"Toque em + ao lado de {status.MainName}. Cada toque gasta um ponto e "
-                    + "vale na hora.", () => status.Spent > 0)
+                new(() => status.PlusOf(status.Main), "Reserve um ponto", $"Toque em + ao lado de {status.MainName}. Cada toque reserva um ponto; "
+                    + "o - devolve.", () => status.Planned > 0 || status.Spent > 0),
+                new(() => status.ConfirmView, "Confirme", "Toque em Confirmar para gastar os pontos reservados. Depois de confirmar não dá para "
+                    + "voltar atrás.", () => status.Spent > 0)
             ], () => !status.IsOpen)
         ];
     }

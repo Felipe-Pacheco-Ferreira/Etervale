@@ -601,7 +601,11 @@ to the guide meanwhile), and the journal's auto-hunt action does too. The joysti
   (`GameScene.WalksStraightTo`, the route's leg check at the body's own width): near the guide but on a terrace above it
   or behind a wall, the route goes on to the guide itself, down the stairs or around the wall. Within `WaypointReach`
   the approach starts whatever the check says. It goes for drops with `GameScene.PickUpNear`, each as the matching tap.
-- **Fighting.** Between fights the drops within `LootRadius` are gathered first, and a walk to a drop is not cut short
+- **Fighting.** What swings at the player or stands in its way comes first, before a chase, the drops or the quest's
+  monster (`VulkanWorldSession.FirstToClear`): the nearest monster that attacked the player (hit or miss) within the last
+  six seconds and 220 units, or one within `BlockRange` (70 units) the player stood stuck against on its way to its
+  target (`ClearFirst`), while it lives; Auto Hunt takes it before the quest's monster too. Walking past them to the
+  quest's monster left the player hit from behind until it died. Between fights the drops within `LootRadius` are gathered first, and a walk to a drop is not cut short
   by the next target. Then the quest's monster in view is hunted; only when none is in view is another monster within
   `DefendRange` fought, rather than walked past. A belt potion is drunk under 45% life, through the inventory's
   `InventoryAction.ConsumePotion` as the desktop belt does (the item-use command refuses potions with "Este item não
@@ -689,9 +693,10 @@ The HUD is drawn by Android views laid out in fractions of the screen height, th
   set by `RicartenProbe.Draw`; `GameScene.TargetRing.cs` draws it as ground quads of the skill effects, beside the blob
   shadows, from a ring texture it makes).
 - **Attention marks** (`VulkanAttention`): a running gold border (something done: the quest card once its count is
-  met, each Receber and RECEBER TUDO in Eventos) and a red dot with a count (something new). The Menu button counts
+  the quest card and its kill bar once the count is met, each
+  Receber and RECEBER TUDO in Eventos, and a welcome day's card ready to claim) and a red dot with a count (something new). The Menu button counts
   the rewards to claim and so does its Eventos entry; the Bolsa button counts the items that came into the bag since it
-  was last opened; the portrait shows the free attribute points. The points lesson starts the first time there are
+  was last opened; the portrait shows a plain dot while there are free attribute points. The points lesson starts the first time there are
   points, also during the automatic quest, out of a fight.
 - **Portraits:** `RicartenProbe.Draw` renders the player's and the target's heads (`HudTargetPortrait`) at the places
   `HudPlacement` defines; the frames leave a round window over them. Change both together through `HudPlacement`.
@@ -720,7 +725,9 @@ The HUD is drawn by Android views laid out in fractions of the screen height, th
 - **Buttons:** Menu and Bolsa as round buttons at the bottom left (the bag is a drawstring pouch,
   `HudGlyph.Bag`); chat under the player frame; the quest card and the menu on the HUD plate (`PlateDrawable`). The
   menu holds Inventário, Missões, Eventos, Habilidades, Movimento, Rever tutorial, Gráficos, Editar HUD, Calendário and
-  Sair do jogo.
+  Trocar personagem and Sair do jogo. Trocar personagem leaves the world on the same connection (`RicartenProbe.LeaveWorld`:
+  the scene goes with its play channel, which leaves the world on the server and saves the character) and opens the
+  character selection; the HUD sees `ProbeApplication.CurrentWorld` change, leaves, and waits for the next world.
 - **Chat:** the last five lines show under the chat button, each in its channel's colour with the speaker's name
   brighter (`VulkanChatText`); quest notices show below them in gold. The chat window lists the last 50 lines the same
   way and has a switch, Mostrando/Ocultas, that keeps the lines off the screen (`HudLayoutEditor.ChatHidden`, kept in
@@ -770,10 +777,14 @@ The HUD is drawn by Android views laid out in fractions of the screen height, th
   values as tiles (attack, attack rating, defence, absorption, critical, block, movement, skill points) and a line for
   tips and answers. The attribute the class's damage grows with (`CharacterClassRegistry.DamageAttribute`, by its
   beginner weapon's kind and `WeaponDamage.DamageAttribute`) is lit and marked Dano. The heading shows the free points;
-  the "+" buttons breathe while there are points and none is in flight. A tap sends one point
-  (`ProgressionAction.AllocateAttribute`, amount 1, at the owner's `ProgressionRevision`) and disables them until the
-  answer and the owner state with that revision arrive; the window then redraws from the owner state, the bar easing
-  and the value swelling, and shows "+1 em …" or the server's refusal (its text, or the connection error). The
+  the "+" buttons breathe while there are free points. A "+" only plans a point (the value shows "+n" in green, the free
+  points drop) and the "-" beside it, shown while that attribute has planned points, takes one back; Desfazer clears
+  the plan. Nothing reaches the server until Confirmar (with the planned count, under the running gold border): each
+  attribute with planned points is one command (`ProgressionAction.AllocateAttribute` with the planned amount, at the
+  revision the previous answer gave), a refusal stopping the rest, which stay planned. The buttons wait until the
+  answers and the owner state with that revision arrive; the window then redraws from the owner state and shows the
+  points confirmed or the server's refusal (its text, or the connection error). The points lesson plans a point and
+  then confirms it. The portrait shows a plain red dot while there are free points. The
   attribute rows scroll if the screen is too short for them. The command and its answer go through
   `VulkanProgression.ApplyAsync` (8 s at most), shared with the skills window; the "+" is `VulkanPointButton`.
 - **Habilidades** (`VulkanSkillsPanel`, Menu, Habilidades with `HudGlyph.Skill`; it also opens when a talk with a
