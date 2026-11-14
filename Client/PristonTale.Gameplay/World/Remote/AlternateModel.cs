@@ -1,4 +1,3 @@
-using PristonTale.Assets;
 using PristonTale.Contracts.Motion;
 using PristonTale.Engine3D.Formats;
 using PristonTale.Engine3D.Rendering;
@@ -10,16 +9,7 @@ namespace PristonTale.Gameplay.World.Remote;
 public static class AlternateModel
 {
     // The sub model's model info (its .inx or descriptor), or null when the model has none or it is missing.
-    public static string Path(string assetRoot, PristonModelInfo info)
-    {
-        if (string.IsNullOrWhiteSpace(info.SubModelFile))
-        {
-            return null;
-        }
-
-        var path = PristonModelPaths.Info(AssetFiles.Combine(assetRoot, info.SubModelFile));
-        return File.Exists(path) ? path : null;
-    }
+    public static string Path(string assetRoot, PristonModelInfo info) => PristonModelPaths.SubModelInfo(assetRoot, info);
 
     // A sub model on the main model's own skeleton is not an alternate.
     public static bool Alternates(PristonModelInfo main, PristonModelInfo sub) =>

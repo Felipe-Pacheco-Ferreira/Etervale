@@ -1,16 +1,28 @@
 using System.IO.Compression;
 
+// The game files on the phone, in one folder that every version keeps (Root): the APK's own archives are unpacked over
+// it once per CacheVersion, and the asset packs downloaded later (VulkanPacks) live there too, so a new APK keeps them.
 internal static class VulkanAssets
 {
     private static readonly object Gate = new();
     private static Task preparation;
 
-    // Raise the version whenever ricarten-desktop.zip or opening-desktop.zip gains content: the archives are extracted
-    // once per version, and older extractions are deleted.
-    private const string CachePrefix = "ricarten-desktop-";
-    private const int CacheVersion = 18;
+    // Raise the version whenever an APK archive (ricarten-desktop.zip, opening-desktop.zip, adventurer-journey.zip) gains
+    // content: they are unpacked again over the folder.
+    private const int CacheVersion = 20;
+    private const string RootName = "assets";
+    // The folders of the versions before the shared folder, one per version; deleted once.
+    private const string OldCachePrefix = "ricarten-desktop-";
 
-    public static string Root => Path.Combine(CacheParent, CachePrefix + CacheVersion);
+    private static readonly string[] Archives = ["ricarten-desktop.zip", "opening-desktop.zip", "adventurer-journey.zip"];
+
+    public static string Root => Path.Combine(CacheParent, RootName);
+
+    private static float progress = -1f;
+
+    // How far the APK archives are unpacked, 0 to 1, for the loading screen's bar; below 0 before it is known, and 1 once
+    // there is nothing to unpack.
+    public static float Progress => Volatile.Read(ref progress);
 
     private static string CacheParent => Android.App.Application.Context.NoBackupFilesDir!.AbsolutePath;
 
@@ -30,30 +42,42 @@ internal static class VulkanAssets
     private static void Extract()
     {
         var root = Root;
-        var ready = Path.Combine(root, "extracted");
+        var ready = Path.Combine(root, $"apk-archives-{CacheVersion}");
         if (File.Exists(ready))
         {
-            ExtractJourney(root);
+            Volatile.Write(ref progress, 1f);
             return;
         }
 
-        DeleteOlderCaches(root);
+        DeleteOldCaches();
         Directory.CreateDirectory(root);
-        ExtractArchive(root, "ricarten-desktop.zip");
-        ExtractArchive(root, "opening-desktop.zip");
-        ExtractJourney(root);
+        foreach (var marker in Directory.EnumerateFiles(root, "apk-archives-*"))
+        {
+            File.Delete(marker);
+        }
+
+        // Each archive is copied out of the APK and then unpacked: both steps count toward the progress by its size.
+        var sizes = Archives.Select(ArchiveSize).ToArray();
+        var total = Math.Max(1L, sizes.Sum() * 2);
+        var done = 0L;
+        for (var index = 0; index < Archives.Length; index++)
+        {
+            var before = done;
+            ExtractArchive(root, Archives[index], step => Volatile.Write(ref progress, (float)((before + step) / (double)total)));
+            done += sizes[index] * 2;
+        }
+
+        // The archives may have replaced files of downloaded packs: each pack is checked again by its files' sizes and
+        // fetched again where they differ (PackStore).
+        File.Delete(Path.Combine(root, PristonTale.Client.Net.Packs.PackStore.InstalledFileName));
         File.WriteAllText(ready, string.Empty);
+        Volatile.Write(ref progress, 1f);
     }
 
-    private static void DeleteOlderCaches(string current)
+    private static void DeleteOldCaches()
     {
-        foreach (var directory in Directory.EnumerateDirectories(CacheParent, CachePrefix + "*"))
+        foreach (var directory in Directory.EnumerateDirectories(CacheParent, OldCachePrefix + "*"))
         {
-            if (string.Equals(directory, current, StringComparison.Ordinal))
-            {
-                continue;
-            }
-
             // Only housekeeping: a folder that cannot be deleted now is tried again at the next new version.
             try
             {
@@ -66,28 +90,66 @@ internal static class VulkanAssets
         }
     }
 
-    private static void ExtractJourney(string root)
+    // The archive's size in the APK (the archives are stored uncompressed there), or 1 when it cannot be read: the
+    // progress then still moves archive by archive.
+    private static long ArchiveSize(string name)
     {
-        var marker = Path.Combine(root, "adventurer-journey-extracted");
-        if (!File.Exists(marker))
+        try
         {
-            ExtractArchive(root, "adventurer-journey.zip");
-            File.WriteAllText(marker, string.Empty);
+            using var descriptor = Android.App.Application.Context.Assets!.OpenFd(name);
+            return Math.Max(1L, descriptor.Length);
+        }
+        catch (Java.IO.IOException)
+        {
+            return 1L;
         }
     }
 
-    private static void ExtractArchive(string root, string name)
+    // Copies the archive out of the APK and unpacks it over the folder, reporting the bytes copied and then unpacked
+    // (each counted against the archive's size).
+    private static void ExtractArchive(string root, string name, Action<long> reported)
     {
         var package = Path.Combine(root, "assets.zip");
         try
         {
+            var buffer = new byte[1 << 20];
+            long copied = 0;
             using (var input = Android.App.Application.Context.Assets!.Open(name))
             using (var output = File.Create(package))
             {
-                input.CopyTo(output);
+                int read;
+                while ((read = input.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    output.Write(buffer, 0, read);
+                    copied += read;
+                    reported(copied);
+                }
             }
 
-            ZipFile.ExtractToDirectory(package, root, overwriteFiles: true);
+            var fullRoot = Path.GetFullPath(root) + Path.DirectorySeparatorChar;
+            using var zip = ZipFile.OpenRead(package);
+            long unpacked = 0;
+            foreach (var entry in zip.Entries)
+            {
+                var target = Path.GetFullPath(Path.Combine(root, entry.FullName));
+                if (!target.StartsWith(fullRoot, StringComparison.Ordinal))
+                {
+                    throw new InvalidDataException($"{name}: entry {entry.FullName} leaves the asset folder");
+                }
+
+                if (entry.FullName.EndsWith('/'))
+                {
+                    Directory.CreateDirectory(target);
+                }
+                else
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+                    entry.ExtractToFile(target, overwrite: true);
+                }
+
+                unpacked += entry.CompressedLength;
+                reported(copied + Math.Min(unpacked, copied));
+            }
         }
         finally
         {

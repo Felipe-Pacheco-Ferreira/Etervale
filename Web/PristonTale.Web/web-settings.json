@@ -19,7 +19,8 @@
   },
   "Downloads": {
     "AndroidApkPath": "downloads/priston-avalon.apk",
-    "AndroidVersion": "0.57"
+    "AndroidVersion": "0.57",
+    "PacksPath": "packs"
   },
   "Security": {
     "LoginFailuresPerAccount": 5,
@@ -29,6 +30,7 @@
     "RegistrationWindowMinutes": 60,
     "RequestsPerMinute": 120,
     "FormPostsPerMinute": 10,
+    "PackRequestsPerMinute": 600,
     "SessionMinutes": 120
   },
   "Kestrel": {

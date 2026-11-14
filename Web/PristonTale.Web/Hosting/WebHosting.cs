@@ -40,6 +40,7 @@ public static class WebHosting
         services.AddSingleton(static _ => ClassTitles.Load(WebSettings.BesideExecutable(ClassTitles.FileName)));
         services.AddSingleton(static _ => NewsFeed.Load(WebSettings.BesideExecutable(NewsFeed.FileName)));
         services.AddSingleton<AndroidPackage>();
+        services.AddSingleton<PackFiles>();
         services.AddSingleton<SiteData>();
         services.AddSingleton(static _ => new WorldCatalog());
 
@@ -103,6 +104,17 @@ public static class WebHosting
         app.MapMethods(AndroidDownloadPath, [HttpMethods.Get, HttpMethods.Head], static (AndroidPackage package) => package.Current() is { } file
             ? Results.File(file.Path, AndroidPackage.ContentType, file.DownloadName, file.LastWrite, enableRangeProcessing: true)
             : Results.NotFound());
+        app.MapMethods(PackFiles.RoutePrefix + "/{name}", [HttpMethods.Get, HttpMethods.Head], static (string name, PackFiles packs, HttpContext context) =>
+        {
+            if (packs.Find(name) is not { } file)
+            {
+                return Results.NotFound();
+            }
+
+            // A pack keeps its name when rebuilt: the client checks Last-Modified, and packs.json names each pack's SHA-256.
+            context.Response.Headers.CacheControl = "no-cache";
+            return Results.File(file.Path, file.ContentType, lastModified: file.LastWrite, enableRangeProcessing: true);
+        });
     }
 
     // The address a request came from (after the trusted proxies), for the limits.
@@ -160,8 +172,13 @@ public static class WebHosting
                 context.HttpContext.Response.ContentType = "text/plain; charset=utf-8";
                 await context.HttpContext.Response.WriteAsync("Muitas requisições. Aguarde um minuto e tente de novo.", ct);
             };
-            options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, IPAddress>(context =>
-                RateLimitPartition.GetFixedWindowLimiter(AddressOf(context), _ => PerMinute(security.RequestsPerMinute)));
+            // Pack downloads count apart from the pages, under their own, larger limit.
+            options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, (IPAddress, bool)>(context =>
+            {
+                var packs = context.Request.Path.StartsWithSegments(PackFiles.RoutePrefix);
+                return RateLimitPartition.GetFixedWindowLimiter((AddressOf(context), packs),
+                    key => PerMinute(key.Item2 ? security.PackRequestsPerMinute : security.RequestsPerMinute));
+            });
             options.AddPolicy(FormPostsPolicy, context => HttpMethods.IsPost(context.Request.Method)
                 ? RateLimitPartition.GetFixedWindowLimiter(AddressOf(context), _ => PerMinute(security.FormPostsPerMinute))
                 : RateLimitPartition.GetNoLimiter(IPAddress.None));

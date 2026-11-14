@@ -51,6 +51,19 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
     // The graphics quality the menu changes; set once the world is loaded.
     public MobileGraphics Graphics { get; set; }
 
+    // Where the frame's time goes; set once the world is loaded. The HUD's readout shows it when tapped.
+    public VulkanFrameMeter Meter { get; set; }
+
+    private long framesDrawn;
+
+    // Counted by the game thread for each world frame drawn; the HUD's readout turns it into frames per second.
+    public void CountFrame() => Interlocked.Increment(ref framesDrawn);
+
+    public long FramesDrawn => Interlocked.Read(ref framesDrawn);
+
+    // The smoothed heartbeat round trip, or HeartbeatLatency.Unknown before the first echo.
+    public int LatencyMs => connection.LatencyMs;
+
     // An NPC in view by name, with its place in field coordinates; called on the game thread.
     // Where the NPCs in view stand, on the render plane, leaving out those within keepFree of goal (the one walked to).
     public List<Microsoft.Xna.Framework.Vector2> NpcPoints(Microsoft.Xna.Framework.Vector2 goal, float keepFree)

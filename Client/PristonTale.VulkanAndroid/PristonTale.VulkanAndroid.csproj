@@ -4,14 +4,18 @@
     <SupportedOSPlatformVersion>26</SupportedOSPlatformVersion>
     <OutputType>Exe</OutputType><ImplicitUsings>enable</ImplicitUsings><Nullable>annotations</Nullable>
     <ApplicationId>org.etervale.vulkan.probe</ApplicationId>
-    <ApplicationVersion>60</ApplicationVersion>
-    <ApplicationDisplayVersion>0.60</ApplicationDisplayVersion>
+    <ApplicationVersion>66</ApplicationVersion>
+    <ApplicationDisplayVersion>0.66</ApplicationDisplayVersion>
     <AndroidPackageFormats>apk</AndroidPackageFormats>
     <RuntimeIdentifiers>android-arm64;android-x64</RuntimeIdentifiers><UseDefaultPublishRuntimeIdentifier>false</UseDefaultPublishRuntimeIdentifier>
     <RunAOTCompilation>false</RunAOTCompilation>
   </PropertyGroup>
   <ItemGroup Condition="'$(EtervaleServerAddress)' != ''">
     <AssemblyMetadata Include="EtervaleServerAddress" Value="$(EtervaleServerAddress)" />
+  </ItemGroup>
+  <!-- Where the asset packs are downloaded from (docs/packs.md): https://host:port/packs/?cert=<sha-256>. -->
+  <ItemGroup Condition="'$(EtervalePackAddress)' != ''">
+    <AssemblyMetadata Include="EtervalePackAddress" Value="$(EtervalePackAddress)" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../monogame/framework/MonoGame.Framework/MonoGame.Framework.Native.csproj" />

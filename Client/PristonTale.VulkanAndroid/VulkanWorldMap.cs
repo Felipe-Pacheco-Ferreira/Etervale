@@ -13,14 +13,7 @@ using PristonTale.Simulation.Quests;
 // field a red round area over the places its monsters are. The side lists the objective and the NPCs, nearest first.
 internal sealed class VulkanWorldMap
 {
-    // Names of the fields the journey goes through.
-    private static readonly Dictionary<int, string> FieldTitles = new()
-    {
-        [PristonTale.Simulation.World.FieldCodes.Ricarten] = "Ricarten",
-        [PristonTale.Simulation.World.FieldCodes.Pillai] = "Pillai",
-        [PristonTale.Simulation.World.FieldCodes.ForeverFall1] = "Forever Fall 1",
-        [PristonTale.Simulation.World.Fields.Forest1Field.Definition.FieldCode] = "Floresta 1"
-    };
+    private static readonly PristonTale.Simulation.World.WorldCatalog Catalog = new();
 
     private readonly Activity _activity;
     private readonly FrameLayout _overlay;
@@ -36,7 +29,7 @@ internal sealed class VulkanWorldMap
         _session = session;
     }
 
-    public static string FieldTitle(int code) => FieldTitles.TryGetValue(code, out var title) ? title : $"Campo {code}";
+    public static string FieldTitle(int code) => Catalog.FieldName(code);
 
     // The red hunting area the maps (this one and the minimap) mark in a field: the route's, while the quest still counts
     // kills and the field is the route's hunting field.

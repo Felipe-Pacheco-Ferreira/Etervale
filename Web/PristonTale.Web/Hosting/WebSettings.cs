@@ -50,6 +50,9 @@ public sealed record DownloadSettings
     public string AndroidApkPath { get; init; } = Path.Combine("downloads", "priston-avalon.apk");
 
     public string AndroidVersion { get; init; } = "";
+
+    // The folder of the Android asset packs (packs.json and the pack zips), relative to the executable.
+    public string PacksPath { get; init; } = "packs";
 }
 
 public sealed record SecuritySettings
@@ -69,6 +72,9 @@ public sealed record SecuritySettings
 
     // Posts of the sign-in and registration forms of one address per minute.
     public int FormPostsPerMinute { get; init; } = 10;
+
+    // Requests of one address per minute under /packs: a client fetching every pack asks for several hundred.
+    public int PackRequestsPerMinute { get; init; } = 600;
 
     public int SessionMinutes { get; init; } = 120;
 }
@@ -113,6 +119,8 @@ public sealed record WebSettings(SiteSettings Site, DatabaseSettings Database, G
         Require(GameServer.Port is > 0 and <= 65535, "GameServer:Port must be 1 to 65535.");
         Require(GameServer.ProbeSeconds >= 5, "GameServer:ProbeSeconds must be at least 5.");
         Require(!string.IsNullOrWhiteSpace(Downloads.AndroidApkPath), "Downloads:AndroidApkPath is required.");
+        Require(!string.IsNullOrWhiteSpace(Downloads.PacksPath), "Downloads:PacksPath is required.");
+        Require(Security.PackRequestsPerMinute >= 1, "Security:PackRequestsPerMinute must be at least 1.");
         Require(Security.LoginFailuresPerAccount >= 1 && Security.LoginFailuresPerIp >= 1 && Security.LoginFailureWindowSeconds >= 1,
             "Security: the login failure limits and window must be at least 1.");
         Require(Security.RegistrationsPerIp >= 1 && Security.RegistrationWindowMinutes >= 1,

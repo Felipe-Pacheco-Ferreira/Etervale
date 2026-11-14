@@ -31,7 +31,8 @@ namespace PristonTale.Client.Net;
 // operation id and NPC clicks by NPC entityId.
 public sealed class GameServerConnection : IGameBackend
 {
-    private static readonly TimeSpan HeartbeatInterval = TimeSpan.FromSeconds(4);
+    // Also the period of the latency readout's measurement (HeartbeatLatency).
+    private static readonly TimeSpan HeartbeatInterval = TimeSpan.FromSeconds(2);
     private static readonly TimeSpan DescriptionRetryInterval = TimeSpan.FromMilliseconds(Online.PresenceDecoder.DescriptionRetryMs);
 
     private readonly string _host;
@@ -103,6 +104,11 @@ public sealed class GameServerConnection : IGameBackend
     public long BytesReceived => _connection?.BytesReceived ?? 0;
 
     public long BytesSent => _connection?.BytesSent ?? 0;
+
+    // The smoothed round trip of the echoed heartbeats in milliseconds, or HeartbeatLatency.Unknown before the first echo.
+    public int LatencyMs => Latency.LatencyMs;
+
+    internal HeartbeatLatency Latency { get; } = new();
 
     public async Task<LoginOutcome> LoginAsync(string account, string password, string language, CancellationToken ct = default)
     {
@@ -519,7 +525,9 @@ public sealed class GameServerConnection : IGameBackend
                 }
 
                 elapsed = TimeSpan.Zero;
-                Send(new HeartbeatPacket(++counter, Environment.TickCount64));
+                var now = Environment.TickCount64;
+                Latency.Sent(++counter, now);
+                Send(new HeartbeatPacket(counter, now));
             }
         }
         catch (Exception ex) when (ex is OperationCanceledException or IOException or InvalidOperationException)
@@ -554,7 +562,7 @@ public sealed class GameServerConnection : IGameBackend
                 _characterReply?.TrySetResult(CharacterResultPacket.Read(packet));
                 break;
             case EtervaleOpcodes.Heartbeat:
-                HeartbeatPacket.Read(packet);
+                Latency.Answered(HeartbeatPacket.Read(packet).Counter, Environment.TickCount64);
                 break;
             case EtervaleOpcodes.WorldEntry:
                 OnWorldEntry(WorldEntryPacket.Read(packet));

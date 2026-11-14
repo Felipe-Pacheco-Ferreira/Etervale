@@ -26,6 +26,7 @@ server's database and the account, calendar and ranking code of `Shared/PristonT
 | `Services/ClassTitles.cs` | Class titles in Portuguese from the client's `DataText.pt-BR.resx`, copied as `content/class-titles.pt-BR.resx` |
 | `Services/NewsFeed.cs` | The posts of `content/news.json`, read again when the file changes |
 | `Services/AndroidPackage.cs` | The APK of `Downloads:AndroidApkPath` with its size and SHA-256 |
+| `Services/PackFiles.cs` | The Android asset packs of `Downloads:PacksPath`, by name only |
 | `Services/RegistrationGate.cs` | Registrations per address and window |
 | `Services/SiteText.cs` | Portuguese words for events and drops, number, date and time formats, the level medallion's stone |
 | `Pages/` | `Index` (home), `Noticias`, `Download`, `Rankings`, `Eventos`, `Entrar`, `Cadastro`, `Conta`, `Sair`, `Erro`, and `Shared/_Layout` |
@@ -46,6 +47,7 @@ settings table as the server reads it), `IRankingRepository`, `IAccountRepositor
 | `/noticias` | Every news post, newest first | `content/news.json` |
 | `/download` | The APK's version, size, date and SHA-256, the download button and how to install | `Downloads:*` |
 | `/download/android` | The APK itself (`application/vnd.android.package-archive`, range requests) | `Downloads:AndroidApkPath` |
+| `/packs/packs.json`, `/packs/<id>.zip` | The Android asset packs ([packs.md](packs.md)), by name only (`PackFiles.IsPackName`), range requests, `no-cache` | `Downloads:PacksPath` |
 | `/rankings`, `/rankings?classe=<class>` | The 50 highest characters, of all classes or one (`ClassTitles.Slug`, the `PlayerClass` name in lower case) | `IRankingRepository.TopAsync` |
 | `/eventos` | Events running now, the next 24 hours, the field bosses (next calls and each boss's hours) and the next days | `SiteData.CalendarAsync` |
 | `/cadastro` | Registration; signs the new account in | `AccountAppService.RegisterAsync` |
@@ -92,9 +94,11 @@ from a build of the repository, else the executable's directory).
 | `GameServer:ProbeSeconds` | 30 | Probe period, at least 5. |
 | `Downloads:AndroidApkPath` | `downloads/priston-avalon.apk` | The package offered; the page says "em breve" while it is missing. |
 | `Downloads:AndroidVersion` | empty (`0.57` in the file) | Shown on the pages and in the download's file name. |
+| `Downloads:PacksPath` | `packs` | Folder of the Android asset packs (`ptpack` output), relative to the executable. |
 | `Security:LoginFailuresPerAccount`, `LoginFailuresPerIp`, `LoginFailureWindowSeconds` | 5, 20, 300 | `LoginThrottle` limits of the sign-in form. |
 | `Security:RegistrationsPerIp`, `RegistrationWindowMinutes` | 3, 60 | Registrations one address may attempt per window. |
 | `Security:RequestsPerMinute` | 120 | Requests per address and minute, any page (static files excluded). |
+| `Security:PackRequestsPerMinute` | 600 | Requests per address and minute under `/packs`, counted apart from the pages. |
 | `Security:FormPostsPerMinute` | 10 | Posts of the sign-in and registration forms per address and minute. |
 | `Security:SessionMinutes` | 120 | Session lifetime, sliding; 5 to 10080. |
 | `Kestrel:Endpoints:*` | `http://localhost:5080`, `https://localhost:5443` | Standard Kestrel endpoints; give the HTTPS one a `Certificate` (`Path`, `Password`) in production. |

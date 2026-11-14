@@ -28,6 +28,7 @@ where to look. Setup, build and run commands are in the root [README.md](../READ
 | [application.md](application.md) | `Shared/PristonTale.Application`: use cases, sessions, `WorldServer`, tick, transactions, NPC services |
 | [server.md](server.md) | `Server/PristonTale.Server`: startup, hosted services, TCP edge, settings |
 | [website.md](website.md) | `Web/PristonTale.Web`: the public website, its pages, settings, security measures, running and deploying |
+| [packs.md](packs.md) | The asset packs the Android client downloads: building, serving, storing and the field and model gates |
 | [protocol.md](protocol.md) | Wire protocol: TLS transport, login and world messages, Etervale opcodes, server capacity |
 | [persistence.md](persistence.md) | Repositories, migrations, schema, SQLite and PostgreSQL providers |
 | [world-import.md](world-import.md) | `tools/PristonTale.WorldImport`: authored data formats, parsers, catalog import, verify |
@@ -61,6 +62,7 @@ The MonoGame fork documents itself in [monogame/README.md](../monogame/README.md
 | Change lighting, shadows or a render pass | rendering.md | shaders.md, client-settings.md |
 | Add a client option | client-settings.md | client.md |
 | Change the Android client or port a screen to it | android.md | client.md, tools.md |
+| Bring a field or monster to the phones, or change the asset packs | packs.md | android.md, website.md |
 | Add a skill or hit effect | effects.md | skills.md |
 | Change a server setting or connection limit | server.md | protocol.md |
 | Change the website, its pages or its security | website.md | application.md, persistence.md |

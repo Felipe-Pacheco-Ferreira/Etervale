@@ -6,6 +6,9 @@ param(
     [Parameter(Mandatory = $true)][string]$AndroidSdk,
     [Parameter(Mandatory = $true)][string]$JavaSdk,
     [Parameter(Mandatory = $true)][string]$ServerAddress,
+    # The asset pack folder of the website, https://host:port/packs/?cert=<sha-256> (docs/packs.md); without it the APK
+    # enters only the fields it carries.
+    [string]$PackAddress = '',
     [string]$KeyAlias = 'androiddebugkey',
     [string]$StorePassword = 'android',
     [string]$KeyPassword = 'android',
@@ -19,7 +22,7 @@ $project = Join-Path $PSScriptRoot 'PristonTale.VulkanAndroid.csproj'
 $version = ([xml](Get-Content $project)).Project.PropertyGroup.ApplicationDisplayVersion | Where-Object { $_ } | Select-Object -First 1
 $log = Join-Path $PSScriptRoot "obj/vulkan-$version.log"
 dotnet build $project --no-restore -c Release -warnaserror -m:1 -nr:false `
-    "-p:EtervaleServerAddress=$ServerAddress" -p:UseSharedCompilation=false -p:PublishTrimmed=false -p:RunAOTCompilation=false `
+    "-p:EtervaleServerAddress=$ServerAddress" "-p:EtervalePackAddress=$PackAddress" -p:UseSharedCompilation=false -p:PublishTrimmed=false -p:RunAOTCompilation=false `
     -p:AndroidEnableMarshalMethods=false '-p:IntermediateOutputPath=obj/verify-vulkan/' "-p:AndroidSdkDirectory=$AndroidSdk" `
     "-p:JavaSdkDirectory=$JavaSdk" -p:AndroidKeyStore=true "-p:AndroidSigningKeyStore=$Keystore" "-p:AndroidSigningStorePass=$StorePassword" `
     "-p:AndroidSigningKeyPass=$KeyPassword" "-p:AndroidSigningKeyAlias=$KeyAlias" *> $log

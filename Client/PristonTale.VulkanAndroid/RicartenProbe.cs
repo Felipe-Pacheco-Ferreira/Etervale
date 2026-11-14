@@ -43,6 +43,7 @@ internal sealed class RicartenProbe : Game
     private const float SelectionButtonScale = 1.3f;
     private readonly GraphicsDeviceManager graphics;
     private readonly TouchOrbit orbit = new();
+    private readonly VulkanFrameMeter meter = new();
     private GameScene scene;
     private EffectLibrary effects;
     private PristonSkyLibrary sky;
@@ -118,7 +119,8 @@ internal sealed class RicartenProbe : Game
         var display = Android.App.Application.Context.Resources!.DisplayMetrics!;
         var width = Math.Max(display.WidthPixels, display.HeightPixels);
         var height = Math.Min(display.WidthPixels, display.HeightPixels);
-        const int renderWidth = 1280;
+        quality = new MobileGraphics(Android.App.Application.Context.FilesDir!.AbsolutePath);
+        var renderWidth = quality.RenderWidth;
         graphics = new GraphicsDeviceManager(this)
         {
             IsFullScreen = true,
@@ -126,6 +128,9 @@ internal sealed class RicartenProbe : Game
             PreferredBackBufferHeight = width > 0 && height > 0 ? Math.Max(1, renderWidth * height / width) : 720,
             GraphicsProfile = GraphicsProfile.HiDef
         };
+        // One update per drawn frame, as on the PC: a fixed step runs extra updates to catch up whenever a frame misses the
+        // display, which costs the frame more time.
+        IsFixedTimeStep = false;
     }
 
     protected override void LoadContent()
@@ -135,7 +140,6 @@ internal sealed class RicartenProbe : Game
         Content = new FileContentManager(Services, Path.Combine(root, "Content"));
         assetRoot = root;
         presentation = new PresentationSettings();
-        quality = new MobileGraphics(Android.App.Application.Context.FilesDir!.AbsolutePath);
         presentation.ApplyRendering(quality.Rendering);
         PristonTale.Gameplay.Localization.ClientText.Use("pt-BR");
         effects = EffectLibrary.LoadBootstrap(GraphicsDevice, Content, assetRoot, ConsoleClientLog.Instance);
@@ -196,13 +200,6 @@ internal sealed class RicartenProbe : Game
             CameraDistanceScale = .82f,
             WorldEntered = (character, entered) =>
             {
-                if (entered.FieldId is not (FieldCodes.Ricarten or FieldCodes.Pillai or 2 or FieldCodes.ForeverFall1))
-                {
-                    Log.Warn(Tag, $"Map {entered.FieldId} is not packaged.");
-                    Exit();
-                    return;
-                }
-
                 session = new VulkanWorldSession(connection, character, entered);
                 ProbeApplication.SetWorld(session);
             }
@@ -239,7 +236,12 @@ internal sealed class RicartenProbe : Game
     {
         presentation.ApplyRendering(quality.Rendering with { ExposureCompensation = WorldExposure });
         session.Graphics = quality;
-        scene = new GameScene(GraphicsDevice, Content, sky: sky, effects: effects, presentation: presentation, audio: audio);
+        session.Meter = meter;
+        scene = new GameScene(GraphicsDevice, Content, sky: sky, effects: effects, presentation: presentation, audio: audio)
+        {
+            FieldAssetsReady = VulkanPacks.FieldReady,
+            ModelAssets = VulkanPacks.ModelAssets
+        };
         var character = session.Character;
         var outcome = session.Entered;
         var entered = new EnteredCharacter(character.Class, character.Name, character.Level, character.FaceIndex,
@@ -284,7 +286,7 @@ internal sealed class RicartenProbe : Game
         joystickCircle.SetData(pixels);
     }
 
-    protected override void Update(GameTime gameTime)
+    private void UpdateFrame(GameTime gameTime)
     {
         if (opening is not null)
         {
@@ -325,7 +327,8 @@ internal sealed class RicartenProbe : Game
             worldLoadPending = true;
             return;
         }
-        if (worldLoadPending && selectionFrameReleased)
+        // The world loads once its field's packs are on the phone (VulkanPacks shows the download meanwhile).
+        if (worldLoadPending && selectionFrameReleased && VulkanPacks.FieldReady(session.Entered.FieldId))
         {
             worldLoadPending = false;
             Log.Info(Tag, $"Loading field {session.Entered.FieldId}.");
@@ -426,7 +429,16 @@ internal sealed class RicartenProbe : Game
         SurfaceGate.LeaveDraw();
     }
 
-    protected override void Draw(GameTime gameTime)
+    protected override void Update(GameTime gameTime)
+    {
+        meter.UpdateBegan();
+        UpdateFrame(gameTime);
+        meter.UpdateEnded();
+    }
+
+    protected override void Draw(GameTime gameTime) => DrawFrame();
+
+    private void DrawFrame()
     {
         if (opening is not null)
         {
@@ -452,10 +464,12 @@ internal sealed class RicartenProbe : Game
             }
             return;
         }
+        meter.DrawBegan(scene.Renderer);
         var entity = session.Entered.EntityId;
         var viewport = GraphicsDevice.Viewport;
         var layout = HudLayout.Of(viewport);
         var npc = session.NpcPortrait;
+        meter.PartBegan();
         portrait.Render(scene, new HudPortraitSubject(entity, 0, 0), layout);
         if (npc is not null)
         {
@@ -468,10 +482,14 @@ internal sealed class RicartenProbe : Game
         {
             targetPortrait.Render(scene, framed, layout);
         }
+        meter.PortraitsEnded();
         var attacked = scene.AttackTargetId != 0 ? scene.AttackTargetId : session.AttackTarget;
         scene.GroundRingTarget = attacked;
+        meter.PartBegan();
         GraphicsDevice.Clear(scene.SkyColor);
         scene.Draw();
+        meter.SceneEnded();
+        session.CountFrame();
         nameSprites.Update();
         namePainter.Begin(layout);
         namePlates.DrawNamePlates(namePainter, layout, overhead, scene.HoveredTargetId, scene.TracedTargetId, classic: true);
@@ -521,6 +539,8 @@ internal sealed class RicartenProbe : Game
         {
             Log.Info(Tag, $"Desktop GameScene reached Ricarten: {scene.Status}");
         }
+
+        meter.DrawEnded(scene.Renderer, GraphicsDevice);
     }
 
     // Exposure compensation, in stops, the world is drawn with on the phone.

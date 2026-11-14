@@ -2,13 +2,18 @@
 # Builds, signs and checks a release APK of the Vulkan Android client (docs/android.md, "Continuing on another machine").
 # Bump ApplicationVersion and ApplicationDisplayVersion in PristonTale.VulkanAndroid.csproj first. The keystore is kept
 # outside the repository and passed in; an upgrade in place needs the same keystore as the installed version.
-# Usage: package-release.sh <keystore> <android-sdk> <java-sdk> <server-address> [device-serial]
+# Usage: package-release.sh <keystore> <android-sdk> <java-sdk> <server-address> [device-serial|-] [pack-address]
+# pack-address: the website's asset pack folder, https://host:port/packs/?cert=<sha-256> (docs/packs.md).
 set -euo pipefail
 keystore=$1
 sdk=$2
 jdk=$3
 server=$4
 device=${5:-}
+if [ "$device" = "-" ]; then
+    device=
+fi
+packs=${6:-}
 alias=androiddebugkey
 build_tools=36.0.0
 here=$(cd "$(dirname "$0")" && pwd)
@@ -17,7 +22,7 @@ version=$(sed -n 's:.*<ApplicationDisplayVersion>\(.*\)</ApplicationDisplayVersi
 log="$here/obj/vulkan-$version.log"
 mkdir -p "$here/obj"
 if ! JAVA_HOME="$jdk" JAVA_TOOL_OPTIONS='-Xms32m -Xmx768m -XX:+UseSerialGC' dotnet build "$project" --no-restore -c Release \
-    -warnaserror -m:1 -nr:false "-p:EtervaleServerAddress=$server" -p:UseSharedCompilation=false -p:PublishTrimmed=false \
+    -warnaserror -m:1 -nr:false "-p:EtervaleServerAddress=$server" "-p:EtervalePackAddress=$packs" -p:UseSharedCompilation=false -p:PublishTrimmed=false \
     -p:RunAOTCompilation=false -p:AndroidEnableMarshalMethods=false '-p:IntermediateOutputPath=obj/verify-vulkan/' \
     "-p:AndroidSdkDirectory=$sdk" "-p:JavaSdkDirectory=$jdk" -p:AndroidKeyStore=true "-p:AndroidSigningKeyStore=$keystore" \
     -p:AndroidSigningStorePass=android -p:AndroidSigningKeyPass=android "-p:AndroidSigningKeyAlias=$alias" > "$log" 2>&1; then

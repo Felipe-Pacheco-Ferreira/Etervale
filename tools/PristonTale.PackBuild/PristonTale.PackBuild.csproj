@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    ptpack: builds the asset packs the Android client downloads (docs/packs.md). Not part of PristonTale.sln; run with
+    dotnet run. Reads the game data with the Engine3D readers (no graphics device) and the world database read-only.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RootNamespace>PristonTale.PackBuild</RootNamespace>
+    <AssemblyName>ptpack</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.1.89" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.13" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Client\PristonTale.Engine3D\PristonTale.Engine3D.csproj" />
+    <ProjectReference Include="..\..\Shared\PristonTale.Simulation\PristonTale.Simulation.csproj" />
+    <ProjectReference Include="..\..\Shared\PristonTale.Assets\PristonTale.Assets.csproj" />
+    <Compile Include="../PristonTale.GltfExport/PngWriter.cs" Link="Export/PngWriter.cs" />
+    <Compile Include="../PristonTale.GltfExport/ImageDecode.cs" Link="Export/ImageDecode.cs" />
+    <Compile Include="../PristonTale.GltfExport/MobileMinimapBake.cs" Link="Export/MobileMinimapBake.cs" />
+  </ItemGroup>
+
+</Project>

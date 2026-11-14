@@ -28,6 +28,7 @@ internal static class ClientTests
         yield return ("remote rates and explicit swing events replace per-frame restarts", RemoteMotionAsync);
         yield return ("NPC duplicate Stand clips preserve exact INX indices and weighted selection", NpcStandMotionsAsync);
         yield return ("pending actor preparation does not block presence or resurrect removals", PendingActorAsync);
+        yield return ("a monster whose model downloads first is prepared after the download and appears", DownloadedModelAsync);
         yield return ("remote height follows the server sample instead of the highest floor", ServerHeightAsync);
         yield return ("NPC, monster and player collision survives pending assets", CollisionRosterAsync);
         yield return ("an action field draws actors facing left or right, finds the nearest one ahead on the player's line and the player a walk bumps into, never one it walks away from", SideViewAsync);
@@ -259,6 +260,34 @@ internal static class ClientTests
         manager.Update(0.05f);
         Assert.True(manager.Count == 0 && composer.Composed == 0, "removed pending actor reappeared");
         return Task.CompletedTask;
+    }
+
+    private static async Task DownloadedModelAsync()
+    {
+        var composer = new PendingComposer();
+        var catalog = new WorldRenderCatalog();
+        catalog.Register(new MonsterRenderInfo(1, "char/monster/Hopy/hopy.inx", 1f, "Hopy", 3));
+        var download = new TaskCompletionSource();
+        var asked = 0;
+        var manager = new RemoteEntityManager(new FakeScene(), composer, composer, new CharacterClassRegistry(), ".", catalog)
+        {
+            ModelAssets = _ => ++asked == 1 ? download.Task : null
+        };
+        manager.Apply(new PresenceUpdate(1,
+            [new(2, EntityKind.Monster, false, System.Numerics.Vector3.Zero, 0, MotionState.Stand, 10, 10, null, 1)], [], [], []));
+        manager.Update(0.05f);
+        Assert.True(manager.Count == 0, "the monster appeared before its model downloaded");
+        download.SetResult();
+        manager.Update(0.05f);
+        composer.Ready.TrySetResult();
+        await Task.Yield();
+        for (var frame = 0; frame < 3 && manager.Count == 0; frame++)
+        {
+            await Task.Delay(10);
+            manager.Update(0.05f);
+        }
+
+        Assert.True(manager.Count == 1 && composer.Composed == 1, "the monster never appeared after its model downloaded");
     }
 
     private static Task SideViewAsync()

@@ -36,15 +36,23 @@ internal sealed class MobileGraphics
 
     public GraphicsQuality Quality => (GraphicsQuality)Volatile.Read(ref quality);
 
-    // The renderer's options for the chosen quality. Low draws a 1024 shadow map, the most the phone keeps smooth.
+    // The renderer's options for the chosen quality. Low is cut to what the phone draws at 60 frames (docs/android.md,
+    // "Graphics quality"): a 1024 shadow map in one cascade, and the painted sky in place of the realistic one.
     public ClientSettings Rendering
     {
         get
         {
             var settings = new ClientSettings().WithQuality(Quality);
-            return Quality == GraphicsQuality.Low ? settings with { ShadowMapSize = 1024 } : settings;
+            return Quality == GraphicsQuality.Low ? settings with { ShadowMapSize = 1024, ShadowCascades = 1, RealisticSky = false } : settings;
         }
     }
+
+    // The width the world is drawn at, the height following the screen's shape; Low draws fewer pixels. Read once, when the
+    // game starts: a quality chosen later takes its width at the next start.
+    public int RenderWidth => Quality == GraphicsQuality.Low ? LowRenderWidth : RenderWidthAbove;
+
+    private const int LowRenderWidth = 1088;
+    private const int RenderWidthAbove = 1280;
 
     // Called on the UI thread.
     public void Request(GraphicsQuality next) => Volatile.Write(ref requested, (int)next);

@@ -31,11 +31,13 @@ public sealed class VulkanLoginActivity : Activity
     {
         base.OnCreate(state);
         assetPreparation = VulkanAssets.PrepareAsync();
+        // The pack manifest is read meanwhile; a field waits for it only if it is still missing at world entry.
+        _ = assetPreparation.ContinueWith(static _ => VulkanPacks.PrepareAsync(), TaskScheduler.Default);
         if (PackagedAddress is { Length: > 0 } endpoint)
         {
             if (!ProbeApplication.FirstFrameReady)
             {
-                var loading = new VulkanLoadingScreen(this, "Preparando arquivos do jogo…");
+                var loading = new VulkanLoadingScreen(this, "Preparando arquivos do jogo…", static () => VulkanAssets.Progress);
                 status = loading.Status;
                 SetContentView(loading);
             }

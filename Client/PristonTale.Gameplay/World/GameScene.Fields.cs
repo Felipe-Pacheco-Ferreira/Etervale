@@ -110,9 +110,16 @@ public sealed partial class GameScene
         _lootFloor = LootFloorAt;
     }
 
+    // Whether a field's files are on disk; a client that downloads them (Android's asset packs) answers false and starts
+    // the download, and the field is asked for again on the next streaming scan or held warp. Null: always on disk.
+    public Func<FieldDef, bool> FieldAssetsReady { get; set; }
+
+    // The same for a monster or NPC model (RemoteEntityManager.ModelAssets); set before the presence begins.
+    public Func<string, Task> ModelAssets { get; set; }
+
     private void RequestField(FieldDef field, bool priority = false)
     {
-        if (!IsLoaded(field.Id))
+        if (!IsLoaded(field.Id) && FieldAssetsReady?.Invoke(field) != false)
         {
             if (priority)
             {

@@ -19,6 +19,7 @@ JSON, UI font) and the Blender helper scripts in `3d_glb/blender/`. None of them
 | --- | --- |
 | `tools/PristonTale.AssetDump/` | `ptdump`: headless asset inspector and field texture manifest export (`FieldTextureManifest.cs`) |
 | `tools/PristonTale.GltfExport/` | `ptgltf`: `.smd`/`.smb`/`.inx` to glTF 2.0 via SharpGLTF; also referenced by the regression runner |
+| `tools/PristonTale.PackBuild/`, `tools/pack-build.ps1`/`.sh` | `ptpack`: the Android asset packs and `packs.json` from the game data and the world database ([packs.md](packs.md)) |
 | `tools/PristonTale.WorldImport/` | `ptworld`: migrations plus import of the CP949 GameServer configuration; see [world-import.md](world-import.md) |
 | `tools/PristonTale.DevAccounts/` | `ptdevaccounts`: accounts, characters, load-test accounts, game-master levels and audit through the real repositories |
 | `tools/PristonTale.SmokeClient/` | Protocol smoke test: login, character, world entry, presence, quest journal and request, chat, one skill cast |

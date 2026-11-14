@@ -63,6 +63,10 @@ public sealed partial class RemoteEntityManager
 
     public int Count => _entities.Count;
 
+    // For a model whose files are not on disk yet, the download that brings them (Android's asset packs); null when they
+    // are there. The spawn waits for it like for its model's preparation.
+    public Func<string, Task> ModelAssets { get; set; }
+
     public ulong SelfEntityId => _selfEntityId;
 
     public event Action<int, MotionCode, XnaVector3> NpcMotionStarted;
@@ -216,7 +220,8 @@ public sealed partial class RemoteEntityManager
             var info = ModelInfo(spawn);
             if (info is not null && !string.IsNullOrEmpty(info.ModelInxPath))
             {
-                preparation = _monsterComposer.PrepareAsync(_assetRoot, info.ModelInxPath);
+                // Once the download ends the spawn comes back here (Update) and its model is prepared.
+                preparation = ModelAssets?.Invoke(info.ModelInxPath) ?? _monsterComposer.PrepareAsync(_assetRoot, info.ModelInxPath);
             }
         }
 
@@ -491,6 +496,7 @@ public sealed partial class RemoteEntityManager
     {
         _clock.Advance(dt * 1000d);
         ulong completed = 0;
+        Task completedTask = null;
         foreach (var (id, pending) in _preparingActors)
         {
             if (!pending.Preparation.IsCompleted)
@@ -499,6 +505,7 @@ public sealed partial class RemoteEntityManager
             }
 
             completed = id;
+            completedTask = pending.Preparation;
             if (pending.Preparation.IsCompletedSuccessfully)
             {
                 ApplySpawn(pending.Spawn, publish: true);
@@ -515,7 +522,8 @@ public sealed partial class RemoteEntityManager
             break;
         }
 
-        if (completed != 0)
+        // ApplySpawn may have put a next step in its place (the model's preparation after its download): that one stays.
+        if (completed != 0 && _preparingActors.TryGetValue(completed, out var left) && left.Preparation == completedTask)
         {
             _preparingActors.Remove(completed);
         }

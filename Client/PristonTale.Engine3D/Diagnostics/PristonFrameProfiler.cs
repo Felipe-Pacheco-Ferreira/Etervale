@@ -54,6 +54,7 @@ public sealed class PristonFrameProfiler : IDisposable
     private int _slot;
     private long _frame;
     private bool _frameOpen;
+    private bool _prepared;
 
     public bool GpuTimersAvailable => _queries is not null;
     public int GpuResultsMissed { get; private set; }
@@ -94,6 +95,30 @@ public sealed class PristonFrameProfiler : IDisposable
             return;
         }
 
+        if (_prepared)
+        {
+            _prepared = false;
+            return;
+        }
+
+        StartGpuSlot();
+    }
+
+    // Resets this frame's GPU timestamps ahead of BeginFrame, for a caller that opens a render pass (a clear, a portrait
+    // drawn into its own target) before the renderer's frame begins; BeginFrame then keeps the slot.
+    public void PrepareFrame()
+    {
+        if (_queries is null || _prepared)
+        {
+            return;
+        }
+
+        StartGpuSlot();
+        _prepared = true;
+    }
+
+    private void StartGpuSlot()
+    {
         _slot = (int)(_frame % Latency);
         if (_frame >= Latency)
         {

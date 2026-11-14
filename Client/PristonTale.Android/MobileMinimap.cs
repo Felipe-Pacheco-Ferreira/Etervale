@@ -66,10 +66,24 @@ internal sealed class MobileMinimap : View
         {
             return null;
         }
-        using var bounds = new BinaryReader(context.Assets!.Open($"{field}-minimap.bin"));
+        using var bounds = context.Assets!.Open($"{field}-minimap.bin");
+        using var image = context.Assets.Open($"{field}-minimap.png");
+        return Read(context, bounds, image);
+    }
+
+    // A minimap downloaded with its field's pack: <prefix>.png and <prefix>.bin on disk.
+    public static MobileMinimap? OpenFile(Context context, string prefix)
+    {
+        using var bounds = File.OpenRead(prefix + ".bin");
+        using var image = File.OpenRead(prefix + ".png");
+        return Read(context, bounds, image);
+    }
+
+    private static MobileMinimap Read(Context context, Stream boundsStream, Stream imageStream)
+    {
+        using var bounds = new BinaryReader(boundsStream);
         var rectangle = new RectF(bounds.ReadSingle(), bounds.ReadSingle(), bounds.ReadSingle(), bounds.ReadSingle());
-        using var stream = context.Assets.Open($"{field}-minimap.png");
-        var bitmap = BitmapFactory.DecodeStream(stream) ?? throw new InvalidDataException("Invalid minimap image.");
+        var bitmap = BitmapFactory.DecodeStream(imageStream) ?? throw new InvalidDataException("Invalid minimap image.");
         return new MobileMinimap(context, bitmap, rectangle);
     }
 

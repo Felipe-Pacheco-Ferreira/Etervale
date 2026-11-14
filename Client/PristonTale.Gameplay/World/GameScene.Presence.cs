@@ -64,7 +64,7 @@ public sealed partial class GameScene
             _classRegistry,
             _assetRoot,
             _worldRenderCatalog,
-            _log);
+            _log) { ModelAssets = ModelAssets };
         _remote.SetSelfSink(OnSelfSpawn, OnSelfState, OnSelfCombatEvent);
         _remote.NpcMotionStarted += OnNpcMotionStarted;
         _remote.PlayerMotionStarted += OnRemotePlayerMotionStarted;

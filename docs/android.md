@@ -302,8 +302,15 @@ Vulkan build pitfalls on Windows:
   form, e.g. `rd /s /q "\\?\<full path>"`) and build again with large programs closed.
 - `package-release.ps1` stops on the `Picked up JAVA_TOOL_OPTIONS` line `apksigner` writes to stderr under Windows
   PowerShell 5.1, after the APK is built and signed; check the signature by hand then.
-- Raise `CacheVersion` in `VulkanAssets.cs` whenever `ricarten-desktop.zip` or `opening-desktop.zip` gains content, or
-  phones that extracted an earlier version never see it.
+- Raise `CacheVersion` in `VulkanAssets.cs` whenever an APK archive (`ricarten-desktop.zip`, `opening-desktop.zip`,
+  `adventurer-journey.zip`) gains content, or phones that unpacked an earlier version never see it. The archives unpack
+  over one folder every version keeps (`NoBackupFilesDir/assets`), beside the asset packs downloaded later
+  ([packs.md](packs.md)); the older per-version folders (`ricarten-desktop-<n>`) are deleted once.
+- The loading screen (`VulkanLoadingScreen`) drifts the game's art in and out under rising golden embers, over a gold bar
+  with a sweeping light. While the APK archives unpack ("Preparando arquivos do jogo…") the bar fills with
+  `VulkanAssets.Progress`, each archive's copy out of the APK and its unpacking counted by its size, and the line ends
+  with the percent; elsewhere ("Carregando…") a glowing stretch runs along the bar. The unpacking refuses an entry whose
+  path would leave the asset folder.
 
 ## How to
 
@@ -450,6 +457,9 @@ and select a character with a hunt objective in the packaged field.
 
 Pass `-ServerAddress 'host:10009?cert=<server SHA-256>'` to embed the endpoint in the APK. The address field is hidden
 when the APK includes an endpoint. Builds without a packaged address expose the field and reuse the last successful endpoint.
+Pass `-PackAddress 'https://host:5443/packs/?cert=<site SHA-256>'` (sixth argument of `package-release.sh`) to embed the
+asset pack folder the APK downloads every other field and monster from ([packs.md](packs.md)); without it the APK enters
+only the fields whose stages it carries.
 
 For a USB device, forward the game port with "adb reverse tcp:10009 tcp:10009" and connect to
 "127.0.0.1:10009?cert=<server SHA-256>". Verify a TLS connection before testing login and gameplay.
@@ -612,8 +622,10 @@ to the guide meanwhile), and the journal's auto-hunt action does too. The joysti
   pode ser usado"); the action wheel's belt buttons use the same command. The game's attack walks
   straight at its target; when that leaves the player standing for `AttackStuckSeconds` out of reach, the navigator
   drops the attack, walks to the target along a route and attacks again.
-- **Minimap.** The route shows as yellow dots on the field's minimap (`MobileMinimap.SetRoute`); Ricarten, Pillai,
-  Forever Fall 1 and Forest 1 (`forest-01-minimap`, the Tempskron hunting field) have one. While the quest counts kills
+- **Minimap.** The route shows as yellow dots on the field's minimap (`MobileMinimap.SetRoute`). Ricarten, Pillai,
+  Forever Fall 1 and Forest 1 carry theirs in the APK (`VulkanHudLifecycle.ApkMinimaps`); every other field's comes in
+  its minimap pack (`VulkanPacks.MinimapOf`, `MobileMinimap.OpenFile`), fetched quietly the first time the player is
+  there, and the minimap shows once it lands. Map titles are the catalog's (`WorldCatalog.FieldName`). While the quest counts kills
   and the player is in its hunting field, the minimap also shows the hunting area as the full map does
   (`MobileMinimap.SetHuntArea`, from `VulkanWorldMap.HuntAreaIn`): a translucent red disc with a brighter red edge,
   under the route and the player's arrow.
@@ -663,7 +675,11 @@ the next frame through `PresentationSettings.ApplyRendering` (the world keeps it
 `RicartenProbe.WorldExposure`), and it is written to `client-settings.json` in the app's own files folder (the store and
 format of [client-settings.md](client-settings.md); only `quality` is read back) once it has drawn for 30 seconds, so a
 quality the system ends the app for is not chosen again at the next start. A first start, or a file that cannot be read,
-uses Baixo: the Low preset with a 1024-pixel shadow map. Choosing Alto or Ultra warns that the system may close the game
+uses Baixo: the Low preset cut to what the test phone draws at 60 frames, with a 1024-pixel shadow map in one cascade, the
+painted sky in place of the realistic one and the world drawn 1088 pixels wide (1280 for the other qualities,
+`MobileGraphics.RenderWidth`, read when the game starts, so a quality chosen in the menu takes its width at the next
+start). Measured in Ricarten at Low before these cuts (0.64): 22.4 ms a frame, the GPU 19.6 ms on the scene (opaque
+9.9, sky 3.9), the CPU 12.4 ms on it (sun shadow 3.5, opaque 3.5). Choosing Alto or Ultra warns that the system may close the game
 for memory (Vulkan 0.24 was ended at 2.6 GB PSS on the test phone). Not measured on the device: frame time and memory of
 Médio, Alto and Ultra.
 
@@ -734,6 +750,24 @@ The HUD is drawn by Android views laid out in fractions of the screen height, th
   `hud-layout.json`); they still show in the window. Speech shows over the speaker's head in the PC's bubble
   (`HudChat` and `HudChatBubbles`, drawn by `RicartenProbe.Draw` with the name plates; `ChatBox` art). The server does
   not echo the player's own lines, so `VulkanWorldSession.SendChatAsync` adds them to the chat and to the player's bubble.
+- **FPS and ping:** a small line left of the minimap, "60 fps · 34 ms" (`VulkanStatsReadout`), recounted once a second
+  by the HUD's refresh: the world frames drawn (`VulkanWorldSession.CountFrame`, called by `RicartenProbe.Draw`) and the
+  server latency, the smoothed round trip of the heartbeats the server echoes every 2 s (`GameServerConnection.LatencyMs`,
+  `HeartbeatLatency`), green under 80 ms, yellow under 200 ms, red above. Menu, Gráficos has the switch Mostrar FPS e
+  ping (`HudLayoutEditor.StatsHidden`, kept in `hud-layout.json`); the HUD editor moves it like any other part.
+- **Frame details:** a tap on the FPS line opens, below it, where a world frame's time goes (`VulkanFrameMeter`, counted
+  by `RicartenProbe.Update` and `Draw`, means over one second); another tap closes it:
+  - the frame time and the updates per drawn frame;
+  - the CPU time of the update, the HUD portraits, the scene and the rest of the draw;
+  - the time left for presenting and waiting on the display;
+  - the collections per second, and the GPU time of the scene;
+  - the slowest renderer sections (`PristonFrameProfiler`) on the CPU (`c`) and the GPU (`g`).
+
+  The GPU timers start the first time the details open. Their timestamps are reset at the start of the world frame
+  (`PristonFrameProfiler.PrepareFrame`), before the portraits and the clear open a render pass, where Vulkan forbids the
+  reset. The game runs one update per drawn frame (`IsFixedTimeStep = false`, as on the PC); a fixed step ran 1.4 updates
+  per frame at 48 fps. While open, each report is also written to the log under the
+  tag `Etervale.Perf` (`adb logcat -s Etervale.Perf`), so a measurement can be read from the PC.
 - **Bezels and attack button:** the portraits sit in an ornate gold bezel with notches and four gem studs
   (`VulkanHudArt.OrnateRing`; ruby for the player and monsters, blue for NPCs); the player's also has gold rays behind
   it, a laurel branch up each side and a crown with a gem on top (`VulkanHudArt.Crest`). The attack button is crossed swords on a
@@ -741,7 +775,7 @@ The HUD is drawn by Android views laid out in fractions of the screen height, th
 - **Quest card:** a tap folds it down to the title over the kill bar (the title alone when nothing is counted) and opens it
   again; the choice is kept.
 - **Editing the HUD:** Menu, Editar HUD outlines every part on its own (player frame, target frame, chat, chat lines, each menu
-  button, minimap, quest card, attack button, each skill button, each potion, combat feed, experience bar); a drag moves
+  button, minimap, FPS and ping line, quest card, attack button, each skill button, each potion, combat feed, experience bar); a drag moves
   one, Salvar keeps the places, Padrão puts them back and
   Cancelar restores the earlier ones (`HudLayoutEditor`). Offsets are fractions of the screen height, kept in
   `hud-layout.json` in the app's files folder with the folded card and the tutorials seen. Moving a frame moves its 3D
@@ -775,7 +809,12 @@ The HUD is drawn by Android views laid out in fractions of the screen height, th
   weight as gauges; in the middle the five attributes, each with its emblem (sword, flame, star, bolt, heart), its
   value, a glowing bar against the strongest attribute, what it raises and a round gold "+"; on the right the combat
   values as tiles (attack, attack rating, defence, absorption, critical, block, movement, skill points) and a line for
-  tips and answers. The attribute the class's damage grows with (`CharacterClassRegistry.DamageAttribute`, by its
+  the server's answer to Confirmar (hidden until there is one), which scroll on a short screen while Desfazer and
+  Confirmar stay fixed under them (the attributes scroll the same way). While points are planned, each value they raise
+  shows the gain in green beside it ("+9"), and the life, mana, stamina and weight gauges end with "(+n)": the
+  difference the shared formulas make with the planned points (`AttributeGains`, from `DerivedStats.Compute` and
+  `WeaponDamage.AttributeScaled` with the worn weapon's kind and the worn items' damage range). The percent modifiers of
+  skills and buffs are not applied to the gain. The attribute the class's damage grows with (`CharacterClassRegistry.DamageAttribute`, by its
   beginner weapon's kind and `WeaponDamage.DamageAttribute`) is lit and marked Dano. The heading shows the free points;
   the "+" buttons breathe while there are free points. A "+" only plans a point (the value shows "+n" in green, the free
   points drop) and the "-" beside it, shown while that attribute has planned points, takes one back; Desfazer clears

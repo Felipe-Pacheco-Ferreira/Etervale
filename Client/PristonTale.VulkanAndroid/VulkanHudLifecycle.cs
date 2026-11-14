@@ -14,13 +14,14 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
     // How many chat lines show on screen under the chat button.
     private const int ChatFeedLines = 5;
 
-    private static readonly (int Code, string Name, string Title)[] MinimapFields =
-    [
-        (PristonTale.Simulation.World.FieldCodes.Ricarten, "ricarten", "Ricarten"),
-        (PristonTale.Simulation.World.FieldCodes.Pillai, "pillai", "Pillai"),
-        (PristonTale.Simulation.World.FieldCodes.ForeverFall1, "forever-fall-01", "Forever Fall 1"),
-        (PristonTale.Simulation.World.Fields.Forest1Field.Definition.FieldCode, "forest-01", "Floresta 1")
-    ];
+    // The minimaps the APK carries (Android assets <name>-minimap.png/.bin); every other field's comes with its pack.
+    private static readonly Dictionary<int, string> ApkMinimaps = new()
+    {
+        [PristonTale.Simulation.World.FieldCodes.Ricarten] = "ricarten",
+        [PristonTale.Simulation.World.FieldCodes.Pillai] = "pillai",
+        [PristonTale.Simulation.World.FieldCodes.ForeverFall1] = "forever-fall-01",
+        [PristonTale.Simulation.World.Fields.Forest1Field.Definition.FieldCode] = "forest-01"
+    };
 
     public void OnActivityCreated(Activity activity, Bundle state)
     {
@@ -55,6 +56,7 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
         }
 
         decor?.Post(WaitForFirstFrame);
+        VulkanDownloadCard.Attach(activity);
         WaitForWorld(activity);
     }
 
@@ -146,19 +148,35 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
 
         var mapBox = new FrameLayout(activity);
         overlay.AddView(mapBox, Place(124, 124, GravityFlags.Top | GravityFlags.Right));
-        // A minimap for each field one is packaged for, shown while the player is in it.
+        // The frames per second and latency line, left of the minimap.
+        var stats = new VulkanStatsReadout(activity) { Visibility = editor.StatsHidden ? ViewStates.Gone : ViewStates.Visible };
+        var statsLayout = Place(-2, -2, GravityFlags.Top | GravityFlags.Right);
+        statsLayout.RightMargin = Dp(10 + 124 + 8);
+        overlay.AddView(stats, statsLayout);
+        // Each field's minimap, made the first time the player is in the field (and its minimap is on the phone), shown
+        // while the player is there.
         var maps = new Dictionary<int, MobileMinimap>();
         var journeyRoute = PristonTale.Simulation.Quests.AdventurerJourneyRoute.For(session.Character.Class);
         var worldMap = new VulkanWorldMap(activity, overlay, session);
-        foreach (var (code, name, title) in MinimapFields)
+        void EnsureMinimap(int code)
         {
-            if (MobileMinimap.Open(activity, name) is { } fieldMap)
+            if (maps.ContainsKey(code))
             {
-                fieldMap.Visibility = ViewStates.Gone;
-                maps[code] = fieldMap;
-                fieldMap.Click += (_, _) => worldMap.Open(fieldMap, title);
-                mapBox.AddView(fieldMap, new FrameLayout.LayoutParams(-1, -1));
+                return;
             }
+
+            var fieldMap = ApkMinimaps.TryGetValue(code, out var name) ? MobileMinimap.Open(activity, name)
+                : VulkanPacks.MinimapOf(code) is { } prefix ? MobileMinimap.OpenFile(activity, prefix) : null;
+            if (fieldMap is null)
+            {
+                return;
+            }
+
+            fieldMap.Visibility = ViewStates.Gone;
+            maps[code] = fieldMap;
+            var title = VulkanWorldMap.FieldTitle(code);
+            fieldMap.Click += (_, _) => worldMap.Open(fieldMap, title);
+            mapBox.AddView(fieldMap, new FrameLayout.LayoutParams(-1, -1));
         }
         var icons = new VulkanItemIcons(session.AssetRoot, action => activity.RunOnUiThread(action));
         var inventory = new VulkanInventoryPanel(activity, overlay, session, icons);
@@ -266,7 +284,11 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
         AddMenuAction(secondRow, "Habilidades", HudGlyph.Skill, () => skills.Open());
         AddMenuAction(secondRow, "Movimento", HudGlyph.Run, session.ToggleRun);
         var thirdRow = AddMenuRow();
-        AddMenuAction(thirdRow, "Gráficos", HudGlyph.Menu, () => VulkanHudWindows.Graphics(activity, overlay, session), stacked: false);
+        AddMenuAction(thirdRow, "Gráficos", HudGlyph.Menu, () => VulkanHudWindows.Graphics(activity, overlay, session, !editor.StatsHidden, shown =>
+        {
+            editor.StatsHidden = !shown;
+            stats.Visibility = shown ? ViewStates.Visible : ViewStates.Gone;
+        }), stacked: false);
         AddMenuAction(thirdRow, "Editar HUD", HudGlyph.Menu, () => editor.Open(), stacked: false);
         AddMenuAction(secondRow, "Rever tutorial", HudGlyph.Journal, editor.ReplayTutorials);
         var calendar = new VulkanEventCalendar(activity, overlay, session);
@@ -364,6 +386,7 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
         editor.Register("menu", "Menu", mainMenu);
         editor.Register("bag", "Bolsa", bagOrb);
         editor.Register("minimap", "Minimapa", mapBox);
+        editor.Register("stats", "FPS e ping", stats);
         editor.Register("quest", "Missão", tracker.View);
         editor.Register("attack", "Atacar", wheel.Attack);
         for (var slot = 0; slot < wheel.Skills.Count; slot++)
@@ -496,6 +519,11 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
                 feed.Kill(killed, lastTarget);
             }
 
+            if (stats.Visibility == ViewStates.Visible)
+            {
+                stats.Update(session.FramesDrawn, session.LatencyMs, System.Environment.TickCount64, session.Meter);
+            }
+
             tracker.Refresh();
             worldMap.Refresh();
             restart.Refresh();
@@ -506,6 +534,7 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
             }
             if (session.MapPose is { } pose)
             {
+                EnsureMinimap(pose.FieldId);
                 var marks = session.Navigator?.Marks;
                 var hunt = VulkanWorldMap.HuntAreaIn(pose.FieldId, journeyRoute, session.Quest);
                 foreach (var (code, fieldMap) in maps)

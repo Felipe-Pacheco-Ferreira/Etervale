@@ -98,8 +98,9 @@ internal static class VulkanHudWindows
         };
     }
 
-    // The graphics quality: one card per preset, the chosen one lit, and the memory warning.
-    public static void Graphics(Activity activity, FrameLayout overlay, VulkanWorldSession session)
+    // The graphics quality: one card per preset, the chosen one lit, the memory warning, and the switch that shows or
+    // hides the frames per second and latency line (statsShown, statsChanged).
+    public static void Graphics(Activity activity, FrameLayout overlay, VulkanWorldSession session, bool statsShown, Action<bool> statsChanged)
     {
         if (session.Graphics is not { } graphics)
         {
@@ -125,5 +126,19 @@ internal static class VulkanHudWindows
         panel.Content.AddView(VulkanPanel.Body(activity, "Alto e Ultra usam bem mais memória: em alguns celulares o sistema pode fechar o jogo. "
             + "A escolha vale na hora e fica salva depois de 30 segundos.", 12, VulkanPanel.Muted),
             new LinearLayout.LayoutParams(-1, -2) { TopMargin = Dp(10) });
+
+        var options = new LinearLayout(activity);
+        options.SetGravity(GravityFlags.CenterVertical);
+        options.AddView(VulkanPanel.Body(activity, "Mostrar FPS e ping", 13, VulkanPanel.Muted), new LinearLayout.LayoutParams(0, -2, 1));
+        var toggle = MobileHudTheme.Button(activity, statsShown ? "Mostrando" : "Oculto", prominent: statsShown);
+        toggle.TextSize = 13;
+        toggle.Click += (_, _) =>
+        {
+            statsShown = !statsShown;
+            toggle.Text = statsShown ? "Mostrando" : "Oculto";
+            statsChanged(statsShown);
+        };
+        options.AddView(toggle, new LinearLayout.LayoutParams(Dp(120), Dp(34)));
+        panel.Content.AddView(options, new LinearLayout.LayoutParams(-1, -2) { TopMargin = Dp(10) });
     }
 }

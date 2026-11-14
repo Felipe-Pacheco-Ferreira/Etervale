@@ -21,6 +21,18 @@ public static class PristonModelPaths
 
     public static string Motion(string root, string reference) => Resolve(AssetFiles.Combine(root, reference), MotionFormats, explicitFormat: true);
 
+    // The model info of a model's sub model (its .inx or descriptor), or null when it has none or it is missing.
+    public static string SubModelInfo(string root, PristonModelInfo info)
+    {
+        if (string.IsNullOrWhiteSpace(info.SubModelFile))
+        {
+            return null;
+        }
+
+        var path = Info(AssetFiles.Combine(root, info.SubModelFile));
+        return File.Exists(path) ? path : null;
+    }
+
     public static bool IsGltf(string path) =>
         Path.GetExtension(path) is { } extension
         && (extension.Equals(".glb", StringComparison.OrdinalIgnoreCase) || extension.Equals(".gltf", StringComparison.OrdinalIgnoreCase));

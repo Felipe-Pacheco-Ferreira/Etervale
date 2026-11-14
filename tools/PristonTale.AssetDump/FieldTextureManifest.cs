@@ -26,7 +26,6 @@ internal static class FieldTextureManifest
         string[] Fields);
 
     private sealed record Manifest(string Field, TextureEntry[] Textures, string[] UninspectedFields);
-    private readonly record struct Reference(string Path, bool Opacity);
 
     public static void Export(string assetRoot, string fieldId, string output)
     {
@@ -129,31 +128,6 @@ internal static class FieldTextureManifest
         Console.WriteLine($"Exported {entries.Count} textures for {fieldId}; {uninspected.Count} fields could not be inspected. No game assets were replaced.");
     }
 
-    private static List<Reference> ReadReferences(string root, FieldDef field)
-    {
-        var reader = new PristonSmdReader();
-        var references = new List<Reference>();
-        var stagePath = AssetFiles.Resolve(Path.Combine(root, field.StageSmd));
-        var stage = reader.ReadStage(stagePath);
-        Collect(Path.GetDirectoryName(stagePath)!, PristonMaterialUsage.ForStage(stage), references);
-        foreach (var model in field.StageObjectSmds)
-        {
-            var modelPath = AssetFiles.Resolve(Path.Combine(root, model));
-            Collect(Path.GetDirectoryName(modelPath)!, PristonMaterialUsage.ForModel(reader.ReadModel(modelPath)), references);
-        }
-
-        return references;
-    }
-
-    private static void Collect(string directory, IEnumerable<PristonMaterial> materials, List<Reference> references)
-    {
-        foreach (var request in PristonTextureLoader.TextureRequests(materials))
-        {
-            references.Add(new Reference(PristonTextureLoader.ResolvePath(directory, request.Name), false));
-            if (!string.IsNullOrWhiteSpace(request.Opacity))
-            {
-                references.Add(new Reference(PristonTextureLoader.ResolvePath(directory, request.Opacity), true));
-            }
-        }
-    }
+    private static List<AssetDependency> ReadReferences(string root, FieldDef field) =>
+        PristonAssetDependencies.StageTextures(root, field.StageSmd, field.StageObjectSmds);
 }

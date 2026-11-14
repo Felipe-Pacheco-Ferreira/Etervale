@@ -63,7 +63,7 @@ progression, regeneration and movement rates. `World/`, `Physics/` and `Skills/`
 | `PersonalShops/` | Personal shops: `PersonalShopRules` (listing, opening, a sale on candidates), `PersonalShop` (an open listing), purchases, outcomes, listings and texts |
 | [`Combat/CombatResolver.cs`](../Shared/PristonTale.Simulation/Combat/CombatResolver.cs) | Hit, block, damage, critical, element and absorption resolution |
 | `Combat/CombatProfiles.cs`, `CombatProfileFactory.cs` | `AttackProfile`/`DefenderProfile` and how they are built from characters and monsters |
-| `Combat/WeaponDamage.cs` | Weapon damage range of a player |
+| `Combat/WeaponDamage.cs` | Weapon damage range of a player; `AttributeScaled`, the part the attributes make |
 | `Combat/CombatRng.cs` | Seeded RNG with the original's inclusive range semantics |
 | `Combat/Elements.cs` | `Element` and `ResistanceBlock` |
 | `Combat/PlayerAttackReach.cs`, `MeleeReach.cs` | Player attack range (melee 50, ranged from the weapon) |
@@ -74,6 +74,7 @@ progression, regeneration and movement rates. `World/`, `Physics/` and `Skills/`
 | `Progression/ExperienceTable.cs` | 180-level cumulative experience thresholds (the designed curve) and the saturation ceiling |
 | `Progression/SkillLearning.cs` | Skill-master training: window, prerequisites, prices, point kinds |
 | `Progression/ProgressionCommand.cs` | `ProgressionCommand` (allocate attribute, learn skill) |
+| `Progression/AttributeGains.cs` | What planned attribute points add to the derived stats and the weapon damage (the status window's preview) |
 
 ## Units and conventions
 

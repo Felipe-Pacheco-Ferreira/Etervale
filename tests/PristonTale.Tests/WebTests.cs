@@ -25,6 +25,7 @@ internal static class WebTests
         yield return ("website: every response forbids scripts, framing and sniffing", HeadersAsync);
         yield return ("website: settings out of range stop the start", SettingsAsync);
         yield return ("website: limits count an IPv4 address or an IPv6 /64 network", LimitKeysAsync);
+        yield return ("website: /packs serves packs.json and pack zips by name only", PackNamesAsync);
         yield return ("website: a session ends when its account is blocked, gets a new password or is another one", SessionAsync);
         yield return ("website: class titles read the client's Portuguese texts and fall back to the English title", ClassTitlesAsync);
         yield return ("website: boss calls are kept apart from the other events, with each boss's hours", CalendarAsync);
@@ -57,6 +58,36 @@ internal static class WebTests
         return Task.CompletedTask;
     }
 
+    private static Task PackNamesAsync()
+    {
+        foreach (var name in new[] { "packs.json", "field-forest-01.zip", "model-char-monster-hopy-hopy.zip" })
+        {
+            Assert.True(PackFiles.IsPackName(name), $"{name} is served");
+        }
+
+        foreach (var name in new[] { "..\\web-settings.json", "../keys.zip", "Field-A.zip", "a.zip.json", ".zip", "web-settings.json", "a b.zip" })
+        {
+            Assert.True(!PackFiles.IsPackName(name), $"{name} is refused");
+        }
+
+        var directory = Directory.CreateTempSubdirectory("packs-");
+        try
+        {
+            File.WriteAllText(Path.Combine(directory.FullName, "packs.json"), "{}");
+            var settings = WebSettings.Read(new ConfigurationBuilder()
+                .AddInMemoryCollection([new KeyValuePair<string, string?>("Downloads:PacksPath", directory.FullName)]).Build());
+            var packs = new PackFiles(settings);
+            Assert.True(packs.Find("packs.json") is { ContentType: "application/json" }, "the manifest is found");
+            Assert.True(packs.Find("field-missing.zip") is null, "a missing pack is not found");
+        }
+        finally
+        {
+            directory.Delete(recursive: true);
+        }
+
+        return Task.CompletedTask;
+    }
+
     private static Task SettingsAsync()
     {
         static WebSettings Read(params (string Key, string Value)[] values) => WebSettings.Read(new ConfigurationBuilder()
@@ -70,6 +101,7 @@ internal static class WebTests
         Assert.Throws<InvalidOperationException>(() => Read(("Security:FormPostsPerMinute", "0")), "refused: Security:FormPostsPerMinute = 0");
         Assert.Throws<InvalidOperationException>(() => Read(("Site:KnownProxies:0", "proxy.example")), "refused: Site:KnownProxies:0 = proxy.example");
         Assert.Throws<InvalidOperationException>(() => Read(("GameServer:ProbeSeconds", "1")), "refused: GameServer:ProbeSeconds = 1");
+        Assert.Throws<InvalidOperationException>(() => Read(("Security:PackRequestsPerMinute", "0")), "refused: Security:PackRequestsPerMinute = 0");
         return Task.CompletedTask;
     }
 

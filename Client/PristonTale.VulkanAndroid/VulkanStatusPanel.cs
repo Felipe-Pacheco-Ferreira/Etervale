@@ -37,17 +37,18 @@ internal sealed class VulkanStatusPanel
     private readonly Activity _activity;
     private readonly FrameLayout _overlay;
     private readonly VulkanWorldSession _session;
-    // The combat values, shown two to a row: label and value.
-    private static readonly (string Label, Func<OwnerState, string> Value)[] CombatValues =
+    // The combat values, shown two to a row: label, value and what the planned points add (null when they add nothing).
+    private static readonly (string Label, Func<OwnerState, string> Value, Func<AttributeGains, string> Gain)[] CombatValues =
     [
-        ("Ataque", static owner => $"{owner.DamageMin} – {owner.DamageMax}"),
-        ("Precisão", static owner => owner.AttackRating.ToString()),
-        ("Defesa", static owner => owner.Defence.ToString()),
-        ("Absorção", static owner => owner.Absorption.ToString()),
-        ("Crítico", static owner => $"{owner.CriticalChance}%"),
-        ("Bloqueio", static owner => $"{owner.BlockChance}%"),
-        ("Movimento", static owner => owner.MoveSpeed.ToString()),
-        ("Pts. de habilidade", static owner => owner.SkillPoints.ToString())
+        ("Ataque", static owner => $"{owner.DamageMin} – {owner.DamageMax}",
+            static gains => gains.DamageMin != 0 || gains.DamageMax != 0 ? $"+{gains.DamageMin} – +{gains.DamageMax}" : null),
+        ("Precisão", static owner => owner.AttackRating.ToString(), static gains => Gain(gains.AttackRating)),
+        ("Defesa", static owner => owner.Defence.ToString(), static gains => Gain(gains.Defence)),
+        ("Absorção", static owner => owner.Absorption.ToString(), static gains => Gain(gains.Absorption)),
+        ("Crítico", static owner => $"{owner.CriticalChance}%", static _ => null),
+        ("Bloqueio", static owner => $"{owner.BlockChance}%", static _ => null),
+        ("Movimento", static owner => owner.MoveSpeed.ToString(), static gains => Gain(gains.MoveSpeed)),
+        ("Pts. de habilidade", static owner => owner.SkillPoints.ToString(), static _ => null)
     ];
 
     private readonly int[] _shown = new int[Attributes.Length];
@@ -61,6 +62,7 @@ internal sealed class VulkanStatusPanel
     private Button _confirm;
     private Button _undo;
     private readonly TextView[] _combat = new TextView[CombatValues.Length];
+    private readonly TextView[] _combatGains = new TextView[CombatValues.Length];
     private VulkanPanel _panel;
     private LevelMedallion _medallion;
     private TextView _title;
@@ -241,27 +243,33 @@ internal sealed class VulkanStatusPanel
         return row;
     }
 
-    // The combat values as tiles, two to a row, and the line for tips and answers under them.
+    // The combat values as tiles, two to a row, each with what the planned points add, and the line for the server's answer
+    // under them; they scroll if the window is short, so Desfazer and Confirmar below them always stay on screen.
     private View BuildCombat()
     {
         var column = new LinearLayout(_activity) { Orientation = Orientation.Vertical };
         column.AddView(VulkanPanelArt.Section(_activity, "Combate"));
+        var scroll = new ScrollView(_activity) { VerticalScrollBarEnabled = false };
+        var values = new LinearLayout(_activity) { Orientation = Orientation.Vertical };
+        scroll.AddView(values);
+        column.AddView(scroll, new LinearLayout.LayoutParams(-1, 0, 1));
         LinearLayout row = null;
         for (var index = 0; index < CombatValues.Length; index++)
         {
             if (index % 2 == 0)
             {
                 row = new LinearLayout(_activity);
-                column.AddView(row, new LinearLayout.LayoutParams(-1, -2) { TopMargin = Dp(5) });
+                values.AddView(row, new LinearLayout.LayoutParams(-1, -2) { TopMargin = Dp(5) });
             }
 
             row.AddView(Tile(index), new LinearLayout.LayoutParams(0, -2, 1) { LeftMargin = index % 2 == 0 ? 0 : Dp(5) });
         }
 
         _note = VulkanPanel.Body(_activity, "", 12, VulkanPanel.Muted);
+        _note.Visibility = ViewStates.Gone;
         _note.SetPadding(Dp(8), Dp(6), Dp(8), Dp(6));
         _note.Background = VulkanPanelArt.Inset(_activity);
-        column.AddView(_note, new LinearLayout.LayoutParams(-1, -2) { TopMargin = Dp(8) });
+        values.AddView(_note, new LinearLayout.LayoutParams(-1, -2) { TopMargin = Dp(8) });
         var actions = new LinearLayout(_activity);
         _undo = MobileHudTheme.Button(_activity, "Desfazer");
         _undo.Click += (_, _) =>
@@ -284,9 +292,16 @@ internal sealed class VulkanStatusPanel
             caption.SetSingleLine(true);
             caption.Ellipsize = Android.Text.TextUtils.TruncateAt.End;
             tile.AddView(caption);
+            var line = new LinearLayout(_activity);
+            line.SetGravity(GravityFlags.Bottom);
             var value = VulkanPanel.Text(_activity, "", 16, Color.White, serif: true);
-            tile.AddView(value, new LinearLayout.LayoutParams(-2, -2) { TopMargin = Dp(2) });
+            line.AddView(value);
+            var gain = VulkanPanel.Text(_activity, "", 12, VulkanPanelArt.Done, serif: true);
+            gain.SetSingleLine(true);
+            line.AddView(gain, new LinearLayout.LayoutParams(-2, -2) { LeftMargin = Dp(5) });
+            tile.AddView(line, new LinearLayout.LayoutParams(-2, -2) { TopMargin = Dp(2) });
             _combat[index] = value;
+            _combatGains[index] = gain;
             return tile;
         }
     }
@@ -304,11 +319,13 @@ internal sealed class VulkanStatusPanel
         var span = owner.NextLevel > owner.LevelStart ? owner.NextLevel - owner.LevelStart : 1UL;
         var progress = owner.Experience > owner.LevelStart ? Math.Min(1d, (owner.Experience - owner.LevelStart) / (double)span) : 0d;
         _experience.Set(VulkanHudArt.Experience, (float)progress, owner.Level >= ExperienceTable.MaximumLevel ? "Nível máximo" : $"Experiência {progress:P1}");
-        _life.Set(VulkanHudArt.Life, Share(owner.Life, owner.MaxLife), $"Vida {owner.Life} / {owner.MaxLife}");
-        _mana.Set(VulkanHudArt.Mana, Share(owner.Mana, owner.MaxMana), $"Mana {owner.Mana} / {owner.MaxMana}");
-        _stamina.Set(VulkanHudArt.Stamina, Share(owner.Stamina, owner.MaxStamina), $"Estamina {owner.Stamina} / {owner.MaxStamina}");
+        var gains = Gains(owner);
+        _life.Set(VulkanHudArt.Life, Share(owner.Life, owner.MaxLife), $"Vida {owner.Life} / {owner.MaxLife}{Suffix(gains.MaxLife)}");
+        _mana.Set(VulkanHudArt.Mana, Share(owner.Mana, owner.MaxMana), $"Mana {owner.Mana} / {owner.MaxMana}{Suffix(gains.MaxMana)}");
+        _stamina.Set(VulkanHudArt.Stamina, Share(owner.Stamina, owner.MaxStamina),
+            $"Estamina {owner.Stamina} / {owner.MaxStamina}{Suffix(gains.MaxStamina)}");
         _weight.Set(owner.Overweight ? VulkanPanelArt.Overweight : VulkanHudArt.Experience, Share(owner.CarriedWeight, owner.MaxWeight),
-            $"Carga {owner.CarriedWeight} / {owner.MaxWeight}");
+            $"Carga {owner.CarriedWeight} / {owner.MaxWeight}{Suffix(gains.MaxWeight)}");
 
         var strongest = 1;
         for (var index = 0; index < Attributes.Length; index++)
@@ -349,25 +366,55 @@ internal sealed class VulkanStatusPanel
         for (var index = 0; index < CombatValues.Length; index++)
         {
             _combat[index].Text = CombatValues[index].Value(owner);
+            _combatGains[index].Text = planned > 0 ? CombatValues[index].Gain(gains) : null;
         }
 
+        // Only the server's answer to Confirmar is shown here.
+        _note.Visibility = _answer is null ? ViewStates.Gone : ViewStates.Visible;
         if (_answer is not null)
         {
             _note.Text = _answer;
             _note.SetTextColor(_answerOk ? VulkanPanelArt.Done : VulkanPanelArt.Warning);
         }
-        else
-        {
-            _note.Text = planned > 0
-                ? "Os pontos só valem depois de Confirmar; até lá, - devolve e Desfazer limpa tudo."
-                : owner.StatPoints > 0
-                    ? $"Toque em + para reservar pontos e depois em Confirmar. Para seu dano, {MainName}; para aguentar mais, Vitalidade."
-                    : "Subir de nível dá pontos para distribuir aqui.";
-            _note.SetTextColor(VulkanPanel.Muted);
-        }
 
         static float Share(long value, long max) => max > 0 ? value / (float)max : 0f;
     }
+
+    // What the planned points add (AttributeGains), from the attributes, the level and the worn weapon and items.
+    private AttributeGains Gains(OwnerState owner)
+    {
+        if (Planned == 0)
+        {
+            return default;
+        }
+
+        var now = new CharacterAttributes(owner.Strength, owner.Spirit, owner.Talent, owner.Agility, owner.Health);
+        var planned = now.Add(new CharacterAttributes(_planned[0], _planned[1], _planned[2], _planned[3], _planned[4]));
+        PristonTale.Simulation.Items.ItemKind? weapon = null;
+        int damageMin = 0;
+        int damageMax = 0;
+        foreach (var item in owner.Items)
+        {
+            if (item.Slot is < 0 or >= EquipmentSlots.Count || item.Details is not { ClassAllowed: true } details)
+            {
+                continue;
+            }
+
+            damageMin += details.Roll.DamageMin;
+            damageMax += details.Roll.DamageMax;
+            if (item.Slot == (int)EquipmentSlot.Weapon)
+            {
+                weapon = item.Kind;
+            }
+        }
+
+        return AttributeGains.Of(Classes.Get(_session.Character.Class).Definition.FunctionProfile, owner.Level, now, planned, weapon, damageMin,
+            damageMax);
+    }
+
+    private static string Gain(int value) => value != 0 ? $"+{value}" : null;
+
+    private static string Suffix(int value) => value != 0 ? $"  (+{value})" : string.Empty;
 
     // The points planned and not confirmed yet.
     public int Planned => _planned.Sum();

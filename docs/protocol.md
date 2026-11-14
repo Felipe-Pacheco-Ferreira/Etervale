@@ -104,7 +104,7 @@ Bodies start with `uint16 Version = 1`; text is UTF-8 with a `uint16` byte lengt
 | Select | C→S `EnterWorld` (`0x45540E00`) | `{uint16 Version = 1, uint16 0, text Name (64 B)}`. |
 | Entry | S→C `WorldEntry` (`0x45540E01`) | `{uint16 Version, uint8 Status (0 entered, else EnterWorldFailure), uint8 0, uint64 EntityId, int32 Field, int32 X, Z (x256)}`. The owner's stats, inventory and skills follow on the presence stream. |
 | Join | C→S `JoinWorld` (`0x45540E02`), S→C `WorldJoined` (`0x45540E03`) | `JoinWorld` = `{uint16 Version, uint16 0, uint64 EntityId}`, which must be the id from `WorldEntry`; `WorldJoined` = `{uint16 Version, uint8 GameMasterLevel, uint8 0, uint64 EntityId, int64 ServerTimeMs, int64 GameClockMs}`; the level only enables client-side game master controls; `GameClockMs` is the server's game clock (`WorldClock`), which the client's sky follows from then on on its local clock. |
-| Heartbeat | `Heartbeat` (`0x45540F06`) every 4 s | `{uint16 Version, uint16 0, uint32 Counter, int64 TimeMs}`; echoed with the server's time. The server closes connections silent for 60 s. |
+| Heartbeat | `Heartbeat` (`0x45540F06`) every 2 s | `{uint16 Version, uint16 0, uint32 Counter, int64 TimeMs}`; echoed with the server's time and the same counter, which the client matches to its send time for the latency readout (`HeartbeatLatency`). The server closes connections silent for 60 s. |
 | Leave | `LeaveWorld` (`0x45540160`) | `{uint16 Version, uint8 Saved, uint8 0}`: the client sends Saved 0; the server answers with Saved 1 after it stored the character. |
 
 Successful creation and deletion send a fresh `CharacterList` before the result. Storage failures answer the pending

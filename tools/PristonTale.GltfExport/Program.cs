@@ -14,19 +14,7 @@ if ((args.Length is >= 3 and <= 5) && args[0] == "--mobile-scene")
 
 if (args.Length == 4 && args[0] == "--mobile-minimap")
 {
-    var rectangle = new PristonSmdReader().ReadStage(args[1]).AuthoredMapRectangle;
-    var image = ImageDecode.Decode(File.ReadAllBytes(args[2]), Path.GetExtension(args[2]));
-    if (!image.IsValid || rectangle.Right <= rectangle.Left || rectangle.Bottom <= rectangle.Top)
-    {
-        throw new InvalidDataException("Missing minimap image or stage bounds.");
-    }
-
-    PngWriter.Write(args[3] + ".png", image.Width, image.Height, image.Rgba);
-    using var writer = new BinaryWriter(File.Create(args[3] + ".bin"));
-    writer.Write(rectangle.Left / GameUnits.FixedScale);
-    writer.Write(rectangle.Top / GameUnits.FixedScale);
-    writer.Write(rectangle.Right / GameUnits.FixedScale);
-    writer.Write(rectangle.Bottom / GameUnits.FixedScale);
+    MobileMinimapBake.Write(args[1], args[2], args[3]);
     return 0;
 }
 
