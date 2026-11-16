@@ -236,6 +236,20 @@ internal sealed class FieldCombat
 
         var lifeBefore = monster.Life;
         monster.ApplyDamage(damage);
+        if (!monster.IsAlive && !monster.IsSummon &&
+            SkillQuestCatalog.TryGet(player.Character.Quests.Active.Code, out var definition) &&
+            definition.Objective == SkillQuestObjective.MarkedKills)
+        {
+            foreach (var effect in monster.Effects.Effects)
+            {
+                if (effect.Code == definition.SkillCode && effect.SourceEntity == player.EntityId)
+                {
+                    ClassSkillQuests.Credit(player.Character, definition.SkillCode, SkillQuestObjective.MarkedKills);
+                    break;
+                }
+            }
+        }
+
         DamageDealt?.Invoke(player, monster, Math.Min(damage, lifeBefore));
         SkillCombat?.MonsterDamaged(monster);
 

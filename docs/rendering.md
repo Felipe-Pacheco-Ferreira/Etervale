@@ -177,6 +177,9 @@ map and a true-colour or run-length type. The stage collision reader does the sa
   parent (an enlarged weapon). Echoes cast no shadow; remove them with `RemoveActor`.
 - `RenderQueueBuilder` frustum-culls batches by bounds and sorts: opaque and alpha-tested by state key then front to
   back, transparent back to front, shadow casters by state key. Shadow casters are collected before culling.
+- On Android and in the desktop Low preset, the opaque world queue draws nearer batches first so depth testing can
+  reject covered fragments earlier.
+- Android also draws nearer alpha-tested batches first, with the same cutout and depth rules.
 - Queues: `Opaque`, `AlphaTest`, `Transparent` (`PristonMaterialRuntimeFactory.Classify`).
 
 ## Frame graph

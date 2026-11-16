@@ -8,11 +8,39 @@ using PristonTale.Simulation.Quests;
 
 namespace PristonTale.Mobile;
 
-internal sealed class MobileQuestDialog(Activity activity, IPlayChannel play, TextView notice, Func<string, string, string[], CancellationToken, Task<int?>> presenter = null)
+internal sealed class MobileQuestDialog(Activity activity, IPlayChannel play, TextView notice, Func<string, string, string[], CancellationToken, Task<int?>> presenter = null,
+    Func<string, string, string[], CancellationToken, Task<int?>> manualPresenter = null)
 {
     private static readonly Encoding DocumentEncoding = CreateEncoding();
 
     public Task<bool> TalkAsync(ulong npc, string name, CancellationToken ct) => RunAsync(npc, name, null, ct);
+
+    public async Task ShowSkillResetAsync(CancellationToken ct)
+    {
+        try
+        {
+            var answer = await (manualPresenter ?? AskAsync)("Habilidades", "Deseja redistribuir os pontos de habilidade?",
+                ["Resetar habilidades", "Manter habilidades"], ct);
+            if (answer is not { } choice)
+            {
+                return;
+            }
+
+            var action = choice == 0 ? QuestAction.ResetSkills : QuestAction.DeclineSkillReset;
+            var outcome = await play.RequestQuestAsync(new QuestCommand(Guid.NewGuid(), 0, action, QuestCode.None, 0, 0), ct);
+            if (!outcome.Message.IsNone)
+            {
+                notice.Text = CharSelectText.Format(outcome.Message);
+            }
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+        }
+        catch (Exception ex) when (ex is IOException or TimeoutException or InvalidOperationException)
+        {
+            notice.Text = "Não foi possível responder à oferta de reset de habilidades.";
+        }
+    }
 
     public async void ShowWorldPrompt(QuestPrompt prompt, CancellationToken ct)
     {

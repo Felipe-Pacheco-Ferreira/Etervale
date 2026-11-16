@@ -15,6 +15,20 @@ internal sealed class MobileGraphics
     private int quality;
     private int requested = NoRequest;
     private double settling;
+    private int sortByMaterial;
+    private int diagnostic;
+
+    public LightingDiagnostic Diagnostic
+    {
+        get => (LightingDiagnostic)Volatile.Read(ref diagnostic);
+        set => Volatile.Write(ref diagnostic, (int)value);
+    }
+
+    public bool SortByMaterial
+    {
+        get => Volatile.Read(ref sortByMaterial) != 0;
+        set => Volatile.Write(ref sortByMaterial, value ? 1 : 0);
+    }
 
     // folder: the app's own files folder, where client-settings.json lives.
     public MobileGraphics(string folder)
@@ -27,7 +41,7 @@ internal sealed class MobileGraphics
             var saved = store.Load().Quality;
             if (store.LastError.Length == 0 && saved != GraphicsQuality.Custom)
             {
-                chosen = saved;
+                chosen = saved == GraphicsQuality.Ultra ? GraphicsQuality.High : saved;
             }
         }
 
@@ -36,23 +50,45 @@ internal sealed class MobileGraphics
 
     public GraphicsQuality Quality => (GraphicsQuality)Volatile.Read(ref quality);
 
-    // The renderer's options for the chosen quality. Low is cut to what the phone draws at 60 frames (docs/android.md,
-    // "Graphics quality"): a 1024 shadow map in one cascade, and the painted sky in place of the realistic one.
+    // Mobile budgets for the shared renderer. Higher presets retain distinct lighting and post-processing features.
     public ClientSettings Rendering
     {
         get
         {
-            var settings = new ClientSettings().WithQuality(Quality);
-            return Quality == GraphicsQuality.Low ? settings with { ShadowMapSize = 1024, ShadowCascades = 1, RealisticSky = false } : settings;
+            var preset = Quality;
+            var settings = new ClientSettings().WithQuality(preset);
+            return preset switch
+            {
+                GraphicsQuality.Low => settings with
+                {
+                    ShadowMapSize = 1024, ShadowCascades = 1, ShadowUpdateRate = 30, RealisticSky = false
+                },
+                GraphicsQuality.Medium => settings with
+                {
+                    ShadowMapSize = 1024, ShadowCascades = 2, ShadowUpdateRate = 30,
+                    RealisticSky = false, AmbientOcclusion = false, Bloom = BloomQuality.Off, AntiAliasing = AntiAliasingMode.Fxaa
+                },
+                GraphicsQuality.High => settings with
+                {
+                    ShadowMapSize = 1024, ShadowCascades = 3, ShadowUpdateRate = 30, LampShadowTileSize = 512,
+                    ShadowFilter = ShadowFilterMode.Pcf, LampShadowCount = 2,
+                    CloudQuality = CloudQuality.Low, ContactShadows = false, AntiAliasing = AntiAliasingMode.Off,
+                    ScreenSpaceReflections = false, AmbientOcclusion = false, VolumetricLight = false, LocalLightLimit = 8,
+                    RealisticSky = false
+                },
+                _ => settings
+            };
         }
     }
 
     // The width the world is drawn at, the height following the screen's shape; Low draws fewer pixels. Read once, when the
     // game starts: a quality chosen later takes its width at the next start.
-    public int RenderWidth => Quality == GraphicsQuality.Low ? LowRenderWidth : RenderWidthAbove;
-
-    private const int LowRenderWidth = 1088;
-    private const int RenderWidthAbove = 1280;
+    public int RenderWidth => Quality switch
+    {
+        GraphicsQuality.Low => 864,
+        GraphicsQuality.Medium => 928,
+        _ => 960
+    };
 
     // Called on the UI thread.
     public void Request(GraphicsQuality next) => Volatile.Write(ref requested, (int)next);
@@ -74,4 +110,12 @@ internal sealed class MobileGraphics
             store.QueueSave(Rendering);
         }
     }
+}
+
+internal enum LightingDiagnostic
+{
+    Normal,
+    NoSolarShadows,
+    NoLocalLights,
+    UnlitMaterial
 }

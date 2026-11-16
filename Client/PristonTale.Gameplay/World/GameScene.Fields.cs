@@ -53,14 +53,54 @@ public sealed partial class GameScene
 
     public void LoadField(string assetRoot, FieldDef field, EnteredCharacter entered = null)
     {
+        PrepareFieldLoad(assetRoot);
+        CompleteFieldLoad(AddFieldToWorld(assetRoot, field), entered);
+    }
+
+    // Called on the Android game thread while the entry screen is visible. Stage decoding runs off-thread,
+    // and the existing streamer publishes GPU resources in steps on the game thread.
+    public bool AdvanceEnteredLoad(string assetRoot, EnteredCharacter entered)
+    {
+        if (!_worldCatalog.TryGetFieldByCode(entered.FieldCode, out var field))
+        {
+            field = _worldCatalog.Ricarten;
+        }
+
+        if (_fieldStreamer is null)
+        {
+            PrepareFieldLoad(assetRoot);
+            _fieldStreamer.Prioritize(field);
+        }
+
+        var loaded = _fieldStreamer.Update();
+        if (loaded is null)
+        {
+            if (_fieldStreamer.Failed(field.Id))
+            {
+                throw new InvalidOperationException($"Could not load the starting field {field.Id}.");
+            }
+
+            return false;
+        }
+
+        _fields.Add(loaded);
+        InvalidateGround();
+        CompleteFieldLoad(loaded, entered);
+        return true;
+    }
+
+    private void PrepareFieldLoad(string assetRoot)
+    {
         _assetRoot = assetRoot;
         EnsureRenderer();
-
         _fieldStreamer?.Dispose();
         _fieldStreamer = new FieldResourceStreamer(assetRoot, _reader, _renderer, _log, ConfigureFieldLighting);
         UnloadAllFields();
+    }
 
-        var loaded = AddFieldToWorld(assetRoot, field);
+    private void CompleteFieldLoad(LoadedField loaded, EnteredCharacter entered)
+    {
+        var field = loaded.Definition;
         SetActiveField(loaded);
 
         _player = entered != null
@@ -83,7 +123,7 @@ public sealed partial class GameScene
         _playerForward = Vector3.Forward;
 
         _renderer.ClearActors();
-        AddPlayerActors(assetRoot, entered?.FaceIndex ?? 0, entered?.Tier ?? 0, entered?.HairIndex ?? 0);
+        AddPlayerActors(_assetRoot, entered?.FaceIndex ?? 0, entered?.Tier ?? 0, entered?.HairIndex ?? 0);
 
         _camera = new PristonCamera(_playerBody.Position, _playerForward, ToCameraSettings(field.Camera));
         Status = $"Loaded {field.Name}: {loaded.Stage.Vertices.Count} vertices, {loaded.Stage.Faces.Count} faces, " +

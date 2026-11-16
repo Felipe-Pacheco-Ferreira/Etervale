@@ -53,9 +53,12 @@ internal static class VulkanHudArt
             Shape.AddCircle(holeX, holeY, holeRadius, Path.Direction.Cw!);
         }
 
+        var previousColor = Fill.Color;
+        Fill.Color = Color.White;
         Fill.SetShader(new LinearGradient(0, bounds.Top, 0, bounds.Bottom, [PlateTop.ToArgb(), PlateBottom.ToArgb()], null, Shader.TileMode.Clamp!));
         canvas.DrawPath(Shape, Fill);
         Fill.SetShader(null);
+        Fill.Color = previousColor;
         var edge = Math.Max(1f, radius * .08f);
         Stroke.StrokeWidth = edge;
         Stroke.Color = Edge;

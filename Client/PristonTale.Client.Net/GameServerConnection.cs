@@ -35,8 +35,7 @@ public sealed class GameServerConnection : IGameBackend
     private static readonly TimeSpan HeartbeatInterval = TimeSpan.FromSeconds(2);
     private static readonly TimeSpan DescriptionRetryInterval = TimeSpan.FromMilliseconds(Online.PresenceDecoder.DescriptionRetryMs);
 
-    private readonly string _host;
-    private readonly int _port;
+    private readonly Uri _address;
     private readonly ServerCertificatePolicy _certificatePolicy;
     private readonly SemaphoreSlim _connectGate = new(1, 1);
     private readonly SemaphoreSlim _requestGate = new(1, 1);
@@ -80,8 +79,7 @@ public sealed class GameServerConnection : IGameBackend
     public GameServerConnection(string address)
     {
         var uri = TlsTransport.ParseAddress(address);
-        _host = uri.Host;
-        _port = uri.Port;
+        _address = uri;
         _certificatePolicy = ServerCertificatePolicy.FromAddress(uri);
         _presence = new PresenceDecoder(_catalog, RequestDescription);
         PersonalShops = new PersonalShopRequests(packet => Send(packet));
@@ -463,7 +461,9 @@ public sealed class GameServerConnection : IGameBackend
                 return;
             }
 
-            var connection = await TlsTransport.ConnectAsync(_host, _port, _certificatePolicy, ct);
+            var connection = WebSocketTransport.Carries(_address)
+                ? await WebSocketTransport.ConnectAsync(_address, ct)
+                : await TlsTransport.ConnectAsync(_address.Host, _address.Port, _certificatePolicy, ct);
             _connection = connection;
             _run = RunAsync(connection);
             _heartbeat = HeartbeatAsync(connection);

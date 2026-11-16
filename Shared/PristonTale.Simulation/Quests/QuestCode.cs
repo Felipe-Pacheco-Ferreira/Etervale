@@ -66,7 +66,8 @@ public enum QuestCode : ushort
     Elite114E = 0x52,
     Elite114F = 0x53,
     Elite114G = 0x54,
-    AdventurerJourney = 0x55
+    AdventurerJourney = 0x55,
+    FirstSkill = 0x56
 }
 
 // Completed level-milestone quests (bit per quest); both level 55 branches share one bit.
@@ -97,7 +98,8 @@ public enum ElementaryQuestLog : uint
     F = 32,
     G = 64,
     FuryOfPhantom = 128,
-    AdventurerJourney = 256
+    AdventurerJourney = 256,
+    FirstSkill = 512
 }
 
 // Completed elite quests (EliteQuests.Bit): bit n is the chains' n-th quest, Elite106A first.
@@ -114,7 +116,8 @@ public static class QuestCodes
     public static bool IsRankUp(QuestCode code) => code is QuestCode.RankUpTrophies or QuestCode.RankUpHoney or QuestCode.RankUpOil
         or QuestCode.RankUpQuestWeapon or QuestCode.RankUpMasterTrial or QuestCode.RankUpHestian;
 
-    public static bool IsDefined(QuestCode code) => code != QuestCode.None && Enum.IsDefined(code);
+    public static bool IsDefined(QuestCode code) =>
+        code != QuestCode.None && (Enum.IsDefined(code) || SkillQuestCatalog.TryGet(code, out _));
 
     // The elementary quests run in order; the index is also the number of earlier ones completed.
     public static int ElementaryIndex(QuestCode code) => IsElementary(code) ? code - QuestCode.ElementaryA : -1;

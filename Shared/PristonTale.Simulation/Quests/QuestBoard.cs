@@ -97,6 +97,15 @@ public static class QuestBoard
                 entries.Add(new QuestBoardEntry(tempskron ? "Encontre Skadi em Ricarten" : "Encontre Jin em Pillai",
                     tempskron ? AdventurerJourneyRoute.MeetSkadiDescription : AdventurerJourneyRoute.MeetJinDescription));
                 break;
+            case QuestCode.None when FirstSkillQuest.IsAvailable(character):
+            case QuestCode.FirstSkill:
+                entries.Add(new QuestBoardEntry("Sua primeira habilidade", "Avalon/FirstSkill.msg"));
+                break;
+            case QuestCode.None when character.Level <= ElementaryQuests.LevelCap &&
+                QuestCodes.Elementary(ElementaryQuests.Completed(character.Quests.ElementaryLog)) is var nextCode && QuestCodes.IsElementary(nextCode):
+                var next = Open(BeginnerRows[BeginnerRow(nextCode, tempskron)]);
+                entries.Add(next with { Title = ElementaryQuests.InstructorObjective });
+                break;
             case QuestCode.AdventurerJourney:
                 entries.Add(active.State == 1
                     ? new QuestBoardEntry("Jornada do aventureiro · Preparação", "Avalon/Preparation.msg")
@@ -149,6 +158,14 @@ public static class QuestBoard
                 {
                     entries.Add(EliteQuests.Line(elite, false));
                 }
+                else if (SkillQuestCatalog.TryGet(active.Code, out var skillQuest))
+                {
+                    entries.Add(ClassSkillQuests.BoardEntry(skillQuest));
+                }
+                else if (active.IsIdle && SkillQuestCatalog.Next(character) is { } nextSkillQuest)
+                {
+                    entries.Add(ClassSkillQuests.BoardEntry(nextSkillQuest));
+                }
 
                 break;
         }
@@ -172,7 +189,9 @@ public static class QuestBoard
                 QuestCode.RankUpMasterTrial => Done(Rows[33]),
                 QuestCode.RankUpHestian => Done(Rows[FifthRankUpRow]),
                 QuestCode.FuryOfPhantom => Done(BeginnerRows[14]),
+                QuestCode.FirstSkill => new QuestBoardEntry("Sua primeira habilidade", "Avalon/FirstSkill.msg"),
                 QuestCode.AdventurerJourney => new QuestBoardEntry("Jornada do aventureiro", "Avalon/Finished.msg"),
+                _ when SkillQuestCatalog.TryGet(code, out var skillQuest) => ClassSkillQuests.BoardEntry(skillQuest),
                 _ when LevelQuests.IsLevelQuest(code) => Done(Rows[LevelRow(code)]),
                 _ when QuestCodes.IsElementary(code) => Done(BeginnerRows[BeginnerRow(code, true)]),
                 _ => null

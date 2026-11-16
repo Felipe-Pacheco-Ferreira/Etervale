@@ -21,7 +21,7 @@ internal sealed class TouchOrbit
     private Vector2 previousPosition;
     private float previousSpan;
     private float yaw;
-    private float pitch = 0.59f;
+    private float pitch = 0.32f;
     private float distance = 270f;
 
     public Vector3 Offset => new(

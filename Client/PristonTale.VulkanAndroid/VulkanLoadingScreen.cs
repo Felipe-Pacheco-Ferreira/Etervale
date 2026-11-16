@@ -51,6 +51,17 @@ internal sealed class VulkanLoadingScreen : FrameLayout
         footer.AddView(_bar, new LinearLayout.LayoutParams((int)(420 * density), (int)(16 * density)) { TopMargin = (int)(10 * density) });
         AddView(footer, new LayoutParams(-1, -2, GravityFlags.Bottom));
 
+        var version = activity.PackageManager?.GetPackageInfo(activity.PackageName!, Android.Content.PM.PackageInfoFlags.Activities)?.VersionName;
+        if (!string.IsNullOrWhiteSpace(version))
+        {
+            var label = VulkanPanel.Body(activity, $"v{version}", 12);
+            AddView(label, new LayoutParams(-2, -2, GravityFlags.Bottom | GravityFlags.Left)
+            {
+                LeftMargin = (int)(10 * density),
+                BottomMargin = (int)(8 * density)
+            });
+        }
+
         // The art drifts in and out, panning a little, forever.
         _drift = ValueAnimator.OfFloat(0f, 1f);
         _drift.SetDuration(DriftMs);

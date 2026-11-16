@@ -111,6 +111,7 @@ public sealed class VulkanLoginActivity : Activity
         };
     }
 
+
     private async Task LoginAsync(string address, string account, string password)
     {
         if (address.Length == 0 || account.Length == 0 || password.Length == 0)
@@ -119,15 +120,17 @@ public sealed class VulkanLoginActivity : Activity
             return;
         }
 
-        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(lifetime.Token);
-        timeout.CancelAfter(TimeSpan.FromSeconds(20));
         connection = new GameServerConnection(address);
-        var login = await connection.LoginAsync(account, password, "pt-BR", timeout.Token);
-        if (!login.Ok)
+        using (var loginTimeout = CancellationTokenSource.CreateLinkedTokenSource(lifetime.Token))
         {
-            status.Text = "O servidor recusou o login.";
-            await DisconnectAsync();
-            return;
+            loginTimeout.CancelAfter(TimeSpan.FromSeconds(20));
+            var login = await connection.LoginAsync(account, password, "pt-BR", loginTimeout.Token);
+            if (!login.Ok)
+            {
+                status.Text = "O servidor recusou o login.";
+                await DisconnectAsync();
+                return;
+            }
         }
 
         try

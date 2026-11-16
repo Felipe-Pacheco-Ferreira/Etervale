@@ -153,7 +153,8 @@ public sealed class QuestJournal
     {
         if (_finished.Count == FinishedCapacity)
         {
-            _finished.RemoveAt(0);
+            var oldestTransient = _finished.FindIndex(static finished => !SkillQuestCatalog.TryGet(finished, out _));
+            _finished.RemoveAt(Math.Max(0, oldestTransient));
         }
 
         _finished.Add(code);

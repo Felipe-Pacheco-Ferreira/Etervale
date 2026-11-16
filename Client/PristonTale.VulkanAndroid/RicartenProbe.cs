@@ -71,7 +71,8 @@ internal sealed class RicartenProbe : Game
     private bool openingFrameReleased;
     private VulkanWorldSession session;
     private bool worldLoadPending;
-    private bool selectionFrameReleased;
+    private GameScene loadingScene;
+    private EnteredCharacter loadingCharacter;
     private CharacterSelectScreen selection;
     private SpriteBatch selectionBatch;
     private string assetRoot;
@@ -160,6 +161,11 @@ internal sealed class RicartenProbe : Game
             opening = new OpeningScreen(screen) { PointerInput = ReadWorldPointer };
             opening.Enter();
         }
+        else if (ProbeApplication.CurrentWorld is { } resumed)
+        {
+            session = resumed;
+            worldLoadPending = true;
+        }
         else
         {
             StartSelection();
@@ -197,6 +203,7 @@ internal sealed class RicartenProbe : Game
             UiScale = MathF.Max(1f, GraphicsDevice.Viewport.Height / SelectionUiHeight),
             TouchKeyboard = true,
             PickScale = 2.5f,
+            RosterDoublePressSeconds = 0.55,
             CameraDistanceScale = .82f,
             WorldEntered = (character, entered) =>
             {
@@ -232,21 +239,34 @@ internal sealed class RicartenProbe : Game
             ButtonState.Released, ButtonState.Released);
     }
 
-    private void LoadWorld(string root)
+    private bool AdvanceWorldLoad(string root)
     {
-        presentation.ApplyRendering(quality.Rendering with { ExposureCompensation = WorldExposure });
-        session.Graphics = quality;
-        session.Meter = meter;
-        scene = new GameScene(GraphicsDevice, Content, sky: sky, effects: effects, presentation: presentation, audio: audio)
-        {
-            FieldAssetsReady = VulkanPacks.FieldReady,
-            ModelAssets = VulkanPacks.ModelAssets
-        };
         var character = session.Character;
         var outcome = session.Entered;
-        var entered = new EnteredCharacter(character.Class, character.Name, character.Level, character.FaceIndex,
-            outcome.FieldId, outcome.SpawnX, outcome.SpawnZ, character.Tier, character.HairIndex);
-        scene.LoadEntered(root, entered);
+        if (loadingScene is null)
+        {
+            Log.Info(Tag, $"Loading field {outcome.FieldId}.");
+            presentation.ApplyRendering(quality.Rendering with { ExposureCompensation = WorldExposure });
+            loadingScene = new GameScene(GraphicsDevice, Content, sky: sky, effects: effects, presentation: presentation, audio: audio)
+            {
+                FieldAssetsReady = VulkanPacks.FieldReady,
+                ModelAssets = VulkanPacks.ModelAssets
+            };
+            loadingCharacter = new EnteredCharacter(character.Class, character.Name, character.Level, character.FaceIndex,
+                outcome.FieldId, outcome.SpawnX, outcome.SpawnZ, character.Tier, character.HairIndex);
+        }
+
+        var entered = loadingCharacter;
+        if (!loadingScene.AdvanceEnteredLoad(root, entered))
+        {
+            return false;
+        }
+
+        scene = loadingScene;
+        loadingScene = null;
+        loadingCharacter = null;
+        session.Graphics = quality;
+        session.Meter = meter;
         scene.WorldPointerInput = ReadWorldPointer;
         scene.SelectCombatTargetOnTap = true;
         namePlates = new HudCombat();
@@ -260,7 +280,7 @@ internal sealed class RicartenProbe : Game
         speakerColor = id => chat.NameColor(id, scene.SelectedTargetId);
         nameSprites.Request(HudChatBubbles.Art);
         scene.PresenceObserved += ObserveChat;
-        _ = FetchCatalogAsync(scene);
+        _ = FetchCatalogAsync(scene, session);
         var play = connection.OpenPlayChannel();
         scene.BeginRemotePresence(play, entered);
         scene.NpcSelected += session.SelectNpc;
@@ -284,6 +304,7 @@ internal sealed class RicartenProbe : Game
             }
         }
         joystickCircle.SetData(pixels);
+        return true;
     }
 
     private void UpdateFrame(GameTime gameTime)
@@ -311,7 +332,7 @@ internal sealed class RicartenProbe : Game
             StartSelection();
         }
 
-        if (selection is not null)
+        if (selection is not null && !worldLoadPending)
         {
             orbit.Update(allowJoystick: false);
             selection.Update(gameTime);
@@ -322,18 +343,24 @@ internal sealed class RicartenProbe : Game
             }
 
             UpdateKeyboard(false);
-            selection.Dispose();
-            selection = null;
             worldLoadPending = true;
             return;
         }
-        // The world loads once its field's packs are on the phone (VulkanPacks shows the download meanwhile).
-        if (worldLoadPending && selectionFrameReleased && VulkanPacks.FieldReady(session.Entered.FieldId))
+
+        // Keep drawing the selection until the starting field is ready, including when it needs an asset pack.
+        if (worldLoadPending && VulkanPacks.FieldReady(session.Entered.FieldId))
         {
+            if (!AdvanceWorldLoad(assetRoot))
+            {
+                return;
+            }
+
             worldLoadPending = false;
-            Log.Info(Tag, $"Loading field {session.Entered.FieldId}.");
-            LoadWorld(assetRoot);
+            selection?.Dispose();
+            selection = null;
             Log.Info(Tag, $"Loaded field {session.Entered.FieldId}.");
+            // Present once before the first world update starts processing remote actors and neighbours.
+            return;
         }
         if (scene is null)
         {
@@ -393,13 +420,14 @@ internal sealed class RicartenProbe : Game
         }
     }
 
-    private async Task FetchCatalogAsync(GameScene world)
+    private async Task FetchCatalogAsync(GameScene world, VulkanWorldSession worldSession)
     {
         try
         {
             var catalog = await connection.GetWorldCatalogAsync();
             namePlates.SetCatalog(catalog);
             world.SetWorldRenderCatalog(catalog);
+            worldSession.SetRenderCatalog(catalog);
         }
         catch (Exception exception)
         {
@@ -456,14 +484,20 @@ internal sealed class RicartenProbe : Game
 
         if (scene is null)
         {
-            if (selectionRequested || worldLoadPending)
+            if (selectionRequested)
             {
                 GraphicsDevice.Clear(Color.Black);
                 openingFrameReleased = selectionRequested;
-                selectionFrameReleased = worldLoadPending;
             }
             return;
         }
+        scene.Renderer.OpaqueFrontToBackOverride = !quality.SortByMaterial;
+        var diagnostic = quality.Diagnostic;
+        scene.Renderer.DiagnosticSkipSolarShadows = diagnostic == LightingDiagnostic.NoSolarShadows;
+        scene.Renderer.DiagnosticSkipLocalLights = diagnostic == LightingDiagnostic.NoLocalLights;
+        scene.Renderer.DebugView = diagnostic == LightingDiagnostic.UnlitMaterial
+            ? PristonDebugView.MaterialUnlit
+            : presentation.Rendering.DebugView;
         meter.DrawBegan(scene.Renderer);
         var entity = session.Entered.EntityId;
         var viewport = GraphicsDevice.Viewport;
@@ -477,7 +511,7 @@ internal sealed class RicartenProbe : Game
         }
         var target = session.Target;
         var framed = default(HudPortraitSubject);
-        var framing = target is not null && namePlates.TryGetPortraitSubject(target.Id, out framed);
+        var framing = npc is null && target is not null && namePlates.TryGetPortraitSubject(target.Id, out framed);
         if (framing)
         {
             targetPortrait.Render(scene, framed, layout);
@@ -488,6 +522,7 @@ internal sealed class RicartenProbe : Game
         meter.PartBegan();
         GraphicsDevice.Clear(scene.SkyColor);
         scene.Draw();
+        ProbeApplication.MarkFirstFrame();
         meter.SceneEnded();
         session.CountFrame();
         nameSprites.Update();
@@ -497,33 +532,29 @@ internal sealed class RicartenProbe : Game
         chat.Bubbles.Draw(namePainter, layout, Environment.TickCount64, overhead, speakerColor, scene.SelectedTargetId);
         namePainter.End();
         var viewHeight = viewport.Height;
+        joystickBatch.Begin();
         if (portrait.Texture(entity) is { } avatar)
         {
             var size = (int)(viewHeight * HudPlacement.PlayerPortraitSize);
-            joystickBatch.Begin();
             joystickBatch.Draw(avatar, new Rectangle((int)(viewHeight * (HudPlacement.PlayerPortraitX + HudPlacement.PlayerShiftX)),
                 (int)(viewHeight * (HudPlacement.PlayerPortraitY + HudPlacement.PlayerShiftY)), size, size), Color.White);
-            joystickBatch.End();
         }
         if (framing && targetPortrait.Texture(target.Id) is { } enemy)
         {
             var size = (int)(viewHeight * HudPlacement.TargetPortraitSize);
-            joystickBatch.Begin();
             joystickBatch.Draw(enemy, new Rectangle((int)(HudPlacement.TargetPortraitLeft(viewport.Width, viewHeight) + viewHeight * HudPlacement.TargetShiftX),
                 (int)(viewHeight * (HudPlacement.TargetPortraitY + HudPlacement.TargetShiftY)), size, size), Color.White);
-            joystickBatch.End();
         }
         if (npc is not null && npcPortrait.Texture(npc.EntityId) is { } face)
         {
             var bounds = new Rectangle((int)(npc.X * viewport.Width), (int)(npc.Y * viewport.Height),
                 (int)(npc.Width * viewport.Width), (int)(npc.Height * viewport.Height));
-            joystickBatch.Begin();
             var scale = MathF.Min(bounds.Width / (float)face.Width, bounds.Height / (float)face.Height);
             var width = (int)(face.Width * scale);
             var height = (int)(face.Height * scale);
             joystickBatch.Draw(face, new Rectangle(bounds.Center.X - width / 2, bounds.Center.Y - height / 2, width, height), Color.White);
-            joystickBatch.End();
         }
+        joystickBatch.End();
 
         if (orbit.JoystickActive)
         {
@@ -564,7 +595,6 @@ internal sealed class RicartenProbe : Game
         session.SetClosing(scene.Closing);
         scene = null;
         ProbeApplication.SetWorld(null);
-        selectionFrameReleased = false;
         session = null;
         namePainter.Dispose();
         namePainter = null;
@@ -586,6 +616,7 @@ internal sealed class RicartenProbe : Game
     protected override void UnloadContent()
     {
         opening?.Dispose();
+        loadingScene?.Dispose();
         loginAtlas?.Dispose();
         selection?.Dispose();
         namePainter?.Dispose();

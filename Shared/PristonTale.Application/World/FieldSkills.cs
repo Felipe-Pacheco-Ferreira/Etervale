@@ -9,6 +9,7 @@ using PristonTale.Simulation.World.Ai;
 using PristonTale.Simulation.World.Monsters;
 using PristonTale.Contracts.Skills;
 using PristonTale.Simulation.Physics;
+using PristonTale.Simulation.Quests;
 
 namespace PristonTale.Application.World;
 
@@ -405,11 +406,26 @@ internal sealed partial class FieldSkills
         return true;
     }
 
-    private void Pay(WorldPlayer caster, MonsterInstance monster, int damage, bool crit, bool forceFlinch = false, ulong source = 0)
+    private void Pay(WorldPlayer caster, MonsterInstance monster, int damage, bool crit, bool forceFlinch = false, ulong source = 0, uint skillCode = 0)
     {
+        var lifeBefore = monster.Life;
         if (_host.ApplyPlayerDamage(caster, monster, damage, crit, forceFlinch, source) is { } payout)
         {
             _payouts.Add(payout);
+        }
+
+        if (skillCode != 0 && lifeBefore > monster.Life)
+        {
+            ClassSkillQuests.Credit(caster.Character, skillCode, SkillQuestObjective.Hits);
+            if (monster.Def.Brood == MonsterBrood.Undead)
+            {
+                ClassSkillQuests.Credit(caster.Character, skillCode, SkillQuestObjective.UndeadHits);
+            }
+
+            if (!monster.IsAlive)
+            {
+                ClassSkillQuests.Credit(caster.Character, skillCode, SkillQuestObjective.SkillKills);
+            }
         }
     }
 

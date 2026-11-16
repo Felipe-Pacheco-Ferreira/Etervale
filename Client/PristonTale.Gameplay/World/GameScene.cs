@@ -455,7 +455,10 @@ public sealed partial class GameScene : IDisposable, IHudPortraitScene
         {
             _fieldAudio?.Update(_playerBody.Position, TimeOfDay, frameDt);
         }
-        var completedField = _fieldStreamer?.Update();
+        var uploadBudget = OperatingSystem.IsAndroid()
+            ? FieldStreamingPolicy.AndroidInWorldUploadBudgetMilliseconds
+            : FieldStreamingPolicy.UploadBudgetMilliseconds;
+        var completedField = _fieldStreamer?.Update(uploadBudget);
         if (completedField is not null)
         {
             _fields.Add(completedField);

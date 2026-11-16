@@ -22,6 +22,8 @@ internal static class QuestTests
         yield return ("quest grants respect the carried-weight limit and leave the quest unchanged when refused", WeightAsync);
         yield return ("beginner quests run in order with deliveries, hunts, tribe finishers and class rewards", ElementaryAsync);
         yield return ("Avalon adventurer journey validates the guide, belt, hunt and crystal", AdventurerJourneyAsync);
+        yield return ("first skill quest counts three casts and can be claimed only once", FirstSkillAsync);
+        yield return ("class skill quests offer in order, reject unrelated progress and pay once", ClassSkillQuestsAsync);
         yield return ("the journey's hunting area is centred on its hunt points and holds each with its margin", HuntAreaAsync);
         yield return ("the first Tempskron rank-up needs the home master, level and skills and gathers one trophy of each", TrophiesAsync);
         yield return ("the first Morion rank-up follows the name branch, brews at the aging master and promotes after delivery", PotionAsync);
@@ -33,6 +35,56 @@ internal static class QuestTests
         yield return ("the wing exchange takes the held wing, crystals and gold for the next wing", WingAsync);
         yield return ("quest drops come only from allowed sources and while a running quest wants them", DropsAsync);
         yield return ("class tier changes only through rank-up quests and masters of a lower group stop at the first", TierAuthorityAsync);
+    }
+
+    private static Task FirstSkillAsync()
+    {
+        var player = Character(PlayerClass.Fighter, "Skill test", 10);
+        FirstSkillQuest.CreditCast(player);
+        Assert.True(player.Quests.Active.IsIdle, "casts counted before the Adventurer Journey");
+        player.Quests.ElementaryLog |= ElementaryQuestLog.AdventurerJourney;
+        FirstSkillQuest.CreditCast(player);
+        FirstSkillQuest.CreditCast(player);
+        Assert.True(player.Quests.Active.Kills == 2, "accepted casts were not counted");
+        Assert.True(!FirstSkillQuest.Claim(Context(player, QuestNpc.None), FirstSkillQuest.ReadyState), "claimed before three casts");
+        FirstSkillQuest.CreditCast(player);
+        Assert.True(FirstSkillQuest.Claim(Context(player, QuestNpc.None), FirstSkillQuest.ReadyState), "reward claim refused");
+        Assert.True(player.Money == 1100 && QuestInventory.Count(player, ItemCodes.Parse("PM101")) == 15, "reward differs");
+        Assert.True(!FirstSkillQuest.Claim(Context(player, QuestNpc.None), FirstSkillQuest.ReadyState), "reward paid twice");
+        return Task.CompletedTask;
+    }
+
+    private static Task ClassSkillQuestsAsync()
+    {
+        var count = 0;
+        foreach (var playerClass in Enum.GetValues<PlayerClass>())
+        {
+            var missions = SkillQuestCatalog.For(playerClass).ToArray();
+            for (var index = 0; index < missions.Length; index++)
+            {
+                var mission = missions[index];
+                var player = Character(playerClass, "Class skill test", mission.MinimumLevel, tier: 3);
+                foreach (var previous in missions.Take(index))
+                {
+                    player.Quests.Finish(previous.Code);
+                }
+
+                Assert.True(Talk(player, HomeMaster).Prompt?.Code == mission.Code, $"wrong offer for {mission.Code}");
+                Assert.True(!ClassSkillQuests.Accept(Context(player), mission.Code, 0), "accepted outside the home master");
+                Assert.True(ClassSkillQuests.Accept(Context(player, HomeMaster), mission.Code, 0), "offer was rejected");
+                ClassSkillQuests.Credit(player, 0, mission.Objective, mission.Required);
+                Assert.True(player.Quests.Active.Kills == 0, "credit for a different skill was counted");
+                ClassSkillQuests.Credit(player, mission.SkillCode, mission.Objective, mission.Required);
+                var reward = Context(player);
+                Assert.True(ClassSkillQuests.Claim(reward, mission.Code, ClassSkillQuests.ReadyState), "reward claim was rejected");
+                Assert.True(reward.Experience > 0 && player.Quests.HasFinished(mission.Code), "reward or completion was lost");
+                Assert.True(!ClassSkillQuests.Claim(Context(player), mission.Code, ClassSkillQuests.ReadyState), "reward paid twice");
+                count++;
+            }
+        }
+
+        Assert.True(count == 112, "class skill catalog is incomplete");
+        return Task.CompletedTask;
     }
 
     private static Task HuntAreaAsync()

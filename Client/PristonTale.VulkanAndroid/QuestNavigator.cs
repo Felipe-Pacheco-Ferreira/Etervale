@@ -1,11 +1,15 @@
 using System.Diagnostics;
 using System.Numerics;
 using PristonTale.Contracts.Characters;
+using PristonTale.Contracts.Units;
+using PristonTale.Simulation.World.Npcs;
 using PristonTale.Gameplay.World;
 using PristonTale.Simulation.Characters;
 using PristonTale.Simulation.Items;
 using PristonTale.Simulation.Items.Usable;
 using PristonTale.Simulation.Quests;
+using PristonTale.Simulation.Progression;
+using PristonTale.Simulation.Skills;
 using PristonTale.Simulation.World;
 using XnaVector2 = Microsoft.Xna.Framework.Vector2;
 using XnaVector3 = Microsoft.Xna.Framework.Vector3;
@@ -66,6 +70,16 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
     private double _retryAt;
     private string _status = "";
     private Step _step;
+    private Task<VulkanProgression.Answer> _firstSkillTraining;
+    private long _firstSkillTrainingRevision = -1;
+    private double _firstSkillTrainingRetryAt;
+    private Guid _firstSkillTrainingOperation;
+    private double _nextQuestCast;
+    private int _nextPracticeSkill;
+    private long _firstSkillRewardRevision = -1;
+    private Guid _firstSkillRewardOperation;
+    private Task<QuestOutcome> _firstSkillReward;
+    private double _firstSkillRewardRetryAt;
 
     private IReadOnlyList<XnaVector2> _route = [];
     private int _routeIndex;
@@ -86,6 +100,8 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
     private RouteMarks _marks = NoMarks;
     // A monster the attack could not reach in a straight line, walked to along a route instead.
     private ulong _chasing;
+    private ulong _questAttackTarget;
+    private (QuestCode Code, int State) _questAttackStep;
     private double _attackStillSince = double.NaN;
     private Vector3 _attackFrom;
     private double _lastProgressAt;
@@ -98,7 +114,136 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
     private int? _crystalBaseline;
     private bool _collectAfterTalk;
 
+    private static readonly WorldCatalog World = new();
+    private static readonly Lazy<Dictionary<(int Target, int Field), Vector2[]>> QuestHunts = new(ReadQuestHunts);
+    private (int Target, int From, int Level) _huntTravelKey;
+    private int? _huntTravelField;
+
+    private static Dictionary<(int Target, int Field), Vector2[]> ReadQuestHunts()
+    {
+        using var stream = Android.App.Application.Context.Assets!.Open("quest-hunts.csv");
+        using var reader = new StreamReader(stream);
+        var points = new Dictionary<(int Target, int Field), List<Vector2>>();
+        while (reader.ReadLine() is { } line)
+        {
+            var row = line.Split(',');
+            var key = (int.Parse(row[0]), int.Parse(row[1]));
+            if (!points.TryGetValue(key, out var fieldPoints))
+            {
+                fieldPoints = [];
+                points.Add(key, fieldPoints);
+            }
+
+            fieldPoints.Add(new Vector2(int.Parse(row[2]), int.Parse(row[3])));
+        }
+
+        return points.ToDictionary(pair => pair.Key, pair => pair.Value.ToArray());
+    }
+
+    private static readonly Lazy<QuestNpcPlace[]> QuestNpcs = new(ReadQuestNpcs);
+    private sealed record QuestNpcPlace(int Field, uint Template, Vector2 Position, NpcServiceKind Service, int Value);
+
+    private static QuestNpcPlace[] ReadQuestNpcs()
+    {
+        using var stream = Android.App.Application.Context.Assets!.Open("quest-npcs.csv");
+        using var reader = new StreamReader(stream);
+        var placements = new List<QuestNpcPlace>();
+        while (reader.ReadLine() is { } line)
+        {
+            var fields = line.Split(',');
+            placements.Add(new QuestNpcPlace(int.Parse(fields[0]), uint.Parse(fields[1]),
+                new Vector2(GameUnits.FromFixed(int.Parse(fields[2])), GameUnits.FromFixed(int.Parse(fields[3]))),
+                (NpcServiceKind)byte.Parse(fields[4]), int.Parse(fields[5])));
+        }
+
+        return placements.ToArray();
+    }
+
+    private int _skillMaster;
+    private int _findBeginnerQuest;
+    private int _wingExchange;
+    private uint _wingResult;
+    private static readonly Lazy<Dictionary<uint, ItemHunt>> ItemHunts = new(ReadItemHunts);
+    private sealed record ItemHunt(HashSet<uint> Templates, Dictionary<int, List<Vector2>> Fields);
+    private uint _collectingItem;
+    private bool _pendingMorionPromotion;
+
+    private static Dictionary<uint, ItemHunt> ReadItemHunts()
+    {
+        using var stream = Android.App.Application.Context.Assets!.Open("quest-items.csv");
+        using var reader = new StreamReader(stream);
+        var hunts = new Dictionary<uint, ItemHunt>();
+        while (reader.ReadLine() is { } line)
+        {
+            var fields = line.Split(',');
+            var code = ItemCodes.Parse(fields[0]);
+            if (!hunts.TryGetValue(code, out var hunt))
+            {
+                hunt = new ItemHunt([], []);
+                hunts.Add(code, hunt);
+            }
+
+            hunt.Templates.Add(uint.Parse(fields[2]));
+            var field = int.Parse(fields[1]);
+            if (!hunt.Fields.TryGetValue(field, out var points))
+            {
+                points = [];
+                hunt.Fields.Add(field, points);
+            }
+
+            points.Add(new Vector2(int.Parse(fields[3]), int.Parse(fields[4])));
+        }
+
+        return hunts;
+    }
+
+    public void RequestWingExchange()
+    {
+        Interlocked.Exchange(ref _wingExchange, 1);
+        SetEnabled(true);
+    }
+    private (int From, int To, int Level) _worldExitKey;
+    private RouteExit _worldExit;
+    private long _itemAttemptRevision = -1;
+    private Task<QuestOutcome> _itemAttempt;
+
+    public void RequestBeginnerQuest()
+    {
+        Volatile.Write(ref _findBeginnerQuest, 1);
+        SetEnabled(true);
+    }
+
+    public bool CanFindBeginnerQuest => HasBeginnerOffer(session.Quest);
+
+    public void RequestSkillMaster()
+    {
+        Volatile.Write(ref _skillMaster, 1);
+        SetEnabled(true);
+    }
+
     public bool Enabled => Volatile.Read(ref _enabled) != 0;
+
+    private void AttackForQuest(GameScene scene, ulong target)
+    {
+        if (session.Quest is { } quest)
+        {
+            _questAttackStep = (quest.Code, quest.State);
+        }
+
+        _questAttackTarget = target;
+        scene.SetQuestHuntTarget(target);
+    }
+
+    private void StopQuestAttack(GameScene scene)
+    {
+        if (_questAttackTarget != 0 && scene.AttackTargetId == _questAttackTarget)
+        {
+            scene.SetQuestHuntTarget(0);
+        }
+
+        _questAttackTarget = 0;
+        _chasing = 0;
+    }
 
     // The route being walked, in field coordinates, for the minimap's dots; read on the UI thread.
     public RouteMarks Marks => Volatile.Read(ref _marks);
@@ -115,6 +260,11 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
         Volatile.Write(ref _enabled, value ? 1 : 0);
         if (!value)
         {
+            Volatile.Write(ref _skillMaster, 0);
+            Volatile.Write(ref _findBeginnerQuest, 0);
+            Volatile.Write(ref _wingExchange, 0);
+            _pendingMorionPromotion = false;
+            _wingResult = 0;
             session.SetAutoHunt(false);
             session.KeepHunting = false;
             Show("Missão automática pausada");
@@ -122,15 +272,41 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
     }
 
     // Whether there is a step to take: the journey is running or waiting to start.
-    public bool HasWork(QuestView quest) => Plan(quest) is not (Step.Idle or Step.Done);
+    public bool HasWork(QuestView quest) =>
+        quest is not null && (IsFirstSkill(quest) || HasClassSkillOffer(quest) || SkillQuestCatalog.TryGet(quest.Code, out _) ||
+        HasBeginnerOffer(quest) || HasHunt(quest) ||
+        EliteHuntTarget(quest) != 0 || quest is { Code: QuestCode.RankUpQuestWeapon, State: 3 } ||
+        PotionService(quest).Kind != 0 || MissingClassItem(quest) != 0 || FuryHuntField(quest) != 0 || NeedsHomeMaster(quest) ||
+        ReportNpcCode(quest) != 0 || IsArenaQuest(quest) || EliteItemObjective(quest) is not null || Plan(quest) is not (Step.Idle or Step.Done));
+
+    private static bool IsFirstSkill(QuestView quest) =>
+        quest.Code == FirstSkillQuest.Code || quest.Code == QuestCode.None &&
+        quest.Progress.Any(entry => string.Equals(entry.Description, "Avalon/FirstSkill.msg", StringComparison.OrdinalIgnoreCase));
+
+    private static bool HasBeginnerOffer(QuestView quest) =>
+        quest is { Code: QuestCode.None } &&
+        quest.Progress.Any(entry => entry.Title == ElementaryQuests.InstructorObjective);
+
+    private static bool HasClassSkillOffer(QuestView quest) =>
+        quest is { Code: QuestCode.None } &&
+        quest.Progress.Any(entry => entry.Description == ClassSkillQuests.Document);
+
+    private static bool HasHunt(QuestView quest) => quest is { TargetQuestCode: > 0, KillsNeeded: > 0 } && quest.Kills < quest.KillsNeeded;
 
     // Answers a quest dialog by itself while it runs, so the conversation does not wait for a tap.
-    public bool AnswersDialogs => Enabled;
+    public bool AnswersDialog(int choices) =>
+        choices > 0 && Enabled && Volatile.Read(ref _skillMaster) == 0 &&
+        (choices == 1 && (Volatile.Read(ref _wingExchange) != 0 || Volatile.Read(ref _findBeginnerQuest) != 0 || _pendingMorionPromotion) ||
+         session.Quest is { } quest && (Plan(quest) is Step.Guide or Step.Prepare ||
+             choices == 1 && (HasBeginnerOffer(quest) || HasClassSkillOffer(quest) || NeedsHomeMaster(quest) ||
+                 ReportNpcCode(quest) != 0 || PotionService(quest).Kind != 0)));
 
     public void Update(GameScene scene, bool manualMovement)
     {
         if (!Enabled)
         {
+            scene.CancelQuestSkill();
+            StopQuestAttack(scene);
             // The travel mount belongs to the automatic quest: pausing it, finishing it or taking the joystick leaves it.
             if (scene.Mounted)
             {
@@ -142,9 +318,16 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
 
         if (manualMovement)
         {
+            scene.CancelQuestSkill();
             scene.StopAutoMove();
             SetEnabled(false);
             return;
+        }
+
+        if (_questAttackTarget != 0 && session.Quest is { } attackQuest &&
+            _questAttackStep != (attackQuest.Code, attackQuest.State))
+        {
+            StopQuestAttack(scene);
         }
 
         if (Interlocked.Exchange(ref _replan, 0) != 0)
@@ -156,12 +339,203 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
             _retryAt = 0;
         }
 
-        if (scene.PlayerDead || scene.Warping || session.Quest is not { } quest || session.MapPose is not { } pose)
+        if (scene.PlayerDead || scene.Warping || session.MapPose is not { } pose)
+        {
+            return;
+        }
+
+        if (Volatile.Read(ref _skillMaster) != 0)
+        {
+            GoToSkillMaster(scene, pose);
+            return;
+        }
+
+        if (Volatile.Read(ref _wingExchange) != 0)
+        {
+            AdvanceWingExchange(scene, pose);
+            return;
+        }
+
+        if (Volatile.Read(ref _findBeginnerQuest) != 0 || HasBeginnerOffer(session.Quest))
+        {
+            if (!HasBeginnerOffer(session.Quest))
+            {
+                Volatile.Write(ref _findBeginnerQuest, 0);
+            }
+            else
+            {
+                var home = AdventurerJourneyRoute.For(session.Character.Class).Guide.FieldCode;
+                if (pose.FieldId != home)
+                {
+                    TravelWorld(scene, pose, home, "Indo à cidade buscar uma missão");
+                }
+                else
+                {
+                    TravelToService(scene, pose, NpcServiceKind.QuestGiver, ElementaryQuests.InstructorCode, "Indo à instrutora de missões");
+                }
+
+                return;
+            }
+        }
+
+        if (session.Quest is not { } quest)
         {
             return;
         }
 
         DrinkIfHurt();
+
+        if (_pendingMorionPromotion && quest.Code == QuestCode.None && session.Owner is { Tier: 0 })
+        {
+            GoToSkillMaster(scene, pose, quest);
+            return;
+        }
+
+        if (quest is { Code: QuestCode.RankUpQuestWeapon, State: 3, WeaponKillsLeft: > 0 })
+        {
+            AdvanceQuestWeapon(scene, pose, quest);
+            return;
+        }
+
+        var potion = PotionService(quest);
+        if (potion.Kind != 0)
+        {
+            _pendingMorionPromotion |= HasQuestItem(QuestItems.RoyalJelly) || HasQuestItem(QuestItems.HairTonic);
+            TravelToService(scene, pose, potion.Kind, potion.Value, "Indo preparar ou entregar a poção");
+            return;
+        }
+
+        if (MissingClassItem(quest) is not 0 and var item)
+        {
+            CollectQuestItem(scene, pose, item);
+            return;
+        }
+
+        if (pose.FieldId == QuestArena.FieldCode && IsArenaQuest(quest))
+        {
+            FightArenaOpponent(scene, pose, "Enfrentando o adversário da arena", "Aguardando a próxima etapa da arena");
+            return;
+        }
+
+        if (FuryHuntField(quest) is not 0 and var furyField)
+        {
+            if (pose.FieldId != furyField)
+            {
+                TravelWorld(scene, pose, furyField, "Indo para a caçada da Fúria do Fantasma");
+            }
+            else
+            {
+                FightArenaOpponent(scene, pose, "Caçando para Fúria do Fantasma", "Procure monstros na área da missão");
+            }
+
+            return;
+        }
+
+        if (TryReportQuest(scene, pose, quest) || TryUseEliteItem(scene, pose, quest))
+        {
+            return;
+        }
+
+        if (NeedsHomeMaster(quest))
+        {
+            GoToSkillMaster(scene, pose, quest);
+            return;
+        }
+
+        if (EliteHuntTarget(quest) is not 0 and var elitePrey)
+        {
+            HuntActiveQuest(scene, pose, quest with { TargetQuestCode = elitePrey }, directTarget: true);
+            return;
+        }
+
+        if (quest.Code is not (QuestCode.None or QuestCode.AdventurerJourney) && HasHunt(quest))
+        {
+            HuntActiveQuest(scene, pose, quest);
+            return;
+        }
+
+        if (HasClassSkillOffer(quest))
+        {
+            GoToSkillMaster(scene, pose, quest);
+            return;
+        }
+
+        if (SkillQuestCatalog.TryGet(quest.Code, out var classSkill))
+        {
+            AdvanceClassSkill(scene, pose, quest, classSkill);
+            return;
+        }
+
+        var firstSkillAvailable = IsFirstSkill(quest);
+        if (firstSkillAvailable && session.Owner is { Skills.Count: 0 } owner)
+        {
+            var skills = ClassSkillCatalog.For(session.Character.Class);
+            if (skills.Count > 0 &&
+                SkillLearning.Check(skills, 0, owner.SkillRank, owner.Level, owner.Tier, owner.SkillPoints, owner.EliteSkillPoints) == SkillTrainingCheck.Ready &&
+                owner.Money >= SkillLearning.Price(0, 0))
+            {
+                GoToSkillMaster(scene, pose, quest, skills[0].Code);
+            }
+            else
+            {
+                Show("Confira os requisitos para aprender a primeira habilidade");
+            }
+
+            return;
+        }
+
+        if (firstSkillAvailable)
+        {
+            session.SetAutoHunt(false);
+            if (quest.State == FirstSkillQuest.ReadyState)
+            {
+                scene.CancelQuestSkill();
+                scene.StopAutoMove();
+                AdvanceSkillReward(quest);
+            }
+            else
+            {
+                Show($"Use habilidades: {quest.Kills}/{FirstSkillQuest.RequiredCasts}");
+                if (_clock.Elapsed.TotalSeconds >= _nextQuestCast && session.Owner is { } caster)
+                {
+                    _nextQuestCast = _clock.Elapsed.TotalSeconds + 1;
+                    var target = session.ClosestMonster(float.PositiveInfinity) ?? 0;
+                    for (var offset = 0; offset < caster.Skills.Count; offset++)
+                    {
+                        var index = (_nextPracticeSkill + offset) % caster.Skills.Count;
+                        if (scene.TryCastQuestSkill(caster.Skills[index].Code, target))
+                        {
+                            _nextPracticeSkill = (index + 1) % caster.Skills.Count;
+                            ClearRoute();
+                            return;
+                        }
+                    }
+                }
+
+                if (!scene.SelfCasting && session.Owner is { } learner &&
+                    learner.Skills.Any(skill => SkillRuleCatalog.TryGet(skill.Code, out var rule) && rule.Target == SkillTarget.Enemy) &&
+                    session.ClosestMonster(float.PositiveInfinity) is null)
+                {
+                    var practice = AdventurerJourneyRoute.For(session.Character.Class);
+                    const string looking = "Procurando um monstro para praticar a habilidade";
+                    if (pose.FieldId != practice.HuntField)
+                    {
+                        TravelWorld(scene, pose, practice.HuntField, looking);
+                    }
+                    else if (practice.HuntPoints.Count > 0)
+                    {
+                        var point = practice.HuntPoints[_huntPoint % practice.HuntPoints.Count];
+                        if (Walk(scene, pose, practice.HuntField, new Vector2(point.X, point.Z), 0, looking))
+                        {
+                            _huntPoint++;
+                            ClearRoute();
+                        }
+                    }
+                }
+            }
+
+            return;
+        }
 
         var route = AdventurerJourneyRoute.For(session.Character.Class);
         var step = Plan(quest);
@@ -176,7 +550,7 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
         {
             case Step.Done:
                 session.KeepHunting = false;
-                Show("Jornada do Aventureiro concluída");
+                Show(quest.Code == QuestCode.None ? "Nenhuma etapa automática em andamento" : "Confira a próxima etapa no diário de missões");
                 SetEnabled(false);
                 return;
             case Step.Idle:
@@ -194,6 +568,193 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
                 Hunt(scene, pose, route, quest, step == Step.Collect);
                 return;
         }
+    }
+
+    private void AdvanceClassSkill(GameScene scene, VulkanWorldSession.WorldMapPose pose, QuestView quest, SkillQuestDefinition definition)
+    {
+        session.SetAutoHunt(false);
+        if (quest.State == ClassSkillQuests.ReadyState)
+        {
+            scene.CancelQuestSkill();
+            scene.StopAutoMove();
+            AdvanceSkillReward(quest);
+            return;
+        }
+
+        if (session.Owner is not { } owner || !SkillRuleCatalog.TryGet(definition.SkillCode, out var rule))
+        {
+            return;
+        }
+
+        if (owner.SkillRank(definition.SkillCode) == 0)
+        {
+            var skills = ClassSkillCatalog.For(session.Character.Class);
+            for (var index = 0; index < skills.Count; index++)
+            {
+                var skill = skills[index];
+                if (owner.SkillRank(skill.Code) != 0)
+                {
+                    continue;
+                }
+
+                if (SkillLearning.Check(skills, index, owner.SkillRank, owner.Level, owner.Tier, owner.SkillPoints, owner.EliteSkillPoints) ==
+                    SkillTrainingCheck.Ready && owner.Money >= SkillLearning.Price(index, 0))
+                {
+                    GoToSkillMaster(scene, pose, quest, skill.Code);
+                }
+                else
+                {
+                    Show("Confira os requisitos para treinar a habilidade da missão");
+                }
+
+                return;
+            }
+        }
+
+        var practice = AdventurerJourneyRoute.For(session.Character.Class);
+        if (pose.FieldId == practice.Guide.FieldCode)
+        {
+            TravelWorld(scene, pose, practice.HuntField, "Indo praticar a habilidade");
+            return;
+        }
+
+        if (rule.Resurrect is { } revive)
+        {
+            var ally = session.Party.Members.FirstOrDefault(member => member.EntityId != scene.SelfEntityId && member.Life <= 0);
+            if (ally is null || !scene.TryGetEntityPlanar(ally.EntityId, out var position))
+            {
+                Show("Aguardando um aliado caído no grupo");
+                return;
+            }
+
+            if (!Walk(scene, pose, pose.FieldId, new Vector2(position.X, -position.Y), 0,
+                "Indo até o aliado caído", MathF.Max(1, revive.Radius * .75f)))
+            {
+                return;
+            }
+        }
+
+        var needsUndead = definition.Objective is SkillQuestObjective.UndeadHits or SkillQuestObjective.ConvertUndead;
+        var target = session.ClosestMonster(float.PositiveInfinity, questCode: needsUndead ? QuestMonsters.Skeleton : 0) ?? 0;
+        if (target == 0 && rule.Target == SkillTarget.Enemy)
+        {
+            const string looking = "Procurando um monstro para praticar a habilidade";
+            if (needsUndead)
+            {
+                SeekPracticeUndead(scene, pose, owner.Level);
+            }
+            else if (pose.FieldId != practice.HuntField)
+            {
+                TravelWorld(scene, pose, practice.HuntField, looking);
+            }
+            else if (practice.HuntPoints.Count > 0)
+            {
+                var point = practice.HuntPoints[_huntPoint % practice.HuntPoints.Count];
+                if (Walk(scene, pose, practice.HuntField, new Vector2(point.X, point.Z), 0, looking))
+                {
+                    _huntPoint++;
+                    ClearRoute();
+                }
+            }
+
+            return;
+        }
+
+        Show($"Praticando a habilidade: {quest.Kills}/{definition.Required}");
+        if (definition.Objective is SkillQuestObjective.MaintainEffect or SkillQuestObjective.SummonKills &&
+            scene.HasQuestSkillEffect(scene.SelfEntityId, definition.SkillCode))
+        {
+            if (definition.Objective == SkillQuestObjective.SummonKills && scene.SummonAutomatic(definition.SkillCode) == false)
+            {
+                scene.ToggleSummonMode(definition.SkillCode);
+            }
+
+            return;
+        }
+
+        if (definition.Objective == SkillQuestObjective.MarkedKills && target != 0 && scene.HasQuestSkillEffect(target, definition.SkillCode))
+        {
+            if (scene.AttackTargetId != target)
+            {
+                AttackForQuest(scene, target);
+            }
+
+            return;
+        }
+
+        if (_clock.Elapsed.TotalSeconds >= _nextQuestCast)
+        {
+            _nextQuestCast = _clock.Elapsed.TotalSeconds + 1;
+            if (scene.TryCastQuestSkill(definition.SkillCode, target))
+            {
+                ClearRoute();
+            }
+        }
+    }
+
+    private void SeekPracticeUndead(GameScene scene, VulkanWorldSession.WorldMapPose pose, int level)
+    {
+        const string looking = "Procurando esqueletos para praticar a habilidade";
+        if (QuestHunts.Value.TryGetValue((QuestMonsters.Skeleton, pose.FieldId), out var points) && points.Length > 0)
+        {
+            if (Walk(scene, pose, pose.FieldId, points[_huntPoint % points.Length], 0, looking))
+            {
+                _huntPoint++;
+                ClearRoute();
+            }
+
+            return;
+        }
+
+        foreach (var (prey, field) in QuestHunts.Value.Keys)
+        {
+            if (prey == QuestMonsters.Skeleton && FindWorldExit(pose.FieldId, field, level) is not null)
+            {
+                TravelWorld(scene, pose, field, looking);
+                return;
+            }
+        }
+
+        Show("Nenhuma rota acessível até os esqueletos");
+    }
+
+    private void AdvanceSkillReward(QuestView quest)
+    {
+        if (_firstSkillReward is { IsCompleted: false })
+        {
+            return;
+        }
+
+        if (_firstSkillRewardRevision != quest.Revision)
+        {
+            _firstSkillRewardRevision = quest.Revision;
+            _firstSkillRewardOperation = Guid.NewGuid();
+            _firstSkillRewardRetryAt = 0;
+            _firstSkillReward = null;
+        }
+
+        if (_firstSkillReward is { IsCompletedSuccessfully: true } finished && finished.Result.Ok)
+        {
+            return;
+        }
+
+        _ = _firstSkillReward?.Exception;
+        if (_clock.Elapsed.TotalSeconds < _firstSkillRewardRetryAt)
+        {
+            Show("Resgate pendente. Confira o espaço na bolsa.");
+            return;
+        }
+
+        _firstSkillRewardRetryAt = _clock.Elapsed.TotalSeconds + RepeatTalkSeconds;
+        var command = new QuestCommand(_firstSkillRewardOperation, 0, QuestAction.Proceed, quest.Code, quest.State, 0);
+        _firstSkillReward = ClaimFirstSkillAsync(command);
+        Show("Resgatando recompensa");
+    }
+
+    private async Task<QuestOutcome> ClaimFirstSkillAsync(QuestCommand command)
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        return await session.Play.RequestQuestAsync(command, timeout.Token);
     }
 
     private Step Plan(QuestView quest)
@@ -293,9 +854,663 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
         Show($"Falando com {GuideName(route)}");
     }
 
-    private void Hunt(GameScene scene, VulkanWorldSession.WorldMapPose pose, TribeRoute route, QuestView quest, bool collecting)
+    private void GoToSkillMaster(GameScene scene, VulkanWorldSession.WorldMapPose pose, QuestView quest = null, uint trainSkill = 0)
     {
-        if (pose.FieldId != route.HuntField)
+        var hometown = AdventurerJourneyRoute.For(session.Character.Class).Guide.FieldCode;
+        if (pose.FieldId != hometown)
+        {
+            TravelWorld(scene, pose, hometown, "Indo à cidade do Mestre de Habilidades");
+            return;
+        }
+
+        if (!session.TryFindSkillMaster(pose.Position, out var master, out var position))
+        {
+            var placed = Array.Find(QuestNpcs.Value, place => place.Field == hometown && place.Service == NpcServiceKind.SkillMaster);
+            if (placed is not null)
+            {
+                Walk(scene, pose, hometown, placed.Position, 0, "Indo ao Mestre de Habilidades", ride: true);
+            }
+            else
+            {
+                Show("Aproxime-se de um Mestre de Habilidades na cidade");
+            }
+            return;
+        }
+
+        var goal = new Vector2(position.X, position.Z);
+        if (trainSkill != 0 && session.Owner is { } owner)
+        {
+            if (_firstSkillTraining is { IsCompleted: false })
+            {
+                return;
+            }
+
+            if (_firstSkillTrainingRevision == owner.ProgressionRevision && _firstSkillTraining is { IsCompletedSuccessfully: true } previous &&
+                (previous.Result.Ok || _clock.Elapsed.TotalSeconds < _firstSkillTrainingRetryAt))
+            {
+                Show(previous.Result.Ok ? "Aguardando confirmação da habilidade" : previous.Result.Refusal);
+                return;
+            }
+
+            if (Walk(scene, pose, pose.FieldId, goal, 0, "Indo aprender a primeira habilidade", TalkReach, ride: true) && !scene.AutoMoving)
+            {
+                if (_firstSkillTrainingRevision != owner.ProgressionRevision)
+                {
+                    _firstSkillTrainingRevision = owner.ProgressionRevision;
+                    _firstSkillTrainingOperation = Guid.NewGuid();
+                }
+
+                _firstSkillTrainingRetryAt = _clock.Elapsed.TotalSeconds + RepeatTalkSeconds;
+                var command = new ProgressionCommand(_firstSkillTrainingOperation, owner.ProgressionRevision, ProgressionAction.LearnSkill,
+                    SkillCode: trainSkill, NpcEntityId: master);
+                _firstSkillTraining = VulkanProgression.ApplyAsync(session.Play, command, "Não foi possível aprender a habilidade");
+            }
+
+            return;
+        }
+
+        if (quest is not null && WaitingForQuestDialog(quest))
+        {
+            return;
+        }
+        if (Walk(scene, pose, pose.FieldId, goal, 0, "Indo ao Mestre de Habilidades", TalkReach, ride: true)
+            && !scene.AutoMoving && scene.ApproachNpc(master))
+        {
+            ClearRoute();
+            if (quest is null)
+            {
+                SetEnabled(false);
+            }
+            else
+            {
+                MarkQuestDialog(quest);
+            }
+        }
+    }
+
+    private void TravelWorld(GameScene scene, VulkanWorldSession.WorldMapPose pose, int target, string status)
+    {
+        var key = (pose.FieldId, target, session.Owner?.Level ?? session.Character.Level);
+        if (key != _worldExitKey)
+        {
+            _worldExitKey = key;
+            _worldExit = FindWorldExit(key.Item1, key.Item2, key.Item3);
+            ClearRoute();
+        }
+
+        if (_worldExit is not { } exit)
+        {
+            Show("Nenhuma passagem acessível para o destino");
+            return;
+        }
+
+        Walk(scene, pose, exit.From, new Vector2(exit.Point.X, exit.Point.Z), exit.Seam ? exit.To : 0, status,
+            reach: PointReach, ride: true);
+    }
+
+    private static RouteExit FindWorldExit(int from, int target, int level)
+    {
+        if (!World.TryGetFieldByCode(from, out var start))
+        {
+            return null;
+        }
+
+        var seen = new HashSet<int> { from };
+        var pending = new Queue<(FieldDef Field, RouteExit First)>();
+        pending.Enqueue((start, null));
+        while (pending.TryDequeue(out var current))
+        {
+            if (current.Field.FieldCode == target)
+            {
+                return current.First;
+            }
+
+            foreach (var gate in current.Field.Gates)
+            {
+                Add(gate.DestinationFieldId, gate.X, gate.Z, seam: true);
+            }
+
+            foreach (var gate in current.Field.WarpGates)
+            {
+                if (level >= gate.LimitLevel)
+                {
+                    Add(gate.DestinationFieldId, gate.X, gate.Z, seam: false);
+                }
+            }
+
+            void Add(string destination, int x, int z, bool seam)
+            {
+                if (World.TryGetField(destination, out var field) && seen.Add(field.FieldCode))
+                {
+                    var code = current.Field.FieldCode;
+                    pending.Enqueue((field, current.First ?? new RouteExit(code, field.FieldCode, new RoutePoint(code, x, z), seam)));
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static EliteQuest EliteReport(QuestView quest) =>
+        quest is { State: EliteQuests.Met } ? EliteQuests.Find(quest.Code) : null;
+
+    private void AdvanceQuestWeapon(GameScene scene, VulkanWorldSession.WorldMapPose pose, QuestView quest)
+    {
+        if (session.Owner is not { } owner || session.Play is not { } play)
+        {
+            return;
+        }
+
+        var playerClass = session.Character.Class;
+        var weaponCode = QuestClasses.QuestWeapon(playerClass);
+        var weapon = owner.Items.FirstOrDefault(item => item.Code == weaponCode && item.Details?.UniqueItem == ItemDefinition.QuestUnique);
+        if (weapon is null)
+        {
+            Show("Aguardando a arma de missão");
+            return;
+        }
+
+        if (!weapon.Equipped)
+        {
+            if (_inventory.IsCompleted && _clock.Elapsed.TotalSeconds - _inventoryAt >= InventoryCooldownSeconds)
+            {
+                _inventoryAt = _clock.Elapsed.TotalSeconds;
+                var command = new InventoryCommand(Guid.NewGuid(), owner.InventoryRevision, InventoryAction.Equip,
+                    weapon.InstanceId, 0, 0, EquipmentSlot.Weapon);
+                _inventory = ApplyQuestEquipmentAsync(play, command);
+            }
+
+            Show("Equipando a arma de missão");
+            return;
+        }
+
+        var hunt = QuestClasses.WeaponHunt(playerClass);
+        var field = RankUpByQuestWeapon.StageField(hunt, quest.WeaponStage);
+        if (field != 0)
+        {
+            if (pose.FieldId == field)
+            {
+                FightArenaOpponent(scene, pose, "Caçando com a arma de missão", "Procure monstros na área da missão");
+            }
+            else
+            {
+                TravelWorld(scene, pose, field, "Indo para a área da arma de missão");
+            }
+
+            return;
+        }
+
+        var target = RankUpByQuestWeapon.StagePrey(hunt, quest.WeaponStage);
+        HuntActiveQuest(scene, pose, quest with { TargetQuestCode = target }, directTarget: true);
+    }
+
+    private static async Task ApplyQuestEquipmentAsync(PristonTale.Client.Net.IPlayChannel play, InventoryCommand command)
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(8));
+        try
+        {
+            await play.ApplyInventoryAsync(command, timeout.Token);
+        }
+        catch (Exception error) when (error is IOException or InvalidOperationException or OperationCanceledException)
+        {
+            Android.Util.Log.Warn("Etervale.Quest", error.Message);
+        }
+    }
+
+    private (NpcServiceKind Kind, int Value) PotionService(QuestView quest)
+    {
+        if (quest?.Code is not (QuestCode.RankUpHoney or QuestCode.RankUpOil) || quest.State is not (1 or 2))
+        {
+            return default;
+        }
+
+        var honey = quest.Code == QuestCode.RankUpHoney;
+        if (!HasQuestItem(QuestItems.GlassBottle) || HasQuestItem(honey ? QuestItems.RoyalJelly : QuestItems.HairTonic))
+        {
+            return (NpcServiceKind.QuestScript, (int)quest.Code);
+        }
+
+        return CountItem(honey ? QuestItems.Honey : QuestItems.Oil) >= (honey ? QuestItems.HoneyForJelly : QuestItems.OilForTonic)
+            ? (NpcServiceKind.ItemAging, 0) : default;
+    }
+
+    private int CountItem(uint item) => session.Owner?.Items.Where(entry => entry.Code == item).Sum(entry => entry.Count) ?? 0;
+
+    private uint MissingClassItem(QuestView quest) => (quest?.Code, quest?.State) switch
+    {
+        (QuestCode.RankUpHoney, 1 or 2) when CountItem(QuestItems.Honey) < QuestItems.HoneyForJelly => QuestItems.Honey,
+        (QuestCode.RankUpOil, 1 or 2) when CountItem(QuestItems.Oil) < QuestItems.OilForTonic => QuestItems.Oil,
+        (QuestCode.RankUpTrophies, 1) when !HasQuestItem(QuestItems.SilverWolverineTrophy) => QuestItems.SilverWolverineTrophy,
+        (QuestCode.RankUpTrophies, 1) when !HasQuestItem(QuestItems.BronzeWolverineTrophy) => QuestItems.BronzeWolverineTrophy,
+        (QuestCode.RankUpTrophies, 1) when !HasQuestItem(QuestItems.GoldenWolverineTrophy) => QuestItems.GoldenWolverineTrophy,
+        (QuestCode.RankUpQuestWeapon, 1) when CountItem(QuestItems.Vamp) < RankUpByQuestWeapon.VampsNeeded => QuestItems.Vamp,
+        (QuestCode.RankUpMasterTrial, 5) when !HasQuestItem(QuestItems.RoyalAmulet) => QuestItems.RoyalAmulet,
+        (QuestCode.ElementaryG, 1 or 2) when !HasQuestItem(QuestItems.LostHammer) => QuestItems.LostHammer,
+        (QuestCode.Level80Bonus, 2) when !HasQuestItem(QuestItems.BonusVampOne) => QuestItems.BonusVampOne,
+        (QuestCode.Level80Bonus, 2) when !HasQuestItem(QuestItems.BonusVampTwo) => QuestItems.BonusVampTwo,
+        (QuestCode.Level80Bonus, 2) when !HasQuestItem(QuestItems.BonusVampThree) => QuestItems.BonusVampThree,
+        _ => 0
+    };
+
+    private void AdvanceWingExchange(GameScene scene, VulkanWorldSession.WorldMapPose pose)
+    {
+        var requirements = WingQuest.NextRequirements(HasQuestItem);
+        if (requirements is null || _wingResult != 0 && HasQuestItem(_wingResult))
+        {
+            _wingResult = 0;
+            SetEnabled(false);
+            Show("Troca de asas concluída");
+            return;
+        }
+
+        var (gold, items, result) = requirements.Value;
+        foreach (var item in items)
+        {
+            if (!HasQuestItem(item))
+            {
+                CollectQuestItem(scene, pose, item);
+                return;
+            }
+        }
+
+        if (session.Owner is not { } owner || owner.Money < gold)
+        {
+            Show("Ouro insuficiente para trocar as asas");
+            return;
+        }
+
+        TravelToService(scene, pose, NpcServiceKind.WarpGate, -1, "Indo trocar as asas");
+        _wingResult = result;
+    }
+
+    private void TravelToService(GameScene scene, VulkanWorldSession.WorldMapPose pose, NpcServiceKind kind, int value, string status)
+    {
+        QuestNpcPlace destination = null;
+        foreach (var place in QuestNpcs.Value)
+        {
+            if (place.Service == kind && (value < 0 || place.Value == value))
+            {
+                destination ??= place;
+                if (place.Field == pose.FieldId)
+                {
+                    destination = place;
+                    break;
+                }
+            }
+        }
+
+        if (destination is not null)
+        {
+            ApproachQuestNpc(scene, pose, destination, status);
+        }
+    }
+
+    private void ApproachQuestNpc(GameScene scene, VulkanWorldSession.WorldMapPose pose, QuestNpcPlace destination, string status)
+    {
+        session.SetAutoHunt(false);
+        if (destination.Field != pose.FieldId)
+        {
+            TravelWorld(scene, pose, destination.Field, status);
+            return;
+        }
+
+        var now = _clock.Elapsed.TotalSeconds;
+        if (now - _talkedAt < RepeatTalkSeconds)
+        {
+            return;
+        }
+
+        var known = session.TryFindNpc(destination.Template, pose.Position, out var npc, out var at);
+        var goal = known ? new Vector2(at.X, at.Z) : destination.Position;
+        if (Walk(scene, pose, pose.FieldId, goal, 0, status, known ? TalkReach : WaypointReach, ride: true)
+            && known && !scene.AutoMoving && scene.ApproachNpc(npc))
+        {
+            ClearRoute();
+            _talkedAt = now;
+        }
+    }
+
+    private void CollectQuestItem(GameScene scene, VulkanWorldSession.WorldMapPose pose, uint item)
+    {
+        session.SetAutoHunt(false);
+        if (!ItemHunts.Value.TryGetValue(item, out var hunt))
+        {
+            Show($"Procure o item da missão ({ItemCodes.KeyOf(item)})");
+            return;
+        }
+
+        if (_collectingItem != item)
+        {
+            _collectingItem = item;
+            _huntPoint = 0;
+            ClearRoute();
+        }
+
+        if (!hunt.Fields.TryGetValue(pose.FieldId, out var points))
+        {
+            var level = session.Owner?.Level ?? session.Character.Level;
+            foreach (var field in hunt.Fields.Keys)
+            {
+                if (FindWorldExit(pose.FieldId, field, level) is not null)
+                {
+                    TravelWorld(scene, pose, field, "Indo coletar item de missão");
+                    return;
+                }
+            }
+
+            Show("Nenhuma passagem acessível para a coleta");
+            return;
+        }
+
+        if (_chasing != 0)
+        {
+            Chase(scene, pose);
+        }
+        else if (scene.AttackTargetId != 0)
+        {
+            WatchAttack(scene, pose);
+        }
+        else if (scene.AutoMoving && _route.Count == 0 || scene.PickUpNear(LootRadius))
+        {
+            ClearRoute();
+        }
+        else if (session.ClosestMonster(float.PositiveInfinity, hunt.Templates) is { } target)
+        {
+            ClearRoute();
+            AttackForQuest(scene, target);
+        }
+        else if (Walk(scene, pose, pose.FieldId, points[_huntPoint % points.Count], 0, "Buscando item de missão"))
+        {
+            _huntPoint++;
+            ClearRoute();
+        }
+    }
+
+    private bool NeedsHomeMaster(QuestView quest)
+    {
+        if (quest is null || HasHunt(quest))
+        {
+            return false;
+        }
+
+        return (quest.Code, quest.State) switch
+        {
+            (QuestCode.RankUpTrophies, 1) => HasQuestItem(QuestItems.SilverWolverineTrophy) &&
+                HasQuestItem(QuestItems.BronzeWolverineTrophy) && HasQuestItem(QuestItems.GoldenWolverineTrophy),
+            (QuestCode.RankUpHoney or QuestCode.RankUpOil, 3) => true,
+            (QuestCode.RankUpQuestWeapon, 1) => (session.Owner?.Items.Where(item => item.Code == QuestItems.Vamp)
+                .Sum(item => item.Count) ?? 0) >= RankUpByQuestWeapon.VampsNeeded,
+            (QuestCode.RankUpQuestWeapon, 2 or 4 or 6) => true,
+            (QuestCode.RankUpMasterTrial, 2 or 4 or 6 or 8) => true,
+            (QuestCode.RankUpHestian, 2 or 4 or 6 or 10) => true,
+            _ => false
+        };
+    }
+
+    private bool WaitingForQuestDialog(QuestView quest) =>
+        _talkedAbout == (quest.Code, quest.State, quest.Revision) && _clock.Elapsed.TotalSeconds - _talkedAt < RepeatTalkSeconds;
+
+    private void MarkQuestDialog(QuestView quest)
+    {
+        _talkedAbout = (quest.Code, quest.State, quest.Revision);
+        _talkedAt = _clock.Elapsed.TotalSeconds;
+    }
+
+    private int ReportNpcCode(QuestView quest)
+    {
+        if (quest is null || HasHunt(quest))
+        {
+            return 0;
+        }
+
+        if (EliteReport(quest) is { } elite)
+        {
+            return elite.Reporter;
+        }
+
+        var tempskron = AdventurerJourneyRoute.For(session.Character.Class).Guide.FieldCode == FieldCodes.Ricarten;
+        return (quest.Code, quest.State) switch
+        {
+            (QuestCode.ElementaryA, 1) when HasQuestItem(QuestItems.Cake) => tempskron ? 1015 : 1016,
+            (QuestCode.ElementaryA, 2) or (QuestCode.ElementaryB or QuestCode.ElementaryF, 3) => 1014,
+            (QuestCode.ElementaryC, 1 or 2) when HasQuestItem(QuestItems.Candy) => tempskron ? 1018 : 1017,
+            (QuestCode.ElementaryD, 3) => tempskron ? 1019 : 1020,
+            (QuestCode.ElementaryE, 3) => 1021,
+            (QuestCode.ElementaryG, 3) => 1022,
+            (QuestCode.ElementaryG, _) when HasQuestItem(QuestItems.LostHammer) => 1022,
+            (QuestCode.Level30, 2) => tempskron ? 1001 : 1002,
+            (QuestCode.Level55, 2) => 1003,
+            (QuestCode.Level55Morion, 2) => 1004,
+            (QuestCode.Level70 or QuestCode.Level80, 2) or (QuestCode.Level85, 1 or 3) => 1005,
+            (QuestCode.Level90, 2) => 1006,
+            (QuestCode.Level80Bonus, 1 or 3) => 1011,
+            (QuestCode.Level80Bonus, 2) when HasQuestItem(QuestItems.BonusVampOne) &&
+                HasQuestItem(QuestItems.BonusVampTwo) && HasQuestItem(QuestItems.BonusVampThree) => 1011,
+            (QuestCode.Level80Bonus, 4) when HasQuestItem(QuestItems.Recommendation) => 1010,
+            (QuestCode.Level90Bonus, 1 or 3) => 1013,
+            (QuestCode.FuryOfPhantom, _) when FuryHuntField(quest) == 0 => 1013,
+            (QuestCode.RankUpHestian, 7 or 8 or 9) => RankUpByHestian.ElderGiverCode,
+            _ => 0
+        };
+    }
+
+    private bool HasQuestItem(uint code) =>
+        session.Owner?.Items.Any(item => item.Code == code && item.Count > 0) == true;
+
+    private bool TryReportQuest(GameScene scene, VulkanWorldSession.WorldMapPose pose, QuestView quest)
+    {
+        var giver = ReportNpcCode(quest);
+        if (giver == 0)
+        {
+            return false;
+        }
+
+        session.SetAutoHunt(false);
+        QuestNpcPlace destination = null;
+        var instructorField = giver == ElementaryQuests.InstructorCode
+            ? AdventurerJourneyRoute.For(session.Character.Class).Guide.FieldCode
+            : (int?)null;
+        foreach (var place in QuestNpcs.Value)
+        {
+            if (place.Service == NpcServiceKind.QuestGiver && place.Value == giver &&
+                (!instructorField.HasValue || place.Field == instructorField.Value))
+            {
+                destination ??= place;
+                if (place.Field == pose.FieldId)
+                {
+                    destination = place;
+                    break;
+                }
+            }
+        }
+
+        if (destination is null)
+        {
+            Show("Procure o NPC que recebe a entrega da missão");
+            return true;
+        }
+
+        if (destination.Field != pose.FieldId)
+        {
+            TravelWorld(scene, pose, destination.Field, "Indo entregar a missão");
+            return true;
+        }
+
+        var known = session.TryFindNpc(destination.Template, pose.Position, out var npc, out var at);
+        var goal = known ? new Vector2(at.X, at.Z) : destination.Position;
+        var about = (quest.Code, quest.State, quest.Revision);
+        var now = _clock.Elapsed.TotalSeconds;
+        if (about == _talkedAbout && now - _talkedAt < RepeatTalkSeconds)
+        {
+            Show("Aguardando a entrega da missão");
+            return true;
+        }
+
+        if (Walk(scene, pose, pose.FieldId, goal, 0, "Indo entregar a missão", known ? TalkReach : WaypointReach, ride: true)
+            && known && !scene.AutoMoving && scene.ApproachNpc(npc))
+        {
+            ClearRoute();
+            _talkedAbout = about;
+            _talkedAt = now;
+        }
+
+        return true;
+    }
+
+    private static int FuryHuntField(QuestView quest) =>
+        quest is { Code: QuestCode.FuryOfPhantom, KillsNeeded: > 0 } && quest.Kills < quest.KillsNeeded
+            ? quest.State switch
+            {
+                2 => FuryOfPhantomQuest.HeartOfPerumField,
+                7 => FuryOfPhantomQuest.GalluviaValleyField,
+                _ => 0
+            }
+            : 0;
+
+    private static bool IsArenaQuest(QuestView quest) =>
+        quest?.Code is QuestCode.RankUpMasterTrial or QuestCode.RankUpHestian or QuestCode.FuryOfPhantom;
+
+    private void FightArenaOpponent(GameScene scene, VulkanWorldSession.WorldMapPose pose, string attacking, string waiting)
+    {
+        session.SetAutoHunt(false);
+        if (_chasing != 0)
+        {
+            Chase(scene, pose);
+            return;
+        }
+
+        if (scene.AttackTargetId != 0)
+        {
+            WatchAttack(scene, pose);
+            return;
+        }
+
+        // The server only publishes the owner's duel monsters in Quest Arena.
+        if (session.ClosestMonster(float.PositiveInfinity) is { } opponent)
+        {
+            AttackForQuest(scene, opponent);
+            Show(attacking);
+        }
+        else
+        {
+            Show(waiting);
+        }
+    }
+
+    private int EliteHuntTarget(QuestView quest)
+    {
+        if (quest is not { State: EliteQuests.Running } || EliteQuests.Find(quest.Code) is not { } elite)
+        {
+            return 0;
+        }
+
+        if (elite.Objective == EliteObjective.Crystals)
+        {
+            for (var index = 0; index < Math.Min(elite.Crystals.Length, elite.Monsters.Length); index++)
+            {
+                if (!HasQuestItem(elite.Crystals[index]))
+                {
+                    return elite.Monsters[index];
+                }
+            }
+        }
+        else if (elite.Objective == EliteObjective.UseAndKill && elite.Monsters.Length > 0)
+        {
+            return elite.Monsters[0];
+        }
+
+        return 0;
+    }
+
+    private static EliteQuest EliteItemObjective(QuestView quest) => quest is { State: EliteQuests.Running } &&
+        EliteQuests.Find(quest.Code) is { Objective: EliteObjective.Use or EliteObjective.UseAndKill } elite ? elite : null;
+
+    private bool TryUseEliteItem(GameScene scene, VulkanWorldSession.WorldMapPose pose, QuestView quest)
+    {
+        if (_itemAttempt is { IsCompleted: false })
+        {
+            return true;
+        }
+
+        if (_itemAttempt is { } attempt)
+        {
+            _itemAttempt = null;
+            if (!attempt.IsCompletedSuccessfully)
+            {
+                _ = attempt.Exception;
+            }
+        }
+
+        if (EliteItemObjective(quest) is not { } elite || _itemAttemptRevision == quest.Revision
+            || session.Owner?.Items.Any(item => item.InBag && item.Code == elite.AcceptItem) != true)
+        {
+            return false;
+        }
+
+        session.SetAutoHunt(false);
+        if (pose.FieldId != elite.Area.Field)
+        {
+            TravelWorld(scene, pose, elite.Area.Field, "Indo para a área do item de missão");
+            return true;
+        }
+
+        if (!elite.Area.Contains(pose.FieldId, pose.Position.X, pose.Position.Z))
+        {
+            var center = new Vector2((elite.Area.MinX + elite.Area.MaxX) * .5f, (elite.Area.MinZ + elite.Area.MaxZ) * .5f);
+            Walk(scene, pose, pose.FieldId, center, 0, "Indo para a área do item de missão", reach: 4f);
+            return true;
+        }
+
+        _itemAttemptRevision = quest.Revision;
+        var command = new QuestCommand(Guid.NewGuid(), 0, QuestAction.UseItem, quest.Code, quest.State, 0);
+        _itemAttempt = session.Play.RequestQuestAsync(command, CancellationToken.None);
+        Show("Usando item de missão");
+        return true;
+    }
+
+    private void HuntActiveQuest(GameScene scene, VulkanWorldSession.WorldMapPose pose, QuestView quest, bool directTarget = false)
+    {
+        if (EliteQuests.Find(quest.Code) is { Field: >= 0 } elite && elite.Field != pose.FieldId)
+        {
+            session.SetAutoHunt(false);
+            TravelWorld(scene, pose, elite.Field, "Indo para o mapa da missão");
+            return;
+        }
+
+        var target = quest.TargetQuestCode;
+        if (!session.HasHuntTarget(target) && !QuestHunts.Value.ContainsKey((target, pose.FieldId))
+            && EliteQuests.Find(quest.Code) is not { Field: >= 0 })
+        {
+            var level = session.Owner?.Level ?? session.Character.Level;
+            var key = (target, pose.FieldId, level);
+            if (_huntTravelKey != key)
+            {
+                _huntTravelKey = key;
+                _huntTravelField = null;
+                foreach (var (prey, field) in QuestHunts.Value.Keys)
+                {
+                    if (prey == target && FindWorldExit(pose.FieldId, field, level) is not null)
+                    {
+                        _huntTravelField = field;
+                        break;
+                    }
+                }
+            }
+
+            if (_huntTravelField is { } destination)
+            {
+                session.SetAutoHunt(false);
+                TravelWorld(scene, pose, destination, "Indo para a área da caçada");
+                return;
+            }
+        }
+
+        Hunt(scene, pose, null, quest, collecting: false, directTarget);
+    }
+
+    private void Hunt(GameScene scene, VulkanWorldSession.WorldMapPose pose, TribeRoute route, QuestView quest, bool collecting, bool directTarget = false)
+    {
+        if (route is not null && pose.FieldId != route.HuntField)
         {
             session.SetAutoHunt(false);
             Travel(scene, pose, route, route.HuntField, $"Indo caçar {quest.TargetName}");
@@ -313,7 +1528,7 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
             session.SetAutoHunt(false);
             if (scene.AttackTargetId != first)
             {
-                scene.SetQuestHuntTarget(first);
+                AttackForQuest(scene, first);
             }
 
             return;
@@ -321,7 +1536,7 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
 
         if (_chasing != 0)
         {
-            Chase(scene, pose, route);
+            Chase(scene, pose);
             return;
         }
 
@@ -336,11 +1551,17 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
 
         // The quest's monster comes first; another monster is fought only when none of the quest's is in view.
         var questTargetInView = session.HasHuntTarget(quest.TargetQuestCode);
-        session.SetAutoHunt(questTargetInView);
+        session.SetAutoHunt(questTargetInView && !directTarget);
+        if (directTarget && scene.AttackTargetId == 0 && session.ClosestMonster(float.PositiveInfinity, questCode: quest.TargetQuestCode) is { } prey)
+        {
+            ClearRoute();
+            AttackForQuest(scene, prey);
+            return;
+        }
         if (!questTargetInView && scene.AttackTargetId == 0 && session.ClosestMonster(DefendRange) is { } other)
         {
             ClearRoute();
-            scene.SetQuestHuntTarget(other);
+            AttackForQuest(scene, other);
             return;
         }
 
@@ -355,6 +1576,21 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
         if (questTargetInView)
         {
             ClearRoute();
+            return;
+        }
+
+        if (route is null)
+        {
+            if (QuestHunts.Value.TryGetValue((quest.TargetQuestCode, pose.FieldId), out var points) &&
+                Walk(scene, pose, pose.FieldId, points[_huntPoint % points.Length], 0, "Buscando monstros da missão"))
+            {
+                _huntPoint++;
+                ClearRoute();
+            }
+            else if (points is null)
+            {
+                Show($"Procure {quest.TargetName} na área da missão");
+            }
             return;
         }
 
@@ -398,7 +1634,7 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
         }
     }
 
-    private void Chase(GameScene scene, VulkanWorldSession.WorldMapPose pose, TribeRoute route)
+    private void Chase(GameScene scene, VulkanWorldSession.WorldMapPose pose)
     {
         if (!scene.TryGetEntityPlanar(_chasing, out var at) || !scene.TrackQuestMonster(_chasing, out _))
         {
@@ -407,10 +1643,10 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
             return;
         }
 
-        if (Walk(scene, pose, route.HuntField, new Vector2(at.X, -at.Y), 0, Status, AttackReach))
+        if (Walk(scene, pose, pose.FieldId, new Vector2(at.X, -at.Y), 0, Status, AttackReach))
         {
             ClearRoute();
-            scene.SetQuestHuntTarget(_chasing);
+            AttackForQuest(scene, _chasing);
             _chasing = 0;
         }
     }

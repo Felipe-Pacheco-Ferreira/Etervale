@@ -32,7 +32,8 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
     public WorldMapPose MapPose => Volatile.Read(ref mapPose);
     public void AttackSelected() => Interlocked.Exchange(ref attackTap, 1);
     private readonly Dictionary<ulong, int> huntMonsters = new();
-    private readonly Dictionary<ulong, (string Name, System.Numerics.Vector3 Position)> npcPlaces = new();
+    private readonly Dictionary<ulong, uint> huntTemplates = new();
+    private readonly Dictionary<ulong, (string Name, System.Numerics.Vector3 Position, uint Template)> npcPlaces = new();
     private int keepHunting;
 
     // Whether the hunt goes on after its kills are counted, while the quest still wants a drop.
@@ -96,14 +97,67 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
         return false;
     }
 
+    public bool TryFindNpc(uint template, System.Numerics.Vector3 from, out ulong id, out System.Numerics.Vector3 position)
+    {
+        id = 0;
+        position = default;
+        var nearest = float.PositiveInfinity;
+        foreach (var (entity, place) in npcPlaces)
+        {
+            if (place.Template != template)
+            {
+                continue;
+            }
+
+            var distance = System.Numerics.Vector3.DistanceSquared(from, place.Position);
+            if (distance < nearest)
+            {
+                nearest = distance;
+                (id, position) = (entity, place.Position);
+            }
+        }
+
+        return id != 0;
+    }
+
+    private PristonTale.Client.Net.WorldCatalog.WorldRenderCatalog _renderCatalog;
+
+    public void SetRenderCatalog(PristonTale.Client.Net.WorldCatalog.WorldRenderCatalog catalog) =>
+        Volatile.Write(ref _renderCatalog, catalog);
+
+    public bool TryFindSkillMaster(System.Numerics.Vector3 from, out ulong id, out System.Numerics.Vector3 position)
+    {
+        var catalog = Volatile.Read(ref _renderCatalog);
+        id = 0;
+        position = default;
+        var nearest = float.PositiveInfinity;
+        foreach (var (entity, place) in npcPlaces)
+        {
+            if (catalog?.GetNpc(place.Template)?.Services.Has(PristonTale.Simulation.World.Npcs.NpcServiceKind.SkillMaster) != true)
+            {
+                continue;
+            }
+
+            var distance = System.Numerics.Vector3.DistanceSquared(from, place.Position);
+            if (distance < nearest)
+            {
+                nearest = distance;
+                (id, position) = (entity, place.Position);
+            }
+        }
+
+        return id != 0;
+    }
+
     // The nearest living monster within range, or null; called on the game thread.
-    public ulong? ClosestMonster(float range)
+    public ulong? ClosestMonster(float range, IReadOnlySet<uint> templates = null, int questCode = 0)
     {
         ulong? closest = null;
         var best = range * range;
-        foreach (var (id, _) in huntMonsters)
+        foreach (var (id, code) in huntMonsters)
         {
-            if (scene.TrackQuestMonster(id, out var distance) && distance < best)
+            if ((questCode == 0 || questCode == code) && (templates is null || huntTemplates.TryGetValue(id, out var template) && templates.Contains(template))
+                && scene.TrackQuestMonster(id, out var distance) && distance < best)
             {
                 (closest, best) = (id, distance);
             }
@@ -398,10 +452,11 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
             if (spawn.Kind == EntityKind.Monster && spawn.OwnerId == 0)
             {
                 huntMonsters[spawn.EntityId] = spawn.QuestCode;
+                huntTemplates[spawn.EntityId] = spawn.TemplateId;
             }
             else if (spawn.Kind == EntityKind.Npc && !string.IsNullOrEmpty(spawn.Name))
             {
-                npcPlaces[spawn.EntityId] = (spawn.Name, spawn.Position);
+                npcPlaces[spawn.EntityId] = (spawn.Name, spawn.Position, spawn.TemplateId);
             }
         }
         foreach (var combat in update.Events)
@@ -430,6 +485,7 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
             struck.Remove(removed);
             attackers.Remove(removed);
             huntMonsters.Remove(removed);
+            huntTemplates.Remove(removed);
             npcPlaces.Remove(removed);
         }
         if (update.Spawns.Count > 0 || update.Removed.Count > 0)

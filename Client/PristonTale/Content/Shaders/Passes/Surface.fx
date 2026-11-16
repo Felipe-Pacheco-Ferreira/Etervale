@@ -313,6 +313,12 @@ float4 ShadeSurface(VSOut i, bool masked)
         AlphaTest(s.Alpha);
     }
 
+    [branch]
+    if (DebugView > 10.5)
+    {
+        return float4(s.Albedo / Exposure, s.Alpha);
+    }
+
     float a = SpecularAntiAliasedAlpha(s.Normal, max(s.Roughness * s.Roughness, 0.002));
     // Emission: the original display-referred colour at its authored level by day (EmissionScale >= 1 / Exposure), a
     // brighter light source at night.
@@ -360,10 +366,18 @@ float4 ShadeSurface(VSOut i, bool masked)
         bool actor = ActorReceiver > 0.5;
         float shadow = SunShadow(i.WorldPosition, shadowNormal, max(nl, transmits ? back : 0.0), i.ViewDepth, i.Position.xy,
             actor ? ActorShadowBias : 0.0, actor ? 1.0 : occlusion.y) * CloudShadowAt(i.WorldPosition);
-        AddDirectLight(SunDirection, SunColor * shadow, s.Normal, v, diffuseAlbedo, s.F0, s.Metallic, a, lighting.Diffuse, lighting.Specular);
+        [branch]
+        if (nl > 0.0 && shadow > 0.0)
+        {
+            AddDirectLight(SunDirection, SunColor * shadow, s.Normal, v, diffuseAlbedo, s.F0, s.Metallic, a, lighting.Diffuse, lighting.Specular);
+        }
         // Transmission through leaves: diffuse through the blade, stronger looking toward the sun (forward scattering).
-        float forward = pow(saturate(dot(-v, SunDirection)), 4.0);
-        lighting.Diffuse += diffuseAlbedo * SunColor * (shadow * Translucency * back * (0.35 + 0.65 * forward));
+        [branch]
+        if (Translucency > 0.0 && back > 0.0 && shadow > 0.0)
+        {
+            float forward = pow(saturate(dot(-v, SunDirection)), 4.0);
+            lighting.Diffuse += diffuseAlbedo * SunColor * (shadow * Translucency * back * (0.35 + 0.65 * forward));
+        }
         AddLocalLights(i.WorldPosition, s.Normal, v, diffuseAlbedo, s.F0, s.Metallic, a, i.Position.xy, ActorReceiver < 0.5, lighting);
 #ifdef GLTF
         // A glTF vertex colour tints the surface (SampleGltfSurface); it is no light.

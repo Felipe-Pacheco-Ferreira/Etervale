@@ -142,5 +142,6 @@ public enum PristonDebugView
     // Ambient occlusion (red) and contact-shadow visibility (green).
     AmbientOcclusion,
     // The specular radiance alone (sun, lamps, environment), before exposure.
-    Specular
+    Specular,
+    MaterialUnlit
 }

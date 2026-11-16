@@ -144,9 +144,12 @@ internal static class QuestTransactions
 
     // A step the world opened without an NPC: the victory dialog of a duel and the rank-up it offers.
     private static bool OpenedByWorld(ActiveQuest active, QuestCommand command) =>
-        active.Code == command.Code && active.State == command.State && active.ArenaWon
+        active.Code == command.Code && active.State == command.State
+        && (command.Code == FirstSkillQuest.Code && active.State == FirstSkillQuest.ReadyState && command.Action == QuestAction.Proceed
+            || SkillQuestCatalog.TryGet(command.Code, out _) && active.State == ClassSkillQuests.ReadyState && command.Action == QuestAction.Proceed
+            || active.ArenaWon
         && (command.Code == QuestCode.FuryOfPhantom && command.Action == QuestAction.Proceed
-            || command.Code == QuestCode.RankUpMasterTrial && command.Action == QuestAction.Accept);
+            || command.Code == QuestCode.RankUpMasterTrial && command.Action == QuestAction.Accept));
 
     // Whether the NPC offers the step a follow-up answers: talking to it (or pressing its class-change button for the
     // start of a rank-up) on a scratch copy shows that step's dialog.

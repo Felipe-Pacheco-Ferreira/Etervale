@@ -92,6 +92,7 @@ public sealed class CharacterSelectScreen : GameScreen
     public float ButtonScale { get; init; } = 1f;
     // How many times wider than for a cursor a character's pick box is (touch).
     public float PickScale { get; init; } = 1f;
+    public double RosterDoublePressSeconds { get; init; } = CharacterSelectStage.DoublePressSeconds;
     public float CameraDistanceScale { get; init; } = 1f;
     // The 2D layer (frame, marks, captions, faces, buttons) is laid out on a screen this many times smaller and drawn this
     // many times larger, so a phone shows the PC layout at a readable size; the 3D picks keep the real screen.
@@ -327,7 +328,7 @@ public sealed class CharacterSelectScreen : GameScreen
         if (_hoveredIndex >= 0)
         {
             var now = _elapsedSeconds;
-            var isDouble = _lastClickIndex == _hoveredIndex && (now - _lastClickSeconds) < CharacterSelectStage.DoublePressSeconds;
+            var isDouble = _lastClickIndex == _hoveredIndex && (now - _lastClickSeconds) < RosterDoublePressSeconds;
             _selectedIndex = _hoveredIndex;
             _audio.Play(LoginCue.PickCharacter);
             if (isDouble)
@@ -336,11 +337,12 @@ public sealed class CharacterSelectScreen : GameScreen
             }
 
             _lastClickSeconds = now;
-            _lastClickIndex = _hoveredIndex;
+            _lastClickIndex = isDouble ? -1 : _hoveredIndex;
         }
         else
         {
             _selectedIndex = -1;
+            _lastClickIndex = -1;
         }
 
         _scene.SetRosterHighlight(_hoveredIndex, _selectedIndex);

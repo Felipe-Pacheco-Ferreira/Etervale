@@ -71,13 +71,13 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
                 return;
             }
 
-            if (ProbeApplication.CurrentWorld is { Play: not null } session)
+            if (ProbeApplication.CurrentWorld is { Play: not null, FramesDrawn: > 0 } session)
             {
                 Attach(activity, session);
             }
             else
             {
-                decor?.PostDelayed(Wait, 200);
+                decor?.PostDelayed(Wait, 100);
             }
         }
 
@@ -282,7 +282,7 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
         // The skills window needs the action wheel, made further down.
         VulkanSkillsPanel skills = null;
         AddMenuAction(secondRow, "Habilidades", HudGlyph.Skill, () => skills.Open());
-        AddMenuAction(secondRow, "Movimento", HudGlyph.Run, session.ToggleRun);
+        AddMenuAction(secondRow, "Corrida", HudGlyph.Run, session.ToggleRun);
         var thirdRow = AddMenuRow();
         AddMenuAction(thirdRow, "Gráficos", HudGlyph.Menu, () => VulkanHudWindows.Graphics(activity, overlay, session, !editor.StatsHidden, shown =>
         {
@@ -290,7 +290,8 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
             stats.Visibility = shown ? ViewStates.Visible : ViewStates.Gone;
         }), stacked: false);
         AddMenuAction(thirdRow, "Editar HUD", HudGlyph.Menu, () => editor.Open(), stacked: false);
-        AddMenuAction(secondRow, "Rever tutorial", HudGlyph.Journal, editor.ReplayTutorials);
+        AddMenuAction(AddMenuRow(), "Mapas baixados", HudGlyph.Menu, () => _ = VulkanPackMenu.OpenAsync(activity, overlay), stacked: false);
+        AddMenuAction(secondRow, "Correios", HudGlyph.Chat, () => VulkanHudWindows.Mail(activity, overlay));
         var calendar = new VulkanEventCalendar(activity, overlay, session);
         AddMenuAction(AddMenuRow(), "Calendário", HudGlyph.Calendar, calendar.Open, stacked: false);
         var footer = AddMenuRow();
@@ -327,11 +328,17 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
         overlay.AddView(messages, messageLayout);
         activity.AddContentView(overlay, new ViewGroup.LayoutParams(-1, -1));
 
-        var npcPanel = new VulkanNpcPanel(activity, overlay, session);
+        var openNpcPortraits = 0;
+        var npcPanel = new VulkanNpcPanel(activity, overlay, session, visible =>
+        {
+            openNpcPortraits += visible ? 1 : -1;
+            var hudVisibility = openNpcPortraits == 0 ? ViewStates.Visible : ViewStates.Invisible;
+            targetFrame.Visibility = hudVisibility;
+        });
         // While the automatic quest runs, a dialog shows long enough to be read and answers its first choice itself.
         async Task<int?> Present(string title, string message, string[] choices, CancellationToken ct)
         {
-            if (session.Navigator is not { AnswersDialogs: true } || choices.Length == 0)
+            if (session.Navigator?.AnswersDialog(choices.Length) != true)
             {
                 return await npcPanel.ShowAsync(title, message, choices, ct);
             }
@@ -355,7 +362,7 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
             return 0;
         }
 
-        var questDialog = new MobileQuestDialog(activity, session.Play, messages, Present);
+        var questDialog = new MobileQuestDialog(activity, session.Play, messages, Present, npcPanel.ShowAsync);
         var questLifetime = new CancellationTokenSource();
         overlay.ViewDetachedFromWindow += (_, _) => questLifetime.Cancel();
         var wheelRight = Dp(8);
@@ -506,9 +513,14 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
 
             if (session.Quest is { } quest && !ReferenceEquals(previousQuest, quest))
             {
+                var offerReset = quest.SkillResetOffered && previousQuest?.SkillResetOffered != true;
                 previousQuest = quest;
                 journal.Update(quest);
                 feed.Observe(quest);
+                if (offerReset)
+                {
+                    _ = questDialog.ShowSkillResetAsync(questLifetime.Token);
+                }
             }
 
             var target = session.Target;

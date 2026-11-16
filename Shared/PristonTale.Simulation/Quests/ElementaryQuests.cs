@@ -7,7 +7,8 @@ namespace PristonTale.Simulation.Quests;
 public static class ElementaryQuests
 {
     public const int LevelCap = 39;
-    private const int InstructorCode = 1014;
+    public const int InstructorCode = 1014;
+    public const string InstructorObjective = "Encontre a instrutora de missões";
 
     // Quest trigger codes of the NPCs taking part: whether the NPC is the instructor, the quest it expects next (1-based,
     // 0 for any) and the tribe it serves (0 for both).

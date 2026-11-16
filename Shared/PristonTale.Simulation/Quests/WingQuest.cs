@@ -24,6 +24,17 @@ public static class WingQuest
         new([Wings[4], Crystal(7), Crystal(8)], 80000, Wings[5], "E_Wing")
     ];
 
+    public static (int Gold, IReadOnlyList<uint> Items, uint Result)? NextRequirements(Func<uint, bool> hasItem)
+    {
+        var index = Wings.Length - 1;
+        while (index >= 0 && !hasItem(Wings[index]))
+        {
+            index--;
+        }
+
+        return index + 1 < Recipes.Length ? (Recipes[index + 1].Gold, Recipes[index + 1].Needs, Recipes[index + 1].Result) : null;
+    }
+
     private static uint Crystal(int ordinal) => ItemCodes.Parse($"GP1{ordinal:D2}");
 
     // The recipe of the held wing (the last one found in the pack); -1 when the extreme wing is already held.

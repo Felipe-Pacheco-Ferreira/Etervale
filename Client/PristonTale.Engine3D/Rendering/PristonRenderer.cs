@@ -194,6 +194,11 @@ public sealed partial class PristonRenderer : IDisposable
         }
     }
 
+    private bool _opaqueFrontToBack;
+    public bool? OpaqueFrontToBackOverride { get; set; }
+    public bool DiagnosticSkipSolarShadows { get; set; }
+    public bool DiagnosticSkipLocalLights { get; set; }
+
     private void ApplyQuality(ClientSettings settings)
     {
         if (_shadowMap?.Width != settings.ShadowMapSize)
@@ -204,6 +209,7 @@ public sealed partial class PristonRenderer : IDisposable
             _shadowMap = CreateShadowTarget(settings.ShadowMapSize);
         }
 
+        _opaqueFrontToBack = OperatingSystem.IsAndroid() || settings.Quality == GraphicsQuality.Low;
         _shadowUpdateRate = settings.ShadowUpdateRate;
         _sunShadowRefresh.Invalidate();
         _cascades.Configure(settings.ShadowCascades, _shadowMap.Width);
@@ -541,8 +547,12 @@ public sealed partial class PristonRenderer : IDisposable
         var skyBatchCount = 0;
         Profiler.Begin(RenderSection.Lighting);
         var lighting = BuildFrameLighting(camera.Target);
+        if (DiagnosticSkipLocalLights)
+        {
+            lighting = lighting with { PointLights = [], TransientLightCount = 0 };
+        }
         Profiler.End(RenderSection.Lighting);
-        var sunShadowsEnabled = ShadowsEnabled && lighting.Sun.DiffuseColor != Vector3.Zero && !Underground;
+        var sunShadowsEnabled = !DiagnosticSkipSolarShadows && ShadowsEnabled && lighting.Sun.DiffuseColor != Vector3.Zero && !Underground;
         InvalidateShadowAfterTeleport(camera.Target);
         // The moon's shadows move with the actors only: half the refresh rate is enough for its soft, dim light.
         var shadowRate = SunLights || _shadowUpdateRate == 0 ? _shadowUpdateRate : Math.Max(_shadowUpdateRate / 2, 30);
@@ -622,7 +632,8 @@ public sealed partial class PristonRenderer : IDisposable
             _renderBatches,
             _shadowBatches,
             frame,
-            sunShadowRedraw || _lampShadowRedraw != 0);
+            sunShadowRedraw || _lampShadowRedraw != 0,
+            opaqueFrontToBack: OpaqueFrontToBackOverride ?? _opaqueFrontToBack);
         Profiler.End(RenderSection.Queue);
         if (sunShadowRedraw)
         {

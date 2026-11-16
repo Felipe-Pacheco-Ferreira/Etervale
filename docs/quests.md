@@ -28,6 +28,7 @@ quest data the importer reads, and the client's quest dialog, quest window, clas
 | `Shared/PristonTale.Simulation/Quests/ElementaryQuests.cs` | The seven beginner quests (A..G) up to level 39 |
 | `Shared/PristonTale.Simulation/Quests/FuryOfPhantomQuest.cs` | Fury of Phantom (level 100): two field hunts, three arena battles, a reward list |
 | `Shared/PristonTale.Simulation/Quests/EliteQuests.cs` | The elite chains of levels 106, 110 and 114 (21 quests): the table, offers, objectives, the timer, owed items, reports |
+| `Shared/PristonTale.Simulation/Quests/SkillQuestCatalog.cs`, `ClassSkillQuests.cs` | Class skill quest order, eligibility, progress and experience claims |
 | `Shared/PristonTale.Simulation/Quests/RankUpRules.cs` | Class-change offer (level, learned skills, home master, group), rank-up, skill redistribution |
 | `Shared/PristonTale.Simulation/Quests/RankUpByTrophies.cs`, `RankUpByPotion.cs` | First rank-up: Tempskron trophies; Morion royal jelly or hair tonic by name branch |
 | `Shared/PristonTale.Simulation/Quests/RankUpByQuestWeapon.cs` | Second rank-up: vamps buy a quest weapon that grows by hunting stages, ring, expiry |
@@ -49,6 +50,9 @@ quest data the importer reads, and the client's quest dialog, quest window, clas
 | `Persistence/PristonTale.Persistence/Migrations/M016QuestData.cs` | Monster columns `quest_code`, `event_item`, `potion_count`, `potion_percent` |
 | `Client/PristonTale.Client.Net/Online/QuestWireReader.cs` | Quest messages into the shared quest types |
 | `Client/PristonTale.Gameplay/UI/Quests/` | `HudQuestController` (requests, dialog, boxes, notices), `HudQuestDialog`, `HudQuestWindow`, `HudQuestDocuments`, `HudQuestArt` |
+
+The first-skill quest is offered in the Android journal after the Adventurer Journey at level 10. The server counts
+three accepted skill casts and validates the journal's reward claim before granting gold and mana potions.
 
 ## Journal and rules
 

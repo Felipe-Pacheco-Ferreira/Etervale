@@ -275,6 +275,17 @@ internal sealed class VulkanSkillsPanel
 
         var check = Check(owner, _chosen);
         AddLine(NextRank(owner, _chosen, check), 12, check == SkillTrainingCheck.Ready ? VulkanHudArt.EdgeLight : VulkanPanel.Muted, 8);
+        if (check == SkillTrainingCheck.Ready && owner.Money >= SkillLearning.Price(_chosen, rank) && _session.Navigator is { } navigator)
+        {
+            var go = MobileHudTheme.Button(_activity, "Ir ao Mestre de Habilidades", prominent: true);
+            go.Click += (_, _) =>
+            {
+                navigator.RequestSkillMaster();
+                _panel?.Close();
+            };
+            _sheet.AddView(go, new LinearLayout.LayoutParams(-1, Dp(36)) { TopMargin = Dp(8) });
+        }
+
         if (rank > 0 && skill.MouseUse != SkillMouseUse.None && rule is not null)
         {
             _sheet.AddView(VulkanPanelArt.Section(_activity, "Botões de ação"), new LinearLayout.LayoutParams(-1, -2) { TopMargin = Dp(10) });

@@ -225,7 +225,44 @@ public sealed partial class GameScene : ISkillSceneHost
         }
     }
 
-    private bool RequestCast(uint code, SkillRule rule, ulong target, NumVector3? point, bool repeat = false)
+    public bool TryCastQuestSkill(uint code, ulong target)
+    {
+        if (_player is null || _remote is null || SelfCasting || _pendingCast is not null ||
+            !SkillRuleCatalog.TryGet(code, out var rule) || Rank(code) <= 0 || !_skillFx.Cooldowns.Ready(code, _skillClockMs))
+        {
+            return false;
+        }
+
+        return rule.Target switch
+        {
+            SkillTarget.Self or SkillTarget.None or SkillTarget.Ally => RequestCast(code, rule, 0, null, forQuest: true),
+            SkillTarget.Enemy when target != 0 => RequestCast(code, rule, target, null, forQuest: true),
+            _ => false
+        };
+    }
+
+    public bool HasQuestSkillEffect(ulong entity, uint code)
+    {
+        foreach (var status in _skillFx.Statuses.For(entity))
+        {
+            if (status.Code == code)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public void CancelQuestSkill()
+    {
+        if (_pendingCast is { ForQuest: true })
+        {
+            CancelPendingCast();
+        }
+    }
+
+    private bool RequestCast(uint code, SkillRule rule, ulong target, NumVector3? point, bool repeat = false, bool forQuest = false)
     {
         var rank = Rank(code);
         var skill = FindSkill(code);
@@ -243,7 +280,7 @@ public sealed partial class GameScene : ISkillSceneHost
 
         _lootInteraction?.Cancel();
         ClearAttackTarget();
-        _pendingCast = new PendingCast(code, rule, rank, target, repeat);
+        _pendingCast = new PendingCast(code, rule, rank, target, repeat, forQuest);
         UpdatePendingCast();
         return true;
     }
@@ -497,5 +534,5 @@ public sealed partial class GameScene : ISkillSceneHost
         }
     }
 
-    private readonly record struct PendingCast(uint Code, SkillRule Rule, int Rank, ulong TargetId, bool Repeat = false);
+    private readonly record struct PendingCast(uint Code, SkillRule Rule, int Rank, ulong TargetId, bool Repeat = false, bool ForQuest = false);
 }

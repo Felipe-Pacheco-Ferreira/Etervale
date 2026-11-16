@@ -58,10 +58,10 @@ internal sealed class PristonRenderQueue<TBatch>
         }
     }
 
-    public void Sort(bool includeShadowCasters = true)
+    public void Sort(bool includeShadowCasters = true, bool opaqueFrontToBack = false)
     {
-        _opaque.Sort(CompareStateThenFrontToBack);
-        _alphaTest.Sort(CompareStateThenFrontToBack);
+        _opaque.Sort(opaqueFrontToBack ? CompareFrontToBack : CompareStateThenFrontToBack);
+        _alphaTest.Sort(opaqueFrontToBack && OperatingSystem.IsAndroid() ? CompareFrontToBack : CompareStateThenFrontToBack);
         _transparent.Sort(CompareBackToFront);
         if (includeShadowCasters)
         {
@@ -73,6 +73,12 @@ internal sealed class PristonRenderQueue<TBatch>
     {
         var state = left.StateSortKey.CompareTo(right.StateSortKey);
         return state != 0 ? state : left.SortDepth.CompareTo(right.SortDepth);
+    }
+
+    private static int CompareFrontToBack(PristonRenderQueueItem<TBatch> left, PristonRenderQueueItem<TBatch> right)
+    {
+        var depth = left.SortDepth.CompareTo(right.SortDepth);
+        return depth != 0 ? depth : left.StateSortKey.CompareTo(right.StateSortKey);
     }
 
     private static int CompareBackToFront(PristonRenderQueueItem<TBatch> left, PristonRenderQueueItem<TBatch> right)

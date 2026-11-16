@@ -74,7 +74,7 @@ internal sealed partial class FieldSkills
             if (damage > 0)
             {
                 drained += Math.Min(damage, monster.Life);
-                Pay(caster, monster, damage, crit, cast.Rule.ForceFlinch);
+                Pay(caster, monster, damage, crit, cast.Rule.ForceFlinch, skillCode: rule.Code);
             }
 
             ReportStruck(caster, cast, monster);
@@ -304,7 +304,7 @@ internal sealed partial class FieldSkills
         var damage = SkillFormulas.MainSpellPowerAgainst(power, main, cast.Rank, monster.Def, character.Effects.Totals, monster.Effects.Totals);
         damage = CombatResolver.CutHit(_rng, SkillFormulas.WithUndeadBonus(damage, character.Effects.Totals, monster.Def), monster.Def.Combat.MaxLife,
             monster.Def.Combat.Level, character.Level);
-        Pay(caster, monster, damage, crit);
+        Pay(caster, monster, damage, crit, skillCode: cast.Rule.Code);
     }
 
     // The main target's weapon-rolled hit of an area skill (MainHit), besides its area share.
@@ -313,7 +313,7 @@ internal sealed partial class FieldSkills
         var character = caster.Character;
         var power = SkillFormulas.RollPower(character, rule, rule.MainHit, rank, _rng);
         var damage = SkillFormulas.PowerAgainst(power, rule.MainHit, main.Def, character.Effects.Totals, main.Effects.Totals, rank);
-        Pay(caster, main, damage, false, rule.ForceFlinch);
+        Pay(caster, main, damage, false, rule.ForceFlinch, skillCode: rule.Code);
         return true;
     }
 

@@ -45,7 +45,7 @@ internal sealed class VulkanQuestTracker
         _title = new TextView(activity) { TextSize = 12 };
         _title.SetTextColor(MobileHudTheme.Gold);
         _title.Typeface = Typeface.Create("serif", TypefaceStyle.Bold);
-        _title.SetSingleLine(true);
+        _title.SetMaxLines(2);
         _title.Ellipsize = Android.Text.TextUtils.TruncateAt.End;
         View.AddView(_title);
 
@@ -112,13 +112,12 @@ internal sealed class VulkanQuestTracker
 
         var running = navigator?.Enabled == true;
         var hasWork = navigator?.HasWork(quest) == true;
-        _auto.Visibility = hasWork ? ViewStates.Visible : ViewStates.Gone;
+        _auto.Visibility = hasWork || running ? ViewStates.Visible : ViewStates.Gone;
         _auto.Text = running ? "Pausar auto-missão" : "Iniciar auto-missão";
         _status.Text = running ? navigator.Status : hasWork ? GuideDirection() ?? "Toque em Iniciar auto-missão para continuar" : "";
         _status.Visibility = _status.Text.Length > 0 ? ViewStates.Visible : ViewStates.Gone;
         if (_collapsed)
         {
-            _auto.Visibility = ViewStates.Gone;
             _status.Visibility = ViewStates.Gone;
         }
     }

@@ -92,7 +92,8 @@ internal sealed class VulkanInventoryPanel
     public void Update(OwnerState state)
     {
         var changed = _owner?.InventoryRevision != state.InventoryRevision || !ReferenceEquals(_owner?.Items, state.Items)
-            || _owner?.Money != state.Money;
+            || _owner?.Money != state.Money || _owner?.CarriedWeight != state.CarriedWeight
+            || _owner?.MaxWeight != state.MaxWeight || _owner?.Overweight != state.Overweight;
         _owner = state;
         if (_panel is not null && changed)
         {
@@ -211,7 +212,9 @@ internal sealed class VulkanInventoryPanel
             }
         }
 
-        _bagNote.Text = $"{used}/{Inventory.DefaultWidth * Inventory.DefaultHeight}";
+        _bagNote.Text = _owner is { MaxWeight: > 0 } owner
+            ? $"Peso {owner.CarriedWeight} / {owner.MaxWeight}  ·  {used}/{Inventory.DefaultWidth * Inventory.DefaultHeight}"
+            : "Peso — / —";
         if (_bagWidth == 0 || _bagHeight == 0)
         {
             return;
@@ -378,6 +381,34 @@ internal sealed class VulkanInventoryPanel
 
         var actions = new LinearLayout(_activity);
         _sheet.AddView(actions, new LinearLayout.LayoutParams(-1, -2) { TopMargin = Dp(8) });
+        if (item.InBag && _session.Quest is { State: PristonTale.Simulation.Quests.EliteQuests.Running } quest
+            && PristonTale.Simulation.Quests.EliteQuests.Find(quest.Code) is
+                { Objective: PristonTale.Simulation.Quests.EliteObjective.Use or PristonTale.Simulation.Quests.EliteObjective.UseAndKill } definition
+            && item.Code == definition.AcceptItem)
+        {
+            var use = MobileHudTheme.Button(_activity, "Usar item de missão");
+            actions.AddView(use);
+            use.Click += async (_, _) =>
+            {
+                use.Enabled = false;
+                try
+                {
+                    using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+                    var command = new PristonTale.Simulation.Quests.QuestCommand(Guid.NewGuid(), 0,
+                        PristonTale.Simulation.Quests.QuestAction.UseItem, quest.Code, quest.State, 0);
+                    var result = await _session.Play.RequestQuestAsync(command, timeout.Token);
+                    Toast.MakeText(_activity, result.Ok ? "Item de missão usado." : "O servidor recusou o uso do item.", ToastLength.Short)?.Show();
+                }
+                catch (Exception exception) when (exception is IOException or InvalidOperationException or TimeoutException or OperationCanceledException)
+                {
+                    Toast.MakeText(_activity, "Não foi possível usar o item de missão.", ToastLength.Short)?.Show();
+                }
+                finally
+                {
+                    use.Enabled = true;
+                }
+            };
+        }
         var items = _owner?.Items ?? [];
         var slot = item.Equipped ? (EquipmentSlot?)item.Slot
             : ItemEquipmentMetadata.DefaultSlot(item.Kind, ItemEquipmentMetadata.SlotOf(item.Kind),

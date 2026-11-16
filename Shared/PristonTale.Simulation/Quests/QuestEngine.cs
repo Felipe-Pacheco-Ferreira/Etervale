@@ -54,6 +54,7 @@ public static class QuestEngine
         }
 
         RankUpRules.TalkAtMaster(context);
+        ClassSkillQuests.Talk(context);
         if (npc.ItemAging)
         {
             RankUpByPotion.TalkAtAging(context);
@@ -77,6 +78,11 @@ public static class QuestEngine
 
     public static bool Proceed(QuestContext context, QuestCode code, int state)
     {
+        if (SkillQuestCatalog.TryGet(code, out _))
+        {
+            return ClassSkillQuests.Claim(context, code, state);
+        }
+
         if (code == QuestCode.AdventurerJourney)
         {
             return AdventurerJourney.Proceed(context, state);
@@ -99,6 +105,7 @@ public static class QuestEngine
 
         return code switch
         {
+            QuestCode.FirstSkill => FirstSkillQuest.Claim(context, state),
             QuestCode.Level80Bonus or QuestCode.Level90Bonus => LevelBonusQuests.Proceed(context, code, state),
             QuestCode.FuryOfPhantom => FuryOfPhantomQuest.Proceed(context, state),
             QuestCode.RankUpQuestWeapon => RankUpByQuestWeapon.Proceed(context, state),
@@ -110,6 +117,11 @@ public static class QuestEngine
 
     public static bool Accept(QuestContext context, QuestCode code, int state, int choice)
     {
+        if (SkillQuestCatalog.TryGet(code, out _))
+        {
+            return ClassSkillQuests.Accept(context, code, state);
+        }
+
         if (LevelQuests.IsLevelQuest(code))
         {
             return LevelQuests.Accept(context, code, state);

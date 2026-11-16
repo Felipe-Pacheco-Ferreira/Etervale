@@ -86,6 +86,16 @@ internal sealed class VulkanQuestJournal(Activity activity, FrameLayout overlay,
         RenderTabs(view);
         RenderList(entries, view);
         RenderDetail(entries, view);
+        if (_running && session.Navigator is { } navigator)
+        {
+            var exchange = MobileHudTheme.Button(activity, "Trocar asas");
+            exchange.Click += (_, _) =>
+            {
+                navigator.RequestWingExchange();
+                _panel?.Close();
+            };
+            _detail.AddView(exchange, new LinearLayout.LayoutParams(-1, Dp(42)) { TopMargin = Dp(8) });
+        }
     }
 
     private void RenderTabs(QuestView view)
@@ -191,7 +201,17 @@ internal sealed class VulkanQuestJournal(Activity activity, FrameLayout overlay,
             var hint = VulkanPanel.Body(activity, _running ? "Fale com os NPCs das cidades para receber missões." : "As missões que você concluir aparecem aqui.",
                 14, VulkanPanel.Muted);
             hint.Gravity = GravityFlags.Center;
-            _detail.AddView(hint, new LinearLayout.LayoutParams(-1, -1));
+            _detail.AddView(hint, new LinearLayout.LayoutParams(-1, 0, 1));
+            if (_running && session.Navigator is { CanFindBeginnerQuest: true } navigator)
+            {
+                var findQuest = MobileHudTheme.Button(activity, "Ir buscar missão", prominent: true);
+                findQuest.Click += (_, _) =>
+                {
+                    navigator.RequestBeginnerQuest();
+                    _panel?.Close();
+                };
+                _detail.AddView(findQuest, new LinearLayout.LayoutParams(-1, Dp(42)));
+            }
             return;
         }
 
@@ -225,7 +245,10 @@ internal sealed class VulkanQuestJournal(Activity activity, FrameLayout overlay,
             if (view is { KillsNeeded: > 0 })
             {
                 var done = Math.Min(view.Kills, view.KillsNeeded);
-                var hunt = Objective(objectives, $"Derrote {view.TargetName}", done: done >= view.KillsNeeded);
+                var objective = SkillQuestCatalog.TryGet(view.Code, out var skillMission)
+                    ? SkillObjective(skillMission.Objective)
+                    : view.Code == FirstSkillQuest.Code ? "Use habilidades" : $"Derrote {view.TargetName}";
+                var hunt = Objective(objectives, objective, done: done >= view.KillsNeeded);
                 var gauge = new VulkanGaugeView(activity);
                 gauge.Set(VulkanHudArt.Life, done / (float)view.KillsNeeded, $"{done}/{view.KillsNeeded}");
                 hunt.AddView(gauge, new LinearLayout.LayoutParams(Dp(110), Dp(16)) { LeftMargin = Dp(8) });
@@ -242,6 +265,11 @@ internal sealed class VulkanQuestJournal(Activity activity, FrameLayout overlay,
         }
 
         var (description, rewards) = Describe(entry);
+        if (current && view is not null && SkillQuestCatalog.TryGet(view.Code, out var classMission))
+        {
+            description = $"Habilidade: {PristonTale.Gameplay.Localization.DataText.SkillName(classMission.SkillCode, entry.Title)}";
+            rewards.Add($"Experiência: {classMission.ExperienceTenthsPercent / 10m:0.#}%");
+        }
         content.AddView(VulkanPanelArt.Section(activity, "Descrição"), new LinearLayout.LayoutParams(-1, -2) { TopMargin = Dp(10) });
         var text = VulkanPanel.Body(activity, description, 14);
         text.SetLineSpacing(Dp(3), 1f);
@@ -263,7 +291,32 @@ internal sealed class VulkanQuestJournal(Activity activity, FrameLayout overlay,
             }
         }
 
-        if (current && Go(view) is { } go)
+        if (current && view is { State: FirstSkillQuest.ReadyState } &&
+            (view.Code == FirstSkillQuest.Code || SkillQuestCatalog.TryGet(view.Code, out _)))
+        {
+            var claim = MobileHudTheme.Button(activity, "Resgatar recompensa", prominent: true);
+            claim.Click += async (_, _) =>
+            {
+                claim.Enabled = false;
+                try
+                {
+                    using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+                    var command = new QuestCommand(Guid.NewGuid(), 0, QuestAction.Proceed, view.Code, view.State, 0);
+                    var result = await session.Play.RequestQuestAsync(command, timeout.Token);
+                    claim.Text = result.Ok ? "Recompensa recebida" : "Não foi possível resgatar";
+                }
+                catch (Exception error) when (error is IOException or TimeoutException or OperationCanceledException or InvalidOperationException)
+                {
+                    claim.Text = "Não foi possível resgatar";
+                }
+                finally
+                {
+                    claim.Enabled = true;
+                }
+            };
+            _detail.AddView(claim, new LinearLayout.LayoutParams(-1, Dp(42)) { TopMargin = Dp(8) });
+        }
+        else if (current && Go(view) is { } go)
         {
             _detail.AddView(go, new LinearLayout.LayoutParams(-1, Dp(42)) { TopMargin = Dp(8) });
         }
@@ -310,19 +363,32 @@ internal sealed class VulkanQuestJournal(Activity activity, FrameLayout overlay,
         MobileHudTheme.Icon(go, HudGlyph.Auto);
         go.Click += (_, _) =>
         {
-            if (_startAutoHunt is not null)
+            if (navigator?.HasWork(view) == true)
             {
-                _startAutoHunt();
+                navigator.SetEnabled(true);
             }
             else
             {
-                navigator?.SetEnabled(true);
+                _startAutoHunt?.Invoke();
             }
 
             _panel?.Close();
         };
         return go;
     }
+
+    private static string SkillObjective(SkillQuestObjective objective) => objective switch
+    {
+        SkillQuestObjective.MaintainEffect => "Mantenha o efeito ativo (segundos)",
+        SkillQuestObjective.SummonKills => "Derrote monstros com a invocação",
+        SkillQuestObjective.MarkedKills => "Derrote monstros marcados",
+        SkillQuestObjective.SkillKills => "Derrote monstros com a habilidade",
+        SkillQuestObjective.UndeadHits => "Atinja mortos-vivos com a habilidade",
+        SkillQuestObjective.Hits => "Atinja monstros com a habilidade",
+        SkillQuestObjective.ApplyEffect => "Aplique o efeito em monstros",
+        SkillQuestObjective.ConvertUndead => "Converta mortos-vivos",
+        _ => "Use a habilidade"
+    };
 
     // An entry's description without its reward line, and the rewards that line lists ("Recompensa ...: a, b e c.").
     private (string Description, List<string> Rewards) Describe(QuestBoardEntry entry)

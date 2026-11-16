@@ -56,6 +56,7 @@ internal sealed class VulkanFrameMeter
         (RenderSection.LampShadows, "sombra lâmp"),
         (RenderSection.Sky, "céu"),
         (RenderSection.Opaque, "opaco"),
+        (RenderSection.Prepass, "pré-passe"),
         (RenderSection.Masked, "recortado"),
         (RenderSection.Transparent, "transp"),
         (RenderSection.Glow, "brilho"),

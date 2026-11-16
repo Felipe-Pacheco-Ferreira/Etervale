@@ -3,13 +3,14 @@ using Android.Content;
 using Android.Graphics;
 using Android.Views;
 using Android.Widget;
+using Path = Android.Graphics.Path;
 using PristonTale.Mobile;
 
 // An NPC's dialog: one HUD plate at the bottom, between the menu buttons and the action wheel (LeftClear, RightClear),
 // with the NPC's live 3D portrait in an ornate bezel at its left (the game draws the head under the plate's round
 // window, at the place SetNpcPortrait publishes), the NPC's name as a section heading, the line in a recessed card that
 // scrolls when long, and the choices as buttons, the first one highlighted.
-internal sealed class VulkanNpcPanel(Activity activity, FrameLayout overlay, VulkanWorldSession session)
+internal sealed class VulkanNpcPanel(Activity activity, FrameLayout overlay, VulkanWorldSession session, Action<bool> portraitShown)
 {
     // In dp: the portrait window's radius and the room for its bezel between it and the plate's edge; the plate's widest and
     // narrowest width, its top and bottom padding, its side padding, its gap to the HUD beside it and its lift off the bottom;
@@ -55,8 +56,8 @@ internal sealed class VulkanNpcPanel(Activity activity, FrameLayout overlay, Vul
         }
 
         // Taps on the plate stay on it instead of reaching the world below.
-        var card = new FrameLayout(activity) { Clickable = true };
-        card.AddView(new Backdrop(activity, Dp(Corner), holeCentre, holeRadius), new FrameLayout.LayoutParams(-1, -1));
+        var card = new Backdrop(activity, Dp(Corner), holeCentre, holeRadius) { Clickable = true };
+        card.SetWillNotDraw(false);
         var textLeft = portrait ? holeCentre * 2 : Dp(Side);
         var content = new LinearLayout(activity) { Orientation = Orientation.Vertical };
         content.SetPadding(textLeft, Dp(Padding), Dp(Side), Dp(Padding));
@@ -122,6 +123,10 @@ internal sealed class VulkanNpcPanel(Activity activity, FrameLayout overlay, Vul
 
         card.LayoutChange += (_, _) => PlacePortrait();
         card.Post(PlacePortrait);
+        if (portrait)
+        {
+            portraitShown(true);
+        }
         try
         {
             return await answer.Task.WaitAsync(cancellation);
@@ -130,6 +135,10 @@ internal sealed class VulkanNpcPanel(Activity activity, FrameLayout overlay, Vul
         {
             session.SetNpcPortrait(null);
             overlay.RemoveView(card);
+            if (portrait)
+            {
+                portraitShown(false);
+            }
         }
     }
 
@@ -137,13 +146,24 @@ internal sealed class VulkanNpcPanel(Activity activity, FrameLayout overlay, Vul
 
     // The dialog's plate; with a window (holeRadius > 0) centred holeCentre pixels from its top and left, the NPC's bezel
     // around it with a glow breathing over it (VulkanHudArt.Aura), redrawn every VulkanHudArt.AnimationFrameMs.
-    private sealed class Backdrop(Context context, float corner, float holeCentre, float holeRadius) : View(context)
+    private sealed class Backdrop(Context context, float corner, float holeCentre, float holeRadius) : FrameLayout(context)
     {
         private readonly RectF _bounds = new();
+        private readonly Path _portraitMask = new();
+        private readonly Paint _portraitMaskPaint = new(PaintFlags.AntiAlias) { Color = Color.Rgb(19, 15, 11) };
 
         protected override void OnDraw(Canvas canvas)
         {
             _bounds.Set(0, 0, Width, Height);
+            if (holeRadius > 0f)
+            {
+                _portraitMask.Reset();
+                _portraitMask.SetFillType(Path.FillType.EvenOdd!);
+                _portraitMask.AddRoundRect(_bounds, corner, corner, Path.Direction.Cw!);
+                _portraitMask.AddCircle(holeCentre, holeCentre, holeRadius, Path.Direction.Cw!);
+                canvas.DrawPath(_portraitMask, _portraitMaskPaint);
+            }
+
             VulkanHudArt.Plate(canvas, _bounds, corner, holeCentre, holeCentre, holeRadius, VulkanHudArt.NpcGem);
             if (holeRadius <= 0f)
             {

@@ -273,6 +273,12 @@ internal sealed partial class FieldSkills
 
         Retaliate(target, summon);
         Pay(owner, target, damage, false, source: summon.EntityId);
+        if (!target.IsAlive)
+        {
+            PristonTale.Simulation.Quests.ClassSkillQuests.Credit(owner.Character, summon.SummonSkill,
+                PristonTale.Simulation.Quests.SkillQuestObjective.SummonKills);
+        }
+
         SlowFromWeb(summon, target);
     }
 

@@ -42,6 +42,8 @@ internal sealed class FieldResourceStreamer : IDisposable
     // in flight beside it.
     private string _priorityFieldId;
 
+    public bool Failed(string fieldId) => _failedFieldLoads.Contains(fieldId);
+
     public void Request(FieldDef field)
     {
         if (InFlight(field.Id)
@@ -148,7 +150,7 @@ internal sealed class FieldResourceStreamer : IDisposable
     private double _maximumFieldUploadMilliseconds;
     private int _fieldUploadFrames;
 
-    public LoadedField Update()
+    public LoadedField Update(double uploadBudgetMilliseconds = FieldStreamingPolicy.UploadBudgetMilliseconds)
     {
         // A destination that is no longer preparing or uploading (published, failed or cancelled) holds nothing back.
         if (_priorityFieldId is not null && !InFlight(_priorityFieldId))
@@ -234,7 +236,7 @@ internal sealed class FieldResourceStreamer : IDisposable
                     return loaded;
                 }
 
-                if (System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds >= FieldStreamingPolicy.UploadBudgetMilliseconds)
+                if (System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds >= uploadBudgetMilliseconds)
                 {
                     break;
                 }

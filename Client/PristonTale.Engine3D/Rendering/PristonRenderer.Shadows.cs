@@ -16,6 +16,8 @@ namespace PristonTale.Engine3D.Rendering;
 // Shadow maps: cascades, the sun and lamp shadow passes and their casters.
 public sealed partial class PristonRenderer
 {
+    private readonly List<PristonRenderQueueItem<RenderBatch>> _lampCasters = [];
+
     private void InvalidateShadowAfterTeleport(Vector3 focus)
     {
         var thresholdSquared = ShadowTeleportRefreshDistance * ShadowTeleportRefreshDistance;
@@ -82,6 +84,15 @@ public sealed partial class PristonRenderer
     // cast: the stage's own occlusion of its lamps is part of the authored lighting (and a lamp's housing would hide it).
     private void RenderLampShadows()
     {
+        _lampCasters.Clear();
+        foreach (var item in _renderQueueBuilder.Queue.ShadowCasters)
+        {
+            if (item.Batch.IsSkinned)
+            {
+                _lampCasters.Add(item);
+            }
+        }
+
         _graphicsDevice.SetRenderTarget(_lampShadows.Atlas);
         _graphicsDevice.BlendState = BlendState.Opaque;
         _graphicsDevice.SamplerStates[0] = SamplerState.LinearWrap;
@@ -104,12 +115,13 @@ public sealed partial class PristonRenderer
                 _graphicsDevice.DepthStencilState = DepthStencilState.Default;
                 var viewProjection = PristonLampShadows.FaceViewProjection(position, radius, face);
                 _shaders.ApplyShadowFrame(viewProjection, _renderTime, casterLight);
-                DrawShadowQueueItems(_renderQueueBuilder.Queue.ShadowCasters, viewProjection, skinnedOnly: true);
+                DrawShadowQueueItems(_lampCasters, viewProjection);
             }
         }
 
         _shaders.ApplyShadowFrame(Matrix.Identity, _renderTime);
         _graphicsDevice.SetRenderTarget(null);
+        _lampCasters.Clear();
     }
 
     // Reads the batches, not the queue: a frame that redraws no shadow leaves the queue without casters, and underground
@@ -138,8 +150,7 @@ public sealed partial class PristonRenderer
         return false;
     }
 
-    // skinnedOnly: actors and animated props only (the lamps' cube faces).
-    private void DrawShadowQueueItems(IReadOnlyList<PristonRenderQueueItem<RenderBatch>> items, Matrix lightViewProjection, bool skinnedOnly = false)
+    private void DrawShadowQueueItems(IReadOnlyList<PristonRenderQueueItem<RenderBatch>> items, Matrix lightViewProjection)
     {
         _shadowCasterFrustum.Matrix = lightViewProjection;
         // Thin/single-sided casters need both faces in every shadow draw. This state is invariant for
@@ -148,7 +159,7 @@ public sealed partial class PristonRenderer
         for (var i = 0; i < items.Count; i++)
         {
             var batch = items[i].Batch;
-            if ((skinnedOnly && !batch.IsSkinned) || !_shadowCasterFrustum.Intersects(batch.Bounds))
+            if (!_shadowCasterFrustum.Intersects(batch.Bounds))
             {
                 continue;
             }

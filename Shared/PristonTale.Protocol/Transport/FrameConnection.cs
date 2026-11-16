@@ -1,6 +1,7 @@
 using System.Buffers;
 using System.Net;
 using System.Net.Sockets;
+using System.Net.WebSockets;
 using System.Threading.Channels;
 using PristonTale.Protocol.Binary;
 
@@ -12,7 +13,8 @@ public sealed record FrameConnectionOptions
     public int MaxPendingSendBytes { get; init; } = 576 * 1024;
 }
 
-// One connection: frames {int32 Size, uint32 Code, body} of at most 8192 bytes over an authenticated TLS stream.
+// One connection: frames {int32 Size, uint32 Code, body} of at most 8192 bytes over an authenticated stream: TLS over
+// TCP, or a WebSocket whose binary messages carry the frame bytes as one continuous stream.
 // Sends from any thread are appended to one pending buffer and flushed by a single writer, so packets queued while a
 // write is in flight leave together in the next write (one TLS record batch); a Batch holds back the writer's wake-up
 // until its sends are all queued, so they normally leave in one write.
@@ -20,7 +22,7 @@ public sealed class FrameConnection : IPacketSink, IAsyncDisposable
 {
     private const int ReceiveBufferSize = FrameCodec.MaxFrameSize * 2;
 
-    private readonly Socket _socket;
+    private readonly TransportLink _link;
     private readonly Stream _stream;
     private readonly FrameConnectionOptions _options;
     private readonly object _sendGate = new();
@@ -44,22 +46,18 @@ public sealed class FrameConnection : IPacketSink, IAsyncDisposable
     private long _bytesSent;
     private long _bytesReceived;
 
-    // The stream is the socket's authenticated TLS stream; the connection owns both.
-    public FrameConnection(Socket socket, Stream stream, FrameConnectionOptions? options = null)
+    // The stream is the link's authenticated stream; the connection owns both.
+    public FrameConnection(Stream stream, TransportLink link, FrameConnectionOptions? options = null)
     {
-        _socket = socket;
-        _socket.NoDelay = true;
+        _link = link;
         _stream = stream;
         _options = options ?? new FrameConnectionOptions();
         _pending = ArrayPool<byte>.Shared.Rent(FrameCodec.MaxFrameSize * 4);
-        RemoteEndPoint = socket.RemoteEndPoint;
-        LocalEndPoint = socket.LocalEndPoint;
     }
 
-    // Captured at construction: Socket throws ObjectDisposedException for these after Close.
-    public EndPoint? RemoteEndPoint { get; }
+    public EndPoint? RemoteEndPoint => _link.RemoteEndPoint;
 
-    public EndPoint? LocalEndPoint { get; }
+    public EndPoint? LocalEndPoint => _link.LocalEndPoint;
 
     // Frame bytes, before TLS framing.
     public long BytesSent => Interlocked.Read(ref _bytesSent);
@@ -82,7 +80,7 @@ public sealed class FrameConnection : IPacketSink, IAsyncDisposable
         {
             await ReceiveLoopAsync(onPacket);
         }
-        catch (Exception ex) when (ex is IOException or SocketException or ObjectDisposedException or OperationCanceledException)
+        catch (Exception ex) when (ex is IOException or SocketException or WebSocketException or ObjectDisposedException or OperationCanceledException)
         {
             Close(ex.Message);
         }
@@ -320,7 +318,7 @@ public sealed class FrameConnection : IPacketSink, IAsyncDisposable
                 Interlocked.Add(ref _bytesSent, length);
             }
         }
-        catch (Exception ex) when (ex is IOException or SocketException or ObjectDisposedException or OperationCanceledException)
+        catch (Exception ex) when (ex is IOException or SocketException or WebSocketException or ObjectDisposedException or OperationCanceledException)
         {
             Close(ex.Message);
         }
@@ -367,15 +365,7 @@ public sealed class FrameConnection : IPacketSink, IAsyncDisposable
 
         _closed = true;
         CloseReason = reason;
-        try
-        {
-            _socket.Shutdown(SocketShutdown.Both);
-        }
-        catch (Exception ex) when (ex is SocketException or ObjectDisposedException)
-        {
-        }
-
-        _socket.Close();
+        _link.Abort();
         _sendSignal.Writer.TryComplete();
         _lifetime.Cancel();
         TakeDrained()?.TrySetResult();
@@ -388,7 +378,7 @@ public sealed class FrameConnection : IPacketSink, IAsyncDisposable
         {
             await _stream.DisposeAsync();
         }
-        catch (Exception ex) when (ex is IOException or SocketException or ObjectDisposedException)
+        catch (Exception ex) when (ex is IOException or SocketException or WebSocketException or ObjectDisposedException)
         {
         }
 

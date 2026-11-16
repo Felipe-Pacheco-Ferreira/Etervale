@@ -150,7 +150,15 @@ public sealed partial class FieldInstance : ISpawnSink, IPlayerProximity, IField
         }
 
         // An open personal shop holds its seller (WorldPlayer.Shop).
-        return player.Shop is null ? _skills.Cast(player, request) : SkillCastOutcome.Refused(request, SkillCastVerdict.Busy);
+        var outcome = player.Shop is null ? _skills.Cast(player, request) : SkillCastOutcome.Refused(request, SkillCastVerdict.Busy);
+        if (outcome.Accepted && request.Command == SkillCastCommand.Cast)
+        {
+            PristonTale.Simulation.Quests.FirstSkillQuest.CreditCast(player.Character);
+            PristonTale.Simulation.Quests.ClassSkillQuests.Credit(player.Character, request.SkillCode,
+                PristonTale.Simulation.Quests.SkillQuestObjective.Casts);
+        }
+
+        return outcome;
     }
     public bool TryGet(ulong entityId, [MaybeNullWhen(false)] out WorldPlayer player) => _players.TryGetValue(entityId, out player);
 

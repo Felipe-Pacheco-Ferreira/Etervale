@@ -9,7 +9,7 @@ internal static class VulkanAssets
 
     // Raise the version whenever an APK archive (ricarten-desktop.zip, opening-desktop.zip, adventurer-journey.zip) gains
     // content: they are unpacked again over the folder.
-    private const int CacheVersion = 20;
+    private const int CacheVersion = 25;
     private const string RootName = "assets";
     // The folders of the versions before the shared folder, one per version; deleted once.
     private const string OldCachePrefix = "ricarten-desktop-";

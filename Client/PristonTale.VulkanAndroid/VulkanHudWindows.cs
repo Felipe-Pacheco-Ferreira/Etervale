@@ -14,8 +14,7 @@ internal static class VulkanHudWindows
     [
         (GraphicsQuality.Low, "Baixo", "Mais leve"),
         (GraphicsQuality.Medium, "Médio", "Equilíbrio"),
-        (GraphicsQuality.High, "Alto", "Sombras e luz"),
-        (GraphicsQuality.Ultra, "Ultra", "Máximo")
+        (GraphicsQuality.High, "Alto", "Sombras e luz")
     ];
 
     // The chat: the last lines seen in their channels' colours, newest at the bottom, the switch that shows or hides them
@@ -98,6 +97,13 @@ internal static class VulkanHudWindows
         };
     }
 
+    public static void Mail(Activity activity, FrameLayout overlay)
+    {
+        var panel = new VulkanPanel(activity, overlay, "Correios", 560, 300);
+        panel.Content.AddView(VulkanPanelArt.Section(activity, "Caixa de entrada"));
+        panel.Content.AddView(VulkanPanel.Body(activity, "A caixa de entrada ainda está indisponível nesta versão."));
+    }
+
     // The graphics quality: one card per preset, the chosen one lit, the memory warning, and the switch that shows or
     // hides the frames per second and latency line (statsShown, statsChanged).
     public static void Graphics(Activity activity, FrameLayout overlay, VulkanWorldSession session, bool statsShown, Action<bool> statsChanged)
@@ -123,11 +129,33 @@ internal static class VulkanHudWindows
             row.AddView(card, new LinearLayout.LayoutParams(0, Dp(72), 1) { RightMargin = Dp(6) });
         }
 
-        panel.Content.AddView(VulkanPanel.Body(activity, "Alto e Ultra usam bem mais memória: em alguns celulares o sistema pode fechar o jogo. "
+        panel.Content.AddView(VulkanPanel.Body(activity, "O modo Alto usa mais memória e pode fechar em alguns celulares. "
             + "A escolha vale na hora e fica salva depois de 30 segundos.", 12, VulkanPanel.Muted),
             new LinearLayout.LayoutParams(-1, -2) { TopMargin = Dp(10) });
 
         var options = new LinearLayout(activity);
+        var sort = MobileHudTheme.Button(activity, graphics.SortByMaterial ? "Ordem: material" : "Ordem: profundidade");
+        sort.Click += (_, _) =>
+        {
+            graphics.SortByMaterial = !graphics.SortByMaterial;
+            sort.Text = graphics.SortByMaterial ? "Ordem: material" : "Ordem: profundidade";
+            panel.Close();
+        };
+        panel.Content.AddView(sort, new LinearLayout.LayoutParams(-1, Dp(40)) { TopMargin = Dp(10) });
+        var diagnosticLabel = graphics.Diagnostic switch
+        {
+            LightingDiagnostic.NoSolarShadows => "Sem sombra solar",
+            LightingDiagnostic.NoLocalLights => "Sem luzes locais",
+            LightingDiagnostic.UnlitMaterial => "Material sem iluminação",
+            _ => "Normal"
+        };
+        var diagnostic = MobileHudTheme.Button(activity, $"Diagnóstico: {diagnosticLabel}");
+        diagnostic.Click += (_, _) =>
+        {
+            graphics.Diagnostic = (LightingDiagnostic)(((int)graphics.Diagnostic + 1) % 4);
+            panel.Close();
+        };
+        panel.Content.AddView(diagnostic, new LinearLayout.LayoutParams(-1, Dp(40)) { TopMargin = Dp(6) });
         options.SetGravity(GravityFlags.CenterVertical);
         options.AddView(VulkanPanel.Body(activity, "Mostrar FPS e ping", 13, VulkanPanel.Muted), new LinearLayout.LayoutParams(0, -2, 1));
         var toggle = MobileHudTheme.Button(activity, statsShown ? "Mostrando" : "Oculto", prominent: statsShown);

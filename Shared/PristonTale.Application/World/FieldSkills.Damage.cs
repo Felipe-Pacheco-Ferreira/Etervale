@@ -84,7 +84,7 @@ internal sealed partial class FieldSkills
         var burst = cast.Rule.Burst;
         var origin = caster.Position;
         var lifeBefore = monster.Life;
-        Pay(caster, monster, damage, result.Crit, cast.Rule.ForceFlinch);
+        Pay(caster, monster, damage, result.Crit, cast.Rule.ForceFlinch, skillCode: rule.Code);
         AfflictStruck(caster, cast, monster);
         DrainAfterHit(caster, damageRule, rank, monster, lifeBefore);
         if (burst is not null && burst.AfterHit == hit)
@@ -120,7 +120,7 @@ internal sealed partial class FieldSkills
         damage = CombatResolver.ApplyAbsorbMonster(damage, defence.Absorption);
         damage = SkillFormulas.WithBroodBonus(damage, rule.Damage, monster.Def, cast.Rank);
         damage = SkillFormulas.WithUndeadBonus(damage, character.Effects.Totals, monster.Def);
-        Pay(caster, monster, ModifierRules.ScaleDamage(damage, character.Effects.Totals, monster.Effects.Totals), false);
+        Pay(caster, monster, ModifierRules.ScaleDamage(damage, character.Effects.Totals, monster.Effects.Totals), false, skillCode: rule.Code);
         AfflictStruck(caster, cast, monster);
         return true;
     }
@@ -163,7 +163,7 @@ internal sealed partial class FieldSkills
             }
 
             var dealt = SkillFormulas.PowerAgainst(Math.Max(1, power), damage, monster.Def, character.Effects.Totals, monster.Effects.Totals, cast.Rank);
-            Pay(caster, monster, dealt, false);
+            Pay(caster, monster, dealt, false, skillCode: rule.Code);
         }
 
         foreach (var foe in _foes)
@@ -188,7 +188,7 @@ internal sealed partial class FieldSkills
         var power = SkillFormulas.RollPower(character, rule, rule.Damage, cast.Rank, _rng);
         var damage = SkillFormulas.PowerAgainst(power, rule.Damage, monster.Def, character.Effects.Totals, monster.Effects.Totals, cast.Rank);
         var lifeBefore = monster.Life;
-        Pay(caster, monster, SkillFormulas.WithUndeadBonus(damage, character.Effects.Totals, monster.Def), false);
+        Pay(caster, monster, SkillFormulas.WithUndeadBonus(damage, character.Effects.Totals, monster.Def), false, skillCode: rule.Code);
         DrainAfterHit(caster, rule.Damage, cast.Rank, monster, lifeBefore);
         return true;
     }

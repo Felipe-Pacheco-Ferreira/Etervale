@@ -4,8 +4,8 @@
     <SupportedOSPlatformVersion>26</SupportedOSPlatformVersion>
     <OutputType>Exe</OutputType><ImplicitUsings>enable</ImplicitUsings><Nullable>annotations</Nullable>
     <ApplicationId>org.etervale.vulkan.probe</ApplicationId>
-    <ApplicationVersion>66</ApplicationVersion>
-    <ApplicationDisplayVersion>0.66</ApplicationDisplayVersion>
+    <ApplicationVersion>72</ApplicationVersion>
+    <ApplicationDisplayVersion>0.72</ApplicationDisplayVersion>
     <AndroidPackageFormats>apk</AndroidPackageFormats>
     <RuntimeIdentifiers>android-arm64;android-x64</RuntimeIdentifiers><UseDefaultPublishRuntimeIdentifier>false</UseDefaultPublishRuntimeIdentifier>
     <RunAOTCompilation>false</RunAOTCompilation>
@@ -30,6 +30,9 @@
     <AndroidAsset Include="../PristonTale.Android/RicartenResources/QuestDialogs/**/*" Link="QuestDialogs/%(RecursiveDir)%(Filename)%(Extension)" />
     <AndroidAsset Include="../PristonTale.Android/RicartenResources/QuestJournal/**/*" Link="QuestJournal/%(RecursiveDir)%(Filename)%(Extension)" />
     <AndroidAsset Include="../PristonTale.Android/RicartenResources/World/*-minimap.*" Link="%(Filename)%(Extension)" />
+    <AndroidAsset Include="Assets/quest-items.csv" Link="quest-items.csv" />
+    <AndroidAsset Include="Assets/quest-hunts.csv" Link="quest-hunts.csv" />
+    <AndroidAsset Include="Assets/quest-npcs.csv" Link="quest-npcs.csv" />
     <AndroidAsset Include="Assets/priston-avalon-loading.png" Link="priston-avalon-loading.png" />
     <AndroidAsset Include="obj/vulkan/ricarten-desktop.zip" Link="ricarten-desktop.zip" />
     <AndroidAsset Include="obj/vulkan/opening-desktop.zip" Link="opening-desktop.zip" />

@@ -7,6 +7,7 @@ internal static class FieldStreamingPolicy
     public const int MaximumPendingFields = 2;
     public const int MaximumUploadSteps = 32;
     public const double UploadBudgetMilliseconds = 2d;
+    public const double AndroidInWorldUploadBudgetMilliseconds = 0.75d;
     public const int ScanIntervalFrames = 8;
     public const float IdlePrefetchDistance = 1024f;
     private const float MinimumApproachPrefetchDistance = 1400f;

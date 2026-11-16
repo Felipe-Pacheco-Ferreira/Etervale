@@ -39,6 +39,22 @@ internal static class VulkanPacks
 
     public static DownloadState State => Volatile.Read(ref state);
 
+    public static async Task<(PackEntry Pack, bool Installed)[]> ListAsync(CancellationToken ct)
+    {
+        await PrepareAsync().WaitAsync(ct);
+        return store?.Manifest?.Packs.Select(pack => (pack, store.IsInstalled(pack))).ToArray() ?? [];
+    }
+
+    public static async Task DownloadAllAsync(CancellationToken ct)
+    {
+        var entries = await ListAsync(ct);
+        var missing = entries.Where(entry => !entry.Installed).Select(entry => entry.Pack).ToArray();
+        if (missing.Length > 0)
+        {
+            await store.InstallAsync(missing, null, ct);
+        }
+    }
+
     private static string PackagedAddress => typeof(VulkanPacks).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
         .FirstOrDefault(attribute => attribute.Key == "EtervalePackAddress")?.Value;
 

@@ -32,6 +32,13 @@ internal sealed partial class FieldSkills
             caster.CombatTargetId = 0;
         }
 
-        return monster.Effects.Has(ControlFlags.Charmed);
+        var charmed = monster.Effects.Has(ControlFlags.Charmed);
+        if (charmed && monster.Def.Brood == PristonTale.Simulation.World.Monsters.MonsterBrood.Undead)
+        {
+            PristonTale.Simulation.Quests.ClassSkillQuests.Credit(caster.Character, rule.Code,
+                PristonTale.Simulation.Quests.SkillQuestObjective.ConvertUndead);
+        }
+
+        return charmed;
     }
 }

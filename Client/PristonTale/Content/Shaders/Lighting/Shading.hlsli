@@ -65,7 +65,7 @@ float ShadowLitAt(float2 uv, float reference)
 // moves continuously, and the result is the same in every frame, with no noise left for the temporal anti-aliasing (which
 // cannot average it where the history is clipped or absent). Also returns the depth and count of the texels in front of
 // the reference.
-float ShadowTent(Texture2D<float4> map, SamplerState state, float2 texel, float2 grid, float reference, int reach,
+float ShadowTent(Texture2D<float4> map, SamplerState state, float2 texel, float2 grid, float reference, int reach, bool countBlockers,
                  out float blockerSum, out float blockers)
 {
     float2 base = floor(grid);
@@ -76,18 +76,21 @@ float ShadowTent(Texture2D<float4> map, SamplerState state, float2 texel, float2
     [unroll]
     for (int y = 1 - reach; y < reach; y += 2)
     {
+        float2 wy = max(reach - abs(float2(y, y + 1) - f.y), 0.0);
         [unroll]
         for (int x = 1 - reach; x < reach; x += 2)
         {
             // Gather order: (0, 1), (1, 1), (1, 0), (0, 0) from the texel at (x, y).
-            float4 dx = float4(x, x + 1, x + 1, x) - f.x;
-            float4 dy = float4(y + 1, y + 1, y, y) - f.y;
-            float4 weights = max(reach - abs(dx), 0.0) * max(reach - abs(dy), 0.0);
+            float2 wx = max(reach - abs(float2(x, x + 1) - f.x), 0.0);
+            float4 weights = wx.xyyx * wy.yyxx;
             float4 stored = map.GatherRed(state, (base + float2(x + 1, y + 1)) * texel);
             float4 lit4 = float4(stored >= reference);
             lit += dot(weights, lit4);
-            blockerSum += dot(1.0 - lit4, stored);
-            blockers += 4.0 - dot(lit4, 1.0);
+            if (countBlockers)
+            {
+                blockerSum += dot(1.0 - lit4, stored);
+                blockers += 4.0 - dot(lit4, 1.0);
+            }
         }
     }
 
@@ -102,7 +105,8 @@ float CascadeVisibility(uint c, float3 worldPosition, float3 normal, float nl, f
     float depthRange = CascadeDepthRange[c];
     float normalOffset = texelWorld * (0.8 + 1.6 * (1.0 - nl));
     float4 lightPosition = mul(float4(worldPosition + normal * normalOffset, 1.0), CascadeViewProjection[c]);
-    float3 projected = lightPosition.xyz / lightPosition.w;
+    // The cascade matrices are orthographic, so a world point keeps w = 1.
+    float3 projected = lightPosition.xyz;
     float2 local = float2(projected.x, -projected.y) * 0.5 + 0.5;
     float4 tile = CascadeAtlas[c];
     float2 texel = ShadowTexel.xy;
@@ -115,13 +119,13 @@ float CascadeVisibility(uint c, float3 worldPosition, float3 normal, float nl, f
     [branch]
     if (ShadowParams.y < 0.5)
     {
-        return ShadowTent(ShadowMap, ShadowSampler, texel, grid, reference, 3, blockerSum, blockers);
+        return ShadowTent(ShadowMap, ShadowSampler, texel, grid, reference, 3, false, blockerSum, blockers);
     }
 
     // PCSS (Fernando 2005) for a directional light: the penumbra their mean depth gives, (receiver - blocker) *
     // tan(light radius). The 3x3 tent keeps contact shadows as sharp as they are; blockers in two rings of corners
     // beyond it (three and five texels out) widen the penumbra outward as well.
-    float lit = ShadowTent(ShadowMap, ShadowSampler, texel, grid, reference, 2, blockerSum, blockers);
+    float lit = ShadowTent(ShadowMap, ShadowSampler, texel, grid, reference, 2, true, blockerSum, blockers);
     float2 base = floor(grid);
     [unroll]
     for (int corner = 0; corner < 8; corner++)
@@ -180,7 +184,6 @@ float SunShadow(float3 worldPosition, float3 normal, float nl, float viewDepth, 
         c += (k + 1 < count && viewDepth >= CascadeSplits[k]) ? 1 : 0;
     }
 
-    float noise = PixelNoise(pixel);
     float split = CascadeSplits[c];
     float start = c == 0 ? 0.0 : CascadeSplits[c - 1];
     float band = (split - viewDepth) / max((split - start) * CascadeBlendBand, 1.0e-3);
@@ -198,9 +201,14 @@ float SunShadow(float3 worldPosition, float3 normal, float nl, float viewDepth, 
         }
     }
 
-    float angle = noise * 2.0 * PI;
-    float2 direction = float2(cos(angle), sin(angle));
-    float2x2 rotation = float2x2(direction.x, -direction.y, direction.y, direction.x);
+    float2x2 rotation = float2x2(1.0, 0.0, 0.0, 1.0);
+    [branch]
+    if (ShadowParams.y >= 0.5)
+    {
+        float angle = PixelNoise(pixel) * 2.0 * PI;
+        float2 direction = float2(cos(angle), sin(angle));
+        rotation = float2x2(direction.x, -direction.y, direction.y, direction.x);
+    }
     float visibility = CascadeVisibility(c, worldPosition, normal, nl, rotation, receiverBias);
     [branch]
     if (next > 0.0)
@@ -263,7 +271,7 @@ float LampShadow(uint row, float3 fromLight, float radius, float nl)
     float reference = distance - (0.004 + 0.012 * (1.0 - nl));
     float blockerSum;
     float blockers;
-    float lit = ShadowTent(LampShadowMap, LampShadowSampler, texel, origin + inner - 0.5, reference, 3, blockerSum, blockers);
+    float lit = ShadowTent(LampShadowMap, LampShadowSampler, texel, origin + inner - 0.5, reference, 3, false, blockerSum, blockers);
     return 1.0 - LampShadowStrength * (1.0 - lit);
 }
 

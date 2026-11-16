@@ -3,6 +3,7 @@ using PristonTale.Simulation.Combat;
 using PristonTale.Simulation.Modifiers;
 using PristonTale.Simulation.Skills;
 using PristonTale.Simulation.World.Monsters;
+using PristonTale.Simulation.Quests;
 using PristonTale.Contracts.Skills;
 
 namespace PristonTale.Application.World;
@@ -47,6 +48,10 @@ internal sealed partial class FieldSkills
         if (effects.Apply(spec, source, duration, entity) is { } change)
         {
             _statusEvents.Add(StatusView(change, rank));
+            if (buff.Harmful && _host.TryGetMonster(entity, out var monster) && monster.IsAlive && !monster.IsSummon)
+            {
+                ClassSkillQuests.Credit(caster, code, SkillQuestObjective.ApplyEffect);
+            }
         }
 
         return true;
@@ -156,6 +161,20 @@ internal sealed partial class FieldSkills
             }
 
             DropUnwieldedEffects(player);
+            var active = player.Character.Quests.Active;
+            if (SkillQuestCatalog.TryGet(active.Code, out var definition) && definition.Objective == SkillQuestObjective.MaintainEffect &&
+                player.Character.Effects.TryGet(definition.SkillCode, out var effect) && effect.SourceEntity == player.EntityId && !effect.Permanent)
+            {
+                var prior = player.SkillQuestEffectTime;
+                var elapsed = (prior.Code == active.Code ? prior.RemainderMs : 0f) + MathF.Min(dtMs, effect.RemainingMs);
+                var seconds = (int)(elapsed / 1000f);
+                player.SkillQuestEffectTime = (active.Code, elapsed - seconds * 1000f);
+                if (seconds > 0)
+                {
+                    ClassSkillQuests.Credit(player.Character, definition.SkillCode, SkillQuestObjective.MaintainEffect, seconds);
+                }
+            }
+
             player.TickGuard(dtMs);
             player.Character.Effects.Step(dtMs, player.EntityId, _changes);
             player.Regeneration.Step(player.Character, player.Posture, dtMs);

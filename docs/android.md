@@ -415,7 +415,8 @@ MonoGame Native on Android. Its own Android HUD views lie over the Vulkan surfac
 movement feed the desktop camera and locomotion code, and the desktop presence stream supplies actors,
 equipment, pets, weather, the server clock, and effects.
 
-Vulkan Android uses a closer initial world orbit and a shorter selection-camera rail. The selection screens' whole 2D
+Vulkan Android starts the world orbit at a pitch of 0.32 radians and a distance of 270 world units. The selection
+camera uses a shorter rail. The selection screens' whole 2D
 layer (frame, title, tribe marks and captions, descriptions, class labels, faces, name and buttons) is laid out on a
 screen 620 pixels tall and drawn enlarged to the phone's height (`CharacterSelectScreen.UiScale`, taps divided by the
 same factor; the 3D picks keep the real screen), and the action buttons are 1.3 times larger again, with hit targets
@@ -509,11 +510,17 @@ Device walkthrough on 0.30 confirmed entry in Ricarten, Skadi's accepted quest a
 
 Vulkan 0.31 publishes a welcome objective in the initial quest view for characters eligible for the Adventurer Journey. In the home town the HUD points toward Skadi or Jin and indicates when the guide is close. The first conversation advances the quest and gives one small HP potion directly to the active bag page. Existing 0.30 characters in Preparation can receive the same one-time tutorial potion by talking to the guide. A blocked grant can be retried after making space.
 
-Rewards are adapted from the public Zephira quest catalog (https://clandragonballz.com.br/wiki/missoes). Welcome pays 15% of level-one XP. The combined preparation step pays 30% of level-one XP, 15 small HP potions and 500 gold. The first hunt pays 20% of level-one XP and 300 gold. The Android bag displays the actual 12-by-6 inventory layout with item footprints, category glyphs and tap-to-select item actions.
+Rewards are adapted from the public Zephira quest catalog (https://clandragonballz.com.br/wiki/missoes). Welcome pays 15% of level-one XP. The combined preparation step pays 30% of level-one XP, 15 small HP potions and 500 gold. The first hunt pays 20% of level-one XP and 300 gold. The Android bag header shows the authoritative current and maximum weight. The bag displays the actual 12-by-6 inventory layout with item footprints, category glyphs and tap-to-select item actions.
 
 Device check confirmed that 0.31 entered Ricarten on the updated server and displayed the 12-by-6 bag grid with the three existing 2-by-2 crystal items. The walkthrough ended in Preparation before the potion grant.
 
 ### Automatic quest
+
+For First Skill, the navigator requests training at the home skill master if the character has no learned skill and
+meets the training requirements. It casts through the scene's combat path and searches the starter hunting route
+when an enemy is required. The server counts accepted casts and authorizes the reward claim.
+Between classic beginner quests, the server journal offers the next eligible entry. With auto-mission enabled,
+the navigator returns to the instructor in the character's home town.
 
 Vulkan 0.32 plays the Adventurer Journey by itself (`QuestNavigator`, run once a frame on the game thread from
 `RicartenProbe.Update`). It waits for the player: the quest card's Iniciar auto-missão button starts it (the card points
@@ -667,23 +674,55 @@ fail and sweep the whole town before the narrow one ran, and Pillai's steep ramp
 every route before handing it out. Not verified on the device yet: the 0.45 walk and approach,
 the warp gates of Pillai, the crystal pickup and the turn-in, and the 0.34 character window.
 
+The Mapas baixados window uses the standard HUD panel for the installed pack count, scrollable list and bulk download.
+
+For an active quest with a server-provided monster target and a remaining kill count, auto-quest can fight matching
+monsters already in view. Elite hunts with an explicit field restriction and elite item objectives route through the world gates to that field.
+The Skills window offers travel to a skill master for trainable skills the player can afford. It uses the home town
+and a skill-master NPC from the live catalog. The server still validates training and quest item use.
+
+The Android quest navigator routes completed Elite objectives to the reporter by the imported NPC placement and
+quest giver code. The APK includes the non-character world placements for quest givers and trainers as
+`quest-npcs.csv` (field code, NPC template, fixed-point x and z, service kind and service value). Once the server moves
+the player to the quest arena, auto-quest can fight the player's duel NPC for the rank-up and Fury chains.
+
+Active beginner and level quests, level bonuses and rank-ups route to their next known NPC based on the server's
+quest state and acquired items. The client uses sampled spawn points from the imported world data in
+quest-hunts.csv for supported monster targets. Fury's two field hunts count any monster in the required field.
+
+The navigator collects Morion potion ingredients and class quest items from the imported drop and spawn data in
+quest-items.csv. It routes the potion to the villager and aging NPC and equips the growing quest weapon when needed.
+The Trocar asas action collects the crystals for one exchange, then routes to a wing NPC if the player has the gold.
+When the journal has no active quest, eligible characters can use Ir buscar missão to walk to the elementary quest instructor.
+
 ### Graphics quality
 
-The in-game menu's "Gráficos" entry offers the desktop presets (`ClientSettings.WithQuality`): Baixo, Médio, Alto and
-Ultra. `MobileGraphics` keeps the choice: the menu requests it on the UI thread, `RicartenProbe.Update` applies it at
+The in-game menu's "Gráficos" entry offers Baixo, Médio and Alto. A saved Ultra selection loads as Alto.
+`MobileGraphics` keeps the choice: the menu requests it on the UI thread, `RicartenProbe.Update` applies it at
 the next frame through `PresentationSettings.ApplyRendering` (the world keeps its exposure compensation,
 `RicartenProbe.WorldExposure`), and it is written to `client-settings.json` in the app's own files folder (the store and
 format of [client-settings.md](client-settings.md); only `quality` is read back) once it has drawn for 30 seconds, so a
 quality the system ends the app for is not chosen again at the next start. A first start, or a file that cannot be read,
-uses Baixo: the Low preset cut to what the test phone draws at 60 frames, with a 1024-pixel shadow map in one cascade, the
-painted sky in place of the realistic one and the world drawn 1088 pixels wide (1280 for the other qualities,
-`MobileGraphics.RenderWidth`, read when the game starts, so a quality chosen in the menu takes its width at the next
-start). Measured in Ricarten at Low before these cuts (0.64): 22.4 ms a frame, the GPU 19.6 ms on the scene (opaque
-9.9, sky 3.9), the CPU 12.4 ms on it (sun shadow 3.5, opaque 3.5). Choosing Alto or Ultra warns that the system may close the game
-for memory (Vulkan 0.24 was ended at 2.6 GB PSS on the test phone). Not measured on the device: frame time and memory of
-Médio, Alto and Ultra.
+uses Baixo. On Android the mobile presets apply the following world-rendering budgets:
+
+| Preset | Render width | Sun shadow map | Cascades | Sky and post-processing |
+| --- | ---: | ---: | ---: | --- |
+| Low | 864 px | 1024 px | 1 | Painted sky |
+| Medium | 928 px | 1024 px | 2 | Painted sky, FXAA, no ambient occlusion or bloom |
+| High | 960 px | 1024 px | 3 | Painted sky and PCF, up to two 512-pixel lamp shadow tiles, eight local lights, no anti-aliasing or ambient occlusion pass |
+
+All three cap the sun shadow refresh rate at 30 Hz. The width is read at game start, so a quality chosen in the menu
+uses its width at the next start.
+The graphics menu warns that the system may close the game for memory when using Alto.
+
+The startup loading screen shows the APK version in its lower-left corner. On world entry, the field streamer decodes the stage on a worker
+thread and uploads it incrementally on the game thread. The selection stays visible until the world is ready.
+The HUD attaches after the first world frame.
 
 ### World HUD
+
+NPC dialog plates size to their content. Player and target HUD frames are hidden while an NPC portrait is shown,
+so their gauges do not draw over the live 3D portrait.
 
 The HUD is drawn by Android views laid out in fractions of the screen height, the short side in landscape:
 

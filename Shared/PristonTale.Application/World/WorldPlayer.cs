@@ -41,6 +41,7 @@ public enum PlayerActionState
 
 public sealed class WorldPlayer
 {
+    internal (PristonTale.Simulation.Quests.QuestCode Code, float RemainderMs) SkillQuestEffectTime { get; set; }
     public float AttackRange => PlayerAttackReach.For(_character);
 
     // A game master may dash (Shift held while running); its movement budget allows that speed.
