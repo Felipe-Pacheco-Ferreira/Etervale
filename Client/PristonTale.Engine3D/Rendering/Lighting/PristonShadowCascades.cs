@@ -82,8 +82,11 @@ internal sealed class PristonShadowCascades
         return MathHelper.Lerp(uniform, logarithmic, SplitLambda);
     }
 
-    // The near cascades: redrawn every frame between refreshes, so the actors in them cast from their current pose.
-    public const int NearMask = 0b0011;
+    private const int NearestMask = 0b0001;
+    private const int NearMask = 0b0011;
+    private int AllMask => (1 << Count) - 1;
+
+    public int BetweenRefitsMask(bool nearestOnly) => (nearestOnly ? NearestMask : NearMask) & AllMask;
 
     // The cascades this refresh updates: the first two every time, the third every second and the fourth every
     // fourth refresh. A full refresh (teleports, a new light direction) updates all.
@@ -92,7 +95,7 @@ internal sealed class PristonShadowCascades
         var refresh = _refreshCount++;
         if (full)
         {
-            return (1 << Count) - 1;
+            return AllMask;
         }
 
         var mask = NearMask;
@@ -106,7 +109,7 @@ internal sealed class PristonShadowCascades
             mask |= 0b1000;
         }
 
-        return mask & ((1 << Count) - 1);
+        return mask & AllMask;
     }
 
     // Fits a cascade to the camera slice [near split, far split] for a light travelling along lightDirection.

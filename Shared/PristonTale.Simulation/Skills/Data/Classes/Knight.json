@@ -135,7 +135,8 @@
       "bonusPercentByRank": [5, 10, 15, 20, 25, 30, 35, 40, 45, 50] },
     "motionIndex": 164, "motionFrames": 65, "motionEvents": [17, 49], "motionSpeedSteps": 1,
     "castEffect": "vfx.knight.grandcross.blade", "impactEffect": "vfx.knight.grandcross.hit",
-      "impactEffects": ["vfx.knight.grandcross.hit", "vfx.knight.grandcross.hit2"], "impactSounds": ["wav/Effects/Skill/Skill_Swing 02.wav", "wav/Effects/Skill/Morion/GrandCross 2.wav"] },
+    "impactEffects": ["vfx.knight.grandcross.hit", "vfx.knight.grandcross.hit2"], "impactAnimationHits": [2],
+    "impactSounds": ["wav/Effects/Skill/Skill_Swing 02.wav", "wav/Effects/Skill/Morion/GrandCross 2.wav"] },
   {
     "code": "0x05080001", "name": "Sword of Justice", "tier": "Job4", "category": "AreaAttack", "icon": "MN60 S_O_Justice",
     "description": "Strike downward with strong power by bending back the body.", "requiredLevel": 60, "mouse": "Right",

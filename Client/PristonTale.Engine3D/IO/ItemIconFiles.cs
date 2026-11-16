@@ -8,6 +8,23 @@ public static class ItemIconFiles
 {
     public const int CellPixels = 22;
 
+    // The stock data omits these sprites. Prefer their own artwork if a richer asset set supplies it.
+    public static bool TryFind(IReadOnlyDictionary<string, string> sprites, string catalogKey, out string path)
+    {
+        if (sprites.TryGetValue(catalogKey, out path))
+        {
+            return true;
+        }
+
+        var substitute = catalogKey.ToUpperInvariant() switch
+        {
+            "DS130" => "DS129",
+            "OR131" => "OR129",
+            _ => ""
+        };
+        return substitute.Length > 0 && sprites.TryGetValue(substitute, out path);
+    }
+
     // Catalog key to sprite path. DropItem holds model texture sheets whose names collide with the sprites.
     public static Dictionary<string, string> Index(string assetRoot)
     {

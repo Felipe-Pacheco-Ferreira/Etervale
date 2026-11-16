@@ -373,7 +373,7 @@ converted scripts.
 | Piercing | Body flare, sparkles and afterimage lines on the weapon, orbiting glows; the piercing model shooting forward with waves | `piercing.cast`, `piercing.thrust`, `piercing.wake` |
 | Divine Inhalation, Godly Shield | Lines out of the left hand at the motion event, hand particles while active; the held shield drawn as the skill's shield | `divineinhalation.cast`, `godlyshield.cast`, `shield.aura`; `shieldModel` |
 | Holy Incantation | Hand particles; a burst on the target; a mark above a charmed monster | `incantation.cast`, `incantation.hit`, `incantation.charm` |
-| Grand Cross | Hit particles on the first hit, the cross model and other particles on the second | `grandcross.hit`, `grandcross.hit2` (`impactEffects`) |
+| Grand Cross | Hit particles on the first hit. The second animation event shows the cross model and particles at the target position even if the hit misses or the target died. | `grandcross.hit`, `grandcross.hit2` (`impactEffects`, `impactAnimationHits`) |
 | Sword of Justice | Its group at the caster and a blue light | `justice.blade`, `justice.hit` |
 | Divine Piercing | Hit particles per hit; the sound on the last hit only | `divinepiercing.blade`, `divinepiercing.hit` |
 | Soul Breaker | The piercing thrust and its wake at the clip's event | `vfx.knight.soulbreaker.cast`, `vfx.knight.piercing.thrust` |
@@ -548,7 +548,15 @@ appearance (`PlayerAppearanceView.WeaponGlow`, `OffHandGlow`) and description, s
 blink is a steady colour; a positive scale grows the item up to it with the pulse, a negative one is a fixed scale.
 `GameScene.HeldItems.cs` paints each frame, after the skill looks, every glowing held item of the local player and of
 every other described player: `ActorLookPresenter.PaintGlow` adds the pulse to the look the item last took (the mix
-texture replaces the look's overlay) and `EndGlowFrame` returns items that stopped glowing to that look.
+texture replaces the look's overlay). The same pulse adds light along the edge of the model, making it visible on
+dark surfaces and with bloom disabled. `EndGlowFrame` returns items that stopped glowing to their prior look.
+
+The desktop and Android Vulkan clients use this same material treatment for a weapon or shield with a world model.
+The body uses the equipped armour's public aging rank. At +20, a gold edge retains a base brightness between pulses
+and the weapon carries the shared orbiting particle trail. Armour uses a softer pulse over its body material.
+Aging +1 to +3 keeps the item's base appearance and any glow defined by the item. Each completed rank can change
+the item's stats and has a separate maturity effect (see [world.md](world.md#aging)).
+Skill overlays retain priority over the armour's scrolling texture, and costume effects are applied separately.
 
 Class-up lights (`WeaponOrbitLights`): while its holder is alive, a weapon with the class-up light carries two lights,
 each `particle.ClassUpWeapon1` (the light) plus `particle.ClassUpWeapon2` (its trail), circling a point of the weapon

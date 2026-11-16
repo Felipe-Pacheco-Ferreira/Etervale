@@ -121,12 +121,11 @@ internal sealed class RicartenProbe : Game
         var width = Math.Max(display.WidthPixels, display.HeightPixels);
         var height = Math.Min(display.WidthPixels, display.HeightPixels);
         quality = new MobileGraphics(Android.App.Application.Context.FilesDir!.AbsolutePath);
-        var renderWidth = quality.RenderWidth;
         graphics = new GraphicsDeviceManager(this)
         {
             IsFullScreen = true,
-            PreferredBackBufferWidth = renderWidth,
-            PreferredBackBufferHeight = width > 0 && height > 0 ? Math.Max(1, renderWidth * height / width) : 720,
+            PreferredBackBufferWidth = width,
+            PreferredBackBufferHeight = height,
             GraphicsProfile = GraphicsProfile.HiDef
         };
         // One update per drawn frame, as on the PC: a fixed step runs extra updates to catch up whenever a frame misses the
@@ -140,9 +139,9 @@ internal sealed class RicartenProbe : Game
         Content.Dispose();
         Content = new FileContentManager(Services, Path.Combine(root, "Content"));
         assetRoot = root;
-        presentation = new PresentationSettings();
+        presentation = new PresentationSettings { Requested = new ClientSettings { Language = ClientSettings.BrazilianPortugueseLanguage } };
         presentation.ApplyRendering(quality.Rendering);
-        PristonTale.Gameplay.Localization.ClientText.Use("pt-BR");
+        PristonTale.Gameplay.Localization.ClientText.Use(presentation.Requested.Language);
         effects = EffectLibrary.LoadBootstrap(GraphicsDevice, Content, assetRoot, ConsoleClientLog.Instance);
         audio = PristonAudioLibrary.LoadBootstrap(assetRoot, ConsoleClientLog.Instance, loadOpeningMusic: animatedLoginEndpoint is not null);
         sky = PristonSkyLibrary.LoadBootstrap(GraphicsDevice, assetRoot);
@@ -284,6 +283,7 @@ internal sealed class RicartenProbe : Game
         var play = connection.OpenPlayChannel();
         scene.BeginRemotePresence(play, entered);
         scene.NpcSelected += session.SelectNpc;
+        scene.SkillNotice += session.NotifySkill;
         session.Bind(scene, play);
         // The automatic quest waits for the quest card's button; the card shows the way to the guide meanwhile.
         session.AssetRoot = root;
@@ -385,9 +385,10 @@ internal sealed class RicartenProbe : Game
         scene.PlayInitialArrival(session.Entered.EntityId);
         session.PublishOwner(scene.Owner);
         session.PublishDeath(scene.PlayerDead, scene.RestartOffer);
+        session.ApplySkillTap();
         var manual = orbit.Movement != Vector2.Zero;
         session.Navigator?.Update(scene, manual);
-        session.UpdateAutoHunt(manual);
+        session.UpdateAutoHunt(manual, orbit.Tap.HasValue);
         session.PublishTarget(namePlates, session.AttackTarget != 0 ? session.AttackTarget : scene.SelectedTargetId);
         while (session.TryReadSpoken(out var line))
         {
@@ -492,6 +493,7 @@ internal sealed class RicartenProbe : Game
             return;
         }
         scene.Renderer.OpaqueFrontToBackOverride = !quality.SortByMaterial;
+        scene.Renderer.SceneWidthLimit = quality.SceneWidthLimit;
         var diagnostic = quality.Diagnostic;
         scene.Renderer.DiagnosticSkipSolarShadows = diagnostic == LightingDiagnostic.NoSolarShadows;
         scene.Renderer.DiagnosticSkipLocalLights = diagnostic == LightingDiagnostic.NoLocalLights;
@@ -520,7 +522,6 @@ internal sealed class RicartenProbe : Game
         var attacked = scene.AttackTargetId != 0 ? scene.AttackTargetId : session.AttackTarget;
         scene.GroundRingTarget = attacked;
         meter.PartBegan();
-        GraphicsDevice.Clear(scene.SkyColor);
         scene.Draw();
         ProbeApplication.MarkFirstFrame();
         meter.SceneEnded();

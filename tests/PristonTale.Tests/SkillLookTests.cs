@@ -247,6 +247,11 @@ internal static class SkillLookTests
         Assert.True(SkillPresentation.ImpactEffectOf(cross, start, 0) == "vfx.knight.grandcross.hit"
             && SkillPresentation.ImpactEffectOf(cross, start, 1) == "vfx.knight.grandcross.hit2"
             && SkillPresentation.ImpactEffectOf(cross, start, 5) == "vfx.knight.grandcross.hit2", "grand cross per-hit effects");
+        var miss = start with { Phase = SkillEventPhase.Impact, TargetCount = 0 };
+        Assert.True(SkillPresentation.ImpactEffectOf(cross, miss, 0).Length == 0
+            && SkillPresentation.ImpactEffectOf(cross, miss, 1) == "vfx.knight.grandcross.hit2"
+            && SkillPresentation.ImpactEffectOf(cross, miss, 2).Length == 0
+            && SkillPresentation.ImpactSoundFor(cross, 1, 0, 5, random).Length == 0, "grand cross's second animation event or landed-only effects differ");
         // Meteo's meteors fall, and sound, on both of its clip's events.
         var meteo = Rule(Meteo);
         Assert.True(SkillPresentation.ImpactEffectOf(meteo, start, 0) == "vfx.magician.meteo.fall" && SkillPresentation.ImpactEffectOf(meteo, start, 1) == "vfx.magician.meteo.fall"

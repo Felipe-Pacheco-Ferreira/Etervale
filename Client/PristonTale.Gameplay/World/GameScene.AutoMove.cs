@@ -4,6 +4,7 @@ using NumVector2 = System.Numerics.Vector2;
 using PristonTale.Simulation.Characters;
 using PristonTale.Simulation.Physics;
 using PristonTale.Simulation.World;
+using PristonTale.Gameplay.Combat;
 using NumVector3 = System.Numerics.Vector3;
 
 namespace PristonTale.Gameplay.World;
@@ -17,6 +18,13 @@ public sealed partial class GameScene
 
     // Whether a warp is moving the player, during which nothing it is asked to do starts.
     public bool Warping => _pendingWarp is not null || _pendingFieldWarp is not null;
+    public event Action<PristonTale.Simulation.World.Loot.GroundDropView> GroundPickup;
+
+    private void OnGroundPickup(PristonTale.Simulation.World.Loot.GroundDropView drop)
+    {
+        _fieldAudio?.PlayItem(drop.CatalogKey, drop.Gold);
+        GroundPickup?.Invoke(drop);
+    }
 
     // Walks to a point of the render plane as a tap on the ground there; false when the player cannot move now. A tap
     // within the body's radius does not move it; a route's point is walked to within arriveWithin instead, so the walk
@@ -78,13 +86,40 @@ public sealed partial class GameScene
             return false;
         }
 
+        BeginPickup(id, position);
+        return true;
+    }
+
+    public bool PickUpForHunt(Vector2 origin, float radius, FreeHuntSettings settings, OwnerState owner, bool goldOnly, out Guid id)
+    {
+        id = Guid.Empty;
+        if (!CanAutoMove() || _groundLoot is null || _lootInteraction is null || _lootInteraction.Busy
+            || !_groundLoot.FindForHunt(origin, PlayerPlanar, radius, settings, owner, (uint)JobBits.Of(_player.Class.Class), goldOnly,
+                _lootInteraction.LastAttemptSucceeded ? Guid.Empty : _lootInteraction.LastAttempt, out id, out var position))
+        {
+            return false;
+        }
+
+        BeginPickup(id, position);
+        return true;
+    }
+
+    public bool HuntPickupFailed(Guid id) => id != Guid.Empty && _lootInteraction is { LastAttemptSucceeded: false } && _lootInteraction.LastAttempt == id;
+
+    public void CancelAutomaticPickup()
+    {
+        _lootInteraction?.Cancel();
+        StopAutoMove();
+    }
+
+    private void BeginPickup(Guid id, Vector3 position)
+    {
         ClearAttackTarget();
         _npcTargetId = 0;
         _lootInteraction.Select(id);
         _moveTarget = new Vector2(position.X, position.Z);
         _hasMoveTarget = true;
         _reports.Request();
-        return true;
     }
 
     // The legs route searches walked over _routeFields, the fields loaded when the last route was planned, one cache per

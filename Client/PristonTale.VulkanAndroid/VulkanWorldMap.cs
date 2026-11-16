@@ -79,7 +79,7 @@ internal sealed class VulkanWorldMap
 
         _map.Invalidate();
         _list.RemoveAllViews();
-        var route = AdventurerJourneyRoute.For(_session.Character.Class);
+        var route = _session.JourneyRoute;
         if (_session.Quest is { } quest && quest.Progress.Count > 0)
         {
             AddLine(VulkanPanel.Heading(_activity, "Objetivo"));
@@ -97,7 +97,7 @@ internal sealed class VulkanWorldMap
         var here = new Vector2(pose.Position.X, pose.Position.Z);
         foreach (var mark in _session.NpcMarks.OrderBy(mark => Vector2.DistanceSquared(here, new Vector2(mark.X, mark.Z))))
         {
-            var guide = mark.Name == route.GuideName;
+            var guide = route.Guide.FieldCode == pose.FieldId && mark.Template == route.GuideTemplate;
             AddLine(VulkanPanel.Body(_activity, $"{(guide ? "★" : "•")}  {mark.Name}", 13, guide ? VulkanHudArt.EdgeLight : MobileHudTheme.Ink));
         }
 
@@ -234,7 +234,7 @@ internal sealed class VulkanWorldMap
                 return;
             }
 
-            var route = AdventurerJourneyRoute.For(_session.Character.Class);
+            var route = _session.JourneyRoute;
             var quest = _session.Quest;
             var size = Math.Max(22f, Height * .032f);
             _labels.Clear();
@@ -242,8 +242,7 @@ internal sealed class VulkanWorldMap
             DrawRoute(canvas, pose, X, Y);
             foreach (var mark in _session.NpcMarks)
             {
-                var guide = mark.Name == route.GuideName;
-                if (guide && route.Guide.FieldCode == pose.FieldId)
+                if (route.Guide.FieldCode == pose.FieldId && mark.Template == route.GuideTemplate)
                 {
                     continue;
                 }
@@ -295,7 +294,7 @@ internal sealed class VulkanWorldMap
             if (route.Guide.FieldCode == field)
             {
                 Star(canvas, x(route.Guide.X), y(route.Guide.Z), size * .8f, Color.Rgb(255, 214, 64));
-                Label(canvas, $"Guia: {route.GuideName}", x(route.Guide.X), y(route.Guide.Z) - size * 1.2f, size, VulkanHudArt.EdgeLight, always: true);
+                Label(canvas, $"Guia: {route.GuideShortName}", x(route.Guide.X), y(route.Guide.Z) - size * 1.2f, size, VulkanHudArt.EdgeLight, always: true);
             }
         }
 

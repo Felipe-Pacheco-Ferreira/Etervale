@@ -8,13 +8,16 @@ param(
     [string]$AssetRoot,
     [string]$DesktopContent,
     [string]$ServerAddress,
-    [string]$Dotnet = 'dotnet'
+    [string]$Dotnet = 'dotnet',
+    [string]$WorldDatabase
 )
 
 $ErrorActionPreference = 'Stop'
 $root = (Resolve-Path "$PSScriptRoot/../..").Path
 if (!$AssetRoot) { $AssetRoot = Join-Path $root 'assets' }
 if (!$DesktopContent) { $DesktopContent = Join-Path $root 'Client/PristonTale/bin/Release/net10.0/Content' }
+if (!$WorldDatabase) { $WorldDatabase = Join-Path $root 'data/pristontale.db' }
+$WorldDatabase = (Resolve-Path -LiteralPath $WorldDatabase).Path
 $ninjaOption = if ($Ninja) { @("-DCMAKE_MAKE_PROGRAM=$Ninja") } else { @() }
 $build = Join-Path $PSScriptRoot 'obj/vulkan'
 New-Item -ItemType Directory -Force $build | Out-Null
@@ -80,6 +83,8 @@ Write-AssetArchive (Join-Path $build 'opening-desktop.zip') ([ordered]@{
     'Hud/Textures' = 'assets/Hud/Textures'
 })
 & "$PSScriptRoot/package-adventurer-assets.ps1" -AssetRoot $AssetRoot
+& $Dotnet run --project "$root/tools/PristonTale.PackBuild" -c Release -- --summon-models $AssetRoot $WorldDatabase $build
+if ($LASTEXITCODE) { exit $LASTEXITCODE }
 
 & $Dotnet build "$PSScriptRoot/PristonTale.VulkanAndroid.csproj" -c Release -warnaserror "-p:AndroidSdkDirectory=$AndroidSdk" "-p:JavaSdkDirectory=$JavaSdk" "-p:EtervaleServerAddress=$ServerAddress"
 exit $LASTEXITCODE

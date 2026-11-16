@@ -28,11 +28,17 @@ internal static class HeldItemGlowTests
         Assert.True(unique is { R: 220, G: 80, B: 0, Blink: 9, Mix: -1, ClassUp: false } && unique.Glows, $"a unique's glow differs: {unique}");
         Assert.True(HeldItemGlow.For(new ItemInstance(Weapon("WS201"))).IsNone && HeldItemGlow.For(null).IsNone, "a plain weapon glows");
 
-        var three = HeldItemGlow.For(new ItemInstance(Weapon("WS201")) { UpgradeLevel = 3 });
+        for (var level = 1; level <= 3; level++)
+        {
+            var aged = HeldItemGlow.For(new ItemInstance(Weapon("WS201")) { UpgradeLevel = level });
+            var agedUnique = HeldItemGlow.For(new ItemInstance(Weapon("WS210", new ItemGlow(220, 80, 0, 0, 9, 0f))) { UpgradeLevel = level });
+            Assert.True(aged.IsNone && agedUnique == unique, $"aging +{level} changed the item's base glow");
+        }
+
         var four = HeldItemGlow.For(new ItemInstance(Weapon("WS201")) { UpgradeLevel = 4 });
         var seven = HeldItemGlow.For(new ItemInstance(Weapon("WS201")) { UpgradeLevel = 7 });
         var twenty = HeldItemGlow.For(new ItemInstance(Weapon("WS201", new ItemGlow(50, 100, 255, 0, 9, 0f))) { UpgradeLevel = 20 });
-        Assert.True(three.IsNone && four is { R: 100, G: 40, B: 90, Blink: 9, Mix: -1 }, $"the +3 or +4 glow differs: {three} {four}");
+        Assert.True(four is { R: 100, G: 40, B: 90, Blink: 9, Mix: -1 }, $"the +4 glow differs: {four}");
         Assert.True(seven is { R: 0, G: 50, B: 140, Mix: 0, MixScroll: 9 } && seven.MixTexture.EndsWith("mixS_01.bmp", StringComparison.Ordinal),
             $"the +7 glow differs: {seven}");
         Assert.True(twenty is { R: 240, G: 240, B: 240, Mix: 5, MixScroll: 14 } && twenty.MixTexture.EndsWith("mixM_01.bmp", StringComparison.Ordinal),
@@ -70,18 +76,30 @@ internal static class HeldItemGlowTests
     {
         var character = new CharacterClassRegistry().CreatePlayer(PlayerClass.Fighter, "Shining", 80);
         character.Equip(EquipmentSlot.Weapon, new ItemInstance(Weapon("WS213", new ItemGlow(0, 180, 255, 0, 9, 0f), 1)) { UpgradeLevel = 9 });
+        var armor = new ItemDefinition(ItemCodes.Parse("DA119"), "Armour", ItemKind.Armor) { CatalogKey = "DA119", EquipSlot = EquipmentSlot.Armor };
+        character.Equip(EquipmentSlot.Armor, new ItemInstance(armor) { UpgradeLevel = HeldItemGlow.LastGlowingAge });
         var player = new WorldPlayer(1, Vector3.Zero, character, false, default);
         var appearance = player.Appearance;
-        Assert.True(appearance.WeaponGlow is { R: 150, G: 60, B: 0, Mix: 2, ClassUp: true } && appearance.OffHandGlow.IsNone,
-            $"the appearance does not carry the +9 class-up glow: {appearance.WeaponGlow}");
+        Assert.True(appearance.WeaponGlow is { R: 150, G: 60, B: 0, Mix: 2, ClassUp: true } && appearance.OffHandGlow.IsNone
+            && appearance.ArmorAge == HeldItemGlow.LastGlowingAge, "the appearance lost an aging rank");
 
         var glow = new DescribedGlow(9, 150, 60, 0, -20, 1.5f, 2, 10, true);
-        var looks = new DescribedPlayer(PlayerClass.Mechanician, 3, 1, 4, "char/tmABCD/tmh-b01.inf", 1, 2, 3, false, false, 0, 0) { WeaponGlow = glow };
+        var looks = new DescribedPlayer(PlayerClass.Mechanician, 3, 1, 4, "char/tmABCD/tmh-b01.inf", 1, 2, 3, false, false, 0, 0)
+        {
+            WeaponGlow = glow,
+            ArmorAge = HeldItemGlow.LastGlowingAge
+        };
         var packet = new EntityDescriptionPacket(7, 4, EntityKind.Player, 80, 3, 1f, "Shining", "char/tmABCD/b001.ini", looks);
         var buffer = new byte[EntityDescriptionPacket.MaximumSize];
-        var read = EntityDescriptionPacket.Read(buffer.AsSpan(0, packet.Write(buffer)));
-        Assert.True(read.Player is { } described && described.WeaponGlow == glow && described.OffHandGlow == DescribedGlow.None,
+        var size = packet.Write(buffer);
+        var read = EntityDescriptionPacket.Read(buffer.AsSpan(0, size));
+        Assert.True(read.Player is { } described && described.WeaponGlow == glow && described.OffHandGlow == DescribedGlow.None
+            && described.ArmorAge == HeldItemGlow.LastGlowingAge,
             "the glows did not round-trip");
+        var oldSize = size - sizeof(byte);
+        System.Buffers.Binary.BinaryPrimitives.WriteInt32LittleEndian(buffer, oldSize);
+        Assert.True(EntityDescriptionPacket.Read(buffer.AsSpan(0, oldSize)).Player is { ArmorAge: 0, WeaponGlow: var oldGlow } && oldGlow == glow,
+            "a description without the optional armor age no longer reads");
         return Task.CompletedTask;
     }
 

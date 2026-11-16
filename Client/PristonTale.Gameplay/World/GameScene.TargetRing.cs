@@ -21,6 +21,41 @@ public sealed partial class GameScene
 
     // The entity the ring is drawn under (0 for none); set by the client each frame.
     public ulong GroundRingTarget { get; set; }
+    private Vector2 _freeHuntCenter;
+    private float _freeHuntRing;
+    private float _freeLootRing;
+
+    public void SetFreeHuntRings(Vector2 center, float hunting, float looting)
+    {
+        _freeHuntCenter = center;
+        _freeHuntRing = hunting;
+        _freeLootRing = looting;
+    }
+
+    private void QueueFreeHuntRings()
+    {
+        if ((_freeHuntRing <= 0f && _freeLootRing <= 0f) || !TryGetFloorHeight(new Vector3(_freeHuntCenter.X, PlayerPosition.Y, _freeHuntCenter.Y), out var floor))
+        {
+            return;
+        }
+
+        _targetRing ??= RingTexture(_graphicsDevice, highlight: false);
+        var at = new Vector3(_freeHuntCenter.X, floor + 1.8f, _freeHuntCenter.Y);
+        if (_freeHuntRing > 0f)
+        {
+            Draw(_freeHuntRing, new Vector4(.18f, .66f, 1f, .58f));
+        }
+        if (_freeLootRing > 0f)
+        {
+            Draw(_freeLootRing, new Vector4(.72f, .25f, 1f, .64f));
+        }
+
+        void Draw(float radius, Vector4 tint)
+        {
+            var size = radius / TargetRingOuter;
+            _skillFx.Renderer.AddGroundQuad(_targetRing, VfxBlend.Additive, at, Vector3.Right * size, Vector3.Backward * size, tint);
+        }
+    }
 
     private void QueueTargetRing()
     {

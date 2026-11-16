@@ -205,6 +205,12 @@ internal sealed class VulkanSkillsPanel
         well.SetScaleType(ImageView.ScaleType.FitCenter!);
         well.SetPadding(Dp(3), Dp(3), Dp(3), Dp(3));
         well.Background = new VulkanPanelArt.WellDrawable(Dp(6), Dp(1), rank > 0 ? VulkanHudArt.EdgeLight : Color.Transparent, selected: false);
+        if (skill.Code != 0)
+        {
+            var border = new VulkanSkillBorder();
+            border.SetSkill(skill.Tier, rank);
+            well.Foreground = border;
+        }
         if (skill.Code != 0 && _icons.Picture(HudArt.SkillButton(_class, skill.IconKey, gray: rank == 0)) is { } icon)
         {
             well.SetImageBitmap(icon);
@@ -286,7 +292,7 @@ internal sealed class VulkanSkillsPanel
             _sheet.AddView(go, new LinearLayout.LayoutParams(-1, Dp(36)) { TopMargin = Dp(8) });
         }
 
-        if (rank > 0 && skill.MouseUse != SkillMouseUse.None && rule is not null)
+        if (rank > 0 && VulkanActionWheel.ShortcutEligible(skill.Code))
         {
             _sheet.AddView(VulkanPanelArt.Section(_activity, "Botões de ação"), new LinearLayout.LayoutParams(-1, -2) { TopMargin = Dp(10) });
             var row = new LinearLayout(_activity);

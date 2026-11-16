@@ -8,6 +8,7 @@ namespace PristonTale.Gameplay.World.Remote;
 public interface IActorScene
 {
     Task PrepareActorResourcesAsync(PristonActor actor) => Task.CompletedTask;
+    IEnumerable<long> UploadPreparedActorTextures(PristonActor actor) => [];
     void CopyActorPlayback(ActorHandle source, ActorHandle destination) { }
     void AttachActor(ActorHandle child, ActorHandle parent, string boneName, string cheerBoneName = null) => throw new NotSupportedException("Actor attachments are not supported by this scene.");
     void SetActorAttachOffset(ActorHandle child, Matrix offset, float lift) { }

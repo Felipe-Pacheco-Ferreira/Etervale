@@ -2,7 +2,9 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PristonTale.Assets;
 using PristonTale.Engine3D.Formats;
+using PristonTale.Engine3D.IO;
 using PristonTale.Engine3D.Rendering;
+using PristonTale.Engine3D.Rendering.Lighting;
 using PristonTale.GltfExport;
 
 namespace PristonTale.Tests;
@@ -20,6 +22,22 @@ internal static class RenderTests
         yield return ("run-length TGAs decode repeated and stored packets, plain or with the masked header", RunLengthTgaAsync);
         yield return ("UI bitmaps of 32 bits keep their coverage and skip the black key; zeroed coverage stays opaque", BmpCoverageAsync);
         yield return ("PNG export cache separates opacity variants and basename collisions", ExportAsync);
+        yield return ("item icons use authentic same-family artwork when a known stock sprite is missing", ItemIconFallbackAsync);
+    }
+
+    private static Task ItemIconFallbackAsync()
+    {
+        var sprites = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["DS129"] = "shield.bmp",
+            ["OR129"] = "ring.bmp"
+        };
+        Assert.True(ItemIconFiles.TryFind(sprites, "ds130", out var shield) && shield == "shield.bmp", "the stock shield fallback is missing");
+        Assert.True(ItemIconFiles.TryFind(sprites, "OR131", out var ring) && ring == "ring.bmp", "the stock ring fallback is missing");
+        sprites["DS130"] = "exact.bmp";
+        Assert.True(ItemIconFiles.TryFind(sprites, "DS130", out var exact) && exact == "exact.bmp", "an available exact sprite was replaced");
+        Assert.True(!ItemIconFiles.TryFind(sprites, "DS199", out _), "an unlisted item borrowed another item's sprite");
+        return Task.CompletedTask;
     }
 
     private static Task MaterialUsageAsync()
@@ -93,8 +111,22 @@ internal static class RenderTests
         var builder = new RenderQueueBuilder();
         Assert.True(builder.Build([batch], [aggregate], frame) == 1 && builder.Queue.Count == 0, "off-camera geometry entered colour pass");
         Assert.True(builder.Queue.ShadowCasters.Count == 1, "aggregate duplicated or lost the covered shadow caster");
+        var outsideLight = aggregate with { };
+        outsideLight.SetWorldBounds(new BoundingBox(new Vector3(105), new Vector3(106)));
+        var lightFrustum = new BoundingFrustum(Matrix.CreateTranslation(new Vector3(-100)));
+        builder.Build([batch], [aggregate, outsideLight], frame, shadowFrustum: lightFrustum);
+        Assert.True(builder.Queue.ShadowCasters.Count == 1 && ReferenceEquals(builder.Queue.ShadowCasters[0].Batch, aggregate),
+            "single-cascade culling dropped an off-camera caster in the light or kept one outside it");
         builder.Build([batch], [aggregate], frame, includeShadowCasters: false);
         Assert.True(builder.Queue.ShadowCasters.Count == 0, "shadow queue was rebuilt on a frame that reuses the previous maps");
+
+        var cascades = new PristonShadowCascades();
+        cascades.Configure(3, 1024);
+        Assert.True(cascades.BetweenRefitsMask(nearestOnly: true) == 0b0001 && cascades.BetweenRefitsMask(nearestOnly: false) == 0b0011,
+            "the nearest cascade must redraw between refits, with cascade 1 kept on the full-rate path");
+        Assert.True(cascades.UpdateMask(full: true) == 0b0111, "a full refit must still update every configured cascade");
+        cascades.Configure(1, 1024);
+        Assert.True(cascades.BetweenRefitsMask(nearestOnly: false) == 0b0001, "a one-cascade map must never request an unused tile");
         return Task.CompletedTask;
     }
 

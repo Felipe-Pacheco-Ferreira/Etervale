@@ -20,6 +20,7 @@ public readonly record struct PristonActorAppearance(
     float Scale)
 {
     public static PristonActorAppearance Normal => new(Vector3.Zero, 1f, false, true, "", 0, 1f);
+    public Vector3 HeldGlowRim { get; init; }
 }
 
 // The appearance shared by an actor's batches. Echo actors hide while their lagged frame lies before the clip start.
@@ -29,6 +30,7 @@ internal sealed class ActorShade
     public const float WobbleAmplitude = 2f;
 
     public Vector3 Tint;
+    public Vector3 HeldGlowRim;
     public float Opacity = 1f;
     // A corpse's look over the appearance: Fade multiplies its opacity, Dim takes light away (in the Tint's units).
     public float Fade = 1f;
@@ -66,6 +68,7 @@ public sealed partial class PristonRenderer
 
         var shade = ShadeOf(runtime);
         shade.Tint = appearance.Tint;
+        shade.HeldGlowRim = appearance.HeldGlowRim;
         shade.Opacity = Math.Clamp(appearance.Opacity, 0f, 1f);
         shade.Wobble = appearance.Wobble;
         shade.CastsShadow = appearance.CastsShadow && !runtime.EchoSource.IsValid;

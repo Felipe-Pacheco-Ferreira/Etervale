@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using PristonTale.Contracts.Units;
 using PristonTale.Engine3D.Diagnostics;
 using PristonTale.Engine3D.Rendering.Post;
 
@@ -51,7 +52,7 @@ public sealed class PristonPhysicalSky : IDisposable
     // Kilometres of ground around the camera the clouds' shadow covers, and world units per km (a character, about 50
     // units, stands about 2 m tall).
     public const float CloudShadowExtent = 6f;
-    public const float WorldUnitsPerKilometre = 25000f;
+    public const float WorldUnitsPerKilometre = GameUnits.WorldUnitsPerMetre * 1000f;
     // The sine of the sun's elevation above which the clouds cast shadows (Atmosphere.fx CloudShadow marches toward
     // it).
     public const float SunCastsCloudShadows = 0.05f;

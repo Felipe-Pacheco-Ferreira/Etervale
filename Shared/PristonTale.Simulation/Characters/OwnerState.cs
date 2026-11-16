@@ -9,6 +9,7 @@ public sealed record OwnedItemView(
 {
     // The copy's values for tooltips and equipment rules; null until the owner receives them.
     public ItemDetailView Details { get; init; }
+    public PotionDefinition Potion { get; init; }
 
     // A bound Union Core's clan member (ItemInstance.Link).
     public string Link { get; init; } = "";
@@ -32,7 +33,7 @@ public sealed record OwnedItemView(
             ? new OwnedItemView(item.InstanceId, ItemCodes.Parse(Puzzles.LuckyBagIcon), Puzzles.LuckyBagName, definition.Kind, item.Count, anchor, slot,
                 definition.GridWidth, definition.GridHeight, Puzzles.LuckyBagIcon)
             : new OwnedItemView(item.InstanceId, definition.Code, item.DisplayName, definition.Kind, item.Count, anchor, slot, definition.GridWidth,
-                definition.GridHeight, definition.CatalogKey) { Link = item.Link };
+definition.GridHeight, definition.CatalogKey) { Link = item.Link, Potion = definition.Potion };
     }
 
     // Whether a carried potion joins this stack: the same potion. The server joins only compatible stacks

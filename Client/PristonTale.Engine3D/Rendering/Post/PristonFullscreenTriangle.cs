@@ -23,11 +23,16 @@ internal sealed class PristonFullscreenTriangle : IDisposable
 
     // Applies the effect's current technique and draws, with no blending unless the caller set it, no culling and the
     // given depth state (none by default).
-    public void Draw(Effect effect, DepthStencilState depth = null)
+    public void Draw(Effect effect, DepthStencilState depth = null, SamplerState sampler0 = null)
     {
         _device.DepthStencilState = depth ?? DepthStencilState.None;
         _device.RasterizerState = RasterizerState.CullNone;
         effect.CurrentTechnique.Passes[0].Apply();
+        if (sampler0 is not null)
+        {
+            _device.SamplerStates[0] = sampler0;
+        }
+
         _device.SetVertexBuffer(_triangle);
         _device.DrawPrimitives(PrimitiveType.TriangleList, 0, 1);
     }

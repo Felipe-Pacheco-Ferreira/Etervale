@@ -9,13 +9,20 @@ public readonly record struct GroundItemEntry(Guid Id, uint ItemCode, bool Gold,
     public const int MaxNameBytes = 64;
     public const int MaxSize = 16 + 4 + 4 + 4 + 12 + 2 + MaxNameBytes;
     private const byte GoldFlag = 1;
+    private const byte OwnThrowFlag = 2;
+    private const uint TempMask = 0x3Fu;
+    public int RequiredLevel { get; init; }
+    public uint Specialization { get; init; }
+    public bool OwnThrow { get; init; }
 
     public void Write(ref PacketWriter writer)
     {
         writer.Guid(Id);
         writer.UInt32(ItemCode);
-        writer.Byte(Gold ? GoldFlag : (byte)0);
-        writer.Zero(3);
+        writer.Byte((byte)((Gold ? GoldFlag : 0) | (OwnThrow ? OwnThrowFlag : 0)));
+        writer.Byte((byte)Math.Clamp(RequiredLevel, 0, byte.MaxValue));
+        // Job bits 0..5 and 16..20 are the only assigned bits.
+        writer.UInt16((ushort)((Specialization & TempMask) | ((Specialization >> 16) << 6)));
         writer.Int32(Amount);
         writer.Int32(X);
         writer.Int32(Y);
@@ -28,14 +35,19 @@ public readonly record struct GroundItemEntry(Guid Id, uint ItemCode, bool Gold,
         var id = reader.Guid();
         var code = reader.UInt32();
         var flags = reader.Byte();
-        reader.Skip(3);
+        var requiredLevel = reader.Byte();
+        var specialization = reader.UInt16();
         return new GroundItemEntry(id, code, (flags & GoldFlag) != 0, reader.Int32(), reader.Int32(), reader.Int32(), reader.Int32(),
-            Utf8Text.Read(ref reader, MaxNameBytes, "Ground item"));
+            Utf8Text.Read(ref reader, MaxNameBytes, "Ground item"))
+        {
+            RequiredLevel = requiredLevel, Specialization = (specialization & TempMask) | ((uint)(specialization >> 6) << 16),
+            OwnThrow = (flags & OwnThrowFlag) != 0
+        };
     }
 }
 
-// S->C {header, uint16 Version = 1, uint16 Flags = 0, int32 Count, entries {Guid Id, uint32 ItemCode, uint8 Flags (1 gold),
-// uint8 0, uint16 0, int32 Amount, X, Y, Z (x256), text Name}}: drops entering the receiver's view.
+// S->C {header, uint16 Version = 1, uint16 Flags = 0, int32 Count, entries {Guid Id, uint32 ItemCode, uint8 Flags (1 gold, 2 own throw),
+// uint8 RequiredLevel, uint16 Specialization, int32 Amount, X, Y, Z (x256), text Name}}.
 public static class GroundItemList
 {
     public const ushort CurrentVersion = 1;

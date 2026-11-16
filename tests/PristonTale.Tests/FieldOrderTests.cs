@@ -10,6 +10,7 @@ using PristonTale.Persistence.Abstractions.Characters;
 using PristonTale.Persistence.Sqlite;
 using PristonTale.Simulation.Characters;
 using PristonTale.Simulation.Items.Usable;
+using PristonTale.Simulation.Quests;
 using PristonTale.Simulation.World;
 using PristonTale.Contracts.Characters;
 
@@ -24,6 +25,7 @@ internal static class FieldOrderTests
         yield return ("the fields after the action field keep the authored codes, and the Teleport Core reaches them", CodesAsync);
         yield return ("a warp with several exits lands where the client came out and asks only its own level", ExitsAsync);
         yield return ("every field opens at its entry level, every warp gate at its destination's, and a Teleport Core row at its field's", EntryLevelsAsync);
+        yield return ("quest routes walk the Ricarten forest seam in both directions and use eligible gates", QuestRoutesAsync);
         yield return ("stored characters, logged transfers and imported fields follow the fields that moved up", MigrationAsync);
         yield return ("the action fields and the deep fields hold their codes and levels, the warps into them ask their levels, and every warp leads to a defined field", NewFieldsAsync);
         yield return ("an action field's camera stands at its height and depth and follows the player within its bounds", ActionCameraAsync);
@@ -96,6 +98,36 @@ internal static class FieldOrderTests
         var low = Field("low", 1, 0) with { WarpGates = [new FieldWarpGate(0, 0, 0, 48, 0, "high", 0, 0, 0, 0)] };
         var custom = new WorldCatalog([low, Field("high", 2, 30)]);
         Assert.True(custom.GetField("low").WarpGates.Single().LimitLevel == 30, "a catalog's gate does not open at its destination's level");
+        return Task.CompletedTask;
+    }
+
+    private static Task QuestRoutesAsync()
+    {
+        var world = new WorldCatalog();
+        var tempskron = AdventurerJourneyRoute.Tempskron;
+        var outbound = tempskron.ExitTowards(FieldCodes.Ricarten, tempskron.HuntField);
+        var inbound = tempskron.ExitTowards(tempskron.HuntField, FieldCodes.Ricarten);
+        Assert.True(outbound is { Seam: true } && QuestWorldRoute.FindFirstExit(world, outbound.From, outbound.To, 1) == outbound,
+            "the general quest route could not leave Ricarten for the Hopy field");
+        Assert.True(inbound is { Seam: true } && QuestWorldRoute.FindFirstExit(world, inbound.From, inbound.To, 1) == inbound,
+            "the general quest route could not return from the Hopy field to Ricarten");
+
+        var morion = AdventurerJourneyRoute.Morion;
+        var pillai = morion.ExitTowards(FieldCodes.Pillai, morion.HuntField);
+        Assert.True(pillai is { Seam: false } && QuestWorldRoute.FindFirstExit(world, pillai.From, pillai.To, 1) == pillai,
+            "the ordinary warp from Pillai was lost");
+
+        var low = Field("low", 100, 0) with { Gates = [new FieldGate("mid", 10, 20, 0)] };
+        var mid = Field("mid", 101, 15) with { WarpGates = [new FieldWarpGate(20, 40, 0, 48, 0, "high", 0, 0, 0, 0)] };
+        var high = Field("high", 102, 30);
+        var custom = new WorldCatalog([low, mid, high]);
+        Assert.True(QuestWorldRoute.FindFirstExit(custom, low.FieldCode, mid.FieldCode, 14) is null,
+            "the quest route used a walk into a field above the player's level");
+        Assert.True(QuestWorldRoute.FindFirstExit(custom, low.FieldCode, high.FieldCode, 29) is null,
+            "the quest route used a warp into a field above the player's level");
+        Assert.True(QuestWorldRoute.FindFirstExit(custom, low.FieldCode, high.FieldCode, 30) ==
+            new RouteExit(low.FieldCode, mid.FieldCode, new RoutePoint(low.FieldCode, 10, 20), Seam: true),
+            "a multi-field route did not return its first gate");
         return Task.CompletedTask;
     }
 

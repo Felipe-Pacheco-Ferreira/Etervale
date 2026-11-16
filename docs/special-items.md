@@ -140,8 +140,10 @@ variant of its monster, `HOPY 2` for Hopy) and a soul stone's by `Soul of <key>`
 the quest arena and below its item level; a soul stone also in the castle (33), field 29 and field 16. Every crystal
 use starts a three-second delay; billing crystals (GP117-120) and soul stones refuse during it. A pet is called beside
 its user (one of the eight points 48 units around him, preferring one no monster stands on), lives 4 min plus 2 s per
-owner level (levels 1-99) with 3 more life per level, hunts the nearest wild monster in its sight and never another
-pet, and credits its owner with the kill's experience and drops. It follows its owner as a skill summon does
+owner level (levels 1-99) with 3 more life per level, hunts the nearest wild monster in sight by default and never
+another pet, and credits its owner with the kill's experience and drops. The owner's crystal targeting order can
+focus on the owner's last target or defend against monsters targeting the owner or pet. See [Free auto-hunt](android.md#free-auto-hunt).
+It follows its owner as a skill summon does
 (`SummonBrain`: the leash, and the recall to a free point beside an owner 500 units away); the original's pet stands
 where it was called. An idle pet standing inside another monster walks out of it (`FieldInstance.StepOutOfCrowd`), so
 pets do not stand in each other. The owner keeps one status per pet (`MonsterCrystals.PetStatus`): code

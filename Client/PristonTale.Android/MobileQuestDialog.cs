@@ -1,4 +1,3 @@
-using System.Text;
 using Android.App;
 using Android.Widget;
 using PristonTale.Client.Net;
@@ -11,8 +10,6 @@ namespace PristonTale.Mobile;
 internal sealed class MobileQuestDialog(Activity activity, IPlayChannel play, TextView notice, Func<string, string, string[], CancellationToken, Task<int?>> presenter = null,
     Func<string, string, string[], CancellationToken, Task<int?>> manualPresenter = null)
 {
-    private static readonly Encoding DocumentEncoding = CreateEncoding();
-
     public Task<bool> TalkAsync(ulong npc, string name, CancellationToken ct) => RunAsync(npc, name, null, ct);
 
     public async Task ShowSkillResetAsync(CancellationToken ct)
@@ -91,7 +88,7 @@ internal sealed class MobileQuestDialog(Activity activity, IPlayChannel play, Te
             answered = true;
             code = prompt.Code;
             state = prompt.State;
-            var title = prompt.Title.IsNone ? name : CharSelectText.Format(prompt.Title);
+            var title = prompt.Title.IsNone || prompt.Title.Id == GameTextId.QuestTitle ? name : CharSelectText.Format(prompt.Title);
             var document = ReadDocument(prompt.Document, CharSelectText.Format(prompt.Subject));
             switch (prompt.Followup)
             {
@@ -190,22 +187,7 @@ internal sealed class MobileQuestDialog(Activity activity, IPlayChannel play, Te
             return "";
         }
 
-        var path = document.Replace('\\', '/').ToLowerInvariant();
-        try
-        {
-            using var stream = activity.Assets!.Open($"QuestDialogs/{path}.sin");
-            using var reader = new StreamReader(stream, DocumentEncoding);
-            return reader.ReadToEnd().Replace("$$%s", subject, StringComparison.Ordinal);
-        }
-        catch (Java.IO.IOException)
-        {
-            return "Texto da missão indisponível.";
-        }
-    }
-
-    private static Encoding CreateEncoding()
-    {
-        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-        return Encoding.GetEncoding(1252);
+        return MobileQuestText.Read(activity.Assets!, "QuestDialogs", document + ".sin", "Texto da missão indisponível.")
+            .Replace("$$%s", subject, StringComparison.Ordinal);
     }
 }

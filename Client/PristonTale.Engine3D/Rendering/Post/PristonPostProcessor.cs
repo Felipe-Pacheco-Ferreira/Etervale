@@ -13,6 +13,9 @@ internal sealed class PristonPostProcessor : IDisposable
 {
     public const string FinalAsset = "Effects/PostFinal";
 
+    private const float ReducedPostMaximumScale = 0.75f;
+    private static readonly Vector4 FullSource = new(0f, 0f, 1f, 1f);
+
     private readonly GraphicsDevice _device;
     private readonly IClientLog _log;
     private readonly PristonFullscreenTriangle _triangle;
@@ -32,6 +35,8 @@ internal sealed class PristonPostProcessor : IDisposable
     private readonly PristonBloom _bloom;
     private readonly PristonSmaa _smaa;
     private RenderTarget2D _ldrTarget;
+    private RenderTarget2D _filteredTarget;
+    private SpriteBatch _upscaleBatch;
     private Texture2D _lutTexture;
     private string _lutSource;
     private string _pendingLutSource;
@@ -93,12 +98,22 @@ internal sealed class PristonPostProcessor : IDisposable
 
         Profiler?.End(RenderSection.Bloom);
 
-        var filter = settings.AntiAliasing is AntiAliasingMode.Fxaa or AntiAliasingMode.Smaa;
-        Profiler?.Begin(RenderSection.DisplayTransform);
+        var fxaa = settings.AntiAliasing == AntiAliasingMode.Fxaa;
+        var smaa = settings.AntiAliasing == AntiAliasingMode.Smaa;
         var viewport = frame.Viewport;
-        if (filter)
+        // Below this scale, a linear LDR copy lets tonemapping and FXAA shade at most 57% of the output pixels each.
+        var upscale = !smaa && frame.SourceRect == FullSource
+            && scene.Width <= viewport.Width * ReducedPostMaximumScale && scene.Height <= viewport.Height * ReducedPostMaximumScale;
+        if (_filteredTarget is not null && !(upscale && fxaa))
         {
-            EnsureLdr(viewport.Width, viewport.Height);
+            _filteredTarget.Dispose();
+            _filteredTarget = null;
+        }
+
+        Profiler?.Begin(RenderSection.DisplayTransform);
+        if (fxaa || smaa || upscale)
+        {
+            EnsureLdr(ref _ldrTarget, upscale ? scene.Width : viewport.Width, upscale ? scene.Height : viewport.Height);
             _device.SetRenderTarget(_ldrTarget);
         }
         else
@@ -117,29 +132,57 @@ internal sealed class PristonPostProcessor : IDisposable
         _debugParams.SetValue(new Vector4(frame.DebugExposure ? 1f : 0f, 1f / frame.Exposure.PreExposure, 0f, 0f));
         _mesopicParams.SetValue(new Vector4(frame.Exposure.NightHue == Vector3.Zero ? Vector3.One : frame.Exposure.NightHue, 0f));
         _final.CurrentTechnique = _tonemap;
-        _triangle.Draw(_final);
+        // PostFinal binds the HDR scene to sampler 0. Interpolate only when enlarging it.
+        _triangle.Draw(_final, sampler0: scene.Width < _device.Viewport.Width ? SamplerState.LinearClamp : null);
+        if (upscale && !fxaa)
+        {
+            Upscale(_ldrTarget, viewport, bindOutput);
+        }
+
         Profiler?.End(RenderSection.DisplayTransform);
 
-        if (!filter)
+        if (!fxaa && !smaa)
         {
             return;
         }
 
         Profiler?.Begin(RenderSection.PostAntiAliasing);
-        if (settings.AntiAliasing == AntiAliasingMode.Smaa)
+        if (smaa)
         {
             _smaa.Apply(_ldrTarget, bindOutput);
         }
         else
         {
-            bindOutput();
+            if (upscale)
+            {
+                EnsureLdr(ref _filteredTarget, _ldrTarget.Width, _ldrTarget.Height);
+                _device.SetRenderTarget(_filteredTarget);
+            }
+            else
+            {
+                bindOutput();
+            }
+
             _ldr.SetValue(_ldrTarget);
             _screenParams.SetValue(new Vector4(_ldrTarget.Width, _ldrTarget.Height, _frame % 64, 0f));
             _final.CurrentTechnique = _fxaa;
             _triangle.Draw(_final);
+            if (upscale)
+            {
+                Upscale(_filteredTarget, viewport, bindOutput);
+            }
         }
 
         Profiler?.End(RenderSection.PostAntiAliasing);
+    }
+
+    private void Upscale(Texture2D source, Viewport viewport, Action bindOutput)
+    {
+        bindOutput();
+        var batch = _upscaleBatch ??= new SpriteBatch(_device);
+        batch.Begin(blendState: BlendState.Opaque, samplerState: SamplerState.LinearClamp);
+        batch.Draw(source, new Rectangle(0, 0, viewport.Width, viewport.Height), Color.White);
+        batch.End();
     }
 
     // The multiplier of a fixed exposure at the light model's incident reading (Shaders/Passes/PostExposure.fx Adapt).
@@ -197,17 +240,17 @@ internal sealed class PristonPostProcessor : IDisposable
         _pendingLut = Task.Run(() => PristonColorGrading.BuildPixels(source, log));
     }
 
-    private void EnsureLdr(int width, int height)
+    private void EnsureLdr(ref RenderTarget2D target, int width, int height)
     {
         width = Math.Max(width, 1);
         height = Math.Max(height, 1);
-        if (_ldrTarget is not null && _ldrTarget.Width == width && _ldrTarget.Height == height)
+        if (target is not null && target.Width == width && target.Height == height)
         {
             return;
         }
 
-        _ldrTarget?.Dispose();
-        _ldrTarget = new RenderTarget2D(_device, width, height, false, SurfaceFormat.Color, DepthFormat.None, 0,
+        target?.Dispose();
+        target = new RenderTarget2D(_device, width, height, false, SurfaceFormat.Color, DepthFormat.None, 0,
             RenderTargetUsage.PreserveContents);
     }
 
@@ -217,6 +260,8 @@ internal sealed class PristonPostProcessor : IDisposable
         _smaa.Dispose();
         Exposure.Dispose();
         _ldrTarget?.Dispose();
+        _filteredTarget?.Dispose();
+        _upscaleBatch?.Dispose();
         _lutTexture?.Dispose();
         _final.Dispose();
     }

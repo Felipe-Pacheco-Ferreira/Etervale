@@ -217,7 +217,17 @@ shadows, SSR, volumetric light, soft particles and depth-bounded tiles. `Overdra
 and IBL and draws everything additive. `Underground` removes sun, sky dome and shadows and lights with a fixed ambient
 and lamps at full.
 
+When Android draws a single solar cascade without updating lamp shadows, the queue rejects casters outside its
+light volume before sorting. During camera movement, the nearest tile redraws between refits. The second tile also
+redraws between refits when the camera is stationary or the nearby actor radius reaches its first split.
+
 ## Render targets
+
+The scene renderer can cap the internal target width (`PristonRenderer.SceneWidthLimit`). The target keeps the
+output viewport's aspect ratio, and the display transform composes back into the original viewport before HUD draws.
+For a full scene at up to 75% of each output dimension, the post chain runs tonemapping and FXAA at scene resolution
+and enlarges the result once with a bilinear blit. SMAA follows the output-resolution path.
+Android sets the cap by graphics preset. With a width limit of zero, the scene uses the caller's render target size.
 
 | Target | Format | Notes |
 |---|---|---|

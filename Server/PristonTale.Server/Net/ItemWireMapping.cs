@@ -19,6 +19,13 @@ public static class ItemWireMapping
     // The details of every owned item at the owner's inventory revision, in parts that precede its inventory parts.
     public static void SendDetails(OwnerState owner, IPacketSink connection, byte[] scratch)
     {
+        var potions = owner.Items.Where(item => item.Potion is { IsValid: true }).Select(Potency).ToArray();
+        foreach (var part in potions.Chunk(PotionPotencyPacket.MaxEntries))
+        {
+            var written = new PotionPotencyPacket(owner.InventoryRevision, part).Write(scratch);
+            connection.Send(scratch.AsSpan(0, written));
+        }
+
         var parts = Parts(owner.Items.Select(Detail).ToArray(), ItemDetailsPartPacket.MaxItemsPerPart);
         for (var part = 0; part < parts.Length; part++)
         {
@@ -33,6 +40,12 @@ public static class ItemWireMapping
     // An item as a store window shows it (a trade partner's offer, a personal shop, the warehouse).
     public static StoreItemEntry StoreItem(OwnedItemView item) =>
         new(item.InstanceId, item.Code, (byte)item.Kind, item.Count, item.Anchor, (short)item.Width, (short)item.Height, item.Name);
+
+    private static PotionPotencyEntry Potency(OwnedItemView item)
+    {
+        var potion = item.Potion;
+        return new PotionPotencyEntry(item.InstanceId, potion.LifeMin, potion.LifeMax, potion.ManaMin, potion.ManaMax, potion.StaminaMin, potion.StaminaMax);
+    }
 
     public static ItemDetailEntry Detail(OwnedItemView item)
     {

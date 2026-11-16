@@ -7,12 +7,12 @@ using PristonTale.Mobile;
 
 internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivityLifecycleCallbacks
 {
-    // How long a quest dialog stays before the automatic quest answers it.
-    private const int AutoAnswerMilliseconds = 2200;
     // How many chat lines the chat window keeps.
     private const int MostChatHistory = 50;
     // How many chat lines show on screen under the chat button.
     private const int ChatFeedLines = 5;
+    private const int SkillNoticeMs = 3500;
+    private const float PreferredGameRefreshRate = 90f;
 
     // The minimaps the APK carries (Android assets <name>-minimap.png/.bin); every other field's comes with its pack.
     private static readonly Dictionary<int, string> ApkMinimaps = new()
@@ -30,7 +30,9 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
             return;
         }
 
-        var decor = activity.Window?.DecorView;
+        var window = activity.Window;
+        var decor = window?.DecorView;
+        decor?.Post(() => PreferGameRefreshRate(window));
         VulkanLoadingScreen loading = null;
         void WaitForFirstFrame()
         {
@@ -105,9 +107,14 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
         FrameLayout.LayoutParams Pixels(int width, int height, GravityFlags gravity) => new(width, height, gravity);
 
         var editor = new HudLayoutEditor(activity, overlay, screenHeight);
+        session.HuntSettings = editor.FreeHuntSettingsOf(session.Character.Name, session.HuntProfileScope);
+        session.RestoreHuntLog(editor.FreeHuntLogOf(session.Character.Name));
+        session.RestoreHuntTotals(editor.FreeHuntTotalsOf(session.Character.Name));
+        var icons = new VulkanItemIcons(session.AssetRoot, action => activity.RunOnUiThread(action));
+        var freeHunt = new VulkanFreeHuntPanel(activity, overlay, session, editor, icons);
         var targetFrame = new VulkanTargetFrame(activity, screenHeight);
         overlay.AddView(targetFrame, Pixels((int)(HudPlacement.TargetFrameWidth * screenHeight) + 2, targetFrame.FrameHeight, GravityFlags.Top | GravityFlags.CenterHorizontal));
-        var player = new VulkanPlayerFrame(activity, session.Character.Name, screenHeight);
+        var player = new VulkanPlayerFrame(activity, session.Character, screenHeight);
         overlay.AddView(player, Pixels(player.FrameWidth, player.FrameHeight, GravityFlags.Top | GravityFlags.Left));
         player.Clickable = true;
         var status = new VulkanStatusPanel(activity, overlay, session);
@@ -156,7 +163,6 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
         // Each field's minimap, made the first time the player is in the field (and its minimap is on the phone), shown
         // while the player is there.
         var maps = new Dictionary<int, MobileMinimap>();
-        var journeyRoute = PristonTale.Simulation.Quests.AdventurerJourneyRoute.For(session.Character.Class);
         var worldMap = new VulkanWorldMap(activity, overlay, session);
         void EnsureMinimap(int code)
         {
@@ -178,7 +184,6 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
             fieldMap.Click += (_, _) => worldMap.Open(fieldMap, title);
             mapBox.AddView(fieldMap, new FrameLayout.LayoutParams(-1, -1));
         }
-        var icons = new VulkanItemIcons(session.AssetRoot, action => activity.RunOnUiThread(action));
         var inventory = new VulkanInventoryPanel(activity, overlay, session, icons);
         var journal = new VulkanQuestJournal(activity, overlay, session);
         void OpenJournal() => journal.Open(() => session.Navigator?.SetEnabled(true));
@@ -187,6 +192,12 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
         var menuOrbs = new List<VulkanActionOrb>();
         var mainMenu = MenuOrb(HudGlyph.Menu, "Menu");
         var bagOrb = MenuOrb(HudGlyph.Bag, "Bolsa");
+        var freeHuntOrb = MenuOrb(HudGlyph.Auto, "Auto-caça");
+        var huntState = VulkanPanelArt.Chip(activity, "Auto-caça · Ligado", VulkanPanelArt.Done);
+        huntState.Visibility = ViewStates.Gone;
+        var huntStateLayout = Place(-2, -2, GravityFlags.Bottom | GravityFlags.Left, 12);
+        huntStateLayout.BottomMargin = Dp(91);
+        overlay.AddView(huntState, huntStateLayout);
         // Items that came into the bag since the player last looked in it: a count on the bag button.
         var seenItems = new HashSet<Guid>();
         var bagSeenOnce = false;
@@ -274,6 +285,50 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
         overlay.AddView(navigation, navigationLayout);
         mainMenu.Click += (_, _) => navigation.Visibility = navigation.Visibility == ViewStates.Visible
             ? ViewStates.Gone : ViewStates.Visible;
+        freeHuntOrb.Click += (_, _) =>
+        {
+            navigation.Visibility = ViewStates.Gone;
+            if (session.FreeHuntEnabled)
+            {
+                session.SetFreeHunt(false);
+                RefreshFreeHuntButton();
+                return;
+            }
+
+            freeHunt.Open();
+        };
+        freeHuntOrb.LongClick += (_, args) =>
+        {
+            args.Handled = true;
+            navigation.Visibility = ViewStates.Gone;
+            freeHunt.Open();
+        };
+
+        void RefreshFreeHuntButton()
+        {
+            var active = session.FreeHuntEnabled;
+            var showStatus = active && session.HuntSettings.ShowStatus ? ViewStates.Visible : ViewStates.Gone;
+            if (huntState.Visibility != showStatus)
+            {
+                huntState.Visibility = showStatus;
+            }
+
+            if (showStatus == ViewStates.Visible)
+            {
+                var text = session.HuntManuallyPaused ? "Auto-caça · Pausa manual" : "Auto-caça · Ligado";
+                if (huntState.Text != text)
+                {
+                    huntState.Text = text;
+                }
+            }
+            if (freeHuntOrb.Selected != active)
+            {
+                freeHuntOrb.Selected = active;
+                freeHuntOrb.SetCaption(active ? "Pausar" : "Auto-caça");
+                freeHuntOrb.ContentDescription = active ? "Pausar Auto-caça" : "Auto-caça";
+            }
+        }
+
         var firstRow = AddMenuRow();
         AddMenuAction(firstRow, "Inventário", HudGlyph.Bag, OpenBag);
         AddMenuAction(firstRow, "Missões", HudGlyph.Journal, OpenJournal);
@@ -335,34 +390,21 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
             var hudVisibility = openNpcPortraits == 0 ? ViewStates.Visible : ViewStates.Invisible;
             targetFrame.Visibility = hudVisibility;
         });
-        // While the automatic quest runs, a dialog shows long enough to be read and answers its first choice itself.
         async Task<int?> Present(string title, string message, string[] choices, CancellationToken ct)
         {
-            if (session.Navigator?.AnswersDialog(choices.Length) != true)
+            var navigator = session.Navigator;
+            bool ShouldAdvance() => navigator?.AnswersDialog(choices.Length) == true;
+            var selected = await npcPanel.ShowAsync(title, message, choices, ct, ShouldAdvance);
+            if (selected is null && navigator is { Enabled: true })
             {
-                return await npcPanel.ShowAsync(title, message, choices, ct);
+                navigator.SetEnabled(false);
             }
 
-            using var shown = CancellationTokenSource.CreateLinkedTokenSource(ct);
-            var answer = npcPanel.ShowAsync(title, message, choices, shown.Token);
-            if (await Task.WhenAny(answer, Task.Delay(AutoAnswerMilliseconds, ct)) == answer)
-            {
-                return await answer;
-            }
-
-            shown.Cancel();
-            try
-            {
-                await answer;
-            }
-            catch (System.OperationCanceledException) when (!ct.IsCancellationRequested)
-            {
-            }
-
-            return 0;
+            return selected;
         }
 
-        var questDialog = new MobileQuestDialog(activity, session.Play, messages, Present, npcPanel.ShowAsync);
+        var questDialog = new MobileQuestDialog(activity, session.Play, messages, Present,
+            (title, message, choices, ct) => npcPanel.ShowAsync(title, message, choices, ct));
         var questLifetime = new CancellationTokenSource();
         overlay.ViewDetachedFromWindow += (_, _) => questLifetime.Cancel();
         var wheelRight = Dp(8);
@@ -392,6 +434,7 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
         editor.Register("chatFeed", "Histórico do chat", chatFeed);
         editor.Register("menu", "Menu", mainMenu);
         editor.Register("bag", "Bolsa", bagOrb);
+        editor.Register("freeHunt", "Auto-caça", freeHuntOrb);
         editor.Register("minimap", "Minimapa", mapBox);
         editor.Register("stats", "FPS e ping", stats);
         editor.Register("quest", "Missão", tracker.View);
@@ -419,10 +462,9 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
         var tutorial = new VulkanTutorial(activity, overlay, editor,
             VulkanTutorial.Lessons(session, player, tracker.View, mainMenu, bagOrb, wheel, tracker, inventory, status, () => statusSeen));
 
-        var readingNpc = false;
         async Task OpenNpcAsync(ulong id)
         {
-            readingNpc = true;
+            session.NpcConversationOpen = true;
             try
             {
                 var interaction = await session.Play.InteractNpcAsync(id, questLifetime.Token);
@@ -460,12 +502,14 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
             {
                 npcPanel.EntityId = 0;
                 npcPanel.NpcName = null;
-                readingNpc = false;
+                session.NpcConversationOpen = false;
             }
         }
 
         PristonTale.Simulation.Quests.QuestView previousQuest = null;
         PristonTale.Simulation.Characters.OwnerState previousOwner = null;
+        string lastSkillNotice = null;
+        long skillNoticeUntil = 0;
         PristonTale.Client.Net.Presence.RewardEventsInfo previousRewards = null;
         TargetView lastTarget = null;
         void Refresh()
@@ -496,6 +540,9 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
                 skills.Update(owner);
                 previousOwner = owner;
             }
+            wheel.RefreshCooldowns();
+            RefreshFreeHuntButton();
+            freeHunt.Refresh();
 
             if (session.Rewards is { } rewardWindow && !ReferenceEquals(previousRewards, rewardWindow))
             {
@@ -548,7 +595,7 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
             {
                 EnsureMinimap(pose.FieldId);
                 var marks = session.Navigator?.Marks;
-                var hunt = VulkanWorldMap.HuntAreaIn(pose.FieldId, journeyRoute, session.Quest);
+                var hunt = VulkanWorldMap.HuntAreaIn(pose.FieldId, session.JourneyRoute, session.Quest);
                 foreach (var (code, fieldMap) in maps)
                 {
                     var here = code == pose.FieldId;
@@ -561,13 +608,30 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
                     }
                 }
             }
-            if (!readingNpc && session.TryReadNpc(out var npc))
+            if (!session.NpcConversationOpen && session.TryReadNpc(out var npc))
             {
                 _ = OpenNpcAsync(npc);
             }
-            if (!readingNpc && session.TryReadPrompt(out var prompt))
+            if (!session.NpcConversationOpen && session.TryReadPrompt(out var prompt))
             {
                 questDialog.ShowWorldPrompt(prompt, questLifetime.Token);
+            }
+
+            while (session.TryReadSkillNotice(out var skillNotice))
+            {
+                messages.Text = skillNotice;
+                lastSkillNotice = skillNotice;
+                skillNoticeUntil = System.Environment.TickCount64 + SkillNoticeMs;
+            }
+
+            if (lastSkillNotice is not null && System.Environment.TickCount64 >= skillNoticeUntil)
+            {
+                if (messages.Text == lastSkillNotice)
+                {
+                    messages.Text = "";
+                }
+
+                lastSkillNotice = null;
             }
 
             var changed = false;
@@ -595,6 +659,11 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
     {
         if (activity.Class.Name == "org.libsdl.app.SDLActivity")
         {
+            if (ProbeApplication.CurrentWorld is { } world)
+            {
+                _ = world.SuspendFreeHuntAsync();
+            }
+
             SurfaceGate.Close();
         }
     }
@@ -605,6 +674,75 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
         {
             SurfaceGate.Open();
         }
+    }
+
+    private static void PreferGameRefreshRate(Window window)
+    {
+        var display = window.DecorView.Display;
+        if (display?.GetMode() is not { } current || window.Attributes is not { } attributes)
+        {
+            return;
+        }
+
+        Display.Mode preferred = null;
+        foreach (var mode in display.GetSupportedModes())
+        {
+            if (mode.PhysicalWidth == current.PhysicalWidth && mode.PhysicalHeight == current.PhysicalHeight
+                && mode.RefreshRate > 60.1f
+                && (preferred is null || MathF.Abs(mode.RefreshRate - PreferredGameRefreshRate) < MathF.Abs(preferred.RefreshRate - PreferredGameRefreshRate)))
+            {
+                preferred = mode;
+            }
+        }
+
+        if (preferred is null)
+        {
+            return;
+        }
+
+        attributes.PreferredDisplayModeId = preferred.ModeId;
+        window.Attributes = attributes;
+        if (FindSurface(window.DecorView) is { } view && view.Holder is { } holder)
+        {
+            var refreshRate = new GameSurfaceRefreshRate(preferred.RefreshRate);
+            holder.AddCallback(refreshRate);
+            refreshRate.SurfaceCreated(holder);
+        }
+    }
+
+    private static SurfaceView FindSurface(View view)
+    {
+        if (view is SurfaceView surface)
+        {
+            return surface;
+        }
+
+        if (view is ViewGroup group)
+        {
+            for (var index = 0; index < group.ChildCount; index++)
+            {
+                if (FindSurface(group.GetChildAt(index)) is { } child)
+                {
+                    return child;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private sealed class GameSurfaceRefreshRate(float rate) : Java.Lang.Object, ISurfaceHolderCallback
+    {
+        public void SurfaceCreated(ISurfaceHolder holder)
+        {
+            if (OperatingSystem.IsAndroidVersionAtLeast(30) && holder.Surface is { IsValid: true } surface)
+            {
+                surface.SetFrameRate(rate, (int)SurfaceFrameRateCompatibility.Default);
+            }
+        }
+
+        public void SurfaceChanged(ISurfaceHolder holder, Format format, int width, int height) { }
+        public void SurfaceDestroyed(ISurfaceHolder holder) { }
     }
 
     public void OnActivitySaveInstanceState(Activity activity, Bundle state) { }

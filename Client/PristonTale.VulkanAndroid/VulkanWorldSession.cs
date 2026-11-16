@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using PristonTale.Client.Net;
 using PristonTale.Client.Net.Presence;
 using PristonTale.Contracts.Sessions;
+using PristonTale.Gameplay.Combat;
 using PristonTale.Gameplay.World;
 using PristonTale.Simulation.Characters;
 using PristonTale.Simulation.Quests;
@@ -11,18 +12,28 @@ using PristonTale.Gameplay.UI.Widgets;
 using PristonTale.Gameplay.Localization;
 using PristonTale.Contracts.Social;
 using PristonTale.Simulation.Social;
+using PristonTale.Simulation.World;
+using PristonTale.Simulation.Skills;
 
-internal sealed class VulkanWorldSession(GameServerConnection connection, CharacterSummary character, EnterWorldOutcome entered) : IAsyncDisposable
+internal sealed partial class VulkanWorldSession(GameServerConnection connection, CharacterSummary character, EnterWorldOutcome entered) : IAsyncDisposable
 {
     private readonly ConcurrentQueue<ChatEntry> chat = new();
+    private readonly ConcurrentQueue<string> skillNotices = new();
+    private readonly ConcurrentQueue<(long ReceivedAt, SkillCastResultInfo Result, SkillCooldownSnapshot Snapshot)> skillTimings = new();
     // The lines the player sent, for its own speech bubble (the server does not echo them).
     private readonly ConcurrentQueue<string> spoken = new();
     private OwnerState owner;
     private QuestView quest;
     private IPlayChannel play;
     private int autoHunt;
+    private int freeHunt;
+    private int freeHuntAvailable;
+    private int freeHuntField = -1;
+    private long nextFreeHuntSearch;
+    private const int FreeHuntSearchMs = 250;
     private ulong huntTarget;
     private int attackTap;
+    private uint skillTap;
     private WorldMapPose mapPose;
     private ulong attackTarget;
     private NpcPortraitFrame npcPortrait;
@@ -31,6 +42,9 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
     public ulong AttackTarget => Volatile.Read(ref attackTarget);
     public WorldMapPose MapPose => Volatile.Read(ref mapPose);
     public void AttackSelected() => Interlocked.Exchange(ref attackTap, 1);
+    public void PressSkill(uint code) => Interlocked.Exchange(ref skillTap, code);
+    public void NotifySkill(string message) => skillNotices.Enqueue(message);
+    public bool TryReadSkillNotice(out string message) => skillNotices.TryDequeue(out message);
     private readonly Dictionary<ulong, int> huntMonsters = new();
     private readonly Dictionary<ulong, uint> huntTemplates = new();
     private readonly Dictionary<ulong, (string Name, System.Numerics.Vector3 Position, uint Template)> npcPlaces = new();
@@ -65,7 +79,6 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
     // The smoothed heartbeat round trip, or HeartbeatLatency.Unknown before the first echo.
     public int LatencyMs => connection.LatencyMs;
 
-    // An NPC in view by name, with its place in field coordinates; called on the game thread.
     // Where the NPCs in view stand, on the render plane, leaving out those within keepFree of goal (the one walked to).
     public List<Microsoft.Xna.Framework.Vector2> NpcPoints(Microsoft.Xna.Framework.Vector2 goal, float keepFree)
     {
@@ -80,21 +93,6 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
         }
 
         return points;
-    }
-
-    public bool TryFindNpc(string name, out ulong id, out System.Numerics.Vector3 position)
-    {
-        foreach (var (entity, place) in npcPlaces)
-        {
-            if (place.Name == name)
-            {
-                (id, position) = (entity, place.Position);
-                return true;
-            }
-        }
-
-        (id, position) = (0, default);
-        return false;
     }
 
     public bool TryFindNpc(uint template, System.Numerics.Vector3 from, out ulong id, out System.Numerics.Vector3 position)
@@ -157,7 +155,7 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
         foreach (var (id, code) in huntMonsters)
         {
             if ((questCode == 0 || questCode == code) && (templates is null || huntTemplates.TryGetValue(id, out var template) && templates.Contains(template))
-                && scene.TrackQuestMonster(id, out var distance) && distance < best)
+                && scene.TrackQuestMonster(id, out var distance) && (distance < best || closest is null && distance == best && float.IsFinite(distance)))
             {
                 (closest, best) = (id, distance);
             }
@@ -218,6 +216,7 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
     }
     private readonly ConcurrentQueue<ulong> npcs = new();
     private readonly ConcurrentQueue<QuestPrompt> prompts = new();
+    private int npcConversationOpen;
     // Monsters the player struck, until they die or leave view; a death among them is a kill for the HUD.
     private readonly HashSet<ulong> struck = new();
     // The monsters that swung at the player, with when they last did; and one the automatic quest found in its way. Both
@@ -231,9 +230,34 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
     public IPlayChannel Play => Volatile.Read(ref play);
     public bool AutoHunt => Volatile.Read(ref autoHunt) != 0;
     public void SetAutoHunt(bool value) => Volatile.Write(ref autoHunt, value ? 1 : 0);
-    public void SelectNpc(ulong id) => npcs.Enqueue(id);
+    public bool FreeHuntEnabled => Volatile.Read(ref freeHunt) != 0;
+    public bool FreeHuntAvailable => Volatile.Read(ref freeHuntAvailable) != 0;
+    public void SetFreeHunt(bool enabled, string reason = "Comando manual")
+    {
+        if (enabled)
+        {
+            Navigator?.SetEnabled(false);
+            SetAutoHunt(false);
+        }
+
+        if (Interlocked.Exchange(ref freeHunt, enabled ? 1 : 0) != (enabled ? 1 : 0))
+        {
+            LogHunt(enabled ? "Auto-caça iniciada" : $"Auto-caça desligada · {reason}");
+        }
+    }
+
+    public void SelectNpc(ulong id)
+    {
+        NoteManualHuntInput();
+        npcs.Enqueue(id);
+    }
     public bool TryReadNpc(out ulong id) => npcs.TryDequeue(out id);
     public bool TryReadPrompt(out QuestPrompt prompt) => prompts.TryDequeue(out prompt);
+    public bool NpcConversationOpen
+    {
+        get => Volatile.Read(ref npcConversationOpen) != 0;
+        set => Volatile.Write(ref npcConversationOpen, value ? 1 : 0);
+    }
 
     // The events and rewards window as the server last sent it, and how each request of it ended.
     private readonly ConcurrentQueue<RewardEventsResultInfo> rewardResults = new();
@@ -248,18 +272,49 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
     private Task closing = Task.CompletedTask;
 
     public CharacterSummary Character { get; } = character;
+    public string HuntProfileScope { get; } = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(connection.SettingsScope)));
     public EnterWorldOutcome Entered { get; } = entered;
     public OwnerState Owner => Volatile.Read(ref owner);
+    public TribeRoute JourneyRoute => AdventurerJourneyRoute.For(Character.Class,
+        Quest is { Code: AdventurerJourneyRoute.Code } active ? active.TargetQuestCode : 0);
+    public bool TryReadSkillTiming(out (long ReceivedAt, SkillCastResultInfo Result, SkillCooldownSnapshot Snapshot) timing) =>
+        skillTimings.TryDequeue(out timing);
 
     public void Bind(GameScene world, IPlayChannel channel)
     {
         Volatile.Write(ref scene, world);
         Volatile.Write(ref play, channel);
+        world.GroundPickup += ObserveHuntPickup;
     }
 
-    public void UpdateAutoHunt(bool manualMovement)
+    public void ApplySkillTap()
     {
-        Volatile.Write(ref attackTarget, AutoHunt ? scene.AttackTargetId : scene.SelectedCombatTarget);
+        var code = Interlocked.Exchange(ref skillTap, 0);
+        if (code == 0 || Owner is not { Life: > 0 } || !SkillRuleCatalog.TryGet(code, out var rule))
+        {
+            return;
+        }
+
+        if (Navigator is { Enabled: true })
+        {
+            Navigator.SetEnabled(false);
+        }
+
+        SetAutoHunt(false);
+        NoteManualHuntInput();
+        var target = rule.Target == SkillTarget.Enemy ? ManualCombatTarget() : 0;
+        scene.CastTouchSkill(code, target);
+    }
+
+    private ulong ManualCombatTarget()
+    {
+        var selected = scene.SelectedCombatTarget;
+        return scene.TrackQuestMonster(selected, out _) ? selected : ClosestMonster(FreeHuntSettings.WorldRadius(HuntSettings.Radius)) ?? 0;
+    }
+
+    public void UpdateAutoHunt(bool manualMovement, bool manualTap)
+    {
+        Volatile.Write(ref attackTarget, AutoHunt || FreeHuntEnabled ? scene.AttackTargetId : scene.SelectedCombatTarget);
         var position = scene.PlayerPosition;
         var forward = scene.PlayerForward;
         var pose = new WorldMapPose(new System.Numerics.Vector3(position.X, position.Y, -position.Z),
@@ -273,7 +328,48 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
             SetAutoHunt(false);
         }
 
-        var manualAttack = Interlocked.Exchange(ref attackTap, 0) != 0 && Owner is { Life: > 0 };
+        var alive = Owner is { Life: > 0 };
+        var manualAttack = Interlocked.Exchange(ref attackTap, 0) != 0 && alive;
+        var canHunt = alive && !scene.Warping && !NpcConversationOpen
+            && scene.ActiveFieldDefinition is { State: not FieldState.Village, FieldCode: not FieldCodes.QuestArena };
+        Volatile.Write(ref freeHuntAvailable, canHunt ? 1 : 0);
+        if (manualMovement || manualAttack || manualTap)
+        {
+            NoteManualHuntInput();
+        }
+
+        if (FreeHuntEnabled && (scene.Warping || Navigator is { Enabled: true }
+            || freeHuntField >= 0 && freeHuntField != pose.FieldId))
+        {
+            SetFreeHunt(false, "Mudança de mapa ou missão automática");
+        }
+
+        var free = FreeHuntEnabled;
+        if (!free && huntReturnWeapon >= 0 && Owner is { Life: > 0 } ownerNow && huntInventory is not { IsCompleted: false })
+        {
+            if (ownerNow.WeaponSet != huntReturnWeapon)
+            {
+                SwitchHuntWeapon(ownerNow, huntReturnWeapon);
+            }
+            huntReturnWeapon = -1;
+        }
+        if (free && freeHuntField < 0)
+        {
+            BeginHunt();
+        }
+        else if (!free && freeHuntField >= 0)
+        {
+            scene.CancelQuestSkill();
+            if (huntReturning || huntPickingUp)
+            {
+                scene.CancelAutomaticPickup();
+                CancelHuntReturn();
+                huntPickingUp = false;
+            }
+        }
+
+        freeHuntField = free ? pose.FieldId : -1;
+        UpdateCrystalPetTargeting(free);
         var next = 0UL;
         var code = AutoHunt ? Quest?.TargetQuestCode : null;
         // The automatic quest clears what attacks it or stands in its way before going for the quest's monster.
@@ -282,24 +378,21 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
         {
             next = first;
         }
-        else if (manualAttack || code.HasValue)
+        else if (code.HasValue && !manualAttack)
         {
-            var distance = float.PositiveInfinity;
-            foreach (var (id, monsterCode) in huntMonsters)
-            {
-                if ((manualAttack || monsterCode == code) && scene.TrackQuestMonster(id, out var range) && range < distance)
-                {
-                    next = id;
-                    distance = range;
-                }
-            }
+            next = ClosestMonster(float.PositiveInfinity, questCode: code.Value) ?? 0;
         }
+        else if (free && !manualAttack)
+        {
+            next = UpdateFreeHunt(Environment.TickCount64);
+        }
+        RefreshHuntStatistics();
+        UpdateHuntPreview();
 
         if (manualAttack)
         {
             SetAutoHunt(false);
-            var selected = scene.SelectedCombatTarget;
-            var target = scene.TrackQuestMonster(selected, out _) ? selected : next;
+            var target = ManualCombatTarget();
             if (target != 0)
             {
                 scene.SetQuestHuntTarget(target, automatic: false);
@@ -311,7 +404,7 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
             huntTarget = 0;
             return;
         }
-        if (next != huntTarget)
+        if (next != huntTarget || free && next != 0 && scene.AttackTargetId != next)
         {
             if (next != 0 || scene.AttackTargetId == huntTarget)
             {
@@ -320,6 +413,28 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
             huntTarget = next;
         }
     }
+
+    public async Task SuspendFreeHuntAsync()
+    {
+        if (Interlocked.Exchange(ref freeHunt, 0) == 0 || Play is not { } channel)
+        {
+            return;
+        }
+        LogHunt("Auto-caça desligada · aplicativo em segundo plano");
+
+        // SDL can stop game updates as Android pauses the activity. Stop the server trace even if no frame runs.
+        try
+        {
+            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+            await channel.SendAttackAsync(0, sustained: false, timeout.Token);
+            await channel.SendCrystalPetTargetingAsync(CrystalPetTargeting.Independent, timeout.Token);
+        }
+        catch (Exception error) when (error is IOException or InvalidOperationException or OperationCanceledException or TimeoutException)
+        {
+            Android.Util.Log.Warn("Etervale.World", $"Free hunt pause: {error.Message}");
+        }
+    }
+
     public void PublishOwner(OwnerState value) => Volatile.Write(ref owner, value);
 
     // While the player is down, what standing up again costs (the server's restart offer); null while alive. Set on the
@@ -416,6 +531,12 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
 
     public void Observe(PresenceUpdate update)
     {
+        TrackFreeHuntPresence(update);
+        if (update.CastResult is not null || update.Cooldowns is not null)
+        {
+            skillTimings.Enqueue((Environment.TickCount64, update.CastResult, update.Cooldowns));
+        }
+
         if (update.Party is { } partyNow)
         {
             Volatile.Write(ref party, partyNow);
@@ -445,6 +566,7 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
         }
         if (update.QuestPrompt is { } prompt)
         {
+            SetFreeHunt(false);
             prompts.Enqueue(prompt);
         }
         foreach (var spawn in update.Spawns)
@@ -493,7 +615,7 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
             var marks = new List<MapMark>(npcPlaces.Count);
             foreach (var (_, place) in npcPlaces)
             {
-                marks.Add(new MapMark(place.Name, place.Position.X, place.Position.Z));
+                marks.Add(new MapMark(place.Name, place.Template, place.Position.X, place.Position.Z));
             }
 
             Volatile.Write(ref npcMarks, marks);
@@ -531,5 +653,5 @@ internal sealed class VulkanWorldSession(GameServerConnection connection, Charac
 }
 
 // A named place on the map, in field coordinates.
-internal sealed record MapMark(string Name, float X, float Z);
+internal sealed record MapMark(string Name, uint Template, float X, float Z);
 internal sealed record NpcPortraitFrame(ulong EntityId, float X, float Y, float Width, float Height);

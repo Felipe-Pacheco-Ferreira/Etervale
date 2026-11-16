@@ -250,7 +250,12 @@ internal sealed class FieldCombat
             }
         }
 
-        DamageDealt?.Invoke(player, monster, Math.Min(damage, lifeBefore));
+        var applied = Math.Min(damage, lifeBefore);
+        DamageDealt?.Invoke(player, monster, applied);
+        if (!monster.IsSummon && monster.DuelPlayerId == 0)
+        {
+            player.RecordPartyHunt(damage: (ulong)applied);
+        }
         SkillCombat?.MonsterDamaged(monster);
 
         MonsterAiBrain.ApplyBossRetargetOnHit(monster, sourceEntityId != 0 ? sourceEntityId : player.EntityId);
@@ -399,6 +404,10 @@ internal sealed class FieldCombat
         if (credited != 0 && _host.TryGetPlayer(credited, out var creditedPlayer))
         {
             creditedTier = creditedPlayer.Character.Tier;
+            if (!monster.IsSummon && monster.DuelPlayerId == 0)
+            {
+                creditedPlayer.RecordPartyHunt(kills: 1);
+            }
             exp = creditedPlayer.Party is { } party
                 ? AwardParty(monster, creditedPlayer, party)
                 : Award(creditedPlayer, KillReward.ExpForKill(monster.Def.ExpReward, monster.Def.Combat.Level, creditedPlayer.Level,
@@ -454,7 +463,9 @@ internal sealed class FieldCombat
 
         _expByPlayer.TryGetValue(player.EntityId, out var total);
         _expByPlayer[player.EntityId] = exp > ulong.MaxValue - total ? ulong.MaxValue : total + exp;
+        var before = player.Character.Experience;
         player.Character.AwardExperience(exp);
+        player.RecordPartyHunt(experience: player.Character.Experience - before);
         return exp;
     }
 

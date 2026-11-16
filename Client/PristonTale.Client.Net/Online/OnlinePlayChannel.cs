@@ -150,6 +150,13 @@ internal sealed class OnlinePlayChannel : IPlayChannel
         _connection.SendMount(mount);
     }
 
+    public async Task SendCrystalPetTargetingAsync(CrystalPetTargeting mode, CancellationToken ct = default)
+    {
+        await _start.WaitAsync(ct);
+        ct.ThrowIfCancellationRequested();
+        _connection.SendCrystalPetTargeting(mode);
+    }
+
     public async Task SendDismissCrystalPetsAsync(uint statusCode, CancellationToken ct = default)
     {
         await _start.WaitAsync(ct);

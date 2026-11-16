@@ -2,6 +2,7 @@ using Android.Content;
 using Android.Graphics;
 using Android.Views;
 using PristonTale.Mobile;
+using PristonTale.Simulation.Skills;
 
 // A round HUD button: a sphere in a gold ring with a glyph or an item's sprite, a caption under the glyph and a count at
 // its lower right; the prominent one is the attack button, crossed swords on steel (VulkanHudArt.AttackFace). Taps and
@@ -15,7 +16,12 @@ internal sealed class VulkanActionOrb : View
     private string _count = "";
     private int _badge;
     private string _badgeText = "";
+    private float _cooldownFraction;
+    private int _cooldownSeconds;
+    private string _cooldownLabel = "";
     private readonly RectF _box = new();
+    private VulkanSkillBorder _skillBorder;
+    private readonly Paint _cooldownShade = new(PaintFlags.AntiAlias) { Color = Color.Argb(190, 0, 0, 0) };
 
     public VulkanActionOrb(Context context, HudGlyph glyph, bool prominent = false) : base(context)
     {
@@ -47,6 +53,37 @@ internal sealed class VulkanActionOrb : View
         {
             _caption = caption ?? "";
             _count = count ?? "";
+            Invalidate();
+        }
+    }
+
+    public void SetCooldown(float fraction, int seconds)
+    {
+        if (fraction == _cooldownFraction && seconds == _cooldownSeconds)
+        {
+            return;
+        }
+
+        if (seconds != _cooldownSeconds)
+        {
+            _cooldownSeconds = seconds;
+            _cooldownLabel = seconds > 0 ? seconds.ToString() : "";
+        }
+
+        _cooldownFraction = fraction;
+        Invalidate();
+    }
+
+    public void SetSkillBorder(JobTier tier, int rank)
+    {
+        if (tier == 0 && _skillBorder is null)
+        {
+            return;
+        }
+
+        _skillBorder ??= new VulkanSkillBorder();
+        if (_skillBorder.SetSkill(tier, rank))
+        {
             Invalidate();
         }
     }
@@ -99,12 +136,26 @@ internal sealed class VulkanActionOrb : View
 
         if (_caption.Length > 0)
         {
-            VulkanHudArt.Label(canvas, _caption, x, y + radius * .5f, radius * .3f, Color.White, Paint.Align.Center!);
+            VulkanHudArt.Label(canvas, _caption, x, y + radius * .5f, radius * .3f, Selected ? VulkanHudArt.EdgeLight : Color.White, Paint.Align.Center!);
         }
 
         if (_count.Length > 0)
         {
             VulkanHudArt.Label(canvas, _count, x + radius * .55f, y + radius * .62f, radius * .36f, Color.White, Paint.Align.Center!);
+        }
+
+        if (_cooldownFraction > 0f)
+        {
+            var inner = radius * .83f;
+            _box.Set(x - inner, y - inner, x + inner, y + inner);
+            canvas.DrawArc(_box, -90f, 360f * _cooldownFraction, true, _cooldownShade);
+            VulkanHudArt.Label(canvas, _cooldownLabel, x, y + radius * .21f, radius * .66f, Color.White, Paint.Align.Center!);
+        }
+
+        _skillBorder?.DrawRing(canvas, x, y, radius);
+        if (_skillBorder?.Animated == true && IsShown)
+        {
+            PostInvalidateDelayed(VulkanHudArt.AnimationFrameMs);
         }
 
         if (_badge > 0)

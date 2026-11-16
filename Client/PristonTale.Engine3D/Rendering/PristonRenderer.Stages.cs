@@ -57,6 +57,21 @@ public sealed partial class PristonRenderer
 
     public void RequirePreparedTextures() => _textureLoader.RequirePreparedTextures = true;
 
+    public IEnumerable<long> UploadPreparedActorTextures(PristonActor actor)
+    {
+        if (actor.Gltf is not null)
+        {
+            return [];
+        }
+
+        if (!PreparedActorGeometries.TryGetValue(actor, out var geometry))
+        {
+            throw new InvalidOperationException("Actor geometry must be prepared before uploading its textures.");
+        }
+
+        return _textureLoader.UploadPreparedTextures(Path.GetDirectoryName(actor.Mesh.Path) ?? ".", geometry.Batches.Select(batch => batch.Material));
+    }
+
     public RenderStageHandle AddStage(PristonStage stage, IEnumerable<PristonModel> models) =>
         AddStage(stage, models.Select(static m => new PristonSceneryInstance(m, Matrix.Identity)));
 

@@ -10,6 +10,7 @@ namespace PristonTale.Gameplay.Effects;
 // game thread in Update, so playing a sound never waits for disk. A sound that is not ready yet is skipped.
 public sealed class SkillSoundBank : IDisposable
 {
+    private const int AndroidSoundsPerUpdate = 2;
     private readonly string _assetRoot;
     private readonly IClientLog _log;
     private readonly Dictionary<string, SoundEffect> _ready = new(StringComparer.OrdinalIgnoreCase);
@@ -59,7 +60,8 @@ public sealed class SkillSoundBank : IDisposable
 
     public void Update()
     {
-        while (_decoded.TryDequeue(out var entry))
+        var limit = OperatingSystem.IsAndroid() ? AndroidSoundsPerUpdate : int.MaxValue;
+        for (var count = 0; count < limit && _decoded.TryDequeue(out var entry); count++)
         {
             using var stream = new MemoryStream(entry.Wave, writable: false);
             _ready[entry.Path] = SoundEffect.FromStream(stream);

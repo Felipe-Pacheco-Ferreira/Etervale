@@ -52,6 +52,7 @@ public sealed partial class GameScene : ISkillSceneHost
     public event Action<string> SkillNotice;
 
     public bool SelfCasting => _skillClockMs < _castLockUntilMs;
+    public bool AutomaticSkillInProgress => SelfCasting || _pendingCast is { ForQuest: true };
 
     ulong ISkillSceneHost.SelfId => _remote?.SelfEntityId ?? 0;
 
@@ -134,6 +135,7 @@ public sealed partial class GameScene : ISkillSceneHost
         {
             QueueBlobShadows();
             QueueTargetRing();
+            QueueFreeHuntRings();
             QueueFootprints();
             _shots.Draw(_skillFx.Renderer, _skillFx.Library);
 
@@ -225,6 +227,22 @@ public sealed partial class GameScene : ISkillSceneHost
         }
     }
 
+    public void CastTouchSkill(uint code, ulong target)
+    {
+        if (_player is null || _remote is null || _skillFx is null || !SkillRuleCatalog.TryGet(code, out var rule))
+        {
+            return;
+        }
+
+        if (rule.Target == SkillTarget.Enemy && target == 0)
+        {
+            SkillNotice?.Invoke(ClientText.Get("Skill.InvalidTarget"));
+            return;
+        }
+
+        RequestCast(code, rule, target, null);
+    }
+
     public bool TryCastQuestSkill(uint code, ulong target)
     {
         if (_player is null || _remote is null || SelfCasting || _pendingCast is not null ||
@@ -252,6 +270,24 @@ public sealed partial class GameScene : ISkillSceneHost
         }
 
         return false;
+    }
+
+    public bool HuntBuffNeedsRefresh(ulong entity, uint code)
+    {
+        if (_skillFx is null)
+        {
+            return false;
+        }
+
+        foreach (var status in _skillFx.Statuses.For(entity))
+        {
+            if (status.Code == code)
+            {
+                return !status.Permanent && status.EndMs - _skillClockMs < 1500d;
+            }
+        }
+
+        return true;
     }
 
     public void CancelQuestSkill()
@@ -288,7 +324,7 @@ public sealed partial class GameScene : ISkillSceneHost
     // Walks toward the pending target and casts once it is in range, like the original's approach before a skill.
     private void UpdatePendingCast()
     {
-        if (_pendingCast is not { } pending || _playerBody is null || SelfCasting || _playerController.LocomotionFrozen || SelfStunned)
+        if (_pendingCast is not { } pending || _playerBody is null || _selfAttacking || SelfCasting || _playerController.LocomotionFrozen || SelfStunned)
         {
             return;
         }
@@ -392,6 +428,14 @@ public sealed partial class GameScene : ISkillSceneHost
         var command = aggressive ? SkillCastCommand.SummonAggressive : SkillCastCommand.SummonPassive;
         SendUpstream(_playChannel.SendSkillCommandAsync(++_castSequence, skillCode, command, _presenceCts.Token), "summon mode");
         SkillNotice?.Invoke(ClientText.Format(aggressive ? "Skill.TargetAggressive" : "Skill.TargetFocused", DataText.SkillName(rule.Code, rule.Name)));
+    }
+
+    public void SetCrystalPetTargeting(CrystalPetTargeting mode)
+    {
+        if (_playChannel is not null)
+        {
+            SendUpstream(_playChannel.SendCrystalPetTargetingAsync(mode, _presenceCts.Token), "crystal pet targeting");
+        }
     }
 
     // A confirmed right click on a crystal pet's icon dismisses the pet of that status.

@@ -43,6 +43,7 @@ internal sealed class PristonSceneTargets : IDisposable
     // Bind as a delegate made once, for the passes that rebind the scene after their own targets.
     public Action BindAction { get; }
     private Viewport _callerViewport;
+    private Viewport _sceneViewport;
     private RenderTarget2D _color;
     private RenderTarget2D _motion;
     private RenderTarget2D _linearDepth;
@@ -92,8 +93,8 @@ internal sealed class PristonSceneTargets : IDisposable
 
     public Texture2D Normals => _normals;
 
-    // Binds the scene target in place of the caller's, at the caller's target size and viewport.
-    public void Begin(int multiSampleCount, bool temporal, bool prepass = false)
+    // A width limit scales the scene viewport independently of the caller's output viewport.
+    public void Begin(int multiSampleCount, bool temporal, bool prepass = false, int widthLimit = 0)
     {
         _callerTargets.Save(_device);
         _callerViewport = _device.Viewport;
@@ -111,20 +112,32 @@ internal sealed class PristonSceneTargets : IDisposable
             height = parameters.BackBufferHeight;
         }
 
+        _sceneViewport = _callerViewport;
+        if (widthLimit > 0 && _callerViewport.Width > widthLimit)
+        {
+            width = widthLimit;
+            height = Math.Max(1, (int)MathF.Round(width * ((float)_callerViewport.Height / _callerViewport.Width)));
+            _sceneViewport = new Viewport(0, 0, width, height)
+            {
+                MinDepth = _callerViewport.MinDepth,
+                MaxDepth = _callerViewport.MaxDepth
+            };
+        }
+
         var samples = temporal || prepass ? 0 : multiSampleCount;
         EnsureTargets(Math.Max(width, 1), Math.Max(height, 1), samples, temporal, prepass && samples == 0);
         _device.SetRenderTarget(_color);
-        _device.Viewport = _callerViewport;
+        _device.Viewport = _sceneViewport;
         Active = true;
     }
 
-    public Viewport Viewport => _callerViewport;
+    public Viewport Viewport => _sceneViewport;
 
     // Binds the colour target alone (blended passes, effects) after an off-screen pass inside the frame.
     public void Bind()
     {
         _device.SetRenderTarget(_color);
-        _device.Viewport = _callerViewport;
+        _device.Viewport = _sceneViewport;
     }
 
     // Binds colour, motion and depth for the opaque passes; the colour alone without temporal targets.
@@ -137,7 +150,7 @@ internal sealed class PristonSceneTargets : IDisposable
         }
 
         _device.SetRenderTargets(_temporalBinding);
-        _device.Viewport = _callerViewport;
+        _device.Viewport = _sceneViewport;
     }
 
     // Binds the pre-pass targets: the colour (its depth buffer; the pre-pass masks its colour writes), linear depth,
@@ -147,7 +160,7 @@ internal sealed class PristonSceneTargets : IDisposable
         _device.SetRenderTarget(_linearDepth);
         _device.Clear(ClearOptions.Target, new Vector4(SkyDepth), 1f, 0);
         _device.SetRenderTargets(_motion is null ? _prepassBinding : _prepassTemporalBinding);
-        _device.Viewport = _callerViewport;
+        _device.Viewport = _sceneViewport;
     }
 
     internal const float SkyDepth = 65000f;
@@ -163,7 +176,7 @@ internal sealed class PristonSceneTargets : IDisposable
         }
 
         _device.SetRenderTarget(_sky);
-        _device.Viewport = _callerViewport;
+        _device.Viewport = _sceneViewport;
         _device.Clear(background);
     }
 
@@ -187,10 +200,10 @@ internal sealed class PristonSceneTargets : IDisposable
     }
 
     private Vector4 SourceRect(Texture2D texture) => new(
-        (float)_callerViewport.X / texture.Width,
-        (float)_callerViewport.Y / texture.Height,
-        (float)_callerViewport.Width / texture.Width,
-        (float)_callerViewport.Height / texture.Height);
+        (float)_sceneViewport.X / texture.Width,
+        (float)_sceneViewport.Y / texture.Height,
+        (float)_sceneViewport.Width / texture.Width,
+        (float)_sceneViewport.Height / texture.Height);
 
     // Resolves the scene (temporal resolve when on), runs the post chain and writes the display image into the caller's
     // targets over the caller's viewport.

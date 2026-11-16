@@ -87,7 +87,7 @@ internal sealed class VulkanTutorial
                 new(() => inventory.ActionStartingWith("Cinto"), "Guarde no cinto", "Toque em Cinto 1 para guardar a poção. Ela aparece ao lado do botão de ataque.",
                     () => !BeltEmpty())
             ], () => !inventory.IsOpen && BeltEmpty()),
-            new("auto", () => Idle() && tracker.AutoButton.Visibility == ViewStates.Visible && !tracker.Collapsed,
+            new("auto", () => Idle() && tracker.AutoButton.Visibility == ViewStates.Visible,
             [
                 new(() => tracker.AutoButton, "Auto-missão", "Toque aqui e o personagem segue a missão sozinho: anda até o NPC, caça e entrega. Toque de novo para pausar.",
                     () => session.Navigator is { Enabled: true })

@@ -69,7 +69,7 @@ public sealed class CombatSounds : IDisposable
         _assetRoot = assetRoot;
         _bank = new SkillSoundBank(assetRoot, log);
         _weapons = Group(Files(WeaponDirectory), WeaponFiles);
-        _bank.Preload([.. _weapons.Values.SelectMany(paths => paths), .. FootstepFiles.SelectMany(files => files), RestartSound]);
+        _bank.Preload([RestartSound, .. _weapons.Values.SelectMany(paths => paths), .. FootstepFiles.SelectMany(files => files)]);
         _characterIndex = Task.Run(() => Directories.ToDictionary(pair => pair.Key, pair => Group(Files(pair.Value), CharacterFiles)));
         _characterIndex.ContinueWith(task => log.Error($"[Audio] character sound index failed: {task.Exception}"), TaskContinuationOptions.OnlyOnFaulted);
     }

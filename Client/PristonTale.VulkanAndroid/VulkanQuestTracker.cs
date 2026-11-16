@@ -4,6 +4,7 @@ using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Widget;
+using PristonTale.Gameplay.Localization;
 using PristonTale.Mobile;
 using PristonTale.Simulation.Quests;
 
@@ -110,24 +111,28 @@ internal sealed class VulkanQuestTracker
             ShowQuest(quest);
         }
 
+        if (_collapsed)
+        {
+            _auto.Visibility = ViewStates.Gone;
+            _status.Visibility = ViewStates.Gone;
+            return;
+        }
+
         var running = navigator?.Enabled == true;
         var hasWork = navigator?.HasWork(quest) == true;
         _auto.Visibility = hasWork || running ? ViewStates.Visible : ViewStates.Gone;
         _auto.Text = running ? "Pausar auto-missão" : "Iniciar auto-missão";
         _status.Text = running ? navigator.Status : hasWork ? GuideDirection() ?? "Toque em Iniciar auto-missão para continuar" : "";
         _status.Visibility = _status.Text.Length > 0 ? ViewStates.Visible : ViewStates.Gone;
-        if (_collapsed)
-        {
-            _status.Visibility = ViewStates.Gone;
-        }
     }
 
     private void ShowQuest(QuestView quest)
     {
         var step = quest?.Progress.Count > 0 ? quest.Progress[^1] : null;
+        var stepTitle = step is null ? "Nenhuma missão ativa" : DataText.QuestTitle(step.Title);
         _titleText = step is null ? "Missões" : quest.Code == AdventurerJourneyRoute.Code || step.Description is
-            AdventurerJourneyRoute.MeetSkadiDescription or AdventurerJourneyRoute.MeetJinDescription ? "Jornada do Aventureiro" : step.Title;
-        _objective.Text = step?.Title ?? "Nenhuma missão ativa";
+            AdventurerJourneyRoute.MeetSkadiDescription or AdventurerJourneyRoute.MeetJinDescription ? "Jornada do Aventureiro" : stepTitle;
+        _objective.Text = stepTitle;
         var counting = quest is { KillsNeeded: > 0 };
         // A count met: the card wears the running gold border until the quest moves on.
         var met = counting && quest.Kills >= quest.KillsNeeded;
@@ -135,7 +140,7 @@ internal sealed class VulkanQuestTracker
         VulkanAttention.Gold(_bar, met, Dp(4));
         _bar.Visibility = counting ? ViewStates.Visible : ViewStates.Gone;
         _title.Text = _titleText + (_collapsed ? "  ▸" : "  ▾");
-        _objective.Visibility = _collapsed ? ViewStates.Gone : ViewStates.Visible;
+        _objective.Visibility = _collapsed || stepTitle == _titleText ? ViewStates.Gone : ViewStates.Visible;
         if (counting)
         {
             var done = Math.Min(quest.Kills, quest.KillsNeeded);

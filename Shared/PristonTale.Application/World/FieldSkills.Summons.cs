@@ -7,6 +7,7 @@ using PristonTale.Simulation.World.Ai;
 using PristonTale.Simulation.World.Monsters;
 using PristonTale.Contracts.Motion;
 using PristonTale.Contracts.Skills;
+using PristonTale.Contracts.World;
 
 namespace PristonTale.Application.World;
 
@@ -214,10 +215,11 @@ internal sealed partial class FieldSkills
     }
 
     // A summon or pet that may go on: it follows its owner and fights the target its orders name.
-    private MonsterAttackEvent? FollowAndFight(MonsterInstance summon, WorldPlayer owner, MonsterAiTuning tuning, float dtMs)
+    private MonsterAttackEvent? FollowAndFight(MonsterInstance summon, WorldPlayer owner, MonsterAiTuning tuning, float dtMs,
+        CrystalPetTargeting targeting = CrystalPetTargeting.Independent)
     {
         summon.SinceRetargetMs += dtMs;
-        var target = SummonTarget(summon, owner, tuning);
+        var target = SummonTarget(summon, owner, tuning, targeting);
         var orders = target is null
             ? new SummonOrders(owner.Position, default, false)
             : new SummonOrders(owner.Position, new PreyCandidate(target.EntityId, target.Position, target.IsAlive), true);
@@ -226,14 +228,16 @@ internal sealed partial class FieldSkills
 
     // Aggressive: the current target while it lives, else the nearest enemy in sight on each scan. Passive: what the
     // owner fights.
-    private MonsterInstance? SummonTarget(MonsterInstance summon, WorldPlayer owner, MonsterAiTuning tuning)
+    private MonsterInstance? SummonTarget(MonsterInstance summon, WorldPlayer owner, MonsterAiTuning tuning, CrystalPetTargeting targeting)
     {
-        if (!summon.Aggressive)
+        if (!summon.Aggressive || targeting == CrystalPetTargeting.FollowMyTarget)
         {
             return _host.TryGetMonster(owner.CombatTargetId, out var fought) && Strikeable(owner, fought) ? fought : null;
         }
 
+        var protecting = targeting == CrystalPetTargeting.DefendMe;
         if (summon.TargetId != 0 && _host.TryGetMonster(summon.TargetId, out var held) && Strikeable(owner, held)
+            && (!protecting || Threatens(held, owner, summon))
             && summon.SinceRetargetMs < MonsterAiTuning.RetargetIntervalMs)
         {
             return held;
@@ -244,7 +248,8 @@ internal sealed partial class FieldSkills
         var best = (float)tuning.SightSq;
         foreach (var monster in _host.Monsters)
         {
-            if (!Strikeable(owner, monster) || MathF.Abs(monster.Position.Y - summon.Position.Y) >= SummonVerticalSight)
+            if (protecting && !Threatens(monster, owner, summon) || !Strikeable(owner, monster)
+                || MathF.Abs(monster.Position.Y - summon.Position.Y) >= SummonVerticalSight)
             {
                 continue;
             }
@@ -259,6 +264,9 @@ internal sealed partial class FieldSkills
 
         return nearest;
     }
+
+    private static bool Threatens(MonsterInstance monster, WorldPlayer owner, MonsterInstance pet) =>
+        monster.TargetId == owner.EntityId || monster.TargetId == pet.EntityId;
 
     // A summon's blow on an enemy (FieldMonsterSkills.BlowOnMonster). The struck monster turns on the summon unless its
     // player target is closer.

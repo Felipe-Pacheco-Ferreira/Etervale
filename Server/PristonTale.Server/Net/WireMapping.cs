@@ -42,6 +42,7 @@ internal static class WireMapping
                 {
                     WeaponGlow = Glow(appearance.WeaponGlow),
                     OffHandGlow = Glow(appearance.OffHandGlow),
+                    ArmorAge = appearance.ArmorAge,
                     Mounted = appearance.Mounted,
                     ShopSign = appearance.ShopSign,
                     ClanId = (ulong)Math.Max(0, appearance.ClanId),
@@ -158,7 +159,7 @@ internal static class WireMapping
             view.SourceKind, view.Control, flags, duration, remaining, view.Value);
     }
 
-    public static GroundItemEntry Drop(GroundDropView drop) => new(
+    public static GroundItemEntry Drop(GroundDropView drop, bool ownThrow = false) => new(
         drop.Id,
         drop.Gold ? ItemCodes.GoldCode : drop.ItemCode,
         drop.Gold,
@@ -166,5 +167,5 @@ internal static class WireMapping
         GameUnits.ToFixed(drop.Position.X),
         GameUnits.ToFixed(drop.Position.Y),
         GameUnits.ToFixed(drop.Position.Z),
-        drop.Name);
+        drop.Name) { RequiredLevel = drop.RequiredLevel, Specialization = drop.Specialization, OwnThrow = ownThrow };
 }

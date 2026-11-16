@@ -10,6 +10,7 @@ using PristonTale.Engine3D.Rendering.Lighting;
 using PristonTale.Engine3D.Rendering.Post;
 using PristonTale.Contracts.Motion;
 using PristonTale.Contracts.Units;
+using BitOperations = System.Numerics.BitOperations;
 
 namespace PristonTale.Engine3D.Rendering;
 
@@ -54,9 +55,20 @@ public sealed partial class PristonRenderer
         _fullShadowRefresh = false;
     }
 
+    private BoundingFrustum SingleSunCasterFrustum()
+    {
+        if (!BitOperations.IsPow2(_cascadeMask))
+        {
+            return null;
+        }
+
+        _shadowCasterFrustum.Matrix = _cascades.ViewProjections[BitOperations.TrailingZeroCount(_cascadeMask)];
+        return _shadowCasterFrustum;
+    }
+
     // Renders the cascades of this refresh into their atlas tiles; each tile is cleared by a far-depth triangle over its
     // viewport, so the others keep their contents.
-    private void RenderShadowMap()
+    private void RenderShadowMap(bool castersCulled)
     {
         _graphicsDevice.SetRenderTarget(_shadowMap);
         _graphicsDevice.BlendState = BlendState.Opaque;
@@ -74,7 +86,7 @@ public sealed partial class PristonRenderer
             _graphicsDevice.DepthStencilState = DepthStencilState.Default;
             var viewProjection = _cascades.ViewProjections[cascade];
             _shaders.ApplyShadowFrame(viewProjection, _renderTime);
-            DrawShadowQueueItems(_renderQueueBuilder.Queue.ShadowCasters, viewProjection);
+            DrawShadowQueueItems(_renderQueueBuilder.Queue.ShadowCasters, viewProjection, castersCulled);
         }
 
         _graphicsDevice.SetRenderTarget(null);
@@ -150,16 +162,20 @@ public sealed partial class PristonRenderer
         return false;
     }
 
-    private void DrawShadowQueueItems(IReadOnlyList<PristonRenderQueueItem<RenderBatch>> items, Matrix lightViewProjection)
+    private void DrawShadowQueueItems(IReadOnlyList<PristonRenderQueueItem<RenderBatch>> items, Matrix lightViewProjection, bool castersCulled = false)
     {
-        _shadowCasterFrustum.Matrix = lightViewProjection;
+        if (!castersCulled)
+        {
+            _shadowCasterFrustum.Matrix = lightViewProjection;
+        }
+
         // Thin/single-sided casters need both faces in every shadow draw. This state is invariant for
         // the whole queue and the colour pass invalidates its cache immediately after shadow rendering.
         _graphicsDevice.RasterizerState = PristonRasterizerStates.TwoSided;
         for (var i = 0; i < items.Count; i++)
         {
             var batch = items[i].Batch;
-            if (!_shadowCasterFrustum.Intersects(batch.Bounds))
+            if (!castersCulled && !_shadowCasterFrustum.Intersects(batch.Bounds))
             {
                 continue;
             }

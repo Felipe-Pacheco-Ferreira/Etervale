@@ -86,6 +86,7 @@ internal sealed class FieldDescriptors
                 && string.Equals(_appearance.ArmorKey, appearance.ArmorKey, StringComparison.Ordinal)
                 && string.Equals(_appearance.OffHandKey, appearance.OffHandKey, StringComparison.Ordinal)
                 && _appearance.WeaponGlow == appearance.WeaponGlow && _appearance.OffHandGlow == appearance.OffHandGlow
+                && _appearance.ArmorAge == appearance.ArmorAge
                 && string.Equals(_appearance.Name, appearance.Name, StringComparison.Ordinal)
                 && string.Equals(_appearance.ShopSign, appearance.ShopSign, StringComparison.Ordinal)
                 && _appearance.ClanId == appearance.ClanId && _appearance.ClanMark == appearance.ClanMark

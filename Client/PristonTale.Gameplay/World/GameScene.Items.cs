@@ -26,6 +26,43 @@ public sealed partial class GameScene
     // The local player's running premium timers as last sent by the server.
     public PremiumTimerSnapshot PremiumTimers { get; private set; }
 
+    public bool HasActiveHuntForce()
+    {
+        if (_skillFx is null || _remote is null)
+        {
+            return false;
+        }
+
+        foreach (var status in _skillFx.Statuses.For(_remote.SelfEntityId))
+        {
+            if (ForceOrbs.TryGetByStatus(status.Code, out _))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public int ActiveCrystalPets()
+    {
+        if (_skillFx is null || _remote is null)
+        {
+            return 0;
+        }
+
+        var count = 0;
+        foreach (var status in _skillFx.Statuses.For(_remote.SelfEntityId))
+        {
+            if (MonsterCrystals.TryGetByPetStatus(status.Code, out _))
+            {
+                count++;
+            }
+        }
+
+        return count;
+    }
+
     public Task<ItemUseOutcome> UseItemAsync(ItemUseCommand command)
     {
         return _playChannel is not null ? _playChannel.UseItemAsync(command, _presenceCts.Token)

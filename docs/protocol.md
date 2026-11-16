@@ -207,6 +207,7 @@ Every message code has the high word `0x4554` ("ET"); every message keeps the `{
 | `0x45540402` | `PremiumTimers` | S→C | The owner's running premium timers whenever they change. |
 | `0x45540403` | `ItemEffects` | S→C | Item effects around players (firecrackers, learn ring, mastery, pet strikes), on the presence timeline. |
 | `0x45540404` | `DismissCrystalPets` | C→S | `{uint16 Version = 1, uint16 0, uint32 StatusCode}`: the owner confirmed dismissing the pet its status code names (each pet has its own); the status's removal answers it. |
+| `0x45540405` | `CrystalPetTargeting` | C→S | `{uint16 Version = 1, uint16 0, uint8 Mode, 3 reserved bytes}`: sets the connected owner's crystal pet targeting (0 independent, 1 owner's last combat target, 2 monsters targeting the owner or its pet). |
 | `0x45540500` / `0x45540501` | `QuestRequest` / `QuestResult` | C→S / S→C | One quest step (talk, proceed, accept, class change, reward choice, skill redistribution), correlated by operation id (see below). |
 | `0x45540502` | `QuestJournal` | S→C | The owner's quest journal view whenever its revision changes. |
 | `0x45540503` | `QuestNotices` | S→C | Quest notices of the world tick and a quest dialog the world opened. |
@@ -215,6 +216,7 @@ Every message code has the high word `0x4554` ("ET"); every message keeps the `{
 | `0x45540605` / `0x45540606` | `PersonalShopListing` / `PersonalShopDetails` | S→C | A seller's shop as the viewer sees it and its copies' values, sent before the result of a view or a purchase while the shop is open. |
 | `0x45540700` .. `0x45540702` | `PartyInvite`, `PartyAnswer`, `PartyCommand` | C→S | Ask a player to group, answer a request, a party window button (see below). |
 | `0x45540703` / `0x45540704` | `PartyRequest` / `PartyMembers` | S→C | A player asks the receiver to group; the receiver's party when it changed. |
+| `0x45540705` | `PartyHunt` | S→C | Cumulative hunt counters for the receiver's current party, irrespective of field. |
 | `0x45540800` .. `0x45540804` | `TradeRequest`, `TradeAnswer`, `TradeOffer`, `TradeLock`, `TradeCancel` | C→S | Ask a player to trade, answer a request, the side's whole offer, lock it, close the trade (see below). |
 | `0x45540805` .. `0x45540807` | `TradeAsked`, `TradeState`, `TradeDetails` | S→C | A player asks the receiver to trade; the trade window when it changed, after its partner items' values. |
 | `0x45541000` / `0x45541001` | `ContactChange` / `ContactRefresh` | C→S | Put a name on the friends or ignored list or take it off; send the lists again. |
@@ -256,9 +258,10 @@ These bodies have no version header, except the combat event list's (see [Event 
 | `Skills` | `int64 Revision, int32 Count`, then `{uint Code, int32 Rank, int32 Uses}` | 20 + 12n |
 | `CombatEvents` | `uint16 Version (1), uint16 Count`, then compact entries (see [Event lists](#event-lists)) | 12 + 4 to 65 per entry |
 | `RemoveObjects` | `int32 Count`, then `uint64 EntityId` | 12 + 8n |
-| `GroundItems` | `uint16 Version (1), uint16 Flags, int32 Count`, then `{Guid Id, uint32 ItemCode, uint8 Flags (1 gold), uint8 0, uint16 0, int32 Amount, X, Y, Z, text Name (64 B)}` (1 to 64) | 16 + up to 106n |
+| `GroundItems` | `uint16 Version (1), uint16 Flags, int32 Count`, then `{Guid Id, uint32 ItemCode, uint8 Flags (1 gold, 2 receiver's throw), uint8 RequiredLevel, uint16 Specialization, int32 Amount, X, Y, Z, text Name (64 B)}` (1 to 64) | 16 + up to 106n |
 | `GroundItemsRemoved` | `uint16 Version (1), uint16 Flags, int32 Count`, then `Guid Id` | 16 + 16n |
 | `ItemDetails` | `uint16 Version (1), uint16 Flags, int64 Revision, int32 Part, Parts, Count`, then 236-byte entries (at most 24) | 32 + 236n |
+| `PotionPotency` (`0x45540303`) | `uint16 Version (1), uint16 Flags, int64 Revision, int32 Count`, then `{Guid InstanceId, int32 LifeMin, LifeMax, ManaMin, ManaMax, StaminaMin, StaminaMax}` (at most 24). Optional owner-only parts sent before the inventory with the same revision. | 24 + 40n |
 | `OwnerItemStatus` | `uint16 Version (1), uint16 Flags, int32 CarriedWeight, MaxWeight, CriticalChance, BlockChance, ShootingRange, AttackSpeed, PotionSpace, float LifeRegen, ManaRegen, StaminaRegen, MagicMastery, int16 Resistances[8]` | 72 |
 | `AgingProgress` | `uint16 Version (1), uint16 Count`, then `{Guid InstanceId, int32 Count, Goal}` (at most 16) | 12 + 24n |
 
@@ -374,6 +377,8 @@ Rules: [special-items.md](special-items.md).
 Bodies start with `{uint16 Version = 3, uint16 Flags = 0}` (version 2 appended the player's shop sign to
 `EntityDescription`, version 3 then its clan: `varuint ClanId` (0 none), `text ClanName` (48 bytes), `varuint ClanMark`;
 a reader fills each only from its version); text is UTF-8 with a `uint16` byte length (name 64 bytes, model paths 160).
+A v3 player description can append a `uint8 ArmorAge` after `ClanMark`. Missing tails read as zero,
+and earlier readers ignore the appended byte.
 
 | Message | Layout after the header |
 | --- | --- |
@@ -504,6 +509,11 @@ bytes). Requests are not answered: `PartyMembers` and chat lines show what chang
 | `PartyCommand` | `uint8 Command` (`PartyCommand`: 0 delegate, 1 disband, 2 kick, 3 leave), `uint64 MemberId` (0 for disband and leave) |
 | `PartyRequest` | `uint64 FromId, text FromName, text Recommended` (the player a member recommends to its leader; empty for a request to join) |
 | `PartyMembers` | `uint8 Count` (0..6; 0 once the receiver has no party), members `{uint64 EntityId, text Name, int32 Level, int32 Life, int32 MaxLife, float X, float Z}`, the leader first |
+| `PartyHunt` | `uint8 Count` (0..6), members `{uint64 EntityId, uint64 Damage, uint64 Experience, uint32 Kills, uint32 Deaths}`, sent on change after the roster |
+
+`PartyHunt` is independent of entity handles and does not extend the existing roster packet. The counters belong to
+a player's current world session and advance only while it is in a party. Clients establish their own baseline so
+results from an earlier party are not counted. An empty packet withdraws the counters when the receiver leaves.
 
 ### Trades
 

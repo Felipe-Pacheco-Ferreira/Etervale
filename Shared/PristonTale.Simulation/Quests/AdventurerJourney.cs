@@ -17,7 +17,8 @@ internal static class AdventurerJourney
 
     public static bool Talk(QuestContext context)
     {
-        if (!IsGuide(context) || IsFinished(context) || QuestSteps.Blocked(context, Code))
+        var route = Route(context);
+        if (context.Npc.Name != route.GuideName || IsFinished(context) || QuestSteps.Blocked(context, Code))
         {
             return false;
         }
@@ -38,7 +39,7 @@ internal static class AdventurerJourney
         {
             0 => "avalon_journey_start",
             1 when !ready => "avalon_journey_bag",
-            1 => context.Tempskron ? "avalon_journey_hunt_skadi" : "avalon_journey_hunt_jin",
+            1 => route.HuntTarget == QuestMonsters.Hopy ? "avalon_journey_hunt_skadi" : "avalon_journey_hunt_jin",
             2 when !ready => "avalon_journey_collect",
             _ => "avalon_journey_finish"
         };
@@ -48,7 +49,8 @@ internal static class AdventurerJourney
 
     public static bool Proceed(QuestContext context, int state)
     {
-        if (!IsGuide(context) || IsFinished(context) || !QuestSteps.Matches(context, Code, state) || !CanAdvance(context, state))
+        var route = Route(context);
+        if (context.Npc.Name != route.GuideName || IsFinished(context) || !QuestSteps.Matches(context, Code, state) || !CanAdvance(context, state))
         {
             return QuestSteps.Stale(context);
         }
@@ -78,7 +80,7 @@ internal static class AdventurerJourney
             {
                 Code = Code,
                 State = state + 1,
-                Target = state == 1 ? context.Tempskron ? QuestMonsters.Hopy : QuestMonsters.Rabie : 0,
+                Target = state == 1 ? route.HuntTarget : 0,
                 KillsNeeded = state == 1 ? 3 : 0,
                 Variant = state == 1 ? QuestInventory.Count(context.Character, HopyCrystal) : 0,
                 Flags = TutorialPotionGranted
@@ -118,8 +120,8 @@ internal static class AdventurerJourney
         }
     }
 
-    private static bool IsGuide(QuestContext context) =>
-        context.Npc.Name == AdventurerJourneyRoute.For(context.Tempskron).GuideName;
+    private static TribeRoute Route(QuestContext context) => AdventurerJourneyRoute.For(QuestClasses.ClassOf(context.Character),
+        context.Journal.Active.Code == Code ? context.Journal.Active.Target : 0);
 
     private static bool IsFinished(QuestContext context) => !IsAvailable(context.Character);
 
@@ -137,8 +139,7 @@ internal static class AdventurerJourney
         return context.GrantRefusal == QuestGrantCheck.Fits && context.Character.Inventory.TryPlaceFirstFree(potion);
     }
 
-    // Places in the bag the pieces of the class's starter kit (StarterGifts: weapon, off-hand, armour) whose slot the
-    // character has nothing for, worn or carried; true when they all fit (or none was missing).
+    // The guide's copies must fit a level-one character, even when the catalog's normal item has higher requirements.
     private static bool GiveStarterKit(QuestContext context)
     {
         var character = context.Character;
@@ -146,12 +147,33 @@ internal static class AdventurerJourney
         var kit = new List<ItemInstance>();
         foreach (var index in StarterKit)
         {
-            if (context.Items.StarterGift(playerClass, index) is { } piece && ItemEquipmentMetadata.SlotOf(piece.Definition.Kind) is { } slot
-                && character.GetEquipped(slot) is null
-                && !character.Inventory.Items().Any(item => ItemEquipmentMetadata.SlotOf(item.Definition.Kind) == slot))
+            if (context.Items.StarterGift(playerClass, index) is not { } piece || ItemEquipmentMetadata.SlotOf(piece.Definition.Kind) is not { } slot
+                || character.GetEquipped(slot) is not null)
             {
-                kit.Add(piece);
+                continue;
             }
+
+            var roll = piece.Roll;
+            var starting = character.Definition.BaseAttributes;
+            var trainingCopy = !ItemUsability.MeetsRequirements(roll, 1, starting);
+            if (character.Inventory.Items().Any(item => ItemEquipmentMetadata.SlotOf(item.Definition.Kind) == slot
+                && (!trainingCopy || character.CanWear(slot, item))))
+            {
+                continue;
+            }
+
+            if (trainingCopy)
+            {
+                var req = roll.Requirements;
+                piece.Roll = roll with
+                {
+                    RequiredLevel = Math.Min(roll.RequiredLevel, 1),
+                    Requirements = new CharacterAttributes(Math.Min(req.Strength, starting.Strength), Math.Min(req.Spirit, starting.Spirit),
+                        Math.Min(req.Talent, starting.Talent), Math.Min(req.Agility, starting.Agility), Math.Min(req.Health, starting.Health))
+                };
+            }
+
+            kit.Add(piece);
         }
 
         if (kit.Count == 0)

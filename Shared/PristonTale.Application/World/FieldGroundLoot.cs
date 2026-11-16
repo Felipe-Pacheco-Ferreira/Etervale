@@ -62,6 +62,10 @@ public sealed class FieldGroundLoot(ItemCatalog catalog, FieldTerrain? terrain =
             if (item is not null)
             {
                 item.Sealed = drop.Sealed;
+                if (!drop.Sealed)
+                {
+                    view = view with { RequiredLevel = item.Roll.RequiredLevel, Specialization = item.Roll.SpecJob };
+                }
             }
 
             _entries.Add(id, new Entry(view, item, payout.CreditedPlayerId, publicDrop ? nowMs : nowMs + OwnedDropMs, nowMs + LifetimeMs(definition), NoThrower)
@@ -105,6 +109,7 @@ public sealed class FieldGroundLoot(ItemCatalog catalog, FieldTerrain? terrain =
         var view = item is null
             ? new GroundDropView(id, 0u, ItemCodes.GoldKey, ItemCodes.GoldName, gold, true, spot)
             : new GroundDropView(id, item.Definition.Code, item.Definition.CatalogKey, item.Definition.Name, item.Count, false, spot);
+        view = view with { RequiredLevel = item?.Roll.RequiredLevel ?? 0, Specialization = item?.Roll.SpecJob ?? 0, Thrown = thrownBy != NoThrower };
         _entries.Add(id, new Entry(view, item, ownerId, nowMs, nowMs + LifetimeMs(item?.Definition), thrownBy));
         _dirty = true;
         return id;

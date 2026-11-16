@@ -316,7 +316,7 @@ public sealed partial class WorldServer
 
             var player = connection.Player;
             _partyScratch[count] = new PartyMemberView(id, player.Character.Name, player.Level, player.Life, player.MaxLife, player.Position.X,
-                player.Position.Z);
+                player.Position.Z) { Hunt = player.PartyHunt };
             levels[count++] = player.Level;
         }
 

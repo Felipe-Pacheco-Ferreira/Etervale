@@ -2,19 +2,24 @@ using Android.App;
 using Android.Graphics;
 using Android.Views;
 using Android.Widget;
+using PristonTale.Gameplay.Localization;
+using PristonTale.Gameplay.UI.Inventory;
 using PristonTale.Mobile;
 using PristonTale.Simulation.Characters;
 using PristonTale.Simulation.Items;
+using PristonTale.Simulation.Items.Aging;
+using PristonTale.Simulation.Items.Usable;
 
 // The character window, a HUD window (VulkanPanel): on the left the equipment slots around the faint figure of the
 // character with gold and weight under them; in the middle the 12 x 6 bag as a field of item wells with each item's own
 // sprite at its footprint and the potion belt under it; on the right, once an item is chosen, its sheet with what can be
-// done with it. Wells take the item's tint (unique, enhanced, not for this class). Every change is an inventory command
-// the server validates (InventoryCommand); the window redraws from the server's answer.
+// done with it. Wells take the item's tint (unique, enhanced, not for this class). The server validates changes and
+// the window redraws from the authoritative inventory.
 internal sealed class VulkanInventoryPanel
 {
     private static readonly Color Unique = Color.Rgb(255, 164, 64);
     private static readonly Color Enhanced = Color.Rgb(120, 172, 255);
+    private static readonly Color AgingBlue = Color.Rgb(HudItemDetailTooltip.AgingColor.R, HudItemDetailTooltip.AgingColor.G, HudItemDetailTooltip.AgingColor.B);
     private const int SlotSize = 44;
     private const int SlotPitch = 53;
     private const int FigureMargin = 6;
@@ -34,6 +39,7 @@ internal sealed class VulkanInventoryPanel
     private readonly VulkanWorldSession _session;
     private readonly VulkanItemIcons _icons;
     private VulkanPanel _panel;
+    private Dialog _crystalConfirmation;
     private FrameLayout _equipment;
     private FrameLayout _bag;
     private LinearLayout _belt;
@@ -41,6 +47,7 @@ internal sealed class VulkanInventoryPanel
     private TextView _gold;
     private TextView _bagNote;
     private VulkanGaugeView _weight;
+    private VulkanGaugeView _maturity;
     private OwnerState _owner;
     private Guid _selected;
     private bool _pending;
@@ -57,6 +64,7 @@ internal sealed class VulkanInventoryPanel
         _overlay = overlay;
         _session = session;
         _icons = icons;
+        _overlay.ViewDetachedFromWindow += (_, _) => DismissCrystalConfirmation();
         _icons.Loaded += () =>
         {
             if (_panel is not null)
@@ -94,10 +102,20 @@ internal sealed class VulkanInventoryPanel
         var changed = _owner?.InventoryRevision != state.InventoryRevision || !ReferenceEquals(_owner?.Items, state.Items)
             || _owner?.Money != state.Money || _owner?.CarriedWeight != state.CarriedWeight
             || _owner?.MaxWeight != state.MaxWeight || _owner?.Overweight != state.Overweight;
+        var agingChanged = !ReferenceEquals(_owner?.Aging, state.Aging);
         _owner = state;
-        if (_panel is not null && changed)
+        if (_panel is null)
+        {
+            return;
+        }
+
+        if (changed)
         {
             Render();
+        }
+        else if (agingChanged && _maturity is not null)
+        {
+            UpdateMaturity(OwnedItemView.Find(state.Items, _selected));
         }
     }
 
@@ -106,7 +124,9 @@ internal sealed class VulkanInventoryPanel
         _panel = new VulkanPanel(_activity, _overlay, "Inventário", 820, 392);
         _panel.Closed += () =>
         {
+            DismissCrystalConfirmation();
             _panel = null;
+            _maturity = null;
             _selected = Guid.Empty;
             _tiles.Clear();
             _actions.Clear();
@@ -271,17 +291,11 @@ internal sealed class VulkanInventoryPanel
     {
         var tile = new FrameLayout(_activity) { Clickable = true, ContentDescription = item.Name };
         tile.Background = new VulkanPanelArt.WellDrawable(Dp(6), Dp(1), Tint(item), item.InstanceId == _selected);
+        VulkanAttention.Gold(tile, item.Details?.UpgradeLevel == AgingRules.MaxLevel, Dp(6));
         var image = new ImageView(_activity);
         image.SetPadding(padding, padding, padding, padding);
         image.SetScaleType(ImageView.ScaleType.FitCenter!);
-        if (_icons.Get(item.CatalogKey) is { } icon)
-        {
-            image.SetImageBitmap(icon);
-        }
-        else
-        {
-            image.SetImageDrawable(new HudIcon(item.Kind == ItemKind.Potion ? HudGlyph.Potion : HudGlyph.Bag, Dp(18)));
-        }
+        SetItemPicture(image, item, Dp(18));
 
         tile.AddView(image, new FrameLayout.LayoutParams(-1, -1));
         if (item.Details is { UpgradeLevel: > 0 } details)
@@ -305,12 +319,32 @@ internal sealed class VulkanInventoryPanel
         return tile;
     }
 
+    private void SetItemPicture(ImageView picture, OwnedItemView item, int glyphSize, HudGlyph fallback = HudGlyph.Bag)
+    {
+        if (_icons.Get(item.CatalogKey) is { } icon)
+        {
+            picture.SetImageBitmap(icon);
+            picture.Drawable?.SetFilterBitmap(true);
+            return;
+        }
+
+        var glyph = item.Kind switch
+        {
+            ItemKind.Potion => HudGlyph.Potion,
+            ItemKind.Shield => HudGlyph.Shield,
+            ItemKind.Ring => HudGlyph.Ring,
+            _ => fallback
+        };
+        picture.SetImageDrawable(new HudIcon(glyph, glyphSize));
+    }
+
     // The chosen item's sheet: its sprite, name and kind, its values on alternating bands, its durability as a gauge and
     // what can be done with it here.
     private void RenderSheet(OwnedItemView item)
     {
         _sheet.RemoveAllViews();
         _actions.Clear();
+        _maturity = null;
         _sheet.Visibility = item is null ? ViewStates.Gone : ViewStates.Visible;
         if (item is null)
         {
@@ -323,10 +357,8 @@ internal sealed class VulkanInventoryPanel
         picture.SetScaleType(ImageView.ScaleType.FitCenter!);
         picture.SetPadding(Dp(5), Dp(5), Dp(5), Dp(5));
         picture.Background = new VulkanPanelArt.WellDrawable(Dp(8), Dp(1), Tint(item), selected: false);
-        if (_icons.Get(item.CatalogKey) is { } icon)
-        {
-            picture.SetImageBitmap(icon);
-        }
+        VulkanAttention.Gold(picture, item.Details?.UpgradeLevel == AgingRules.MaxLevel, Dp(8));
+        SetItemPicture(picture, item, Dp(28));
 
         heading.AddView(picture, new LinearLayout.LayoutParams(Dp(50), Dp(50)) { RightMargin = Dp(8) });
         var identity = new LinearLayout(_activity) { Orientation = Orientation.Vertical };
@@ -350,12 +382,17 @@ internal sealed class VulkanInventoryPanel
                 new LinearLayout.LayoutParams(-2, -2) { TopMargin = Dp(6) });
         }
 
+        _maturity = new VulkanGaugeView(_activity);
+        _sheet.AddView(_maturity, new LinearLayout.LayoutParams(-1, Dp(20)) { TopMargin = Dp(7) });
+        UpdateMaturity(item);
+
         var lines = new LinearLayout(_activity) { Orientation = Orientation.Vertical };
         var scroll = new ScrollView(_activity);
         scroll.AddView(lines);
         _sheet.AddView(scroll, new LinearLayout.LayoutParams(-1, 0, 1) { TopMargin = Dp(8) });
         var band = 0;
-        foreach (var (label, value) in Values(item))
+        var aged = item.Details is { UpgradeLevel: > 0 } ? AgingRules.RaisedBy(item.CatalogKey) : AgedStats.None;
+        foreach (var (label, value, stat) in Values(item))
         {
             var row = new LinearLayout(_activity);
             row.SetGravity(GravityFlags.CenterVertical);
@@ -365,8 +402,9 @@ internal sealed class VulkanInventoryPanel
                 row.SetBackgroundColor(VulkanPanel.Row);
             }
 
-            row.AddView(VulkanPanel.Body(_activity, label, 12, VulkanPanel.Muted), new LinearLayout.LayoutParams(0, -2, 1));
-            row.AddView(VulkanPanel.Text(_activity, value, 13, Color.White, serif: true));
+            var raised = (aged & stat) != 0;
+            row.AddView(VulkanPanel.Body(_activity, label, 12, raised ? AgingBlue : VulkanPanel.Muted), new LinearLayout.LayoutParams(0, -2, 1));
+            row.AddView(VulkanPanel.Text(_activity, value, 13, raised ? AgingBlue : Color.White, serif: true));
             lines.AddView(row);
         }
 
@@ -374,7 +412,8 @@ internal sealed class VulkanInventoryPanel
         {
             var fraction = details.DurabilityCurrent / (float)details.DurabilityMax;
             var durability = new VulkanGaugeView(_activity);
-            durability.Set(fraction < .25f ? VulkanHudArt.Life : VulkanHudArt.Experience, fraction,
+            var gauge = (aged & AgedStats.Integrity) != 0 ? VulkanHudArt.Mana : VulkanHudArt.Experience;
+            durability.Set(fraction < .25f ? VulkanHudArt.Life : gauge, fraction,
                 $"Durabilidade {details.DurabilityCurrent}/{details.DurabilityMax}");
             lines.AddView(durability, new LinearLayout.LayoutParams(-1, Dp(16)) { TopMargin = Dp(6) });
         }
@@ -424,11 +463,28 @@ internal sealed class VulkanInventoryPanel
                 AddAction(actions, $"Cinto {box + 1}", item, InventoryAction.BeltPut, box, slot, prominent: false);
             }
         }
+        else if (item.InBag && UsableItemCatalog.TryGet(item.CatalogKey, out var rule) && rule.Action == UsableItemAction.MonsterCrystal)
+        {
+            var summon = AddActionButton(actions, "Invocar", prominent: true);
+            summon.Click += (_, _) => ConfirmCrystal(item);
+        }
         else if ((item.Equipped || item.InBag) && slot.HasValue)
         {
             AddAction(actions, item.Equipped ? "Retirar" : "Equipar", item, item.Equipped ? InventoryAction.Unequip : InventoryAction.Equip,
                 item.Equipped ? -1 : 0, slot, prominent: true);
         }
+    }
+
+    private void UpdateMaturity(OwnedItemView item)
+    {
+        if (HudItemDetailTooltip.Gauge(item, _owner) is not { Goal: > 0 } aging)
+        {
+            _maturity.Visibility = ViewStates.Gone;
+            return;
+        }
+
+        _maturity.Visibility = ViewStates.Visible;
+        _maturity.Set(VulkanHudArt.Mana, aging.Count / (float)aging.Goal, $"Maturação +{aging.Level} · {aging.Count}/{aging.Goal}");
     }
 
     // An item's tint: red when the character's class cannot use it, amber for a unique item, blue for an upgraded, aged
@@ -437,7 +493,7 @@ internal sealed class VulkanInventoryPanel
     {
         { ClassAllowed: false } => VulkanPanelArt.Warning,
         { UniqueItem: not 0 } => Unique,
-        { UpgradeLevel: > 0 } or { AgingCount: > 0 } or { MixSheltom: > 0 } => Enhanced,
+        { UpgradeLevel: > 0 } or { AgingGoal: > 0 } or { MixSheltom: > 0 } => Enhanced,
         _ => Color.Transparent
     };
 
@@ -446,15 +502,15 @@ internal sealed class VulkanInventoryPanel
         { UniqueItem: not 0 } => "Único",
         { MixSheltom: > 0 } => "Misturado",
         { UpgradeLevel: > 0 } details => $"Aprimorado +{details.UpgradeLevel}",
-        { AgingCount: > 0 } => "Em envelhecimento",
+        { AgingGoal: > 0 } => "Em maturação",
         _ => null
     };
 
-    private static IEnumerable<(string Label, string Value)> Values(OwnedItemView item)
+    private static IEnumerable<(string Label, string Value, AgedStats Stat)> Values(OwnedItemView item)
     {
         if (item.Count > 1)
         {
-            yield return ("Quantidade", $"{item.Count}");
+            yield return ("Quantidade", $"{item.Count}", AgedStats.None);
         }
 
         if (item.Details is not { } details)
@@ -465,57 +521,62 @@ internal sealed class VulkanInventoryPanel
         var roll = details.Roll;
         if (roll.DamageMax > 0)
         {
-            yield return ("Dano", $"{roll.DamageMin}–{roll.DamageMax}");
+            yield return ("Dano", $"{roll.DamageMin}–{roll.DamageMax}", AgedStats.Damage);
         }
 
         if (roll.AttackRating > 0)
         {
-            yield return ("Precisão", $"{roll.AttackRating}");
+            yield return ("Precisão", $"{roll.AttackRating}", AgedStats.AttackRating);
         }
 
         if (details.AttackSpeed > 0)
         {
-            yield return ("Velocidade", $"{details.AttackSpeed}");
+            yield return ("Velocidade", $"{details.AttackSpeed}", AgedStats.None);
         }
 
         if (details.Critical > 0)
         {
-            yield return ("Crítico", $"{details.Critical}%");
+            yield return ("Crítico", $"{details.Critical}%", AgedStats.Critical);
         }
 
         if (details.ShootingRange > 0)
         {
-            yield return ("Alcance", $"{details.ShootingRange}");
+            yield return ("Alcance", $"{details.ShootingRange}", AgedStats.None);
         }
 
         if (roll.Defence > 0)
         {
-            yield return ("Defesa", $"{roll.Defence}");
+            yield return ("Defesa", $"{roll.Defence}", AgedStats.Defence);
         }
 
         if (roll.Absorb > 0)
         {
-            yield return ("Absorção", $"{roll.Absorb:0.#}");
+            yield return ("Absorção", HudItemDetailTooltip.Tenths(roll.Absorb + ItemAbsorbCorrection.For(item.CatalogKey)), AgedStats.Absorb);
         }
 
         if (roll.Block > 0)
         {
-            yield return ("Bloqueio", $"{roll.Block:0.#}%");
+            yield return ("Bloqueio", $"{roll.Block:0.#}%", AgedStats.Block);
         }
 
         if (roll.AddLife > 0)
         {
-            yield return ("PV", $"+{roll.AddLife}");
+            yield return ("PV", $"+{roll.AddLife}", AgedStats.None);
+        }
+
+        if (roll.AddMana > 0)
+        {
+            yield return ("Mana", $"+{roll.AddMana}", AgedStats.Mana);
         }
 
         if (roll.RequiredLevel > 0)
         {
-            yield return ("Nível", $"{roll.RequiredLevel}");
+            yield return ("Nível", $"{roll.RequiredLevel}", AgedStats.None);
         }
 
         if (details.Weight > 0)
         {
-            yield return ("Peso", $"{details.Weight}");
+            yield return ("Peso", $"{details.Weight}", AgedStats.None);
         }
     }
 
@@ -540,6 +601,12 @@ internal sealed class VulkanInventoryPanel
     private void AddAction(LinearLayout row, string label, OwnedItemView item, InventoryAction action, int destination, EquipmentSlot? slot,
         bool prominent)
     {
+        var button = AddActionButton(row, label, prominent);
+        button.Click += async (_, _) => await ApplyAsync(item, action, destination, slot.GetValueOrDefault());
+    }
+
+    private Button AddActionButton(LinearLayout row, string label, bool prominent)
+    {
         var button = MobileHudTheme.Button(_activity, label, prominent);
         if (prominent)
         {
@@ -551,9 +618,116 @@ internal sealed class VulkanInventoryPanel
         }
 
         button.Enabled = !_pending && _owner is not null && _owner.InventoryRevision >= _expectedRevision;
-        button.Click += async (_, _) => await ApplyAsync(item, action, destination, slot.GetValueOrDefault());
         row.AddView(button, new LinearLayout.LayoutParams(0, Dp(40), 1) { RightMargin = Dp(3) });
         _actions.Add(button);
+        return button;
+    }
+
+    private void ConfirmCrystal(OwnedItemView item)
+    {
+        if (_crystalConfirmation is not null || _pending || _panel is null)
+        {
+            return;
+        }
+
+        var dialog = new Dialog(_activity);
+        dialog.RequestWindowFeature((int)WindowFeatures.NoTitle);
+        dialog.SetCanceledOnTouchOutside(true);
+        var plate = new LinearLayout(_activity) { Orientation = Orientation.Vertical, Background = new PlateDrawable(Dp(14)) };
+        plate.SetPadding(Dp(18), Dp(14), Dp(18), Dp(16));
+        plate.AddView(VulkanPanel.Title(_activity, "Invocar criatura"));
+        plate.AddView(VulkanPanel.Divider(_activity),
+            new LinearLayout.LayoutParams(-1, Dp(1)) { TopMargin = Dp(10), BottomMargin = Dp(12) });
+
+        var card = new LinearLayout(_activity) { Background = VulkanPanelArt.Inset(_activity) };
+        card.SetGravity(GravityFlags.CenterVertical);
+        card.SetPadding(Dp(10), Dp(10), Dp(10), Dp(10));
+        var picture = new ImageView(_activity) { Background = new VulkanPanelArt.WellDrawable(Dp(8), Dp(1), VulkanHudArt.Edge, selected: false) };
+        picture.SetScaleType(ImageView.ScaleType.FitCenter!);
+        picture.SetPadding(Dp(6), Dp(6), Dp(6), Dp(6));
+        SetItemPicture(picture, item, Dp(28), HudGlyph.Skill);
+        card.AddView(picture, new LinearLayout.LayoutParams(Dp(52), Dp(52)) { RightMargin = Dp(12) });
+        var details = new LinearLayout(_activity) { Orientation = Orientation.Vertical };
+        details.AddView(VulkanPanel.Heading(_activity, item.Name, 16));
+        const string cost = "A invocação consome uma unidade deste item.";
+        details.AddView(VulkanPanel.Body(_activity, cost, 13, VulkanPanel.Muted), new LinearLayout.LayoutParams(-1, -2) { TopMargin = Dp(4) });
+        card.AddView(details, new LinearLayout.LayoutParams(0, -2, 1));
+        plate.AddView(card, new LinearLayout.LayoutParams(-1, -2));
+
+        var actions = new LinearLayout(_activity);
+        actions.SetGravity(GravityFlags.Right);
+        var cancel = MobileHudTheme.Button(_activity, "Cancelar");
+        var confirm = MobileHudTheme.Button(_activity, "Invocar", prominent: true);
+        actions.AddView(cancel, new LinearLayout.LayoutParams(Dp(106), Dp(44)) { RightMargin = Dp(8) });
+        actions.AddView(confirm, new LinearLayout.LayoutParams(Dp(106), Dp(44)));
+        plate.AddView(actions, new LinearLayout.LayoutParams(-1, -2) { TopMargin = Dp(12) });
+
+        cancel.Click += (_, _) => DismissCrystalConfirmation();
+        confirm.Click += async (_, _) =>
+        {
+            confirm.Enabled = false;
+            DismissCrystalConfirmation();
+            await UseCrystalAsync(item.InstanceId);
+        };
+        dialog.DismissEvent += (_, _) =>
+        {
+            if (_crystalConfirmation == dialog)
+            {
+                _crystalConfirmation = null;
+            }
+
+            dialog.Dispose();
+        };
+
+        _crystalConfirmation = dialog;
+        dialog.SetContentView(plate);
+        dialog.Show();
+        dialog.Window?.SetBackgroundDrawableResource(global::Android.Resource.Color.Transparent);
+        dialog.Window?.SetLayout(Math.Min(Dp(408), _overlay.Width - Dp(24)), -2);
+    }
+
+    private void DismissCrystalConfirmation()
+    {
+        if (_crystalConfirmation is { } dialog)
+        {
+            _crystalConfirmation = null;
+            dialog.Dismiss();
+        }
+    }
+
+    private async Task UseCrystalAsync(Guid itemId)
+    {
+        if (_pending || _panel is null || _session.Owner is not { } owner || owner.InventoryRevision < _expectedRevision)
+        {
+            return;
+        }
+
+        if (OwnedItemView.Find(owner.Items, itemId) is not { InBag: true })
+        {
+            Toast.MakeText(_activity, ClientText.Get(PristonTale.Contracts.Texts.GameTextId.InventoryChanged), ToastLength.Short)?.Show();
+            return;
+        }
+
+        _pending = true;
+        Render();
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(8));
+        try
+        {
+            var command = new ItemUseCommand(Guid.NewGuid(), owner.InventoryRevision, itemId);
+            var result = await _session.Play.UseItemAsync(command, timeout.Token);
+            _expectedRevision = result.Revision;
+            var message = result.Ok ? "Cristal usado." : ClientText.Format(result.Message.IsNone ? ItemUseMessages.For(result.Status) : result.Message);
+            Toast.MakeText(_activity, message, ToastLength.Long)?.Show();
+        }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException or OperationCanceledException or TimeoutException)
+        {
+            Toast.MakeText(_activity, ClientText.Get("ItemUse.ConnectionError"), ToastLength.Long)?.Show();
+        }
+        finally
+        {
+            _pending = false;
+            Render();
+        }
     }
 
     private async Task ApplyAsync(OwnedItemView item, InventoryAction action, int destination, EquipmentSlot slot)

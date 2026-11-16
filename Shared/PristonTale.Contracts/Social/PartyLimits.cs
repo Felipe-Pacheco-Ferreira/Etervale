@@ -18,3 +18,5 @@ public enum PartyCommand : byte
     Kick = 2,
     Leave = 3
 }
+
+public readonly record struct PartyHuntCounters(ulong Damage, ulong Experience, uint Kills, uint Deaths);

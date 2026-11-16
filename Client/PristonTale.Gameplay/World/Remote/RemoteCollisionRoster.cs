@@ -29,12 +29,13 @@ internal sealed class RemoteCollisionRoster
     public void Remove(ulong id) => _entries.Remove(id);
     public void Clear() => _entries.Clear();
 
-    public void Collect(ulong excludeId, List<EntityNeighbour> into)
+    public void Collect(ulong excludeId, List<EntityNeighbour> into, Vector3 center, float radius)
     {
         into.Clear();
+        var radiusSquared = radius * radius;
         foreach (var (id, entry) in _entries)
         {
-            if (id == excludeId || entry.Life <= 0)
+            if (id == excludeId || entry.Life <= 0 || Planar.DistanceSquared(entry.Position, center) > radiusSquared)
             {
                 continue;
             }

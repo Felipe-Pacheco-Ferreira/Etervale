@@ -9,6 +9,7 @@ using PristonTale.Simulation.Characters;
 using PristonTale.Simulation.Quests;
 using PristonTale.Simulation.World.Loot;
 using PristonTale.Contracts.Motion;
+using PristonTale.Contracts.Social;
 using PristonTale.Contracts.World;
 using PristonTale.Simulation.Physics;
 using PristonTale.Simulation.World;
@@ -91,6 +92,7 @@ internal sealed partial class PresenceEncoder : IEventHandleWriter
     private SharedPresenceWire? _wire;
     private Simulation.Progression.RestartOffer? _restartOffer;
     private PartyView? _party;
+    private PartyHuntWire[] _partyHunt = [];
     // The weather last sent; null until the first snapshot sends it.
     private WeatherState? _weather;
     private PartyRequest? _partyRequest;
@@ -393,22 +395,45 @@ internal sealed partial class PresenceEncoder : IEventHandleWriter
     {
         if (!ReferenceEquals(snapshot.Party, _party))
         {
+            var rosterChanged = _party?.SameRosterAs(snapshot.Party) != true;
             _party = snapshot.Party;
             var members = _party?.Members ?? [];
-            var wire = new PartyMemberWire[members.Count];
-            for (var index = 0; index < wire.Length; index++)
+            if (rosterChanged)
             {
-                var member = members[index];
-                wire[index] = new PartyMemberWire(member.EntityId, member.Name, member.Level, member.Life, member.MaxLife, member.X, member.Z);
+                var wire = new PartyMemberWire[members.Count];
+                for (var index = 0; index < wire.Length; index++)
+                {
+                    var member = members[index];
+                    wire[index] = new PartyMemberWire(member.EntityId, member.Name, member.Level, member.Life, member.MaxLife, member.X, member.Z);
+                }
+
+                connection.Send(_scratch.AsSpan(0, new PartyMembersPacket(wire).Write(_scratch)));
             }
 
-            connection.Send(_scratch.AsSpan(0, new PartyMembersPacket(wire).Write(_scratch)));
+            SendPartyHunt(members, connection);
         }
 
         if (snapshot.PartyRequest is { } request && !ReferenceEquals(request, _partyRequest))
         {
             _partyRequest = request;
             connection.Send(_scratch.AsSpan(0, new PartyRequestPacket(request.FromId, request.FromName, request.Recommendation ? request.JoinerName : "").Write(_scratch)));
+        }
+    }
+
+    private void SendPartyHunt(IReadOnlyList<PartyMemberView> members, IPacketSink connection)
+    {
+        Span<PartyHuntWire> hunt = stackalloc PartyHuntWire[PartyLimits.MaxMembers];
+        for (var index = 0; index < members.Count; index++)
+        {
+            var member = members[index];
+            hunt[index] = new PartyHuntWire(member.EntityId, member.Hunt);
+        }
+
+        var current = hunt[..members.Count];
+        if (!current.SequenceEqual(_partyHunt))
+        {
+            _partyHunt = current.ToArray();
+            connection.Send(_scratch.AsSpan(0, new PartyHuntPacket(_partyHunt).Write(_scratch)));
         }
     }
 
@@ -986,7 +1011,7 @@ internal sealed partial class PresenceEncoder : IEventHandleWriter
             _visibleDrops.Add(drop.View.Id);
             if (_drops.TryAdd(drop.View.Id, drop.View))
             {
-                _newDrops.Add(WireMapping.Drop(drop.View));
+                _newDrops.Add(WireMapping.Drop(drop.View, drop.View.Thrown && drop.OwnerId == _self));
             }
         }
 

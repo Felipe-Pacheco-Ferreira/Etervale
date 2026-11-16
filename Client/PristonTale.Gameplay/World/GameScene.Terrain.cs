@@ -69,18 +69,24 @@ public sealed partial class GameScene
         }
 
         _terrainFrames += seconds * GameUnits.TicksPerSecond;
+        if (_terrainFrames < 1f)
+        {
+            return;
+        }
+
+        var feet = PlayerFeet;
+        var inWater = TryWaterSurface(feet, out var surface);
         while (_terrainFrames >= 1f)
         {
             _terrainFrames -= 1f;
             _terrainCounter++;
-            var feet = PlayerFeet;
             if (_playerController.Current == MotionCode.Run && _currentField is not null && FieldDust.Kicks(_currentField, _weather.Rain)
                 && FieldDust.Puffs(_terrainCounter, out var side))
             {
                 Dust(FieldDust.Running, feet, side, FieldDust.RunningHeight);
             }
 
-            if (!TryWaterSurface(feet, out var surface))
+            if (!inWater)
             {
                 continue;
             }

@@ -26,6 +26,32 @@ internal static class EquipmentTests
         yield return ("motion selection respects item lists, class and map masks", MotionAsync);
         yield return ("equipment changes refresh public appearance over TCP", PresenceAsync);
         yield return ("remote equipment preparation preserves old actors and discards superseded swaps", ReplacementAsync);
+        yield return ("held item aging glow adds a pulsing edge and restores the original appearance when removed", HeldGlowAppearanceAsync);
+    }
+
+    private static Task HeldGlowAppearanceAsync()
+    {
+        var scene = new FakeScene();
+        var weapon = scene.Create();
+        var presenter = new ActorLookPresenter(scene, new PristonActorLoader(), "assets");
+        var sword = new ItemDefinition(ItemCodes.Parse("WS228"), "Legends Sword", ItemKind.Sword) { CatalogKey = "WS228" };
+        var glow = HeldItemGlow.For(new ItemInstance(sword) { UpgradeLevel = HeldItemGlow.LastGlowingAge });
+        presenter.PaintGlow(weapon, glow, 0);
+        presenter.EndGlowFrame();
+        var bright = scene.Appearance;
+        Assert.True(bright.HeldGlowRim.X > bright.HeldGlowRim.Y && bright.HeldGlowRim.Y > bright.HeldGlowRim.Z
+            && bright.Overlay.EndsWith("mixM_01.bmp", StringComparison.Ordinal), "the +20 pulse or overlay is missing");
+
+        presenter.PaintGlow(weapon, glow, (1 << HeldItemGlow.AgedBlink) - 1);
+        presenter.EndGlowFrame();
+        Assert.True(scene.Appearance.HeldGlowRim.X > 0f && scene.Appearance.HeldGlowRim.X < bright.HeldGlowRim.X,
+            "the edge must dim between pulses but remain visible");
+        presenter.PaintGlow(weapon, HeldItemGlow.FromAging(20), 0, armor: true);
+        presenter.EndGlowFrame();
+        Assert.True(scene.Appearance.HeldGlowRim.X > 0f && scene.Appearance.HeldGlowRim.X < bright.HeldGlowRim.X, "the armoured body has no distinct glow");
+        presenter.EndGlowFrame();
+        Assert.True(scene.Appearance == PristonActorAppearance.Normal, "the glow remained after the item was removed");
+        return Task.CompletedTask;
     }
 
     private static Task KindOfAsync()
@@ -224,6 +250,7 @@ internal static class EquipmentTests
     {
         private int _next;
         public HashSet<ActorHandle> Live { get; } = [];
+        public PristonActorAppearance Appearance { get; private set; }
         public ActorHandle Create()
         {
             var handle = new ActorHandle(_next++, 1);
@@ -236,6 +263,7 @@ internal static class EquipmentTests
         public void SetActorMotionIndex(ActorHandle handle, int motionIndex) { }
         public void RestartActorMotion(ActorHandle handle, MotionCode motion) { }
         public void SetActorPlaybackRate(ActorHandle handle, float rate) { }
+        public void SetActorAppearance(ActorHandle handle, in PristonActorAppearance appearance) => Appearance = appearance;
         public void RemoveActor(ActorHandle handle) => Live.Remove(handle);
     }
 }

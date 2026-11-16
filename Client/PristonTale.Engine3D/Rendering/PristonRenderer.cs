@@ -196,6 +196,7 @@ public sealed partial class PristonRenderer : IDisposable
 
     private bool _opaqueFrontToBack;
     public bool? OpaqueFrontToBackOverride { get; set; }
+    public int SceneWidthLimit { get; set; }
     public bool DiagnosticSkipSolarShadows { get; set; }
     public bool DiagnosticSkipLocalLights { get; set; }
 
@@ -520,7 +521,10 @@ public sealed partial class PristonRenderer : IDisposable
     // Bloom, DisplayTransform, PostAntiAliasing) into the caller's target.
     public void Draw(PristonCamera camera)
     {
-        _lodFrustum.Matrix = camera.View * camera.Projection;
+        var viewProjection = camera.View * camera.Projection;
+        var android = OperatingSystem.IsAndroid();
+        var movingMobileCamera = android && _lodCameraKnown && _lodFrustum.Matrix != viewProjection;
+        _lodFrustum.Matrix = viewProjection;
         _lodFocus = camera.Target;
         _lodCameraKnown = true;
         var staticBatches = 0;
@@ -536,7 +540,7 @@ public sealed partial class PristonRenderer : IDisposable
         // The depth pre-pass pays for itself: the lit pass shades each pixel once and the light tiles get depth bounds.
         var prepass = _multiSampleCount == 0 && DebugView != PristonDebugView.Overdraw;
         // Binding the scene target ends the caller's render pass, so the profiler can reset its timestamps outside one.
-        _sceneTargets.Begin(_multiSampleCount, temporal, prepass);
+        _sceneTargets.Begin(_multiSampleCount, temporal, prepass, SceneWidthLimit);
         Profiler.BeginFrame();
         Profiler.Begin(RenderSection.Frame);
         EnsureBatchLists();
@@ -566,10 +570,11 @@ public sealed partial class PristonRenderer : IDisposable
         }
         else if (sunShadowsEnabled && _sunShadowFocusValid)
         {
-            // Between refreshes the near cascades, which hold the characters around the camera, still redraw on their
-            // current fit: a caster left a refresh behind would shadow the character that has moved or turned away from it
-            // (dark facets on a running character with the light at its back).
-            _cascadeMask = PristonShadowCascades.NearMask & ((1 << _cascades.Count) - 1);
+            // Keep both near tiles current when the camera is zoomed out enough for nearby actors to cross the split.
+            var nearestInterior = _cascades.Splits[0] - CrowdAnimationLod.NearDistance;
+            var nearestOnly = movingMobileCamera && nearestInterior > 0f
+                && Vector3.DistanceSquared(camera.Position, camera.Target) <= nearestInterior * nearestInterior;
+            _cascadeMask = _cascades.BetweenRefitsMask(nearestOnly);
             sunShadowRedraw = true;
         }
 
@@ -627,18 +632,20 @@ public sealed partial class PristonRenderer : IDisposable
             hasPrevious ? _previousProjection : camera.Projection,
             jitterPixels,
             _previousPreExposure > 0f ? _exposure.PreExposure / _previousPreExposure : 1f);
+        var sunCasterFrustum = android && sunShadowRedraw && _lampShadowRedraw == 0 ? SingleSunCasterFrustum() : null;
         Profiler.Begin(RenderSection.Queue);
         var culledBatches = _renderQueueBuilder.Build(
             _renderBatches,
             _shadowBatches,
             frame,
             sunShadowRedraw || _lampShadowRedraw != 0,
-            opaqueFrontToBack: OpaqueFrontToBackOverride ?? _opaqueFrontToBack);
+            opaqueFrontToBack: OpaqueFrontToBackOverride ?? _opaqueFrontToBack,
+            shadowFrustum: sunCasterFrustum);
         Profiler.End(RenderSection.Queue);
         if (sunShadowRedraw)
         {
             Profiler.Begin(RenderSection.SunShadow);
-            RenderShadowMap();
+            RenderShadowMap(castersCulled: sunCasterFrustum is not null);
             Profiler.End(RenderSection.SunShadow);
         }
 

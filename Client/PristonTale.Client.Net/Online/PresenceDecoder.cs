@@ -132,6 +132,7 @@ internal sealed class PresenceDecoder : IEventHandleReader
             EtervaleOpcodes.SkillCooldowns => OnSkillCooldowns(SkillCooldownsPacket.Read(packet)),
             EtervaleOpcodes.SkillCastResult => OnSkillCastResult(SkillCastResultPacket.Read(packet)),
             EtervaleOpcodes.ItemDetails => OnItemDetails(ItemDetailsPartPacket.Read(packet)),
+            EtervaleOpcodes.PotionPotency => OnPotionPotency(PotionPotencyPacket.Read(packet)),
             EtervaleOpcodes.OwnerItemStatus => OnOwnerItemStatus(OwnerItemStatusPacket.Read(packet)),
             EtervaleOpcodes.AgingProgress => OnAgingProgress(AgingProgressPacket.Read(packet)),
             EtervaleOpcodes.PremiumTimers => OnPremiumTimers(PremiumTimersPacket.Read(packet)),
@@ -142,6 +143,7 @@ internal sealed class PresenceDecoder : IEventHandleReader
             EtervaleOpcodes.ChatLine => OnChat(ChatLinePacket.Read(packet)),
             EtervaleOpcodes.CloseRequest => OnCloseRequest(packet),
             EtervaleOpcodes.PartyMembers => OnPartyMembers(PartyMembersPacket.Read(packet)),
+            EtervaleOpcodes.PartyHunt => OnPartyHunt(PartyHuntPacket.Read(packet)),
             EtervaleOpcodes.PartyRequest => OnPartyRequest(PartyRequestPacket.Read(packet)),
             EtervaleOpcodes.ClanState => new PresenceUpdate(_tick, [], [], [], [], FieldId) { Clan = Clan(ClanStatePacket.Read(packet)) },
             EtervaleOpcodes.CastleState => new PresenceUpdate(_tick, [], [], [], [], FieldId) { Castle = Castle(CastleStatePacket.Read(packet)) },
@@ -251,6 +253,18 @@ internal sealed class PresenceDecoder : IEventHandleReader
         }
 
         return new PresenceUpdate(_tick, [], [], [], [], FieldId) { Party = new PartyInfo(members) };
+    }
+
+    private PresenceUpdate OnPartyHunt(PartyHuntPacket packet)
+    {
+        var members = new PartyHuntInfo[packet.Members.Count];
+        for (var index = 0; index < members.Length; index++)
+        {
+            var member = packet.Members[index];
+            members[index] = new PartyHuntInfo(member.EntityId, member.Counters);
+        }
+
+        return new PresenceUpdate(_tick, [], [], [], [], FieldId) { PartyHunt = members };
     }
 
     private static ClanInfo Clan(ClanStatePacket packet) => !packet.HasClan ? ClanInfo.None
@@ -666,7 +680,10 @@ internal sealed class PresenceDecoder : IEventHandleReader
         foreach (var item in items)
         {
             var key = item.Gold ? ItemCodes.GoldKey : ItemCodes.KeyOf(item.ItemCode);
-            added.Add(new GroundDropView(item.Id, item.ItemCode, key, item.Name, item.Amount, item.Gold, Position(item.X, item.Y, item.Z)));
+            added.Add(new GroundDropView(item.Id, item.ItemCode, key, item.Name, item.Amount, item.Gold, Position(item.X, item.Y, item.Z))
+            {
+                RequiredLevel = item.RequiredLevel, Specialization = item.Specialization, ThrownByReceiver = item.OwnThrow
+            });
         }
 
         return new PresenceUpdate(_tick, [], [], [], [], FieldId) { GroundAdded = added };
@@ -695,6 +712,12 @@ internal sealed class PresenceDecoder : IEventHandleReader
     {
         _status = status;
         return OwnerUpdate();
+    }
+
+    private PresenceUpdate? OnPotionPotency(PotionPotencyPacket part)
+    {
+        _ownerItems.OnPotency(part);
+        return null;
     }
 
     public PresenceUpdate? OnItemDetails(ItemDetailsPartPacket part)
@@ -794,6 +817,7 @@ internal sealed class PresenceDecoder : IEventHandleReader
                 Mounted = looks.Mounted,
                 WeaponGlow = Glow(looks.WeaponGlow),
                 OffHandGlow = Glow(looks.OffHandGlow),
+                ArmorAge = looks.ArmorAge,
                 ShopSign = looks.ShopSign,
                 ClanId = (long)looks.ClanId,
                 ClanName = looks.ClanName,

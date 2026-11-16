@@ -55,8 +55,20 @@ public readonly record struct HeldItemGlow(short R, short G, short B, short A, i
     ];
 
     public bool Glows => Blink != 0;
+    public bool IsMaximumAging => Blink == AgedBlink && (R, G, B, A, Mix, MixScroll) == AgedColors[^1];
     public bool IsNone => !Glows && !ClassUp;
     public string MixTexture => Mix >= 0 && Mix < MixTextures.Length ? MixTextures[Mix] : "";
+
+    public static HeldItemGlow FromAging(int level)
+    {
+        if (level is < FirstGlowingAge or > LastGlowingAge)
+        {
+            return None;
+        }
+
+        var aged = AgedColors[level - FirstGlowingAge];
+        return new(aged.R, aged.G, aged.B, aged.A, AgedBlink, 0f, aged.Mix, aged.Scroll, false);
+    }
 
     public static HeldItemGlow For(ItemInstance item)
     {
@@ -67,10 +79,9 @@ public readonly record struct HeldItemGlow(short R, short G, short B, short A, i
 
         var glow = item.Definition.Glow;
         var held = new HeldItemGlow(glow.R, glow.G, glow.B, glow.A, glow.Blink, glow.Scale, -1, 0, item.Definition.DisplayEffect != 0);
-        if (item.UpgradeLevel is >= FirstGlowingAge and <= LastGlowingAge)
+        if (FromAging(item.UpgradeLevel) is { Glows: true } aged)
         {
-            var aged = AgedColors[item.UpgradeLevel - FirstGlowingAge];
-            held = held with { R = aged.R, G = aged.G, B = aged.B, A = aged.A, Blink = AgedBlink };
+            held = aged with { Scale = held.Scale, ClassUp = held.ClassUp };
         }
 
         // A mix whose highest sheltom is Transparo (6) or above, up to Mirage (10), glows in its colour; the first colour is a

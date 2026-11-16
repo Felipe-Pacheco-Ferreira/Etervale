@@ -243,7 +243,9 @@ means absent); `SkillRule.At` clamps the rank into the table. Distances are worl
 - Presentation per hit and on actors (`SkillRulePresentation.cs`, ignored by the server): `impactSounds` with
   `impactSoundOrder` (`Sequence`: impact n of the cast plays entry n, wrapping; `Random`; `Final`: only the cast's last
   impact, `SkillFormulas.HitCount`), played on landed hits instead of `impactSound`; `impactEffects` (impact n plays entry
-  n, the last entry after that); `-` in either list plays nothing at that impact. `statusLook` while the skill's
+  n, the last entry after that), `impactAnimationHits` (one-based effect entries that play on the animation event
+  even when the target avoids the hit or dies before it); `-` in either effect or sound list plays nothing at that
+  impact. `statusLook` while the skill's
   status is on an entity: `Frost`, `Poison`, `Distortion` (harmful statuses only), `Vanish`, `Vague`. `rageGlow`
   (red light 0..255 at each impact, fading 70 a second), `shieldModel` (drawn instead of a held shield while the
   status lasts, from the cast's hit on), `weaponGrowth[10]` (percent growth of a red translucent weapon copy during the

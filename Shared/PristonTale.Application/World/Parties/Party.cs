@@ -31,13 +31,34 @@ public sealed class Party
 }
 
 // A member as the party window, the minimap and the name boxes show it; the leader comes first.
-public readonly record struct PartyMemberView(ulong EntityId, string Name, int Level, int Life, int MaxLife, float X, float Z);
+public readonly record struct PartyMemberView(ulong EntityId, string Name, int Level, int Life, int MaxLife, float X, float Z)
+{
+    public PartyHuntCounters Hunt { get; init; }
+}
 
 public sealed class PartyView(PartyMemberView[] members)
 {
     public IReadOnlyList<PartyMemberView> Members => members;
 
     public bool SameAs(ReadOnlySpan<PartyMemberView> other) => members.AsSpan().SequenceEqual(other);
+
+    public bool SameRosterAs(PartyView? other)
+    {
+        if (other is null || other.Members.Count != members.Length)
+        {
+            return false;
+        }
+
+        for (var index = 0; index < members.Length; index++)
+        {
+            if (members[index] with { Hunt = default } != other.Members[index] with { Hunt = default })
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 }
 
 // A request to join waiting for its answer. From asks; Joiner is who joins on acceptance (From itself, or the player a

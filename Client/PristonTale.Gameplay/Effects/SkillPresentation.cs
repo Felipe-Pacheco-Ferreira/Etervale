@@ -326,6 +326,13 @@ public sealed class SkillPresentation : IVfxServices, IDisposable
     // The cast's resolution mode (an element picked per cast) may bring its own impact effect.
     internal static string ImpactEffectOf(SkillRule rule, SkillEventInfo skillEvent, int impact)
     {
+        var targetsEntity = rule.Kind is SkillKind.WeaponAttack or SkillKind.MagicBolt or SkillKind.Heal
+            || rule.Kind == SkillKind.Area && rule.AreaCenter == SkillAreaCenter.Target && skillEvent.TargetId != 0;
+        if (skillEvent.TargetCount <= 0 && (targetsEntity || rule.ImpactNeedsTarget) && !rule.ImpactAnimationHits.AsSpan().Contains(impact + 1))
+        {
+            return "";
+        }
+
         if (rule.ImpactEffects.Length > 0 && rule.ImpactEffects[Math.Min(impact, rule.ImpactEffects.Length - 1)] is { Length: > 0 } perHit)
         {
             return perHit == SkillRule.Silent ? "" : perHit;
@@ -380,8 +387,6 @@ public sealed class SkillPresentation : IVfxServices, IDisposable
             projectile.Stop();
         }
 
-        var targetsEntity = rule.Kind is SkillKind.WeaponAttack or SkillKind.MagicBolt or SkillKind.Heal
-            || rule.Kind == SkillKind.Area && rule.AreaCenter == SkillAreaCenter.Target && skillEvent.TargetId != 0;
         var point = rule.Kind == SkillKind.Area && rule.AreaCenter == SkillAreaCenter.Caster
             ? Position(skillEvent.CasterId, skillEvent.Position)
             : Position(skillEvent.TargetId, skillEvent.Position);
@@ -389,7 +394,7 @@ public sealed class SkillPresentation : IVfxServices, IDisposable
         _impacts[skillEvent.CasterId] = impact + 1;
         Looks.Impact(skillEvent, rule);
         var impactEffect = ImpactEffectOf(rule, skillEvent, impact);
-        if (impactEffect.Length > 0 && (skillEvent.TargetCount > 0 || !targetsEntity && !rule.ImpactNeedsTarget))
+        if (impactEffect.Length > 0)
         {
             Spawn(impactEffect, skillEvent.CasterId, skillEvent.TargetId != 0 ? skillEvent.TargetId : skillEvent.CasterId, point, -skillEvent.Facing);
         }

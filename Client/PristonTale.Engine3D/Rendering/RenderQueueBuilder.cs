@@ -19,7 +19,7 @@ internal sealed class RenderQueueBuilder
         IReadOnlyList<RenderBatch> batches,
         IReadOnlyList<RenderBatch> shadowBatches,
         PristonFrameContext frame,
-        bool includeShadowCasters = true, bool opaqueFrontToBack = false)
+        bool includeShadowCasters = true, bool opaqueFrontToBack = false, BoundingFrustum shadowFrustum = null)
     {
         _queue.Clear();
         _frustum.Matrix = frame.View * frame.Projection;
@@ -34,7 +34,7 @@ internal sealed class RenderQueueBuilder
             }
 
             var visible = _frustum.Intersects(batch.Bounds);
-            var castsShadow = includeShadowCasters && CastsShadow(batch);
+            var castsShadow = includeShadowCasters && CastsShadow(batch) && (shadowFrustum is null || shadowFrustum.Intersects(batch.Bounds));
             if (!visible)
             {
                 culled++;
@@ -62,7 +62,7 @@ internal sealed class RenderQueueBuilder
             for (var i = 0; i < shadowBatches.Count; i++)
             {
                 var batch = shadowBatches[i];
-                if (batch.Shade is { Shadowed: false })
+                if (batch.Shade is { Shadowed: false } || shadowFrustum is not null && !shadowFrustum.Intersects(batch.Bounds))
                 {
                     continue;
                 }

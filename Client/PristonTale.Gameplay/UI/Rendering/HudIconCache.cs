@@ -142,7 +142,7 @@ public sealed class HudIconCache : IDisposable
 
     private PreparedIcon Decode(string key, Dictionary<string, string> paths)
     {
-        if (!paths.TryGetValue(key, out var path))
+        if (!ItemIconFiles.TryFind(paths, key, out var path))
         {
             throw new FileNotFoundException($"HUD item icon is missing for key '{key}'.", key);
         }

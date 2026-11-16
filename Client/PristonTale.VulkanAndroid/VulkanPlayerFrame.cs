@@ -1,6 +1,7 @@
 using Android.Content;
 using Android.Graphics;
 using Android.Views;
+using PristonTale.Contracts.Sessions;
 using PristonTale.Simulation.Characters;
 using PristonTale.Simulation.Progression;
 
@@ -10,18 +11,20 @@ using PristonTale.Simulation.Progression;
 internal sealed class VulkanPlayerFrame : View
 {
     private const float FrameRight = .66f;
-    private const float FrameBottom = HudPlacement.PlayerPortraitY + HudPlacement.PlayerPortraitSize + .02f;
+    private const float FrameBottom = .241f;
     // The shine crosses a bar every ShineSeconds.
     private const float ShineSeconds = 3f;
 
-    private readonly string _name;
+    private readonly CharacterSummary _character;
     private readonly float _height;
     private readonly EasedGauge _life = new();
     private readonly EasedGauge _mana = new();
     private readonly EasedGauge _stamina = new();
     private readonly RectF _box = new();
     private string _level = "1";
-    private int _levelValue = 1;
+    private int _levelValue;
+    private int _tier;
+    private string _title;
     private int _statPoints;
     private string _lifeText = "";
     private string _manaText = "";
@@ -29,11 +32,15 @@ internal sealed class VulkanPlayerFrame : View
     private long _lastFrame;
 
     // screenHeight: the screen's height in pixels, the unit of HudPlacement.
-    public VulkanPlayerFrame(Context context, string name, float screenHeight) : base(context)
+    public VulkanPlayerFrame(Context context, CharacterSummary character, float screenHeight) : base(context)
     {
-        _name = name;
+        _character = character;
         _height = screenHeight;
-        ContentDescription = $"Retrato de {name}";
+        _levelValue = character.Level;
+        _level = _levelValue.ToString();
+        _tier = character.Tier;
+        _title = ClassProfiles.Of(character.Class).TitleAt(_tier);
+        ContentDescription = $"Retrato de {character.Name}";
     }
 
     public int FrameWidth => (int)(FrameRight * _height);
@@ -41,8 +48,17 @@ internal sealed class VulkanPlayerFrame : View
 
     public void Update(OwnerState owner)
     {
-        _level = owner.Level.ToString();
-        _levelValue = owner.Level;
+        if (_levelValue != owner.Level)
+        {
+            _levelValue = owner.Level;
+            _level = _levelValue.ToString();
+        }
+
+        if (_tier != owner.Tier)
+        {
+            _tier = owner.Tier;
+            _title = ClassProfiles.Of(_character.Class).TitleAt(_tier);
+        }
         _statPoints = owner.StatPoints;
         _life.Set(owner.Life, owner.MaxLife);
         _mana.Set(owner.Mana, owner.MaxMana);
@@ -68,7 +84,9 @@ internal sealed class VulkanPlayerFrame : View
         var phase = VulkanHudArt.Phase(now);
         VulkanHudArt.Plate(canvas, _box, .05f * h, centerX, centerY, size / 2f, crest: true);
         VulkanHudArt.Aura(canvas, centerX, centerY, size / 2f, phase);
-        VulkanHudArt.LevelBadge(canvas, centerX - size * .36f, centerY + size * .38f, .03f * h, _level, _levelValue, ExperienceTable.MaximumLevel, phase);
+        var maxLevel = _levelValue >= ExperienceTable.MaximumLevel;
+        VulkanHudArt.LevelBadge(canvas, centerX - size * (maxLevel ? .27f : .36f), centerY + size * .38f, (maxLevel ? .043f : .03f) * h,
+            _level, _levelValue, ExperienceTable.MaximumLevel, phase);
         if (_statPoints > 0)
         {
             // Points to spend: a plain red dot on the portrait (a tap opens the status, which counts them).
@@ -77,13 +95,17 @@ internal sealed class VulkanPlayerFrame : View
 
         var left = centerX + size / 2f + .03f * h;
         var right = FrameRight * h - .03f * h;
-        VulkanHudArt.Label(canvas, _name, left, .06f * h, .036f * h, VulkanHudArt.EdgeLight, Paint.Align.Left!);
+        VulkanHudArt.Label(canvas, _character.Name, left, .06f * h, .036f * h, VulkanHudArt.EdgeLight, Paint.Align.Left!);
         _box.Set(left, .085f * h, right, .125f * h);
         VulkanHudArt.Bar(canvas, _box, VulkanHudArt.Life, _life.Shown, _life.Trail, _lifeText, .026f * h, phase / ShineSeconds % 1f);
         _box.Set(left, .134f * h, right, .158f * h);
         VulkanHudArt.Bar(canvas, _box, VulkanHudArt.Mana, _mana.Shown, _mana.Trail, _manaText, .019f * h, (phase / ShineSeconds + .33f) % 1f);
         _box.Set(left, .166f * h, right - .08f * h, .186f * h);
         VulkanHudArt.Bar(canvas, _box, VulkanHudArt.Stamina, _stamina.Shown, _stamina.Trail, _staminaText, .016f * h, (phase / ShineSeconds + .66f) % 1f);
+        if (maxLevel)
+        {
+            VulkanHudArt.MaxLevelTitle(canvas, _title, left, right, .213f * h, .016f * h, phase);
+        }
         // The aura, the badge and the shine move all the time: smoothly while a gauge eases, at VulkanHudArt.AnimationFrameMs otherwise.
         if (moving)
         {

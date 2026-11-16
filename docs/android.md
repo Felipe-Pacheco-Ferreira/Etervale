@@ -286,10 +286,12 @@ Everything the client and the tools need is in the repository except:
 - the Vulkan runtime libraries under `Client/PristonTale.VulkanAndroid/obj/vulkan`, rebuilt by `build.ps1` (NDK
   28.2.13676358, CMake 3.22.1, Ninja 1.13.1, both `arm64-v8a` and `x86_64`), which also stages the world archives.
 
-Then: build the runtime and archives with `build.ps1`, bump the version in the project file, run `package-release.ps1`
-with the keystore, the SDK and JDK paths and the server address, and publish the server with
-`dotnet publish Server/PristonTale.Server -c Release -o <folder>`. A client that sends the mount request needs a server
-of the same build.
+Build the runtime and archives with `build.ps1`, then increment both `ApplicationVersion` and
+`ApplicationDisplayVersion` in the Android project. Run `package-release.ps1` with the original signing key, the
+SDK and JDK paths, and a server address reachable from the phone. Check the package ID, version code, and signing
+certificate against the previous APK before replacing it. Publish the matching Windows server with
+`dotnet publish Server/PristonTale.Server -c Release -r win-x64 --self-contained true -warnaserror -o <folder>`.
+Keep the whole publish folder together and configure the database, TLS certificate, and game assets separately.
 
 Vulkan build pitfalls on Windows:
 
@@ -302,10 +304,12 @@ Vulkan build pitfalls on Windows:
   form, e.g. `rd /s /q "\\?\<full path>"`) and build again with large programs closed.
 - `package-release.ps1` stops on the `Picked up JAVA_TOOL_OPTIONS` line `apksigner` writes to stderr under Windows
   PowerShell 5.1, after the APK is built and signed; check the signature by hand then.
-- Raise `CacheVersion` in `VulkanAssets.cs` whenever an APK archive (`ricarten-desktop.zip`, `opening-desktop.zip`,
-  `adventurer-journey.zip`) gains content, or phones that unpacked an earlier version never see it. The archives unpack
-  over one folder every version keeps (`NoBackupFilesDir/assets`), beside the asset packs downloaded later
+- Raise `CacheVersion` in `VulkanAssets.cs` whenever a base APK archive (`ricarten-desktop.zip`, `opening-desktop.zip`,
+  `adventurer-journey.zip`, `summon-models.zip`) gains content. The archives unpack over one folder every version keeps
+  (`NoBackupFilesDir/assets`), beside the asset packs downloaded later
   ([packs.md](packs.md)); the older per-version folders (`ricarten-desktop-<n>`) are deleted once.
+- `skill-effects.zip` is built directly from the shared VFX importer's authored definitions. It updates `Effect/Vfx`
+  after the base archives, with its own content hash so updating effect definitions keeps the base asset cache.
 - The loading screen (`VulkanLoadingScreen`) drifts the game's art in and out under rising golden embers, over a gold bar
   with a sweeping light. While the APK archives unpack ("Preparando arquivos do jogo…") the bar fills with
   `VulkanAssets.Progress`, each archive's copy out of the APK and its unpacking counted by its size, and the line ends
@@ -444,13 +448,22 @@ The Vulkan package is currently limited to Ricarten, so hunts in other fields re
 
 For a Windows build, use PowerShell 7 and install the .NET 10 Android workload, Android SDK and NDK, JDK, CMake and Ninja.
 Fetch the pinned SDL2 and FAudio dependencies using the runtime build instructions, supply the original
-`assets/` directory, and build the Windows client in Release to compile its Vulkan content. Run
+`assets/` directory, and build the Windows client in Release to compile its Vulkan content. When preparing content
+only on a PC without a desktop Vulkan runtime, pass `-p:EtervaleRuntimeRid=` to the desktop build. Run
 `Client/PristonTale.VulkanAndroid/build.ps1` with `-AndroidSdk`, `-Ndk` and `-JavaSdk`. Use `-CMake` and `-Ninja` for explicit tool paths, and `-AssetRoot` and `-DesktopContent` to use existing source and content directories.
+Use `-WorldDatabase` when the imported world SQLite database lives outside `data/pristontale.db` in the repository.
 On Windows, if Ninja runs a child command but never returns in a restricted shell, verify it in a regular PowerShell session and pass the working executable with `-Ninja`.
 Use `-SkipNativeBuild` to package existing ARM64 and x86_64 libraries from `obj/vulkan` after compiling them separately.
 The signed APK is copied to Etervale-<version>.apk in the Vulkan Android project's Release output. The asset package covers Ricarten,
 the character selection, player classes, city NPCs, the speech-bubble frames (`StartImage/MessageBox`) and an
 unused Hound model (`char/monster/Hound`, the earlier travel mount; the Hopy mount comes with the journey archive).
+`summon-models.zip` carries the model, motions, submodels and textures for normal and event crystal summons from the
+world database. They can appear in bundled fields without a pack download. To stage it with three existing world archives:
+
+```sh
+dotnet run --project tools/PristonTale.PackBuild -c Release -- --summon-models <assets> <world.db> Client/PristonTale.VulkanAndroid/obj/vulkan
+```
+
 Original game assets are supplied separately.
 Use forward slashes for entry paths in the asset archive so the same archive extracts correctly on Android.
 For on-device quest and Auto-caça verification, connect to a running server that publishes quest target codes
@@ -514,6 +527,51 @@ Rewards are adapted from the public Zephira quest catalog (https://clandragonbal
 
 Device check confirmed that 0.31 entered Ricarten on the updated server and displayed the 12-by-6 bag grid with the three existing 2-by-2 crystal items. The walkthrough ended in Preparation before the potion grant.
 
+### Free auto-hunt
+
+The Auto-caça button beside Menu and Bolsa opens the free-hunt controls. While hunting, a tap on Pausar stops
+the hunt and a long press reopens the controls. The HUD editor can move, scale and fade the button.
+The full-height controls have Caça, Habilidades, Poções, Segurança, Coleta, Ganhos, Grupo and Log tabs.
+They start or pause without leaving the panel. Profiles live in `hud-layout.json`. An optional account profile
+shares settings among the account's characters on this installation, with separate skill lists per character.
+Caça can copy a versioned profile code to the clipboard for transferring options and skill order to another device.
+Import pauses the hunt and applies the options to the scope selected on the destination. The code contains only
+hunt settings. It carries no credentials, position, logs or gains. Transfer is initiated by the player.
+
+- **Caça:** the start fixes a field position. The default ranges are 640 for hunting and 320 for looting (64 UI units
+  per step, 25 world units per step). Blue and violet ground bands briefly preview the sliders. The client chooses
+  living visible wild monsters by the name and level filters, recent attacks and claims, quest and boss priority.
+  It can hold a target, give up after a configured stall, and walk a planned route back to the start.
+- **Habilidades:** learned active skills can be ordered and given per-skill minimum mana percentages. The client
+  prioritizes an area skill when the configured count and range are met. Normal attacks, shield-set swaps for buffs,
+  crystal summons, Force Orbs and supported premium items use the same commands as manual play. While Auto-caça is
+  active, crystal pets can hunt independently, follow the owner's last combat target or defend against threats to
+  the owner and themselves. The server checks that each target is a hostile monster. Stopping restores independent behavior.
+- **Poções and Segurança:** resource thresholds, preferred potion keys, minimum gaps and belt refill use server
+  inventory commands. Without a preferred potion in stock, the client uses server-authored ranges to choose the
+  smallest guaranteed dose that reaches the threshold, or the strongest if none reaches it. If the server does
+  not send potency data, the client falls back to item code order. Critical life takes
+  priority over other resources. The client can pause while the player takes manual control and resume after the
+  configured delay. Exhausted supplies, critical life, full inventory, death and party rules can pause or seek a town return.
+  Warps, automatic quests and backgrounding stop free hunting.
+- **Coleta:** while idle or at a configured break it walks to eligible drops inside the loot radius. The 22 categories
+  use equipment and usable item rules, with separate groups for runes, travel cores, premiums, castle, mastery and
+  event items. The paginated catalog from `Assets/auto-hunt-items.tsv` supports an exact item or group, a name filter
+  and available item icons. Potion caps include the incoming stack. Eligible quest items come first, then pinned items,
+  matching specialization and distance. Filters cover level ranges and the receiver's own throws. On load, profiles
+  from older builds retain the former coverage of their Other exclusion. The server validates all pickups.
+- **Ganhos, Grupo and Log:** personal totals count observed owner changes, hits, potions and confirmed ground pickups.
+  Ganhos shows session rates, recent kills and DPS, confirmed ground gold, wallet changes and the collected item totals.
+  Grupo reports server-confirmed effective damage against wild monsters, credited kills, combat XP and deaths while
+  grouped, including members on other maps. Counters start when the member is observed or the panel is reset and its
+  totals stay in the session when the member leaves. DPS uses the latest 30 seconds. Older servers use locally visible
+  hits. Personal totals and the 300 latest log entries stay on the device. Log filters hunting and safety, deaths or
+  group activity and supports text search. A death includes the attacker when the client identifies the monster or
+  a current party member from a recent fatal hit.
+
+Atacar and enemy skill taps with no marked target use the same hunt radius around the player. A marked living target
+keeps priority and is approached according to the normal combat rules.
+
 ### Automatic quest
 
 For First Skill, the navigator requests training at the home skill master if the character has no learned skill and
@@ -525,15 +583,24 @@ the navigator returns to the instructor in the character's home town.
 Vulkan 0.32 plays the Adventurer Journey by itself (`QuestNavigator`, run once a frame on the game thread from
 `RicartenProbe.Update`). It waits for the player: the quest card's Iniciar auto-missão button starts it (the card points
 to the guide meanwhile), and the journal's auto-hunt action does too. The joystick pauses it.
+NPC service retries are scoped to their destination and quest revision, so a hand-in can lead straight to the next
+offer. The animated login requests `pt-BR` for the server's localized names and lines. The APK prefers the available
+Portuguese dialog and journal documents from the desktop client, with a fallback to the base documents.
 
 - **Route data.** `AdventurerJourneyRoute` (`Shared/PristonTale.Simulation/Quests`) holds, per tribe, the guide's
-  name and place, the hunting field, the exits between them (Ricarten and Forest 1 meet at a seam; Pillai and Forever
+  name, NPC template and place, the hunting field, the exits between them (Ricarten and Forest 1 meet at a seam; Pillai and Forever
   Fall 1 at warp gates) and the hunting field's spawn points nearest the entry. The server names the guide from the
-  same table. Points are a field's own planar (x, z).
+  same table. Auto-mission and the map identify the guide by NPC template so localized names do not break either.
+  The welcome objective and new hunts use the class's home tribe on the client and server. A hunt already accepted
+  keeps the route and guide of its saved prey through delivery.
+  Points are a field's own planar (x, z). `QuestWorldRoute` uses the Ricarten seam from that table in both
+  directions alongside the world catalog's normal gates, respecting field entry levels. Classic missions use that
+  route to reach the hunt from town and to return to the instructor.
 - **Steps** (`QuestNavigator.Plan`, from the quest view):
   - Welcome objective or state 0: go to the guide and talk.
   - State 1: equip a weapon from the bag and put a potion in the belt when missing (the same inventory commands the
-    bag uses), then talk to the guide.
+    bag uses), then talk to the guide. The navigator chooses a usable weapon. Only the kit copies handed out by the
+    guide cap requirements at the class's level-one attributes, so the starting Pike can equip its training spear.
   - State 2 with kills left: travel to the hunting field and hunt the quest's monster (`QuestCode`), walking from one
     spawn point to the next while none is in view and picking up drops within reach.
   - State 2 with the kills done: the guide takes a Hopy Crystal gathered after the hunt began. The hunt's last kill
@@ -655,7 +722,20 @@ footprint (`VulkanItemIcons`: the desktop's `ItemIconFiles` sprites, decoded off
 `ItemDetailView` on alternating bands, durability as a gauge) with its actions: equip, remove, belt or store. A well's
 edge and glow take the item's tint: amber for a unique item, blue for an upgraded, aged or mixed one, red when the
 character's class cannot use it; the chosen item has a bright gold double edge, and an upgrade shows as +N on the
-sprite. Every action is the inventory command the server validates.
+sprite. The sheet uses the desktop's aging gauge data to show the current rank and live maturation count, including
+at zero progress. Light blue marks stats affected by completed aging levels, and the sheet includes bonus mana and
+the desktop's corrected absorption value. The world uses shared desktop glow rules, where aging alone starts to
+glow at +4 for weapons, shields with a model and the equipped armour. At +20 the glow has a persistent gold edge,
+and the weapon carries orbiting sparks. Item sprites are enlarged once with an edge-aware 2x filter during decoding.
+The inventory and the selected item detail show a moving gold outline around +20 equipment.
+The stock archives omit the Stygian Shield and OR131 ring sprites.
+The item well and sheet prefer the exact sprite and use the DS129 shield or OR129 ring artwork when it is absent.
+Other shields and rings without a sprite use their category glyph.
+The server validates all changes. For a monster crystal or soul stone, Invocar opens a dark confirmation plate with
+the item's sprite, name and cost. Cancel, Android Back, a tap outside or closing the bag dismisses it. Confirming
+sends the same `ItemUseCommand` the desktop client sends, with the current inventory revision.
+The server decides whether to consume the item and summon its creature, with the existing level, field and summon limit
+checks. The bag shows the localized result, and elite quest items still use their own quest action.
 
 Device runs: 0.32 walked SatroX to Skadi, readied the belt, advanced to the hunt and reached Forest 1, where it hunted
 Hopy; the route of that build cut through walls, which 0.33 replaced with `GroundRoute`. On 0.38 the route reached the
@@ -705,24 +785,43 @@ format of [client-settings.md](client-settings.md); only `quality` is read back)
 quality the system ends the app for is not chosen again at the next start. A first start, or a file that cannot be read,
 uses Baixo. On Android the mobile presets apply the following world-rendering budgets:
 
-| Preset | Render width | Sun shadow map | Cascades | Sky and post-processing |
+| Preset | Maximum world width | Sun shadow map | Cascades | Sky and post-processing |
 | --- | ---: | ---: | ---: | --- |
-| Low | 864 px | 1024 px | 1 | Painted sky |
-| Medium | 928 px | 1024 px | 2 | Painted sky, FXAA, no ambient occlusion or bloom |
-| High | 960 px | 1024 px | 3 | Painted sky and PCF, up to two 512-pixel lamp shadow tiles, eight local lights, no anti-aliasing or ambient occlusion pass |
+| Low | 1280 px | 1024 px | 1 | Painted sky |
+| Medium | 1440 px | 1024 px | 2 | Painted sky, FXAA, no ambient occlusion or bloom |
+| High | 1600 px | 1024 px | 3 | Painted sky and PCF, up to two 512-pixel lamp shadow tiles, eight local lights, no anti-aliasing or ambient occlusion pass |
 
-All three cap the sun shadow refresh rate at 30 Hz. The width is read at game start, so a quality chosen in the menu
-uses its width at the next start.
+The three presets refit the sun shadow cascades at up to 30 Hz. While the camera moves, the nearest cascade redraws
+between refits. The next cascade also redraws at rest or when the camera is far enough that nearby actors may cross
+the first split. A single sun-only cascade culls shadow casters against its light volume before sorting.
+`MobileGraphics.SceneWidthLimit` caps the in-world render target width and preserves the viewport's aspect
+ratio. A quality change applies the new width on the next rendered frame. When each scene dimension is at most 75%
+of the output, tonemapping and FXAA run at scene resolution before a bilinear upscale. The HUD, the animated login
+and the character selection use the surface resolution.
+
+`VulkanHudLifecycle` selects the supported display mode at the same physical resolution closest to 90 Hz from the
+modes above 60 Hz, when available. It passes that mode to the window and, on Android 11 or later, requests the rate
+on the SDL surface when it is created. Vulkan stays synchronized to the display. Android can choose a different mode
+depending on device policy. Check the active refresh rate separately from the FPS readout when profiling.
 The graphics menu warns that the system may close the game for memory when using Alto.
 
-The startup loading screen shows the APK version in its lower-left corner. On world entry, the field streamer decodes the stage on a worker
-thread and uploads it incrementally on the game thread. The selection stays visible until the world is ready.
-The HUD attaches after the first world frame.
+While walking, the client only sends entities whose bounds meet the swept movement to the collision resolver.
+It reuses the loaded field's neighbor list and samples water once per frame when processing terrain animation ticks.
+The collision response and field streaming cadence use the rules in [client.md](client.md).
+
+The startup loading screen shows the APK version in its lower-left corner. On world entry, the field streamer decodes
+the stage on a worker and uploads it incrementally on the game thread. The playable character's initial appearance is
+prepared on workers in parallel with the field. The selection stays visible until both are ready for entry, and the
+HUD attaches after the first world frame. The sound banks publish up to two decoded sounds each per Android update.
+The combat bank queues the arrival cue before weapon sounds and footsteps.
+The remote actor manager uploads prepared NPC and monster textures across frames before adding their meshes to the
+scene. Each update advances up to two texture uploads with a soft 1 ms budget. Shared textures are reused when
+the same model appears again. Spawn state and collisions continue to follow the server while a model is prepared.
 
 ### World HUD
 
-NPC dialog plates size to their content. Player and target HUD frames are hidden while an NPC portrait is shown,
-so their gauges do not draw over the live 3D portrait.
+NPC dialog plates size to their content. While an NPC portrait is shown, the game hides the target HUD frame and skips
+its portrait pass. The player's frame remains visible.
 
 The HUD is drawn by Android views laid out in fractions of the screen height, the short side in landscape:
 
@@ -736,7 +835,10 @@ The HUD is drawn by Android views laid out in fractions of the screen height, th
   in the HUD's make (a dark plate in the gold ring of the portrait bezel, a gold numeral); its stone, an inner line
   tinting the plate, climbs with the level against `ExperienceTable.MaximumLevel`: amber, then emerald from a quarter,
   sapphire from half and crimson from three quarters, with a breathing glow; at the highest level it burns, with
-  flickering flames and rising embers (`VulkanHudArt.LevelBadge`).
+  a larger medallion with flickering flames, rising embers and a breathing gold ring
+  (`VulkanHudArt.LevelBadge`). At maximum level, the HUD also shows the character's current class title on a
+  crimson plate with pulsing gold ornaments and a highlight that passes through the title. Two gold arcs circle the
+  maximum-level medallion at different speeds.
 - **Target frame** (`VulkanTargetFrame`, top centre): the entity the player attacks, or else the one picked, with its
   live 3D portrait, name and level and, for monsters, the life gauge with the percentage left. The game thread
   publishes it each frame (`VulkanWorldSession.PublishTarget`, from `HudCombat.TryGetTargetState`); NPCs show no gauge.
@@ -763,14 +865,27 @@ The HUD is drawn by Android views laid out in fractions of the screen height, th
   `RicartenProbe.Draw` draws the head there. Beside it, the NPC's name as a section heading (`VulkanPanelArt.Section`),
   the quest title when it differs, the line in a recessed card (`VulkanPanelArt.Inset`) that scrolls past 84 dp, and
   the choices as 44 dp buttons, the first highlighted, then Fechar. A dialog with no NPC (a prompt the server opens)
-  has no portrait. Taps on the plate do not reach the world. While the automatic quest runs, the dialog answers its
-  first choice after `VulkanHudLifecycle.AutoAnswerMilliseconds`.
+  has no portrait. Taps on the plate do not reach the world. The automatic quest waits while an NPC dialog is open.
+  For a supported prompt with one action that fits without scrolling, it waits at least 5.5 seconds before advancing,
+  with 300 ms per word plus a 1.8 second opening allowance (`HudQuestDocuments.ReadingTime`). Prompts with
+  multiple choices or scrollable text wait for the player.
 - **Action wheel** (`VulkanActionWheel`, bottom right): the large attack button, four skill buttons on an arc around
-  it and the potion belt beside them (`VulkanActionOrb` buttons). The skill buttons fill with the learned skills in
+  it and the potion belt beside them (`VulkanActionOrb` buttons). The skill buttons fill with the learned active skills in
   order; a long press, or the Habilidades window, puts another skill on one (`VulkanActionWheel.Assign`; a button that
   held that skill gives it up). The choice is kept per character in `hud-layout.json` (`HudLayoutEditor.SkillSlotsOf`,
-  `KeepSkillSlots`); a kept skill no longer learned frees its button. A skill that needs an enemy is cast at the current
-  target, or the attack button's search picks one first. The belt shows each potion's sprite (`VulkanItemIcons`,
+  `KeepSkillSlots`); a kept skill no longer learned frees its button. Each assigned skill shows its original desktop
+  icon (`HudArt.SkillButton`) from the bundled UI assets, with an abbreviated name while the bitmap is unavailable.
+  The wheel and skill cards use the same border: silver, emerald, blue, violet and gold for tiers 1 to 5.
+  Ten marks along the border fill with the skill's trained rank, and rank 10 adds two moving gold highlights and a spark.
+  A recovering skill shows its remaining seconds and a radial shade over the icon. The wheel uses the desktop's
+  `SkillCooldownBook` with the server's cast results and cooldown snapshots, including those sent after a field change.
+  Tapping a skill pauses the automatic quest. An enemy skill uses the selected living target or picks the nearest
+  visible monster within the radius set in Auto-caça. The shared scene approaches and faces the target before sending
+  the cast, and the HUD shows any server refusal in Portuguese. Self skills and buffs use the same cast flow without
+  choosing a monster.
+  The second event of Grand Cross shows its cross model at the target's position even if the target fell on the
+  first hit. The PC shares this presentation rule.
+  The belt shows each potion's sprite (`VulkanItemIcons`,
   shared with the character window) and its count.
 - **Combat feed** (`VulkanCombatFeed`, right, above the wheel): kills, experience, gold, level-ups and quest counts rise
   and fade; a counter of this session's kills flares at each one. A kill is a monster the player struck
@@ -811,13 +926,16 @@ The HUD is drawn by Android views laid out in fractions of the screen height, th
   (`VulkanHudArt.OrnateRing`; ruby for the player and monsters, blue for NPCs); the player's also has gold rays behind
   it, a laurel branch up each side and a crown with a gem on top (`VulkanHudArt.Crest`). The attack button is crossed swords on a
   steel disc in the same bezel, over a red glow (`VulkanHudArt.AttackFace`). Skill slots with no learned skill stay in place, dimmed.
-- **Quest card:** a tap folds it down to the title over the kill bar (the title alone when nothing is counted) and opens it
-  again; the choice is kept.
-- **Editing the HUD:** Menu, Editar HUD outlines every part on its own (player frame, target frame, chat, chat lines, each menu
-  button, minimap, FPS and ping line, quest card, attack button, each skill button, each potion, combat feed, experience bar); a drag moves
-  one, Salvar keeps the places, Padrão puts them back and
-  Cancelar restores the earlier ones (`HudLayoutEditor`). Offsets are fractions of the screen height, kept in
-  `hud-layout.json` in the app's files folder with the folded card and the tutorials seen. Moving a frame moves its 3D
+- **Quest card:** a tap folds it down to the title over the kill bar (the title alone when nothing is counted).
+  Reopen the card to show the start or pause control for the automatic quest. Folding the card keeps the current
+  automatic quest state. The folded choice is saved.
+- **Editing the HUD:** Menu, Editar HUD outlines the HUD parts. Drag any outline to move it. Tap a round action button
+  (Menu, Bolsa, chat, attack, a skill or a potion) for Tamanho (65–160%) and Transparência (0–80%) sliders. The
+  sliders preview each button individually. Drag the editor panel by its heading to uncover controls behind it.
+  Salvar commits the preview, Padrão previews the original layout and
+  appearance, and Cancelar restores the saved layout and appearance. `HudLayoutEditor` stores offsets as fractions
+  of the screen height and the two percentages per button in `hud-layout.json`. Earlier layouts use 100% size
+  and 0% transparency. Moving a frame moves its 3D
   portrait too (`HudPlacement.ShiftPlayer`, `ShiftTarget`, read by `RicartenProbe.Draw`). Every part is a direct child of
   the HUD layer, or of a layer that spans the screen (the action wheel's buttons), so a part moved anywhere still takes
   touches.

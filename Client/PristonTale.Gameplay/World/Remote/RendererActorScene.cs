@@ -10,6 +10,7 @@ public sealed class RendererActorScene(PristonRenderer renderer) : IActorScene
     private readonly PristonRenderer _renderer = renderer;
 
     public Task PrepareActorResourcesAsync(PristonActor actor) => _renderer.PrepareActorResourcesAsync(actor);
+    public IEnumerable<long> UploadPreparedActorTextures(PristonActor actor) => _renderer.UploadPreparedActorTextures(actor);
 
     public void CopyActorPlayback(ActorHandle source, ActorHandle destination) => _renderer.CopyActorPlayback(source, destination);
     public void AttachActor(ActorHandle child, ActorHandle parent, string boneName, string cheerBoneName = null) =>

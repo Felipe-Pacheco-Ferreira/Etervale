@@ -3,7 +3,7 @@ using Android.Graphics.Drawables;
 
 namespace PristonTale.Mobile;
 
-internal enum HudGlyph { Attack, Potion, Skill, Journal, Chat, Run, Auto, Exit, Menu, Bag, Calendar, Gift }
+internal enum HudGlyph { Attack, Potion, Skill, Journal, Chat, Run, Auto, Exit, Menu, Bag, Calendar, Gift, Shield, Ring }
 
 internal sealed class HudIcon(HudGlyph glyph, int size) : Drawable
 {
@@ -32,6 +32,25 @@ internal sealed class HudIcon(HudGlyph glyph, int size) : Drawable
             case HudGlyph.Potion:
                 Line(9, 4, 15, 4, 15, 9, 19, 14, 18, 20, 6, 20, 5, 14, 9, 9, 9, 4);
                 Line(6, 14, 18, 14);
+                break;
+            case HudGlyph.Shield:
+                _path.Reset();
+                _path.MoveTo(12, 3);
+                _path.QuadTo(15, 5, 20, 6);
+                _path.LineTo(20, 12);
+                _path.CubicTo(20, 16, 16, 20, 12, 22);
+                _path.CubicTo(8, 20, 4, 16, 4, 12);
+                _path.LineTo(4, 6);
+                _path.QuadTo(9, 5, 12, 3);
+                _path.Close();
+                canvas.DrawPath(_path, _paint);
+                Line(12, 8, 12, 17);
+                Line(8, 12, 16, 12);
+                break;
+            case HudGlyph.Ring:
+                canvas.DrawArc(5, 8, 19, 22, -55, 290, false, _paint);
+                Line(12, 3, 18, 6, 12, 12, 6, 6, 12, 3);
+                Line(6, 6, 18, 6);
                 break;
             case HudGlyph.Skill:
                 Line(12, 2, 14, 9, 22, 12, 14, 14, 12, 22, 10, 14, 2, 12, 10, 9, 12, 2);

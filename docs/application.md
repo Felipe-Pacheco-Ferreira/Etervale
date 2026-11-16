@@ -563,9 +563,12 @@ original's texts (`PartyMessages`, [simulation.md](simulation.md)).
   the party to the next member first, and a party of two is released when one leaves. `LeaveAsync` (every way a
   connection ends) leaves the party the same way and returns the lines in `WorldLeave.Notices`; a request from a player
   who left answers nothing. A player who enters again has no party.
-- `RefreshParties` rebuilds each party's `PartyView` (name, level, life, planar place) and its average level after a
-  change and every 10 ticks; every snapshot carries the receiver's view and pending request, and the encoder sends what
-  changed. `WorldServer.Parties` (`PartyRoster`) is the chat's `IPartyRoster`.
+- `RefreshParties` rebuilds each party's `PartyView` (name, level, life, planar place, hunt counters) and its average level
+  after a change and every 10 ticks. Every snapshot carries the receiver's view and pending request, and the encoder
+  sends what changed. `WorldServer.Parties` (`PartyRoster`) is the chat's `IPartyRoster`.
+- While grouped, each player counts effective damage to wild monsters and server-credited kills, including those of its
+  summons. The player also counts combat experience actually awarded and lethal hits it received. The shared roster
+  carries these counters to the party even when members occupy separate fields.
 - Shares: a kill's experience is taken at the party's average level and split by size (`FieldCombat.AwardParty`); a
   dead player, alone or in a party, gains no experience (its summons may still kill, and a level gained lying dead
   would fill its life); gold a monster dropped (`FieldGroundLoot.FromMonster`), at any amount, and other gold
@@ -619,6 +622,8 @@ With `players.starter_gifts` on, a new character (`CharacterRecordFactory.NewSta
 timed: the tribe's guide hands it over into the bag at the first talk of the Adventurer's Journey (`AdventurerJourney`,
 through `IQuestItemSource.StarterGift`), so a new character starts without equipment and equips it in the journey's
 Preparation; the server times only the crystals (`StarterGifts.Next` skips the kit).
+The guide caps an issued kit piece's level and attribute requirements at the class's starting values if necessary.
+This changes the issued item roll and leaves the catalog's normal requirements intact.
 
 1. The first weapon of the class's own family (`StarterGifts.WeaponKey`): Fighter WA101, Mechanician WC101, Archer
    WS101, Pikeman WP101, Atalanta WT101, Knight WS201, Magician and Priestess WM101, Assassin WD101, Shaman WN101.

@@ -1,8 +1,8 @@
 # Asset packs
 
 The Android APK carries Ricarten, Pillai, Forest 1 to 3 and Forever Fall 1 to 4 with their monsters (`build.ps1`,
-`package-adventurer-assets.ps1`). Every other field and monster comes as an asset pack that the phone downloads from
-the website the first time it needs it. The whole game data would make an APK of more than 4 GB, which Android does not
+`package-adventurer-assets.ps1`) and the normal and event crystal summon models (`ptpack --summon-models`). Other fields
+and monsters come as asset packs that the phone downloads from the website the first time it needs them. The whole game data would make an APK of more than 4 GB, which Android does not
 install reliably. The packs hold only the files the client reads, about 940 MB for all 53 fields and 412 monster and
 NPC models.
 
@@ -18,7 +18,7 @@ NPC models.
 | --- | --- |
 | `Shared/PristonTale.Assets/PackManifest.cs` | `packs.json`: every pack (id, size, SHA-256, files), each field's packs, the model-to-pack map; pack ids and model keys |
 | `Client/PristonTale.Engine3D/Rendering/PristonAssetDependencies.cs` | The files a stage or an actor reads, by the renderer's own readers, material selection and texture resolution (`ptdump` uses it too) |
-| `tools/PristonTale.PackBuild/` (`ptpack`), `tools/pack-build.ps1`/`.sh` | Builds the packs and `packs.json` from the game data and the world database |
+| `tools/PristonTale.PackBuild/` (`ptpack`), `tools/pack-build.ps1`/`.sh` | Builds the downloaded packs and `packs.json`, or the APK summon archive, from the game data and the world database |
 | `tools/PristonTale.GltfExport/MobileMinimapBake.cs` | A field's minimap image and bounds (`ptgltf --mobile-minimap` and the minimap packs) |
 | `Web/PristonTale.Web/Services/PackFiles.cs` | Serves `/packs/packs.json` and `/packs/<id>.zip` from `Downloads:PacksPath`, by name only, with range requests |
 | `Client/PristonTale.Client.Net/Packs/PackStore.cs` | On the device: reads the manifest, tells what is missing, downloads (resuming), checks the SHA-256, unpacks |

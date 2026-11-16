@@ -21,7 +21,7 @@ internal static class QuestTests
         yield return ("the level 85 tear goes back on death and returns with the restarted hunt", KhaliaTearAsync);
         yield return ("quest grants respect the carried-weight limit and leave the quest unchanged when refused", WeightAsync);
         yield return ("beginner quests run in order with deliveries, hunts, tribe finishers and class rewards", ElementaryAsync);
-        yield return ("Avalon adventurer journey validates the guide, belt, hunt and crystal", AdventurerJourneyAsync);
+        yield return ("Avalon adventurer journey validates the guide, belt, hunt and crystal for every class", AdventurerJourneyAsync);
         yield return ("first skill quest counts three casts and can be claimed only once", FirstSkillAsync);
         yield return ("class skill quests offer in order, reject unrelated progress and pay once", ClassSkillQuestsAsync);
         yield return ("the journey's hunting area is centred on its hunt points and holds each with its margin", HuntAreaAsync);
@@ -110,15 +110,22 @@ internal static class QuestTests
     {
         const QuestCode code = QuestCode.AdventurerJourney;
         var crystal = ItemCodes.Parse("GP101");
-        foreach (var (playerClass, name, target, field) in new[]
+        var adventurers = Enum.GetValues<PlayerClass>().Select(playerClass => (playerClass, 1)).Append((PlayerClass.Knight, 180));
+        foreach (var (playerClass, level) in adventurers)
         {
-            (PlayerClass.Fighter, "Adventurer Skadi", QuestMonsters.Hopy, 2),
-            (PlayerClass.Priestess, "Adventurer Jin", QuestMonsters.Rabie, FieldCodes.ForeverFall1)
-        })
-        {
-            var player = Character(playerClass, "Adventurer", 1);
+            var morion = playerClass is PlayerClass.Knight or PlayerClass.Priestess or PlayerClass.Magician or PlayerClass.Atalanta or PlayerClass.Shaman;
+            var (name, template, town, field, target, description) = morion
+                ? ("Adventurer Jin", 1u, FieldCodes.Pillai, FieldCodes.ForeverFall1, QuestMonsters.Rabie, AdventurerJourneyRoute.MeetJinDescription)
+                : ("Adventurer Skadi", 2u, FieldCodes.Ricarten, 2, QuestMonsters.Hopy, AdventurerJourneyRoute.MeetSkadiDescription);
+            var route = AdventurerJourneyRoute.For(playerClass);
+            Assert.True(route.GuideName == name && route.GuideTemplate == template && route.Guide.FieldCode == town
+                && route.HuntField == field && route.HuntTarget == target,
+                $"{playerClass} uses the wrong guide, home town or hunting field");
+            var player = Character(playerClass, "Adventurer", level);
             var guide = new QuestNpc(Name: name);
-            Assert.True(QuestView.Capture(player).Progress.Count == 1, "arrival objective missing");
+            Assert.True(QuestView.Capture(player).Progress is [var arrival] && arrival.Description == description, $"{playerClass} arrival objective differs");
+            var otherGuide = new QuestNpc(Name: morion ? AdventurerJourneyRoute.Tempskron.GuideName : AdventurerJourneyRoute.Morion.GuideName);
+            Assert.True(Talk(player, otherGuide).Prompt is null, $"{playerClass} received the opposite tribe's welcome");
             Assert.True(Talk(player, guide).Prompt is { Code: code, State: 0 }, "starter offer missing");
             var levelSpan = Simulation.Progression.ExperienceTable.ForLevel(2) - Simulation.Progression.ExperienceTable.ForLevel(1);
             var welcome = Expect(player, guide, QuestAction.Proceed, code, 0, "starter failed");
@@ -128,8 +135,9 @@ internal static class QuestTests
                 "the guide did not hand over the weapon and armour into the bag");
             Assert.True(Talk(player, guide).Prompt is { Followup: QuestFollowup.Close }, "preparation was skipped");
             var weapon = kit.Single(item => item.Definition.EquipSlot == EquipmentSlot.Weapon);
-            Assert.True(player.TryEquipFromInventory(player.Inventory.Occupied().Single(entry => entry.Item == weapon).Anchor, EquipmentSlot.Weapon),
-                "the kit's weapon could not be equipped");
+            Assert.True(weapon.Definition.CatalogKey == StarterGifts.WeaponKey(playerClass)
+                && player.TryEquipFromInventory(player.Inventory.Occupied().Single(entry => entry.Item == weapon).Anchor, EquipmentSlot.Weapon),
+                $"{playerClass} could not equip the kit's weapon");
             var potion = player.Inventory.Items().Single(item => item.Definition.Kind == ItemKind.Potion);
             Assert.True(potion.Definition.Code == ItemCodes.Parse("PL101") && player.TryPutOnBelt(potion.InstanceId, 0, 1), "tutorial potion could not be belted");
             var preparation = Expect(player, guide, QuestAction.Proceed, code, 1, "hunt did not start");
@@ -153,6 +161,30 @@ internal static class QuestTests
                 && player.Quests.HasFinished(code) && !QuestInventory.Has(player, crystal), "delivery did not settle");
             Assert.True(Talk(player, guide).Prompt is null, "completed journey was offered again");
         }
+
+        var legacy = Character(PlayerClass.Pikeman, "Adventurer", 1);
+        legacy.Quests.Active = new ActiveQuest { Code = code, State = 2, Target = QuestMonsters.Rabie, Kills = 2, KillsNeeded = 3 };
+        var legacyView = QuestView.Capture(legacy);
+        var legacyRoute = AdventurerJourneyRoute.For(PlayerClass.Pikeman, legacyView.TargetQuestCode);
+        var legacyGuide = new QuestNpc(Name: legacyRoute.GuideName);
+        Assert.True(legacyRoute == AdventurerJourneyRoute.Morion && legacyView.Progress.Single().Description == "Avalon/JinHunt.msg"
+            && legacyView.Kills == 2 && Talk(legacy, legacyGuide).Prompt is { Code: code, State: 2 },
+            "an already accepted Rabie hunt lost its saved route and progress");
+        Assert.True(QuestTick.OnKill(Context(legacy, QuestNpc.None, legacyRoute.HuntField), QuestMonsters.Rabie), "the legacy hunt did not count its saved prey");
+        QuestDrops.Upkeep(Context(legacy, QuestNpc.None, legacyRoute.HuntField), []);
+        Expect(legacy, legacyGuide, QuestAction.Proceed, code, 2, "the legacy hunt could not be delivered to its guide");
+
+        var preparing = Character(PlayerClass.Pikeman, "Adventurer", 1);
+        preparing.Quests.Active = new ActiveQuest { Code = code, State = 1 };
+        var stockSpear = new ItemInstance(Items.Get(Code("WP101")));
+        Assert.True(!preparing.CanWear(EquipmentSlot.Weapon, stockSpear) && preparing.Inventory.TryAdd(stockSpear),
+            "the real starting requirement must make the stock spear unusable at level one");
+        var skadi = new QuestNpc(Name: AdventurerJourneyRoute.Tempskron.GuideName);
+        Talk(preparing, skadi);
+        Talk(preparing, skadi);
+        var spears = preparing.Inventory.Items().Where(item => item.Definition.Code == stockSpear.Definition.Code).ToArray();
+        Assert.True(spears.Length == 2 && spears.Count(item => preparing.CanWear(EquipmentSlot.Weapon, item)) == 1
+            && stockSpear.Roll.Requirements.Strength == 30, "the guide must issue one usable spear without changing the normal copy");
         return Task.CompletedTask;
     }
 

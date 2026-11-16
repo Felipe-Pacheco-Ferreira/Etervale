@@ -1,3 +1,4 @@
+using PristonTale.Gameplay.UI.Inventory;
 using PristonTale.Persistence.Abstractions.Characters;
 using PristonTale.Persistence.Abstractions.WorldData;
 using PristonTale.Protocol.Packets;
@@ -20,6 +21,7 @@ internal static class AgingTests
         yield return ("an aging roll fails by the level's chance, doubles below +10 and copper ores turn a loss into a fall", RollAsync);
         yield return ("an aging starts the next level's maturity; a fall takes the stats down and starts half way", ApplyAsync);
         yield return ("worn aging copies count their events up to the goal and the upkeep gives the level", MaturityAsync);
+        yield return ("the aging gauge starts at zero and ranks +1 through +3 add their full equipment bonuses", EarlyRanksAsync);
         yield return ("an aged item marks the stats its family raises, bows and javelins their mana too", RaisedStatsAsync);
         yield return ("the aging NPC spends the sheltoms, the stone and the price on the candidate and refuses wrong materials", WorkAsync);
         yield return ("the aging ring at +6 and +8 lightens the death's share", DeathPenaltyAsync);
@@ -177,6 +179,39 @@ internal static class AgingTests
         return Task.CompletedTask;
     }
 
+    private static Task EarlyRanksAsync()
+    {
+        var character = Fighter();
+        var axe = Axe();
+        Assert.True(character.Inventory.TryPlace(axe, 0) && character.TryEquipFromInventory(0, EquipmentSlot.Weapon), "the axe did not equip");
+        axe = character.Equipment[EquipmentSlot.Weapon];
+        var initial = character.EquipmentTotals;
+        for (var rank = 1; rank <= 3; rank++)
+        {
+            AgingRules.Apply(axe, AgingResult.Success, AgingStone.None);
+            var goal = axe.Maturity.Goal;
+            var start = OwnerState.Capture(character);
+            var before = start.Items.Single(item => item.InstanceId == axe.InstanceId);
+            Assert.True(goal > 0 && HudItemDetailTooltip.Gauge(before, start) == new AgingGauge(rank - 1, 0, goal),
+                $"maturity toward +{rank} did not start at zero");
+
+            character.TallyAging(AgingCounter.Attack);
+            var progress = OwnerState.Capture(character, start);
+            Assert.True(ReferenceEquals(progress.Items, start.Items) && HudItemDetailTooltip.Gauge(before, progress) == new AgingGauge(rank - 1, 1, goal),
+                $"maturity toward +{rank} did not use live progress");
+
+            Assert.True(character.TallyAging(AgingCounter.Attack, goal) && character.MatureAgedItems(), $"the axe did not mature to +{rank}");
+            var totals = character.EquipmentTotals;
+            var matured = OwnerState.Capture(character, progress);
+            var after = matured.Items.Single(item => item.InstanceId == axe.InstanceId);
+            Assert.True(totals.DamageMin == initial.DamageMin + rank && totals.DamageMax == initial.DamageMax + rank
+                && totals.AttackRating == initial.AttackRating + rank * 10 && after.Details.Roll == axe.Roll
+                && HudItemDetailTooltip.Gauge(after, matured) == new AgingGauge(rank, 0, 0), $"mature +{rank} axe lost its cumulative bonuses or rank");
+        }
+
+        return Task.CompletedTask;
+    }
+
     private static Task WorkAsync()
     {
         var character = Fighter();
@@ -291,12 +326,16 @@ internal static class AgingTests
         var record = CharacterRecordFactory.NewStarter(classes, 1, "Aging", 0, PlayerClass.Fighter, 3) with { Id = 1 };
         var character = classes.CreatePlayer(PlayerClass.Fighter, record.Name);
         var axe = Axe();
-        axe.Maturity = new AgingMaturity(7, 100, AgingStone.CopperOre);
+        AgingRules.AgeTo(axe, 3);
+        AgingRules.Apply(axe, AgingResult.Success, AgingStone.CopperOre);
+        AgingRules.Tally(axe, 7);
         character.Inventory.TryPlace(axe, 0);
         var encoded = CharacterRecordFactory.Capture(record, character, 3, System.Numerics.Vector3.Zero).Encode();
         var restored = classes.CreatePlayer(PlayerClass.Fighter, record.Name);
         CharacterStateCodec.Restore(restored, encoded, new ItemCatalog([axe.Definition]));
-        Assert.True(restored.Inventory[0].Maturity == axe.Maturity, "the maturity was not saved");
+        var restoredAxe = restored.Inventory[0];
+        Assert.True(restoredAxe.Maturity == axe.Maturity && restoredAxe.Roll == axe.Roll && restoredAxe.UpgradeLevel == 3,
+            "the maturity, rolled stats or rank were not saved");
         return Task.CompletedTask;
     }
 

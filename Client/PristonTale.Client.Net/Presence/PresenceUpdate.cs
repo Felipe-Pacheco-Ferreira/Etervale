@@ -49,6 +49,7 @@ public sealed record PresenceUpdate(
     // The local player's party when it changed (no member once it has none), and a player's request to group.
     public PartyInfo? Party { get; init; }
     public PartyRequestInfo? PartyRequest { get; init; }
+    public IReadOnlyList<PartyHuntInfo>? PartyHunt { get; init; }
 
     // The local player's clan (ClanInfo.None when it has none), an invitation to one and a request's result.
     public ClanInfo? Clan { get; init; }
@@ -118,6 +119,8 @@ public sealed record PartyInfo(IReadOnlyList<PartyMemberInfo> Members)
 }
 
 public sealed record PartyMemberInfo(ulong EntityId, string Name, int Level, int Life, int MaxLife, System.Numerics.Vector2 Position);
+
+public readonly record struct PartyHuntInfo(ulong EntityId, PartyHuntCounters Counters);
 
 // Recommended: the player a member asks its leader to take (empty for a request to join).
 public sealed record PartyRequestInfo(ulong FromId, string FromName, string Recommended = "");

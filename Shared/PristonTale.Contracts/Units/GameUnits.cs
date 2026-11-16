@@ -8,6 +8,8 @@ public static class GameUnits
     public const int FixedShift = 8;
     public const int FixedOne = 1 << FixedShift;
     public const float FixedScale = FixedOne;
+    // The terrain's approximate metric scale, calibrated with a 50-unit character standing about two metres tall.
+    public const float WorldUnitsPerMetre = 25f;
 
     public const int AngleTurn = 4096;
     public const int AngleMask = AngleTurn - 1;

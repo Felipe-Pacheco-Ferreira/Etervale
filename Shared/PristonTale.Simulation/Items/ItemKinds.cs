@@ -13,6 +13,8 @@ public static class ItemKinds
         ["QT"] = ItemKind.Quest,
         ["MA"] = ItemKind.Material
     };
+    private static readonly Dictionary<string, ItemKind>.AlternateLookup<ReadOnlySpan<char>> GroupSpans =
+        Groups.GetAlternateLookup<ReadOnlySpan<char>>();
 
     public static ItemKind Classify(string catalogKey)
     {
@@ -21,6 +23,6 @@ public static class ItemKinds
             return kind;
         }
 
-        return catalogKey is { Length: >= 2 } && Groups.TryGetValue(catalogKey[..2], out kind) ? kind : ItemKind.Misc;
+        return catalogKey is { Length: >= 2 } && GroupSpans.TryGetValue(catalogKey.AsSpan(0, 2), out kind) ? kind : ItemKind.Misc;
     }
 }

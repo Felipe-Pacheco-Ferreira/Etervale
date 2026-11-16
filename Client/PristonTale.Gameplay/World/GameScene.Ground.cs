@@ -184,13 +184,7 @@ public sealed partial class GameScene
 
     private Vector2 ResolveEntityCollision(Vector2 oldPlanar, Vector2 desiredPlanar)
     {
-        if (_remote == null)
-        {
-            return desiredPlanar;
-        }
-
-        _remote.CollectNeighbours(_remote.SelfEntityId, _entityNeighbours);
-        if (_entityNeighbours.Count == 0)
+        if (_remote == null || oldPlanar == desiredPlanar)
         {
             return desiredPlanar;
         }
@@ -198,6 +192,8 @@ public sealed partial class GameScene
         var y = _serverCollisionHeight;
         var old3 = new NumVector3(oldPlanar.X, y, oldPlanar.Y);
         var desired3 = new NumVector3(desiredPlanar.X, y, desiredPlanar.Y);
+        var bounds = EntityCollision.QueryBounds(old3, desired3, EntityCollisionRadii.Player);
+        _remote.CollectNeighbours(_remote.SelfEntityId, _entityNeighbours, bounds.Center, bounds.Radius);
         var accepted = EntityCollision.Resolve(old3, desired3, EntityCollisionRadii.Player, _entityNeighbours);
         return new Vector2(accepted.X, accepted.Z);
     }

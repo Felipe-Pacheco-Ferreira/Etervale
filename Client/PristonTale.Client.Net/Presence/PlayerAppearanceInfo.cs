@@ -24,6 +24,7 @@ public sealed record PlayerAppearanceInfo(
     // How the held weapon and off-hand item glow.
     public Simulation.Items.HeldItemGlow WeaponGlow { get; init; } = Simulation.Items.HeldItemGlow.None;
     public Simulation.Items.HeldItemGlow OffHandGlow { get; init; } = Simulation.Items.HeldItemGlow.None;
+    public int ArmorAge { get; init; }
 
     // The sign of the personal shop the player sells from; empty when it sells nothing.
     public string ShopSign { get; init; } = "";

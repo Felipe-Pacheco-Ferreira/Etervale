@@ -13,6 +13,8 @@ internal sealed class OwnerItemDecoder
     private readonly Dictionary<Guid, ItemDetailView> _details = new();
     private long _partsRevision = -1;
     private long _detailsRevision = -1;
+    private long _potencyRevision = -1;
+    private readonly Dictionary<Guid, PotionDefinition> _potency = new();
     private OwnerItemStatusPacket? _status;
     private IReadOnlyList<AgingProgressView> _aging = [];
 
@@ -40,6 +42,24 @@ internal sealed class OwnerItemDecoder
         _parts.Clear();
     }
 
+    public void OnPotency(PotionPotencyPacket part)
+    {
+        if (_potencyRevision != part.Revision)
+        {
+            _potency.Clear();
+            _potencyRevision = part.Revision;
+        }
+
+        foreach (var item in part.Items)
+        {
+            var potion = new PotionDefinition(item.LifeMin, item.LifeMax, item.ManaMin, item.ManaMax, item.StaminaMin, item.StaminaMax);
+            if (potion.IsValid)
+            {
+                _potency[item.InstanceId] = potion;
+            }
+        }
+    }
+
     public void OnStatus(OwnerItemStatusPacket status) => _status = status;
 
     public void OnAging(AgingProgressPacket progress) =>
@@ -52,7 +72,11 @@ internal sealed class OwnerItemDecoder
             return items;
         }
 
-        return items.Select(item => _details.TryGetValue(item.InstanceId, out var details) ? item with { Details = details } : item).ToArray();
+        return items.Select(item => item with
+        {
+            Details = _details.GetValueOrDefault(item.InstanceId),
+            Potion = _potencyRevision == revision ? _potency.GetValueOrDefault(item.InstanceId) : null
+        }).ToArray();
     }
 
     public OwnerState Apply(OwnerState owner)

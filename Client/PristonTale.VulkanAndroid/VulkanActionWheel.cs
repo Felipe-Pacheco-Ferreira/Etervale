@@ -1,6 +1,8 @@
 using Android.App;
 using Android.Widget;
+using PristonTale.Gameplay.Effects;
 using PristonTale.Gameplay.Localization;
+using PristonTale.Gameplay.UI.Rendering;
 using PristonTale.Mobile;
 using PristonTale.Mobile.CharacterSelect;
 using PristonTale.Simulation.Characters;
@@ -33,9 +35,9 @@ internal sealed class VulkanActionWheel
     private readonly VulkanActionOrb[] _skills = new VulkanActionOrb[SkillSlots];
     private readonly uint[] _skillCodes = new uint[SkillSlots];
     private readonly bool[] _chosen = new bool[SkillSlots];
+    private readonly SkillCooldownBook _cooldowns = new();
     private readonly VulkanActionOrb[] _belt = new VulkanActionOrb[PotionBelt.Boxes];
     private OwnerState _owner;
-    private uint _sequence;
     private bool _pending;
     // The wheel's distance from the screen's right and bottom edges, in pixels.
     private readonly int _right;
@@ -74,7 +76,7 @@ internal sealed class VulkanActionWheel
             var index = slot;
             var angle = SkillAngles[slot] * MathF.PI / 180f;
             var orb = new VulkanActionOrb(activity, HudGlyph.Skill) { ContentDescription = $"Habilidade {slot + 1}" };
-            orb.Click += async (_, _) => await CastAsync(index);
+            orb.Click += (_, _) => Cast(index);
             orb.LongClick += (_, args) =>
             {
                 args.Handled = true;
@@ -114,7 +116,7 @@ internal sealed class VulkanActionWheel
             _belt[box].Enabled = item is not null && owner.Life > 0;
         }
 
-        var learned = owner.Skills.Where(skill => skill.Rank > 0 && SkillRuleCatalog.TryGet(skill.Code, out _)).Select(skill => skill.Code).ToArray();
+        var learned = owner.Skills.Where(skill => skill.Rank > 0 && ShortcutEligible(skill.Code)).Select(skill => skill.Code).ToArray();
         var taken = new HashSet<uint>();
         for (var slot = 0; slot < SkillSlots; slot++)
         {
@@ -138,9 +140,44 @@ internal sealed class VulkanActionWheel
                 _skillCodes[slot] = next < learned.Length ? learned[next++] : 0;
             }
 
-            _skills[slot].SetCaption(_skillCodes[slot] == 0 ? "" : Short(SkillName(_skillCodes[slot])));
+            var code = _skillCodes[slot];
+            var name = code == 0 ? "" : SkillName(code);
+            var icon = ClassSkillCatalog.TryGet(code, out var skill) && skill.IconKey.Length > 0
+                ? _icons.Picture(HudArt.SkillButton(_session.Character.Class, skill.IconKey, gray: false))
+                : null;
+            _skills[slot].SetPicture(icon);
+            _skills[slot].SetCaption(icon is null && code != 0 ? Short(name) : "");
+            var rank = owner.SkillRank(code);
+            _skills[slot].SetSkillBorder(skill?.Tier ?? default, rank);
+            _skills[slot].ContentDescription = code == 0 ? $"Habilidade {slot + 1}" : $"{name}, nível {rank}";
             // A slot with no learned skill to hold stays in its place, dimmed.
-            _skills[slot].Enabled = owner.Life > 0 && _skillCodes[slot] != 0;
+            _skills[slot].Enabled = owner.Life > 0 && code != 0;
+        }
+
+        RefreshCooldowns();
+    }
+
+    public void RefreshCooldowns()
+    {
+        while (_session.TryReadSkillTiming(out var timing))
+        {
+            if (timing.Result is { } result)
+            {
+                _cooldowns.Apply(result, timing.ReceivedAt);
+            }
+
+            if (timing.Snapshot is { } snapshot)
+            {
+                _cooldowns.Apply(snapshot, timing.ReceivedAt);
+            }
+        }
+
+        var now = Environment.TickCount64;
+        for (var slot = 0; slot < SkillSlots; slot++)
+        {
+            var code = _skillCodes[slot];
+            var remaining = _cooldowns.RemainingMs(code, now);
+            _skills[slot].SetCooldown(_cooldowns.Fraction(code, now), (int)Math.Ceiling(remaining / 1000d));
         }
     }
 
@@ -163,7 +200,7 @@ internal sealed class VulkanActionWheel
             return;
         }
 
-        var options = owner.Skills.Where(skill => skill.Rank > 0 && SkillRuleCatalog.TryGet(skill.Code, out _)).ToArray();
+        var options = owner.Skills.Where(skill => skill.Rank > 0 && ShortcutEligible(skill.Code)).ToArray();
         if (options.Length == 0)
         {
             _notice.Text = "Nenhuma habilidade aprendida.";
@@ -237,28 +274,24 @@ internal sealed class VulkanActionWheel
         return word.Length <= 7 ? word : word[..6] + "…";
     }
 
-    private async Task CastAsync(int slot)
+    public static bool ShortcutEligible(uint code) => ClassSkillCatalog.TryGet(code, out var skill) && skill.MouseUse != SkillMouseUse.None
+        && SkillRuleCatalog.TryGet(code, out var rule) && rule.Kind != SkillKind.Passive;
+
+    private void Cast(int slot)
     {
         if (_owner is not { Life: > 0 })
         {
             return;
         }
 
-        if (!SkillRuleCatalog.TryGet(_skillCodes[slot], out var rule))
+        var code = _skillCodes[slot];
+        if (code == 0)
         {
             ChooseSkill(slot);
             return;
         }
 
-        var target = _session.AttackTarget;
-        if (rule.Target == SkillTarget.Enemy && target == 0)
-        {
-            _session.AttackSelected();
-            _notice.Text = "Escolha um alvo e use a habilidade de novo.";
-            return;
-        }
-
-        await SendAsync(() => _session.Play.SendSkillCastAsync(++_sequence, rule.Code, rule.Target == SkillTarget.Enemy ? target : 0, null, _ct));
+        _session.PressSkill(code);
     }
 
     private async Task UseBeltAsync(int box)

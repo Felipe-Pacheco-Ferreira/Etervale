@@ -314,6 +314,7 @@ The client owns its own locomotion; the server validates and corrects.
 - Click-to-move: `UpdatePlayerInput` advances `DestinationMovement` at `Locomotion` walk/run speed (the mounted speed
   while riding, below) derived from the server-reported move speed (local derived stats until the first self state), slides against field collision
   (`MoveWithCollision`) and entity neighbours (`ResolveEntityCollision`) and follows the floor (`GroundTraversal`).
+  The client collects live neighbours inside the circle that bounds the swept move, then applies the shared collision rule.
   Target reachability is checked with `GroundTraversal.CanReachSurface`.
 - Reports: `UpdateMovementReport` sends `MovementReport` (position in PT-global, facing, moving, running, action target,
   field code) every 200 ms while moving, every 1000 ms idle, and at once when motion, run mode, target or field
@@ -401,8 +402,9 @@ The client owns its own locomotion; the server validates and corrects.
 
 ## Field streaming
 
-The active field is the loaded field with the highest floor under the player. Every 8 frames `ScanStreaming` requests
-neighbours whose gate seam, or warp-gate destinations whose gate, is within 1024 units, or ahead of a move target
+When multiple fields are loaded, the active field is the one with the highest floor under the player. Every 8 frames
+`ScanStreaming` checks the active field's cached neighbour list and warp-gate destinations. The client requests them
+when their seam or gate is within 1024 units, or ahead of a move target
 within `PrefetchDistance(speed)` (1400 to 4500 units); fields beyond `RetentionDistance` (prefetch + 1200) unload, except a destination `PrepareField` asked for in
 the last 10 s. The streamer keeps at most one neighbour in flight (preparing or uploading). A destination requested by
 `PrepareField` or a warp goes first: it cancels the other preparations and abandons another field's GPU upload, a

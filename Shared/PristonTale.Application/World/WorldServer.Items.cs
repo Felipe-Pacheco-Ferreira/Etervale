@@ -1,5 +1,6 @@
 using PristonTale.Application.Sessions;
 using PristonTale.Application.World.ItemUses;
+using PristonTale.Contracts.World;
 using PristonTale.Simulation.Items.Usable;
 
 namespace PristonTale.Application.World;
@@ -15,6 +16,12 @@ public sealed partial class WorldServer
     {
         return EnqueueAsync(entityId, () => _connections.TryGetValue(entityId, out var connection) && _fields.TryGetValue(connection.FieldId, out var field)
             && field.DismissCrystalPets(connection.Player, statusCode));
+    }
+
+    public Task<bool> SetCrystalPetTargetingAsync(ulong entityId, CrystalPetTargeting mode)
+    {
+        return EnqueueAsync(entityId, () => _connections.TryGetValue(entityId, out var connection)
+            && connection.Player.TrySetCrystalPetTargeting(mode));
     }
 
     public Task<PreparedItemUseOperation?> PrepareItemUseAsync(PlayerSession session, ItemUseCommand command)

@@ -12,6 +12,7 @@ using PristonTale.Simulation.World.Ai;
 using PristonTale.Simulation.World.Monsters;
 using PristonTale.Contracts.Characters;
 using PristonTale.Contracts.Texts;
+using PristonTale.Contracts.World;
 
 namespace PristonTale.Tests;
 
@@ -23,6 +24,7 @@ internal static class MonsterCrystalTests
         yield return ("a crystal calls an owned pet beside its user, consumes itself and plays the return sparkle", SummonAsync);
         yield return ("billing crystals wait for the shared delay; towns, clan crystals, mercenaries and unknown souls refuse", RefusalsAsync);
         yield return ("a crystal pet hunts the nearest wild monster, credits its owner and dies when it expires", PetHuntsAsync);
+        yield return ("crystal targeting follows the owner's fight or defends them from a hostile monster", PetTargetingAsync);
         yield return ("a clan crystal needs a registered clan; its pet belongs to the clan and a member's cheer heals up to three of them", ClanPetsAsync);
         yield return ("a member calls one clan pet while fewer than three of the clan stand near; a clan monster never picks its clan's players",
             ClanPetLimitsAsync);
@@ -146,6 +148,34 @@ internal static class MonsterCrystalTests
         pet.ExpiresAtMs = 0;
         scenario.Run(2);
         Assert.True(!pet.IsAlive, "an expired pet kept fighting");
+        return Task.CompletedTask;
+    }
+
+    private static Task PetTargetingAsync()
+    {
+        var buffer = new byte[CrystalPetTargetingPacket.Size];
+        var packet = new CrystalPetTargetingPacket(CrystalPetTargeting.FollowMyTarget);
+        Assert.True(packet.Write(buffer) == buffer.Length && CrystalPetTargetingPacket.Read(buffer) == packet, "target mode did not round-trip");
+
+        var wild = SkillScenario.Enemy("Wild", life: 2, sight: 0, level: 1);
+        var scenario = SkillScenario.Create(PlayerClass.Fighter, 20, null, null, wild, Hopy());
+        var origin = scenario.Field.CallCrystalMonster(scenario.Player, "GP101", "HOPY 2")!.Value;
+        var nearer = scenario.Spawn(wild, origin + new Vector3(55f, 0f, 0f));
+        var farther = scenario.Spawn(wild, origin + new Vector3(90f, 0f, 0f));
+        Assert.True(scenario.Player.TrySetCrystalPetTargeting(CrystalPetTargeting.FollowMyTarget)
+            && !scenario.Player.TrySetCrystalPetTargeting((CrystalPetTargeting)byte.MaxValue), "valid mode refused or invalid mode taken");
+        scenario.Run(40);
+        Assert.True(nearer.IsAlive && farther.IsAlive, "focused pet began an independent fight");
+        scenario.Player.CombatTargetId = farther.EntityId;
+        scenario.Run(200);
+        Assert.True(nearer.IsAlive && !farther.IsAlive, "focused pet did not prioritize the owner's target");
+
+        Assert.True(scenario.Player.TrySetCrystalPetTargeting(CrystalPetTargeting.DefendMe), "defensive mode refused");
+        scenario.Run(40);
+        Assert.True(nearer.IsAlive, "defensive pet attacked a bystander");
+        MonsterAiBrain.ForceTarget(nearer, scenario.Player.EntityId, 30_000);
+        scenario.Run(200);
+        Assert.True(!nearer.IsAlive, "defensive pet did not respond to a threat");
         return Task.CompletedTask;
     }
 

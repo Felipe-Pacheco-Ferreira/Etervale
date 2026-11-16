@@ -614,8 +614,10 @@ stats the item tooltip marks (`AgedStats`; bows and javelins also mark mana, as 
   effect `AgingUp`: a white light, `particle.Aging` 39 up and the level-up sound at 16000 of 22050 Hz, `ItemVfx.AgingUp`).
   A copy checked every five seconds asks again when a commit replaced it.
 - A level (`LevelUp`): axes and hammers damage +1 (+2 from +10, +3 from +20), attack rating +10; claws, poles and swords
-  damage, attack rating +5 and critical +1 on odd levels; staves damage, attack rating +10, mana +10; bows and javelins
-  damage and critical on odd levels; shields block +1 on odd levels and absorb; orbs, boots and gloves defence +10%,
+  damage, attack rating +5 and critical +1 on reaching even levels; staves damage, attack rating +10, mana +10; bows
+  and javelins damage at every level and critical +1 on reaching even levels; shields absorb at every level and
+  block +1 on reaching even levels;
+  orbs, boots and gloves defence +10%,
   armours and robes +5%, with absorb; armlets defence +10% and attack rating +5; worn families lose durability. Even
   levels raise the level requirement unless the item asks 100, 102 or 105 or the aging used the elder ore or a super
   stone. A fall (`LevelDown`) takes the same values back.

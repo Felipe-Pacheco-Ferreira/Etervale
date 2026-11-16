@@ -10,6 +10,7 @@ using PristonTale.Simulation.Social;
 using PristonTale.Simulation.World;
 using PristonTale.Simulation.World.Motion;
 using PristonTale.Contracts.Motion;
+using PristonTale.Contracts.Social;
 using PristonTale.Contracts.World;
 using PristonTale.Simulation.Physics;
 
@@ -232,6 +233,18 @@ public sealed class WorldPlayer
 
     // The monster this player last attacked or cast at (its familiar and passive summon fight it).
     public ulong CombatTargetId { get; set; }
+    public CrystalPetTargeting CrystalPetTargeting { get; private set; }
+
+    internal bool TrySetCrystalPetTargeting(CrystalPetTargeting mode)
+    {
+        if (!Enum.IsDefined(mode))
+        {
+            return false;
+        }
+
+        CrystalPetTargeting = mode;
+        return true;
+    }
 
     // A released charge ends the cast motion earlier.
     public void ShortenCast(float durationMs)
@@ -347,6 +360,20 @@ public sealed class WorldPlayer
     public Party? Party { get; internal set; }
     public PartyRequest? PartyRequest { get; internal set; }
 
+    public PartyHuntCounters PartyHunt { get; private set; }
+
+    internal void RecordPartyHunt(ulong damage = 0, ulong experience = 0, uint kills = 0, uint deaths = 0)
+    {
+        if (Party is not null)
+        {
+            PartyHunt = new PartyHuntCounters(
+                PartyHunt.Damage + Math.Min(damage, ulong.MaxValue - PartyHunt.Damage),
+                PartyHunt.Experience + Math.Min(experience, ulong.MaxValue - PartyHunt.Experience),
+                PartyHunt.Kills + Math.Min(kills, uint.MaxValue - PartyHunt.Kills),
+                PartyHunt.Deaths + Math.Min(deaths, uint.MaxValue - PartyHunt.Deaths));
+        }
+    }
+
     public bool SharesPartyWith(WorldPlayer other) => Party is { } party && ReferenceEquals(party, other.Party);
 
     // The trade the player is in and the request to trade it has not answered (WorldServer.Trades).
@@ -386,6 +413,7 @@ public sealed class WorldPlayer
         OffHandKey = _character.GetEquipped(EquipmentSlot.OffHand)?.Definition.CatalogKey ?? "",
         WeaponGlow = HeldItemGlow.For(_character.GetEquipped(EquipmentSlot.Weapon)),
         OffHandGlow = HeldItemGlow.For(_character.GetEquipped(EquipmentSlot.OffHand)),
+        ArmorAge = _character.GetEquipped(EquipmentSlot.Armor)?.UpgradeLevel ?? 0,
         InVillage = _inVillage,
         Tier = _character.Tier,
         HelperPet = HelpPets.Active(_character) is { } pet ? HelpPets.KindOf(pet) : 0,
@@ -734,6 +762,7 @@ public sealed class WorldPlayer
         {
             _character.Life = 0;
             IsDead = true;
+            RecordPartyHunt(deaths: 1);
             Shop = null;
             _pendingPotion = null;
             _yahooPending = false;

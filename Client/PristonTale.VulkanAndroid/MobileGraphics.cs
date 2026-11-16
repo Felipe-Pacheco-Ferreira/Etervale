@@ -81,13 +81,11 @@ internal sealed class MobileGraphics
         }
     }
 
-    // The width the world is drawn at, the height following the screen's shape; Low draws fewer pixels. Read once, when the
-    // game starts: a quality chosen later takes its width at the next start.
-    public int RenderWidth => Quality switch
+    public int SceneWidthLimit => Quality switch
     {
-        GraphicsQuality.Low => 864,
-        GraphicsQuality.Medium => 928,
-        _ => 960
+        GraphicsQuality.Low => 1280,
+        GraphicsQuality.Medium => 1440,
+        _ => 1600
     };
 
     // Called on the UI thread.

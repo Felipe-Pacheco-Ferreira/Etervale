@@ -508,6 +508,23 @@ public sealed partial class RemoteEntityManager
             completedTask = pending.Preparation;
             if (pending.Preparation.IsCompletedSuccessfully)
             {
+                if (pending.Spawn.Kind is EntityKind.Monster or EntityKind.Npc && ModelInfo(pending.Spawn) is { ModelInxPath.Length: > 0 } model)
+                {
+                    try
+                    {
+                        if (!_monsterComposer.AdvanceTextureUpload(_assetRoot, model.ModelInxPath))
+                        {
+                            completed = 0;
+                            break;
+                        }
+                    }
+                    catch (Exception exception)
+                    {
+                        _log.Error($"[Remote] actor texture upload failed: {exception}");
+                        break;
+                    }
+                }
+
                 ApplySpawn(pending.Spawn, publish: true);
                 if (_entities.TryGetValue(id, out var loaded))
                 {
@@ -677,13 +694,13 @@ public sealed partial class RemoteEntityManager
         }
     }
 
-    // Every other player's held items: its actors, how its weapon and off-hand item glow, whether it is shown (alive and
-    // drawn) and the weapon's catalog key.
+    // Every other player with glowing equipment and the actor handles on which to draw it.
     public void ForEachHolder(Action<ulong, PlayerActorHandles, PlayerAppearanceInfo, bool> visit)
     {
         foreach (var (entityId, appearance) in _playerAppearances)
         {
-            if ((!appearance.WeaponGlow.IsNone || !appearance.OffHandGlow.IsNone) && _entities.TryGetValue(entityId, out var entity)
+            if ((!appearance.WeaponGlow.IsNone || !appearance.OffHandGlow.IsNone || appearance.ArmorAge >= HeldItemGlow.FirstGlowingAge)
+                && _entities.TryGetValue(entityId, out var entity)
                 && entity is RemoteEntity player)
             {
                 visit(entityId, player.Handles, appearance, !entity.IsDead);
@@ -814,7 +831,10 @@ public sealed partial class RemoteEntityManager
         return false;
     }
 
-    public void CollectNeighbours(ulong excludeId, List<EntityNeighbour> into) => _collisionRoster.Collect(excludeId, into);
+    public void CollectNeighbours(ulong excludeId, List<EntityNeighbour> into) => CollectNeighbours(excludeId, into, default, float.PositiveInfinity);
+
+    public void CollectNeighbours(ulong excludeId, List<EntityNeighbour> into, NumVector3 center, float radius) =>
+        _collisionRoster.Collect(excludeId, into, center, radius);
 
     public void Clear()
     {

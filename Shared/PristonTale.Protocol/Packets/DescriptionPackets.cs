@@ -57,6 +57,7 @@ public sealed record DescribedPlayer(
 {
     public DescribedGlow WeaponGlow { get; init; } = DescribedGlow.None;
     public DescribedGlow OffHandGlow { get; init; } = DescribedGlow.None;
+    public int ArmorAge { get; init; }
 
     // Riding the travel mount.
     public bool Mounted { get; init; }
@@ -144,7 +145,7 @@ public sealed record EntityDescriptionPacket(
 {
     // The player part (four varuints, the head model, three codes, three bytes, two glows, the sign, the clan) is the larger tail.
     private const int PlayerPart = 5 * 4 + 2 + DescriptionWire.MaxModelBytes + 4 * 3 + 3 + 2 * DescribedGlow.Size + 2 + PersonalShopLimits.MaxSignBytes
-        + VarInt.MaxBytes64 + 2 + ClanWire.MaxClanNameBytes + 5;
+        + VarInt.MaxBytes64 + 2 + ClanWire.MaxClanNameBytes + 5 + sizeof(byte);
     public const int MaximumSize = 8 + 4 + VarInt.MaxBytes64 + 2 + 5 * 2 + 4 + (2 + DescriptionWire.MaxNameBytes) + (2 + DescriptionWire.MaxModelBytes)
         + PlayerPart;
 
@@ -180,6 +181,7 @@ public sealed record EntityDescriptionPacket(
             writer.VarUInt(player.ClanId);
             NpcWire.Text(ref writer, player.ClanName, ClanWire.MaxClanNameBytes);
             writer.VarUInt((ulong)Math.Max(0, player.ClanMark));
+            writer.Byte((byte)Math.Clamp(player.ArmorAge, 0, byte.MaxValue));
         }
         else
         {
@@ -234,11 +236,13 @@ public sealed record EntityDescriptionPacket(
                 var clanId = version >= 3 ? reader.VarUInt() : 0UL;
                 var clanName = version >= 3 ? NpcWire.Text(ref reader, ClanWire.MaxClanNameBytes) : "";
                 var clanMark = version >= 3 ? reader.VarUInt31() : 0;
+                var armorAge = version >= 3 && reader.Remaining > 0 ? reader.Byte() : 0;
                 return new EntityDescriptionPacket(entityId, revision, kind, level, moveSpeed, attackRate, name, model,
                     new DescribedPlayer(playerClass, tier, face, hair, head, weapon, armor, offHand, (flags & 1) != 0, (flags & 2) != 0, pet, bigHead)
                     {
                         WeaponGlow = weaponGlow,
                         OffHandGlow = offHandGlow,
+                        ArmorAge = armorAge,
                         Mounted = (flags & 4) != 0,
                         ShopSign = sign,
                         ClanId = clanId,

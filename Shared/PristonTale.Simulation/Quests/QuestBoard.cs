@@ -94,8 +94,10 @@ public static class QuestBoard
         switch (active.Code)
         {
             case QuestCode.None when AdventurerJourney.IsAvailable(character):
-                entries.Add(new QuestBoardEntry(tempskron ? "Encontre Skadi em Ricarten" : "Encontre Jin em Pillai",
-                    tempskron ? AdventurerJourneyRoute.MeetSkadiDescription : AdventurerJourneyRoute.MeetJinDescription));
+                var welcome = AdventurerJourneyRoute.For(QuestClasses.ClassOf(character));
+                entries.Add(welcome.HuntTarget == QuestMonsters.Hopy
+                    ? new QuestBoardEntry("Encontre Skadi em Ricarten", AdventurerJourneyRoute.MeetSkadiDescription)
+                    : new QuestBoardEntry("Encontre Jin em Pillai", AdventurerJourneyRoute.MeetJinDescription));
                 break;
             case QuestCode.None when FirstSkillQuest.IsAvailable(character):
             case QuestCode.FirstSkill:
@@ -107,10 +109,11 @@ public static class QuestBoard
                 entries.Add(next with { Title = ElementaryQuests.InstructorObjective });
                 break;
             case QuestCode.AdventurerJourney:
+                var journey = AdventurerJourneyRoute.For(QuestClasses.ClassOf(character), active.Target);
                 entries.Add(active.State == 1
                     ? new QuestBoardEntry("Jornada do aventureiro · Preparação", "Avalon/Preparation.msg")
                     : new QuestBoardEntry("Jornada do aventureiro · Primeira caçada",
-                        tempskron ? "Avalon/SkadiHunt.msg" : "Avalon/JinHunt.msg"));
+                        journey.HuntTarget == QuestMonsters.Hopy ? "Avalon/SkadiHunt.msg" : "Avalon/JinHunt.msg"));
                 break;
             case QuestCode.RankUpTrophies:
                 entries.Add(Open(Rows[0]));

@@ -15,6 +15,8 @@ public sealed class ActorLookPresenter
 {
     // The vague body's overlay: an item mix texture scrolled by the fifth scroll form (5/256 of a turn per 64 ms).
     public const string VagueOverlay = "image/sinImage/Items/DropItem/mixM_04.bmp";
+    private const float HeldGlowEdgeStrength = .58f;
+    private static readonly Vector3 MaxAgingGold = new(1.1f, .72f, .31f);
     private const uint VagueOverlayForm = 9;
     private const string ShieldBone = "Bip01 L Forearm";
 
@@ -88,7 +90,7 @@ public sealed class ActorLookPresenter
     }
 
     // One held item's glow this frame, at the clock in milliseconds.
-    public void PaintGlow(ActorHandle handle, in HeldItemGlow glow, long nowMs)
+    public void PaintGlow(ActorHandle handle, in HeldItemGlow glow, long nowMs, bool armor = false)
     {
         if (!handle.IsValid || !glow.Glows)
         {
@@ -99,7 +101,7 @@ public sealed class ActorLookPresenter
         var sample = glow.Sample(nowMs);
         var overlay = look.Overlay;
         var form = look.OverlayForm;
-        if (glow.MixTexture.Length > 0)
+        if (glow.MixTexture.Length > 0 && (!armor || overlay.Length == 0))
         {
             if (!_mixOverlays.TryGetValue(glow.MixTexture, out overlay))
             {
@@ -114,9 +116,26 @@ public sealed class ActorLookPresenter
             }
         }
 
+        var pulse = new Vector3(sample.R, sample.G, sample.B);
+        var edge = Vector3.Max(pulse, Vector3.Zero) * HeldGlowEdgeStrength;
+        if (glow.IsMaximumAging)
+        {
+            // A lit edge remains visible between pulses and in daylight, independent of the bloom preset.
+            var intensity = armor ? .56f : 1.1f;
+            edge = MaxAgingGold * (intensity + sample.R * 1.3f);
+            pulse += MaxAgingGold * (intensity * .32f);
+        }
+        else if (armor)
+        {
+            pulse *= .35f;
+            edge *= .5f;
+        }
+
         _scene.SetActorAppearance(handle, look with
         {
-            Tint = look.Tint + new Vector3(sample.R, sample.G, sample.B),
+            Tint = look.Tint + pulse,
+            // The texture tint is multiplied by albedo. Keep its pulse visible on dark blades and without bloom.
+            HeldGlowRim = edge,
             Opacity = look.Opacity * sample.Opacity,
             Overlay = overlay,
             OverlayForm = form,
@@ -185,6 +204,7 @@ public sealed class ActorLookPresenter
 
         Hold(handles.Weapon, body);
         Hold(handles.OffHand, offHand);
+        Hold(handles.Body, body);
     }
 
     private void Hold(ActorHandle handle, in PristonActorAppearance look)

@@ -19,8 +19,10 @@ public static class AdventurerJourneyRoute
 
     public static TribeRoute Tempskron { get; } = new(
         "Adventurer Skadi",
+        GuideTemplate: 2,
         new RoutePoint(FieldCodes.Ricarten, 506383 / 256f, -4755883 / 256f),
         HuntField: 2,
+        HuntTarget: QuestMonsters.Hopy,
         Exits:
         [
             // Ricarten and Forest 1 meet at a seam: walking on crosses into the forest, and back.
@@ -36,8 +38,10 @@ public static class AdventurerJourneyRoute
 
     public static TribeRoute Morion { get; } = new(
         "Adventurer Jin",
+        GuideTemplate: 1,
         new RoutePoint(FieldCodes.Pillai, 231628 / 256f, 19394721 / 256f),
         HuntField: FieldCodes.ForeverFall1,
+        HuntTarget: QuestMonsters.Rabie,
         Exits:
         [
             // Pillai and Forever Fall 1 are joined by warp gates: stepping on one sends the player to the other field.
@@ -52,8 +56,15 @@ public static class AdventurerJourneyRoute
             new RoutePoint(FieldCodes.ForeverFall1, 3999, 68502), new RoutePoint(FieldCodes.ForeverFall1, 1406, 67011)
         ]);
 
-    public static TribeRoute For(PlayerClass playerClass) =>
-        ClassProfiles.Of(playerClass).Brood == CharacterBrood.Tempskron ? Tempskron : Morion;
+    public static TribeRoute For(PlayerClass playerClass) => For(ClassProfiles.Of(playerClass).Brood == CharacterBrood.Tempskron);
+
+    // An already accepted hunt keeps its prey so characters on a journey begun under older rules keep their progress.
+    public static TribeRoute For(PlayerClass playerClass, int activeHuntTarget) => activeHuntTarget switch
+    {
+        QuestMonsters.Hopy => Tempskron,
+        QuestMonsters.Rabie => Morion,
+        _ => For(playerClass)
+    };
 
     public static TribeRoute For(bool tempskron) => tempskron ? Tempskron : Morion;
 }
@@ -64,8 +75,11 @@ public readonly record struct RoutePoint(int FieldCode, float X, float Z);
 // moves the player once it is reached.
 public sealed record RouteExit(int From, int To, RoutePoint Point, bool Seam);
 
-public sealed record TribeRoute(string GuideName, RoutePoint Guide, int HuntField, IReadOnlyList<RouteExit> Exits, IReadOnlyList<RoutePoint> HuntPoints)
+public sealed record TribeRoute(
+    string GuideName, uint GuideTemplate, RoutePoint Guide, int HuntField, int HuntTarget, IReadOnlyList<RouteExit> Exits, IReadOnlyList<RoutePoint> HuntPoints)
 {
+    public string GuideShortName { get; } = GuideName.Replace("Adventurer ", "", StringComparison.Ordinal);
+
     // Where the hunt happens, as the maps mark it in red.
     public HuntArea HuntArea { get; } = HuntArea.Around(HuntPoints);
 

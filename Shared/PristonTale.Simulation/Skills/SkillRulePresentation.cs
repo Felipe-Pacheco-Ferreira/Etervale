@@ -38,6 +38,8 @@ public sealed partial record SkillRule
     // list plays ImpactEffect. Silent ("-") in either list plays nothing at that impact.
     public const string Silent = "-";
     public string[] ImpactEffects { get; init; } = [];
+    // One-based entries whose effect follows the animation event even when no target took damage.
+    public int[] ImpactAnimationHits { get; init; } = [];
     public SkillLook StatusLook { get; init; }
     // Red glow (0..255 of light) on the caster at each impact, fading by 70 a second.
     public int RageGlow { get; init; }
@@ -75,6 +77,8 @@ public static partial class SkillRuleCatalog
 {
     private static bool PresentationValid(SkillRule rule) =>
         rule.ImpactSounds.All(static sound => sound.Length > 0) && rule.RageGlow is >= 0 and <= 255 && Ranked(rule.WeaponGrowth)
+        && rule.ImpactAnimationHits.All(hit => hit > 0 && hit <= rule.ImpactEffects.Length
+            && rule.ImpactEffects[hit - 1] is { Length: > 0 } name && name != SkillRule.Silent)
         && rule.WeaponGrowth.All(static percent => percent >= 0) && rule.Afterimages is >= 0 and <= 8 && Enum.IsDefined(rule.StatusLook)
         && Enum.IsDefined(rule.ImpactSoundOrder) && rule.CastShieldGlow.Length is 0 or 3
         && (rule.WeaponOrbit.Length == 0 || rule.WeaponOrbit.Length == 2 && rule.WeaponOrbit.All(static name => name.Length > 0))

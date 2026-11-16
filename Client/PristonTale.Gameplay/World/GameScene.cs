@@ -401,9 +401,12 @@ public sealed partial class GameScene : IDisposable, IHudPortraitScene
 
     private FieldResourceStreamer _fieldStreamer;
 
+    private CharacterVisualSet InitialPlayerVisuals(PlayerClass playerClass, int faceIndex, int tier, int hairIndex) =>
+        CharacterHead.Apply(_classRegistry.Get(playerClass).Definition.DefaultVisuals, playerClass, tier, faceIndex, hairIndex);
+
     private void AddPlayerActors(string assetRoot, int faceIndex, int tier, int hairIndex)
     {
-        var visuals = CharacterHead.Apply(_player.Definition.DefaultVisuals, _player.Class.Class, tier, faceIndex, hairIndex);
+        var visuals = InitialPlayerVisuals(_player.Class.Class, faceIndex, tier, hairIndex);
         var handles = _playerComposer.Compose(
             assetRoot,
             visuals,

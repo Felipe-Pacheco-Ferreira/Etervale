@@ -3,6 +3,7 @@ using Android.App;
 using Android.Graphics;
 using Android.Views;
 using Android.Widget;
+using PristonTale.Gameplay.Localization;
 using PristonTale.Mobile;
 using PristonTale.Simulation.Quests;
 
@@ -165,7 +166,7 @@ internal sealed class VulkanQuestJournal(Activity activity, FrameLayout overlay,
         icon.SetImageDrawable(new HudIcon(current ? HudGlyph.Journal : HudGlyph.Run, Dp(18)));
         icon.Alpha = current || chosen ? 1f : .6f;
         top.AddView(icon, new LinearLayout.LayoutParams(Dp(18), Dp(18)) { RightMargin = Dp(8) });
-        var title = VulkanPanel.Text(activity, entries[index].Title, 14, chosen || current ? MobileHudTheme.Gold : MobileHudTheme.Ink, serif: true);
+        var title = VulkanPanel.Text(activity, DataText.QuestTitle(entries[index].Title), 14, chosen || current ? MobileHudTheme.Gold : MobileHudTheme.Ink, serif: true);
         title.SetMaxLines(2);
         title.Ellipsize = Android.Text.TextUtils.TruncateAt.End;
         top.AddView(title, new LinearLayout.LayoutParams(0, -2, 1));
@@ -219,7 +220,7 @@ internal sealed class VulkanQuestJournal(Activity activity, FrameLayout overlay,
         var current = _running && _chosen == entries.Count - 1;
         var header = new LinearLayout(activity);
         header.SetGravity(GravityFlags.CenterVertical);
-        var title = VulkanPanel.Text(activity, entry.Title, 18, MobileHudTheme.Gold, serif: true);
+        var title = VulkanPanel.Text(activity, DataText.QuestTitle(entry.Title), 18, MobileHudTheme.Gold, serif: true);
         title.SetMaxLines(2);
         header.AddView(title, new LinearLayout.LayoutParams(0, -2, 1) { RightMargin = Dp(8) });
         var (state, color) = State(current);
@@ -239,7 +240,7 @@ internal sealed class VulkanQuestJournal(Activity activity, FrameLayout overlay,
         {
             for (var step = 0; step < entries.Count; step++)
             {
-                Objective(objectives, entries[step].Title, done: step < entries.Count - 1);
+                Objective(objectives, DataText.QuestTitle(entries[step].Title), done: step < entries.Count - 1);
             }
 
             if (view is { KillsNeeded: > 0 })
@@ -261,13 +262,13 @@ internal sealed class VulkanQuestJournal(Activity activity, FrameLayout overlay,
         }
         else
         {
-            Objective(objectives, entry.Title, done: true);
+            Objective(objectives, DataText.QuestTitle(entry.Title), done: true);
         }
 
         var (description, rewards) = Describe(entry);
         if (current && view is not null && SkillQuestCatalog.TryGet(view.Code, out var classMission))
         {
-            description = $"Habilidade: {PristonTale.Gameplay.Localization.DataText.SkillName(classMission.SkillCode, entry.Title)}";
+            description = $"Habilidade: {DataText.SkillName(classMission.SkillCode, entry.Title)}";
             rewards.Add($"Experiência: {classMission.ExperienceTenthsPercent / 10m:0.#}%");
         }
         content.AddView(VulkanPanelArt.Section(activity, "Descrição"), new LinearLayout.LayoutParams(-1, -2) { TopMargin = Dp(10) });
@@ -445,28 +446,7 @@ internal sealed class VulkanQuestJournal(Activity activity, FrameLayout overlay,
         }
     }
 
-    // The board files are Windows-1252 (the original ones) or UTF-8 with a byte order mark (Etervale's own).
-    private string ReadText(string path)
-    {
-        try
-        {
-            using var stream = activity.Assets!.Open($"QuestJournal/{path}");
-            using var memory = new MemoryStream();
-            stream.CopyTo(memory);
-            var bytes = memory.ToArray();
-            if (bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF)
-            {
-                return Encoding.UTF8.GetString(bytes, 3, bytes.Length - 3);
-            }
-
-            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            return Encoding.GetEncoding(1252).GetString(bytes);
-        }
-        catch (Java.IO.IOException)
-        {
-            return "Descrição indisponível.";
-        }
-    }
+    private string ReadText(string path) => MobileQuestText.Read(activity.Assets!, "QuestJournal", path, "Descrição indisponível.");
 
     private int Dp(int value) => (int)MathF.Round(value * (activity.Resources?.DisplayMetrics?.Density ?? 1f));
 }

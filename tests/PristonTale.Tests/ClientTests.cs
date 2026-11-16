@@ -7,10 +7,15 @@ using PristonTale.Client.Net.Presence;
 using PristonTale.Client.Net.WorldCatalog;
 using PristonTale.Engine3D.Formats;
 using PristonTale.Engine3D.Rendering;
+using PristonTale.Gameplay.Combat;
+using PristonTale.Gameplay.UI.Quests;
 using PristonTale.Gameplay.World.Remote;
 using PristonTale.Protocol.Binary;
 using PristonTale.Protocol.Packets;
 using PristonTale.Simulation.Characters;
+using PristonTale.Simulation.Items;
+using PristonTale.Simulation.World.Loot;
+using PristonTale.Simulation.Physics;
 using PristonTale.Contracts.Motion;
 using PristonTale.Contracts.World;
 using PristonTale.Contracts.Combat;
@@ -29,10 +34,158 @@ internal static class ClientTests
         yield return ("NPC duplicate Stand clips preserve exact INX indices and weighted selection", NpcStandMotionsAsync);
         yield return ("pending actor preparation does not block presence or resurrect removals", PendingActorAsync);
         yield return ("a monster whose model downloads first is prepared after the download and appears", DownloadedModelAsync);
+        yield return ("remote models appear only after their texture uploads finish", PendingModelTexturesAsync);
         yield return ("remote height follows the server sample instead of the highest floor", ServerHeightAsync);
         yield return ("NPC, monster and player collision survives pending assets", CollisionRosterAsync);
         yield return ("an action field draws actors facing left or right, finds the nearest one ahead on the player's line and the player a walk bumps into, never one it walks away from", SideViewAsync);
         yield return ("cursor rays originate at the camera and reject an enclosing NPC pick volume", CursorPickingAsync);
+        yield return ("auto-quest subtitle timing keeps short lines visible and scales with words", QuestSubtitleTimingAsync);
+        yield return ("the free auto-hunt radius is clamped and uses the world metre", FreeHuntRadiusAsync);
+        yield return ("free auto-hunt applies monster and loot filters in their specified precedence", FreeHuntFiltersAsync);
+        yield return ("free auto-hunt categorizes catalog drops and protects potion quotas", FreeHuntLootCatalogAsync);
+        yield return ("free auto-hunt chooses the smallest guaranteed potion and respects a preferred choice", FreeHuntPotionsAsync);
+        yield return ("free auto-hunt profile transfer preserves filters and rejects malformed codes", FreeHuntProfileAsync);
+    }
+
+    private static Task FreeHuntProfileAsync()
+    {
+        var settings = new FreeHuntSettings
+        {
+            Radius = 1024, OnlyMonsters = "Hopy, Aranha de Aço", ShareAccount = true,
+            Skills = [12, 34], SkillManaFloor = new Dictionary<uint, int> { [12] = 50 }, AlwaysLoot = "@Weapons"
+        };
+        var code = FreeHuntProfile.Encode(settings);
+        Assert.True(FreeHuntProfile.TryDecode(" " + code + "\n", out var imported), "valid profile code refused");
+        Assert.True(imported.Radius == 1024 && imported.OnlyMonsters == settings.OnlyMonsters && imported.AlwaysLoot == settings.AlwaysLoot
+            && imported.Skills.SequenceEqual(settings.Skills) && imported.SkillManaFloor[12] == 50 && !imported.ShareAccount,
+            "profile lost options or exported the local account preference");
+        Assert.True(!FreeHuntProfile.TryDecode("ETERVALE-HUNT-1:***", out _)
+            && !FreeHuntProfile.TryDecode(FreeHuntProfile.Encode(settings with { HP = null }), out _)
+            && !FreeHuntProfile.TryDecode(FreeHuntProfile.Encode(settings with { SummonCount = int.MaxValue }), out _)
+            && !FreeHuntProfile.TryDecode(FreeHuntProfile.Encode(settings with { TargetTimeout = int.MaxValue }), out _),
+            "invalid profile accepted");
+        return Task.CompletedTask;
+    }
+
+    private static Task FreeHuntFiltersAsync()
+    {
+        var filters = new FreeHuntSettings
+        {
+            OnlyMonsters = "Hopy, Rabie", IgnoredMonsters = "wild", MinimumLevel = 2, MaximumLevel = 6
+        };
+        Assert.True(filters.AcceptsMonster("Rabie", 5, false) && !filters.AcceptsMonster("Wild Hopy", 5, false)
+            && !filters.AcceptsMonster("Hopy", 7, false), "monster filters or levels were ignored");
+        Assert.True(filters.AcceptsMonster("Attacking enemy", 99, true)
+            && !(filters with { StrictMonsterFilter = true }).AcceptsMonster("Attacking enemy", 99, true), "strict retaliation filter changed");
+        Assert.True(FreeHuntSettings.WorldRadius(640) == 250f && FreeHuntSettings.WorldRadius(320) == 125f, "the panel's default circles differ");
+
+        var owner = OwnerState.Capture(new CharacterClassRegistry().CreatePlayer(PlayerClass.Knight, "Hunter", 20));
+        var spec = (uint)JobBitCode.Knight;
+        var drop = new GroundDropView(Guid.NewGuid(), ItemCodes.Parse("WS228"), "WS228", "Legends Sword", 1, false, default)
+        {
+            RequiredLevel = 130, Specialization = spec
+        };
+        var limits = filters with { OnlyOwnSpec = true, MinimumItemLevel = 100, MaximumItemLevel = 140 };
+        Assert.True(limits.AcceptsDrop(drop, owner, spec)
+            && !limits.AcceptsDrop(drop with { RequiredLevel = 90 }, owner, spec)
+            && !limits.AcceptsDrop(drop with { Specialization = (uint)JobBitCode.Fighter }, owner, spec)
+            && !limits.AcceptsDrop(drop with { ThrownByReceiver = true }, owner, spec), "level, spec or own-drop rules failed");
+        var lists = limits with { Excluded = LootHuntCategory.Weapons, AlwaysLoot = "@Weapons" };
+        Assert.True(lists.AcceptsDrop(drop, owner, spec)
+            && !(lists with { NeverLoot = "legends" }).AcceptsDrop(drop, owner, spec), "the always/never list precedence changed");
+        return Task.CompletedTask;
+    }
+
+    private static Task FreeHuntLootCatalogAsync()
+    {
+        var character = new CharacterClassRegistry().CreatePlayer(PlayerClass.Knight, "Hunter", 20);
+        var life = new ItemDefinition(ItemCodes.Parse("PL101"), "Poção Pequena de Vida", ItemKind.Potion, MaxStack: PotionDefinition.StackSize)
+        {
+            CatalogKey = "PL101", Potion = new PotionDefinition(10, 12, 0, 0, 0, 0)
+        };
+        Assert.True(character.Inventory.TryAdd(new ItemInstance(life, 8)), "fixture potion did not fit");
+        var owner = OwnerState.Capture(character);
+        var lifeDrop = Ground("PL101", life.Name, count: 3);
+        var limits = new FreeHuntSettings { MaxLifePotions = 10, AlwaysLoot = "@HP" };
+        Assert.True(!limits.AcceptsDrop(lifeDrop, owner, 0) && limits.AcceptsDrop(lifeDrop with { Amount = 2 }, owner, 0),
+            "incoming stack crossed the limit or a stack within the limit was skipped");
+
+        var imported = new FreeHuntSettings { Excluded = LootHuntCategory.Other }.UpgradeLootCategories();
+        var excluded = imported with { Excluded = imported.Excluded & ~LootHuntCategory.Potions };
+        Assert.True(!imported.AcceptsDrop(lifeDrop, owner, 0) && excluded.UpgradeLootCategories().AcceptsDrop(lifeDrop, owner, 0),
+            "the old exclusion was lost, or a later toggle was migrated again");
+
+        Assert.True(Cat("PL101") == LootHuntCategory.Potions && Cat("FO101") == LootHuntCategory.Force
+            && Cat("PR301") == LootHuntCategory.Runes && Cat("PR201") == LootHuntCategory.Materials
+            && Cat("EC101") == LootHuntCategory.Travel && Cat("BI113") == LootHuntCategory.Premium
+            && Cat("BI136") == LootHuntCategory.Masteries && Cat("SP105") == LootHuntCategory.Events && Cat("QT101") == LootHuntCategory.Quest,
+            "a drop was classified outside its real catalog family");
+
+        var filter = new FreeHuntSettings { LootMode = LootHuntMode.ListedOnly, AlwaysLoot = " #PL101 , @RunesPlus , @MP " };
+        Assert.True(filter.AcceptsDrop(lifeDrop, owner, 0) && filter.AcceptsDrop(Ground("PM101", "Mana"), owner, 0)
+            && !filter.AcceptsDrop(Ground("PR301", "Runes"), owner, 0) && !filter.AcceptsDrop(Ground("PL102", "PL101 Plus"), owner, 0),
+            "exact item or category selectors matched a different drop");
+
+        var priority = new FreeHuntSettings { AlwaysLoot = "@Runes", PrioritizeOwnSpec = true };
+        const uint spec = (uint)JobBitCode.Knight;
+        var rune = priority.LootPriority(Ground("PR301", "Rune"), owner, spec);
+        var weapon = priority.LootPriority(Ground("WS201", "Sword") with { Specialization = spec }, owner, spec);
+        var quest = priority.LootPriority(Ground("QT101", "Quest"), owner, spec);
+        Assert.True(quest > rune && rune > weapon && weapon > priority.LootPriority(lifeDrop, owner, spec),
+            "collection priority did not honor quest, pinned and matching specialization order");
+        return Task.CompletedTask;
+
+        static LootHuntCategory Cat(string key) => FreeHuntSettings.Category(key, ItemCodes.Parse(key), false);
+        static GroundDropView Ground(string key, string name, int count = 1) => new(Guid.NewGuid(), ItemCodes.Parse(key), key, name, count, false, default);
+    }
+
+    private static Task FreeHuntPotionsAsync()
+    {
+        static OwnedItemView Potion(string key, int min, int max, int slot = -1) =>
+            new(Guid.NewGuid(), ItemCodes.Parse(key), key, ItemKind.Potion, 3, 0, slot, 1, 1, key)
+            {
+                Potion = new PotionDefinition(min, max, 0, 0, 0, 0)
+            };
+
+        var small = Potion("PL105", 20, 30);
+        var medium = Potion("PL102", 40, 45, PotionBelt.FirstOwnerSlot);
+        var large = Potion("PL103", 80, 100);
+        OwnedItemView[] potions = [large, medium, small];
+        Assert.True(HuntPotionSelection.Select(potions, PotionResource.Life, "", 40) == medium, "oversized potion was used");
+        Assert.True(HuntPotionSelection.Select(potions, PotionResource.Life, "", 15) == small, "catalog order beat authored potency");
+        Assert.True(HuntPotionSelection.Select(potions, PotionResource.Life, "", 120) == large, "strongest insufficient dose was skipped");
+        Assert.True(HuntPotionSelection.Select(potions, PotionResource.Life, "pl105", 40) == small, "explicit preference was ignored");
+        Assert.True(HuntPotionSelection.Select(potions, PotionResource.Life, "", 40, bagOnly: true) == large, "belt refill selected a belt item");
+        Assert.True(HuntPotionSelection.Select([small with { Potion = null }], PotionResource.Life, "", 40)?.InstanceId == small.InstanceId,
+            "server without potency extension lost its fallback");
+
+        var buffer = new byte[PotionPotencyPacket.HeaderSize + PotionPotencyEntry.Size];
+        var entry = new PotionPotencyEntry(small.InstanceId, 20, 30, 0, 0, 0, 0);
+        var packet = new PotionPotencyPacket(72, [entry]);
+        var written = packet.Write(buffer);
+        var decoded = PotionPotencyPacket.Read(buffer.AsSpan(0, written));
+        Assert.True(decoded.Revision == 72 && decoded.Items.Single() == entry, "the server-authored range did not round-trip");
+        return Task.CompletedTask;
+    }
+
+    private static Task QuestSubtitleTimingAsync()
+    {
+        Assert.True(HudQuestDocuments.ReadingTime("Olá!") == TimeSpan.FromSeconds(5.5),
+            "the short subtitle disappeared before its minimum reading time");
+        var subtitle = "Atravesse a ponte com cuidado\r\n e procure o instrutor da aldeia para\t começar seu treinamento.";
+        Assert.True(HudQuestDocuments.ReadingTime(subtitle) == TimeSpan.FromSeconds(6.3),
+            "the subtitle timer did not count the words across line breaks and whitespace");
+        return Task.CompletedTask;
+    }
+
+    private static Task FreeHuntRadiusAsync()
+    {
+        Assert.True(FreeHuntRange.Clamp(int.MinValue) == FreeHuntRange.MinimumMetres && FreeHuntRange.InWorldUnits(0) == 125f,
+            "the configured radius fell below five metres");
+        Assert.True(FreeHuntRange.InWorldUnits(FreeHuntRange.DefaultMetres) == 375f, "the default radius differs from fifteen metres");
+        Assert.True(FreeHuntRange.Clamp(int.MaxValue) == FreeHuntRange.MaximumMetres && FreeHuntRange.InWorldUnits(int.MaxValue) == 750f,
+            "the configured radius exceeded thirty metres");
+        return Task.CompletedTask;
     }
 
     private static Task MovementPacingAsync()
@@ -290,6 +443,26 @@ internal static class ClientTests
         Assert.True(manager.Count == 1 && composer.Composed == 1, "the monster never appeared after its model downloaded");
     }
 
+    private static Task PendingModelTexturesAsync()
+    {
+        var composer = new PendingComposer { TexturesReady = false };
+        var catalog = new WorldRenderCatalog();
+        catalog.Register(new MonsterRenderInfo(1, "char/monster/Hopy/hopy.inx", 1f, "Hopy", 3));
+        var manager = new RemoteEntityManager(new FakeScene(), composer, composer, new CharacterClassRegistry(), ".", catalog);
+        var spawn = new EntitySpawnInfo(2, EntityKind.Monster, false, System.Numerics.Vector3.Zero, 0, MotionState.Stand, 10, 10, null, 1);
+        composer.Ready.SetResult();
+        manager.Apply(new PresenceUpdate(1, [spawn, spawn with { EntityId = 3 }], [], [], []));
+        manager.Update(0.05f);
+        Assert.True(composer.Composed == 0, "a remote model appeared while its textures were uploading");
+
+        manager.Apply(new PresenceUpdate(2, [], [], [2], []));
+        composer.TexturesReady = true;
+        manager.Update(0.05f);
+        manager.Update(0.05f);
+        Assert.True(manager.Count == 1 && composer.Composed == 1, "the remaining model failed to appear or a removed model reappeared");
+        return Task.CompletedTask;
+    }
+
     private static Task SideViewAsync()
     {
         Assert.True(PristonTale.Gameplay.World.ActionFieldView.Facing(0.3f) == MathF.PI / 2f
@@ -365,13 +538,18 @@ internal static class ClientTests
             new(3, EntityKind.Npc, false, origin + new System.Numerics.Vector3(0, 0, 40), 0, MotionState.Stand, 1, 1, null, 2),
             new(4, EntityKind.Player, false, origin + new System.Numerics.Vector3(-25, 0, 0), 0, MotionState.Stand, 100, 100, appearance, 0)
         ], [], [], []));
-        var neighbours = new List<PristonTale.Simulation.Physics.EntityNeighbour>();
+        var neighbours = new List<EntityNeighbour>();
+        var nearby = new List<EntityNeighbour>();
         manager.CollectNeighbours(1, neighbours);
         Assert.True(manager.Count == 0 && neighbours.Count == 3, "asset preparation disabled authoritative blockers");
-        foreach (var displacement in new[] { new System.Numerics.Vector3(30, 0, 0), new(0, 0, 30), new(-15, 0, 0) })
+        foreach (var displacement in new[] { new System.Numerics.Vector3(30, 0, 0), new(0, 0, 30), new(-15, 0, 0), new(100, 0, 0) })
         {
-            var accepted = PristonTale.Simulation.Physics.EntityCollision.Resolve(origin, origin + displacement, 16, neighbours);
-            Assert.True(accepted == origin, "client predicted movement through a live entity");
+            var desired = origin + displacement;
+            var bounds = EntityCollision.QueryBounds(origin, desired, EntityCollisionRadii.Player);
+            manager.CollectNeighbours(1, nearby, bounds.Center, bounds.Radius);
+            var accepted = EntityCollision.Resolve(origin, desired, EntityCollisionRadii.Player, nearby);
+            Assert.True(nearby.Count < neighbours.Count && accepted == origin, "bounded movement query missed a blocker or kept distant actors");
+            Assert.True(accepted == EntityCollision.Resolve(origin, desired, EntityCollisionRadii.Player, neighbours), "movement broad phase changed collision");
         }
 
         composer.Ready.TrySetResult();
@@ -413,8 +591,10 @@ internal static class ClientTests
     {
         public TaskCompletionSource Ready { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public int Composed { get; private set; }
+        public bool TexturesReady { get; set; } = true;
         public Task PrepareAsync(string root, CharacterVisualSet visuals, int face) => Ready.Task;
         public Task PrepareAsync(string root, string model) => Ready.Task;
+        public bool AdvanceTextureUpload(string root, string model) => TexturesReady;
         public PlayerActorHandles Compose(string root, CharacterVisualSet visuals, int face, Matrix world, MotionCode motion)
         {
             Composed++;

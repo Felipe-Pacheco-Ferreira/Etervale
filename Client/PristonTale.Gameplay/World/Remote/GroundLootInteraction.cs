@@ -19,6 +19,8 @@ public sealed class GroundLootInteraction(Func<InventoryCommand, Task<InventoryO
     private GroundDropView _pendingDrop;
     private bool _pendingToCursor;
     public bool Busy => _pending is not null;
+    public Guid LastAttempt { get; private set; }
+    public bool LastAttemptSucceeded { get; private set; }
 
     public void Select(Guid id)
     {
@@ -36,6 +38,8 @@ public sealed class GroundLootInteraction(Func<InventoryCommand, Task<InventoryO
         {
             if (_pending.IsCompleted)
             {
+                LastAttempt = _pendingDrop?.Id ?? Guid.Empty;
+                LastAttemptSucceeded = _pending.IsCompletedSuccessfully && _pending.Result.Ok;
                 if (_pending.IsCompletedSuccessfully && !_pending.Result.Ok)
                 {
                     log.Info($"[Loot] Pickup rejected: {_pending.Result.Message}");

@@ -295,6 +295,44 @@ internal static class VulkanHudArt
     private const int AuraSparks = 3;
     private const int AuraTail = 8;
 
+    public static void GoldOrbit(Canvas canvas, float x, float y, float radius, float phase, int alpha = 255)
+    {
+        Box.Set(x - radius, y - radius, x + radius, y + radius);
+        var angle = phase / 2.4f % 1f * 360f;
+        var breath = .5f + .5f * MathF.Sin(phase * 3.6f);
+        var line = Math.Max(1f, radius * .054f);
+        Stroke.StrokeWidth = line;
+        Stroke.Color = Color.Argb((int)((.53f + .33f * breath) * alpha), 241, 164, 48);
+        canvas.DrawCircle(x, y, radius, Stroke);
+        Stroke.StrokeWidth = line * 2.7f;
+        Stroke.Color = Color.Argb(alpha * 120 / 255, 255, 159, 36);
+        canvas.DrawArc(Box, angle - 54f, 54f, false, Stroke);
+        canvas.DrawArc(Box, angle + 146f, 34f, false, Stroke);
+        Stroke.StrokeWidth = line;
+        Stroke.Color = Color.Argb(alpha, 255, 242, 163);
+        canvas.DrawArc(Box, angle - 36f, 36f, false, Stroke);
+        canvas.DrawArc(Box, angle + 156f, 24f, false, Stroke);
+        var (sin, cos) = MathF.SinCos(angle * (MathF.PI / 180f));
+        GoldSpark(canvas, x + cos * radius, y + sin * radius, line * (1.3f + breath), alpha);
+    }
+
+    private static void GoldSpark(Canvas canvas, float x, float y, float size, int alpha)
+    {
+        Shape.Reset();
+        Shape.SetFillType(Path.FillType.Winding!);
+        Shape.MoveTo(x, y - size);
+        Shape.LineTo(x + size * .48f, y - size * .23f);
+        Shape.LineTo(x + size, y);
+        Shape.LineTo(x + size * .48f, y + size * .23f);
+        Shape.LineTo(x, y + size);
+        Shape.LineTo(x - size * .48f, y + size * .23f);
+        Shape.LineTo(x - size, y);
+        Shape.LineTo(x - size * .48f, y - size * .23f);
+        Shape.Close();
+        Fill.Color = Color.Argb(alpha, 255, 245, 185);
+        canvas.DrawPath(Shape, Fill);
+    }
+
     // The level on a medallion in the HUD's own make: a dark plate in a gold ring with a gold numeral. The stone it is set
     // with climbs with the level against the highest one (amber, emerald, sapphire, crimson), as an inner line and a
     // breathing glow; the highest level burns, its flames flickering with phase (seconds).
@@ -310,6 +348,9 @@ internal static class VulkanHudArt
         if (top)
         {
             Flames(canvas, x, y, radius, phase);
+            var pulse = .5f + .5f * MathF.Sin(phase * 2.6f);
+            GoldOrbit(canvas, x, y, radius * (1.08f + pulse * .04f), phase);
+            GoldOrbit(canvas, x, y, radius * 1.19f, -phase * .64f, 165);
         }
         else if (share >= .25f)
         {
@@ -381,6 +422,27 @@ internal static class VulkanHudArt
 
     private const int FlameTongues = 7;
     private const int FlameEmbers = 6;
+
+    public static void MaxLevelTitle(Canvas canvas, string title, float left, float right, float y, float radius, float phase)
+    {
+        Box.Set(left, y - radius, right, y + radius);
+        var pulse = .5f + .5f * MathF.Sin(phase * 2.7f);
+        Fill.Color = Color.Argb(240, 67 + (int)(29f * pulse), 22, 24);
+        canvas.DrawRoundRect(Box, radius, radius, Fill);
+        Stroke.StrokeWidth = Math.Max(1f, radius * .09f);
+        Stroke.Color = Edge;
+        canvas.DrawRoundRect(Box, radius, radius, Stroke);
+        var glint = left + radius + (right - left - radius * 2f) * (phase / 2.35f % 1f);
+        var center = (left + right) * .5f;
+        GoldSpark(canvas, left + radius, y, radius * (.55f + .19f * pulse), 235);
+        GoldSpark(canvas, right - radius, y, radius * (.74f - .19f * pulse), 235);
+        GoldSpark(canvas, glint, y - radius * .82f, radius * .45f, 255);
+        Label(canvas, title, center, y, radius * 1.37f, EdgeLight, Paint.Align.Center!);
+        var saved = canvas.Save();
+        canvas.ClipRect(glint - radius * 1.35f, y - radius, glint + radius * 1.35f, y + radius);
+        Label(canvas, title, center, y, radius * 1.37f, Color.Rgb(255, 251, 220), Paint.Align.Center!);
+        canvas.RestoreToCount(saved);
+    }
 
     // A gauge: the trough, the trail (where the value was a moment ago) and the fill up to fraction, glassy (a bright
     // top edge, a soft gloss, a lit tip) with the text centred. shine, from 0 to 1, sweeps a band of light along the fill;

@@ -31,6 +31,11 @@ namespace PristonTale.Gameplay.World;
 // Fields in the world: loading and streaming them around the player, the active field and its lighting and camera.
 public sealed partial class GameScene
 {
+    private Task _initialAppearance;
+    private LoadedField _initialField;
+    private FieldDef _neighbourSource;
+    private IReadOnlyList<FieldDef> _streamNeighbours = [];
+
     public void LoadEntered(string assetRoot, EnteredCharacter entered)
     {
         if (!_worldCatalog.TryGetFieldByCode(entered.FieldCode, out var field))
@@ -70,10 +75,12 @@ public sealed partial class GameScene
         {
             PrepareFieldLoad(assetRoot);
             _fieldStreamer.Prioritize(field);
+            var visuals = InitialPlayerVisuals(entered.Class, entered.FaceIndex, entered.Tier, entered.HairIndex);
+            _initialAppearance = _playerComposer.PrepareAsync(assetRoot, visuals, entered.FaceIndex);
         }
 
-        var loaded = _fieldStreamer.Update();
-        if (loaded is null)
+        _initialField ??= _fieldStreamer.Update();
+        if (_initialField is null)
         {
             if (_fieldStreamer.Failed(field.Id))
             {
@@ -83,9 +90,17 @@ public sealed partial class GameScene
             return false;
         }
 
-        _fields.Add(loaded);
+        if (!_initialAppearance.IsCompleted)
+        {
+            return false;
+        }
+
+        _initialAppearance.GetAwaiter().GetResult();
+        _fields.Add(_initialField);
         InvalidateGround();
-        CompleteFieldLoad(loaded, entered);
+        CompleteFieldLoad(_initialField, entered);
+        _initialField = null;
+        _initialAppearance = null;
         return true;
     }
 
@@ -145,7 +160,7 @@ public sealed partial class GameScene
         _playerComposer = new PlayerActorComposer(actorScene, _actorLoader);
         _monsterComposer = new ModelActorComposer(actorScene, _actorLoader);
         _groundLoot = new GroundLootPresentation(actorScene, _actorLoader, _assetRoot, _log);
-        _lootInteraction = new GroundLootInteraction(ApplyInventoryAsync, _log, drop => _fieldAudio?.PlayItem(drop.CatalogKey, drop.Gold),
+        _lootInteraction = new GroundLootInteraction(ApplyInventoryAsync, _log, OnGroundPickup,
             drop => PickupToCursor?.Invoke(drop.ItemCode) == true, (ok, revision) => PickupToCursorAnswered?.Invoke(ok, revision));
         _lootFloor = LootFloorAt;
     }
@@ -227,11 +242,17 @@ public sealed partial class GameScene
     private void ScanStreaming()
     {
         var active = _activeField.Definition;
+        if (_neighbourSource != active)
+        {
+            _neighbourSource = active;
+            _streamNeighbours = _worldCatalog.Neighbours(active);
+        }
+
         var player = _playerBody.PlanarPosition;
         Vector2? movementTarget = _hasMoveTarget ? _moveTarget : null;
         var movementSpeed = _hasMoveTarget ? MovementSpeed(_runMode) : 0f;
         var disconnect = FieldStreamingPolicy.RetentionDistance(movementSpeed);
-        foreach (var neighbour in _worldCatalog.Neighbours(active))
+        foreach (var neighbour in _streamNeighbours)
         {
             if (IsLoaded(neighbour.Id))
             {
@@ -285,6 +306,11 @@ public sealed partial class GameScene
 
     private void UpdateActiveField()
     {
+        if (_fields.Count == 1 && _fields[0] == _activeField)
+        {
+            return;
+        }
+
         var position = _playerBody.Position;
         LoadedField best = null;
         var bestHeight = float.MinValue;

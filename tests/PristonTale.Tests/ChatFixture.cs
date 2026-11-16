@@ -32,19 +32,29 @@ internal sealed class ChatFixture
 
     public ChatFixture(GameMasterOptions? options = null, IPartyRoster? parties = null, IClanRoster? clans = null,
         FieldTerrain? terrain = null, IReadOnlyList<FieldPoint>? startPoints = null, FieldState state = FieldState.Forest, TimeProvider? clock = null,
-        IGmAudit? audit = null)
+        IGmAudit? audit = null, int? extraField = null)
     {
         var empty = WorldData.Empty;
+        var spawns = new Dictionary<int, FieldSpawnData> { [Field] = FieldSpawnData.Empty };
+        var fields = new List<FieldDef>
+        {
+            new("fixture", "Fixture Field", state, new FieldBackdrop("", "", ""), "", [])
+            {
+                FieldCode = Field,
+                StartPoints = startPoints ?? []
+            }
+        };
+        if (extraField is { } second)
+        {
+            spawns.Add(second, FieldSpawnData.Empty);
+            fields.Add(new FieldDef("second", "Second Fixture Field", state, new FieldBackdrop("", "", ""), "", []) { FieldCode = second });
+        }
+
         Data = new WorldDataHolder
         {
-            Current = new WorldData(new ItemCatalog([Axe, Potion]), new MonsterCatalog([Hopy]), empty.Npcs,
-                new Dictionary<int, FieldSpawnData> { [Field] = FieldSpawnData.Empty }, empty.Motions)
+            Current = new WorldData(new ItemCatalog([Axe, Potion]), new MonsterCatalog([Hopy]), empty.Npcs, spawns, empty.Motions)
         };
-        var catalog = Catalog = new WorldCatalog([new FieldDef("fixture", "Fixture Field", state, new FieldBackdrop("", "", ""), "", [])
-        {
-            FieldCode = Field,
-            StartPoints = startPoints ?? []
-        }]);
+        var catalog = Catalog = new WorldCatalog(fields);
         var terrains = new FieldTerrainCatalog();
         if (terrain is not null)
         {
@@ -107,21 +117,22 @@ internal sealed class ChatFixture
     public ChatAppService Chat { get; }
     public long NowMs { get; set; } = 1_000_000;
 
-    public async Task<Player> JoinAsync(string name, float x, float z, int gmLevel = 0, PlayerClass playerClass = PlayerClass.Fighter, int level = 1)
+    public async Task<Player> JoinAsync(string name, float x, float z, int gmLevel = 0, PlayerClass playerClass = PlayerClass.Fighter, int level = 1,
+        int field = Field)
     {
         var session = _sessions.Create(++_accounts, name.ToLowerInvariant() + "-account");
         session.GmLevel = gmLevel;
         Assert.True(session.TryBeginEntry(), "fixture entry");
-        var record = CharacterRecordFactory.NewStarter(_classes, session.AccountId, name, 0, playerClass, Field) with { Id = (long)session.EntityId };
+        var record = CharacterRecordFactory.NewStarter(_classes, session.AccountId, name, 0, playerClass, field) with { Id = (long)session.EntityId };
         session.Character = _classes.CreatePlayer(playerClass, name, level);
         session.Loaded = record;
         session.CharacterName = name;
-        session.FieldId = Field;
+        session.FieldId = field;
         session.SpawnPosition = new Vector3(x, 0, z);
         Assert.True(session.CompleteEntry(true) && session.TryBeginPlay(), "fixture play");
         Characters.Records[name] = record;
         var outbox = new WorldOutbox();
-        Assert.True(await RunAsync(World.JoinAsync(Field, WorldPlayerFactory.Create(session), outbox.Writer, session)), "fixture join");
+        Assert.True(await RunAsync(World.JoinAsync(field, WorldPlayerFactory.Create(session), outbox.Writer, session)), "fixture join");
         var link = new FakeLink();
         var member = new ChatMember(session, name, link, NowMs, session.Character.Money);
         Directory.Join(member);

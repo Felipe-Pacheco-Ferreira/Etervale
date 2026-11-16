@@ -70,6 +70,7 @@ public sealed class SubscriberPresence
                 || previous.Appearance.OffHandKey != view.Appearance.OffHandKey
                 || previous.Appearance.WeaponGlow != view.Appearance.WeaponGlow
                 || previous.Appearance.OffHandGlow != view.Appearance.OffHandGlow
+                || previous.Appearance.ArmorAge != view.Appearance.ArmorAge
                 || previous.Appearance.InVillage != view.Appearance.InVillage)
             {
                 // A full descriptor refresh carries maxima and identity-level changes absent from slim states.

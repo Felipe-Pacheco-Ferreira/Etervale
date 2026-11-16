@@ -6,6 +6,7 @@ using PristonTale.Assets;
 using PristonTale.Engine3D.Formats;
 using PristonTale.Engine3D.Rendering;
 using PristonTale.GltfExport;
+using PristonTale.Simulation.Items.Usable;
 using PristonTale.Simulation.World;
 
 namespace PristonTale.PackBuild;
@@ -23,6 +24,56 @@ internal static class PackBuilder
     private sealed record SpawnRow(long Code, string Model, string EventModel);
 
     private sealed record ModelRow(string Model, string EventModel);
+
+    public static int RunSummonModels(string assets, string database, string output)
+    {
+        using var connection = new SqliteConnection(new SqliteConnectionStringBuilder { DataSource = database, Mode = SqliteOpenMode.ReadOnly }.ToString());
+        var crystalKeys = MonsterCrystals.All.Where(crystal => crystal.Kind != CrystalKind.SoulStone)
+            .SelectMany(crystal => crystal.Monsters.Concat(crystal.EventMonsters))
+            .Select(monster => monster.Key)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var rows = connection.Query<(string Key, string Model, string EventModel)>(new CommandDefinition("""
+            SELECT key, model, event_model FROM monsters WHERE key COLLATE NOCASE IN @Keys
+            """, new { Keys = crystalKeys })).AsList();
+        crystalKeys.ExceptWith(rows.Where(row => !string.IsNullOrWhiteSpace(row.Model)).Select(row => row.Key));
+        if (crystalKeys.Count > 0)
+        {
+            Console.Error.WriteLine($"Summon monsters without a model in the world database: {string.Join(", ", crystalKeys.Order(StringComparer.Ordinal))}");
+            return 1;
+        }
+
+        var existing = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var name in new[] { "ricarten-desktop.zip", "opening-desktop.zip", "adventurer-journey.zip" })
+        {
+            using var archive = ZipFile.OpenRead(Path.Combine(output, name));
+            existing.UnionWith(archive.Entries.Select(entry => entry.FullName.Replace('\\', '/')));
+        }
+
+        var models = rows.SelectMany(row => new[] { row.Model, row.EventModel })
+            .Where(path => !string.IsNullOrWhiteSpace(path)).Select(PackManifest.ModelKey)
+            .Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal).ToArray();
+        var files = new List<string>();
+        var unresolved = 0;
+        foreach (var model in models)
+        {
+            var info = PristonModelPaths.Info(AssetFiles.Combine(assets, model));
+            try
+            {
+                var dependencies = PristonAssetDependencies.ActorFiles(assets, info);
+                files.AddRange(dependencies.Select(file => file.Path));
+                unresolved += dependencies.Count(file => file.Path.Length == 0);
+            }
+            catch (Exception error) when (error is IOException or InvalidDataException or UnauthorizedAccessException)
+            {
+                Console.Error.WriteLine($"summon model {model}: {error.Message}");
+                return 1;
+            }
+        }
+
+        var pack = Write(output, "summon-models", assets, files, [], existing);
+        Console.WriteLine($"{rows.Count} summon monsters, {models.Length} models, {pack.Files.Count} new files, {pack.Size:N0} bytes; {unresolved} unresolved texture references");
+        return 0;
+    }
 
     public static int Run(string assets, string database, string output)
     {
@@ -134,7 +185,8 @@ internal static class PackBuilder
     }
 
     // Zips the files (asset paths on disk, unresolved ones left out) and the extra entries into <output>/<id>.zip.
-    private static PackEntry Write(string output, string id, string assets, IEnumerable<string> files, IReadOnlyList<(string Entry, string Source)> extra)
+    private static PackEntry Write(string output, string id, string assets, IEnumerable<string> files, IReadOnlyList<(string Entry, string Source)> extra,
+        ISet<string>? existing = null)
     {
         var entries = new SortedDictionary<string, string>(StringComparer.Ordinal);
         foreach (var file in files.Where(file => file.Length > 0))
@@ -145,7 +197,10 @@ internal static class PackBuilder
                 throw new InvalidDataException($"{file} is outside the assets folder");
             }
 
-            entries[relative] = file;
+            if (existing?.Contains(relative) != true)
+            {
+                entries[relative] = file;
+            }
         }
 
         foreach (var (entry, source) in extra)
@@ -154,21 +209,31 @@ internal static class PackBuilder
         }
 
         var path = Path.Combine(output, PackManifest.PackFileName(id));
+        var temporary = path + ".tmp";
         var listed = new List<PackFile>(entries.Count);
-        using (var zip = ZipFile.Open(path, ZipArchiveMode.Create))
+        try
         {
-            foreach (var (entry, source) in entries)
+            using (var zip = new ZipArchive(File.Create(temporary), ZipArchiveMode.Create))
             {
-                var item = zip.CreateEntry(entry, CompressionLevel.Optimal);
-                item.LastWriteTime = EntryTime;
-                using (var input = File.OpenRead(source))
-                using (var stream = item.Open())
+                foreach (var (entry, source) in entries)
                 {
-                    input.CopyTo(stream);
-                }
+                    var item = zip.CreateEntry(entry, CompressionLevel.Optimal);
+                    item.LastWriteTime = EntryTime;
+                    using (var input = File.OpenRead(source))
+                    using (var stream = item.Open())
+                    {
+                        input.CopyTo(stream);
+                    }
 
-                listed.Add(new PackFile(entry, new FileInfo(source).Length));
+                    listed.Add(new PackFile(entry, new FileInfo(source).Length));
+                }
             }
+
+            File.Move(temporary, path, overwrite: true);
+        }
+        finally
+        {
+            File.Delete(temporary);
         }
 
         using var read = File.OpenRead(path);

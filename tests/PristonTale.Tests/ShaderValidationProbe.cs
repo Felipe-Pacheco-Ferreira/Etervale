@@ -307,20 +307,41 @@ internal sealed partial class ShaderValidationProbe : Game
     // 8-bit target.
     private void VerifyComposition()
     {
-        using var output = new RenderTarget2D(GraphicsDevice, TargetSize, TargetSize, false, SurfaceFormat.Color, DepthFormat.None);
+        const int outputHeight = TargetSize / 2;
+        using var output = new RenderTarget2D(GraphicsDevice, TargetSize, outputHeight, false, SurfaceFormat.Color, DepthFormat.None);
         using var scene = new PristonSceneTargets(GraphicsDevice, Content, ConsoleClientLog.Instance);
-        GraphicsDevice.SetRenderTarget(output);
-        scene.Begin(0, false);
-        scene.Fill(false, 1f, new Vector3(Grey));
-        scene.Compose(UnitPostFrame(), default, null);
-        GraphicsDevice.SetRenderTarget(null);
-        var pixels = new Color[TargetSize * TargetSize];
-        output.GetData(pixels);
-        var actual = pixels[(TargetSize / 2) * TargetSize + TargetSize / 2];
+        var pixels = new Color[TargetSize * outputHeight];
         var expected = DisplayEncode(Grey) * 255f;
-        Assert.True(MathF.Abs(actual.R - expected) <= 1f && actual.R == actual.G && actual.G == actual.B,
-            $"composition: expected {expected:F1}, got {actual}");
-        _verified++;
+        var unit = UnitPostFrame();
+        foreach (var antiAliasing in new[] { AntiAliasingMode.Off, AntiAliasingMode.Fxaa })
+        {
+            var frame = unit with { Settings = unit.Settings with { AntiAliasing = antiAliasing } };
+            foreach (var widthLimit in new[] { 0, TargetSize / 2 })
+            {
+                GraphicsDevice.SetRenderTarget(output);
+                var outputViewport = GraphicsDevice.Viewport;
+                scene.Begin(0, false, widthLimit: widthLimit);
+                var divisor = widthLimit == 0 ? 1 : 2;
+                Assert.True(scene.Width == TargetSize / divisor && scene.Height == outputHeight / divisor,
+                    $"composition at width limit {widthLimit}: unexpected scene size {scene.Width}x{scene.Height}");
+                scene.Fill(false, 1f, new Vector3(Grey));
+                scene.Compose(frame, default, null);
+                Assert.True(outputViewport.Bounds == GraphicsDevice.Viewport.Bounds, "composition did not restore the output viewport");
+                GraphicsDevice.SetRenderTarget(null);
+                output.GetData(pixels);
+                foreach (var actual in new[] { pixels[0], pixels[pixels.Length / 2 + TargetSize / 2], pixels[^1] })
+                {
+                    Assert.True(MathF.Abs(actual.R - expected) <= 1f && actual.R == actual.G && actual.G == actual.B,
+                        $"{antiAliasing} composition at width limit {widthLimit}: expected {expected:F1}, got {actual}");
+                    if (antiAliasing == AntiAliasingMode.Fxaa)
+                    {
+                        Assert.True(actual.A == byte.MaxValue, $"FXAA composition at width limit {widthLimit} must be opaque: got {actual}");
+                    }
+                }
+
+                _verified++;
+            }
+        }
     }
 
     // A post frame whose fixed exposure multiplies the scene by exactly 1: the user compensation cancels the day key.

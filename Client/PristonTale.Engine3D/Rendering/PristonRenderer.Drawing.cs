@@ -312,7 +312,8 @@ public sealed partial class PristonRenderer
 
         if (batch.IsSkinned)
         {
-            var rim = _neutralActorPass ? Vector3.Zero : batch.ActorColorAdd * SelectionRimScale;
+            var rim = _neutralActorPass ? Vector3.Zero
+                : batch.ActorColorAdd * SelectionRimScale + (batch.Shade?.HeldGlowRim ?? Vector3.Zero);
             var effect = batch.Gltf is { } gltf
                 ? _shaders.SelectGltfSurface(gltf, batch.SkinPalette, rim, _prepassMode, _neutralActorPass ? 1f : batch.FloorLight,
                     _neutralActorPass ? null : batch.Shade,

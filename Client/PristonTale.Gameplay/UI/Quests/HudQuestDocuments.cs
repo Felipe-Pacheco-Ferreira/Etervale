@@ -22,6 +22,27 @@ public sealed partial class HudQuestDocuments(string assetRoot, IClientLog log)
 
     public static string WithSubject(string line, string subject) => line.Replace(SubjectMark, subject, StringComparison.Ordinal);
 
+    public static TimeSpan ReadingTime(string text)
+    {
+        const int minimumMilliseconds = 5500;
+        const int openingMilliseconds = 1800;
+        const int millisecondsPerWord = 300;
+        var words = 0;
+        var inWord = false;
+        foreach (var character in text)
+        {
+            var letter = !char.IsWhiteSpace(character);
+            if (letter && !inWord)
+            {
+                words++;
+            }
+
+            inWord = letter;
+        }
+
+        return TimeSpan.FromMilliseconds(Math.Max(minimumMilliseconds, openingMilliseconds + words * (long)millisecondsPerWord));
+    }
+
     public static string DialogPath(string document) => $"{DialogFolder}/{document}.sin";
 
     public static string BoardPath(string description) => $"{BoardFolder}/{description.Replace('\\', '/')}";

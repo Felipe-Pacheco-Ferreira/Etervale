@@ -4,6 +4,7 @@ using Android.Graphics;
 using Android.Views;
 using Android.Widget;
 using Path = Android.Graphics.Path;
+using PristonTale.Gameplay.UI.Quests;
 using PristonTale.Mobile;
 
 // An NPC's dialog: one HUD plate at the bottom, between the menu buttons and the action wheel (LeftClear, RightClear),
@@ -37,7 +38,7 @@ internal sealed class VulkanNpcPanel(Activity activity, FrameLayout overlay, Vul
     public int LeftClear { get; set; }
     public int RightClear { get; set; }
 
-    public async Task<int?> ShowAsync(string title, string message, string[] choices, CancellationToken cancellation)
+    public async Task<int?> ShowAsync(string title, string message, string[] choices, CancellationToken cancellation, Func<bool> shouldAdvance = null)
     {
         var answer = new TaskCompletionSource<int?>(TaskCreationOptions.RunContinuationsAsynchronously);
         var entityId = EntityId;
@@ -77,7 +78,8 @@ internal sealed class VulkanNpcPanel(Activity activity, FrameLayout overlay, Vul
         scroll.AddView(line);
         var lineWidth = width - textLeft - Dp(Side) - Dp(LinePadding) * 2;
         line.Measure(View.MeasureSpec.MakeMeasureSpec(lineWidth, MeasureSpecMode.Exactly), View.MeasureSpec.MakeMeasureSpec(0, MeasureSpecMode.Unspecified));
-        var lineHeight = Math.Min(line.MeasuredHeight, Dp(MaxLineHeight)) + Dp(LinePadding);
+        var maxTextHeight = Dp(MaxLineHeight);
+        var lineHeight = Math.Min(line.MeasuredHeight, maxTextHeight) + Dp(LinePadding);
         content.AddView(scroll, new LinearLayout.LayoutParams(-1, lineHeight) { TopMargin = Dp(6) });
 
         var actions = new LinearLayout(activity);
@@ -129,6 +131,21 @@ internal sealed class VulkanNpcPanel(Activity activity, FrameLayout overlay, Vul
         }
         try
         {
+            if (shouldAdvance is not null && line.MeasuredHeight <= maxTextHeight && shouldAdvance())
+            {
+                try
+                {
+                    return await answer.Task.WaitAsync(HudQuestDocuments.ReadingTime(message), cancellation);
+                }
+                catch (TimeoutException)
+                {
+                    if (!answer.Task.IsCompleted && shouldAdvance())
+                    {
+                        return 0;
+                    }
+                }
+            }
+
             return await answer.Task.WaitAsync(cancellation);
         }
         finally

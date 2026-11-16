@@ -108,6 +108,8 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
 
     private double _talkedAt = double.NegativeInfinity;
     private (QuestCode, int, long) _talkedAbout;
+    private double _serviceTalkedAt = double.NegativeInfinity;
+    private (QuestNpcPlace Destination, long Revision) _serviceTalkedAbout;
     private double _inventoryAt = double.NegativeInfinity;
     private Task _inventory = Task.CompletedTask;
     private int _huntPoint;
@@ -295,11 +297,11 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
 
     // Answers a quest dialog by itself while it runs, so the conversation does not wait for a tap.
     public bool AnswersDialog(int choices) =>
-        choices > 0 && Enabled && Volatile.Read(ref _skillMaster) == 0 &&
-        (choices == 1 && (Volatile.Read(ref _wingExchange) != 0 || Volatile.Read(ref _findBeginnerQuest) != 0 || _pendingMorionPromotion) ||
+        choices == 1 && Enabled && Volatile.Read(ref _skillMaster) == 0 &&
+        (Volatile.Read(ref _wingExchange) != 0 || Volatile.Read(ref _findBeginnerQuest) != 0 || _pendingMorionPromotion ||
          session.Quest is { } quest && (Plan(quest) is Step.Guide or Step.Prepare ||
-             choices == 1 && (HasBeginnerOffer(quest) || HasClassSkillOffer(quest) || NeedsHomeMaster(quest) ||
-                 ReportNpcCode(quest) != 0 || PotionService(quest).Kind != 0)));
+             HasBeginnerOffer(quest) || HasClassSkillOffer(quest) || NeedsHomeMaster(quest) ||
+             ReportNpcCode(quest) != 0 || PotionService(quest).Kind != 0));
 
     public void Update(GameScene scene, bool manualMovement)
     {
@@ -340,6 +342,11 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
         }
 
         if (scene.PlayerDead || scene.Warping || session.MapPose is not { } pose)
+        {
+            return;
+        }
+
+        if (session.NpcConversationOpen)
         {
             return;
         }
@@ -537,7 +544,7 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
             return;
         }
 
-        var route = AdventurerJourneyRoute.For(session.Character.Class);
+        var route = session.JourneyRoute;
         var step = Plan(quest);
         if (step != _step)
         {
@@ -804,7 +811,7 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
     {
         if (pose.FieldId != route.Guide.FieldCode)
         {
-            Travel(scene, pose, route, route.Guide.FieldCode, $"Voltando para {GuideName(route)}");
+            Travel(scene, pose, route, route.Guide.FieldCode, $"Voltando para {route.GuideShortName}");
             return;
         }
 
@@ -812,7 +819,7 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
         var about = (quest.Code, quest.State, quest.Revision);
         if (about == _talkedAbout && now - _talkedAt < TalkCooldownSeconds)
         {
-            Show($"Falando com {GuideName(route)}");
+            Show($"Falando com {route.GuideShortName}");
             return;
         }
 
@@ -826,21 +833,21 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
 
         if (about == _talkedAbout && now - _talkedAt < RepeatTalkSeconds)
         {
-            Show(quest.State == 1 ? "Equipe uma arma e ponha uma poção no cinto" : $"Fale com {GuideName(route)}");
+            Show(quest.State == 1 ? "Equipe uma arma e ponha uma poção no cinto" : $"Fale com {route.GuideShortName}");
             return;
         }
 
         // Walk to the guide along a route (its place in view, else the route data's), then talk from beside it. The talk
         // walks straight, so it starts only where that walk is clear: near the guide but above it on a terrace, or behind
         // a wall, the route goes on (down the stairs, around the wall).
-        var known = session.TryFindNpc(route.GuideName, out var guide, out var at);
+        var known = session.TryFindNpc(route.GuideTemplate, pose.Position, out var guide, out var at);
         var target = known ? new Vector2(at.X, at.Z) : new Vector2(route.Guide.X, route.Guide.Z);
         var distance = Vector2.Distance(new Vector2(pose.Position.X, pose.Position.Z), target);
         var beside = known && distance <= TalkReach
             && (distance <= WaypointReach || scene.WalksStraightTo(new XnaVector2(target.X, -target.Y)));
         if (!beside)
         {
-            Walk(scene, pose, route.Guide.FieldCode, target, 0, $"Indo até {GuideName(route)}", 0f, ride: true);
+            Walk(scene, pose, route.Guide.FieldCode, target, 0, $"Indo até {route.GuideShortName}", 0f, ride: true);
             return;
         }
 
@@ -851,7 +858,7 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
             _talkedAbout = about;
         }
 
-        Show($"Falando com {GuideName(route)}");
+        Show($"Falando com {route.GuideShortName}");
     }
 
     private void GoToSkillMaster(GameScene scene, VulkanWorldSession.WorldMapPose pose, QuestView quest = null, uint trainSkill = 0)
@@ -948,48 +955,7 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
             reach: PointReach, ride: true);
     }
 
-    private static RouteExit FindWorldExit(int from, int target, int level)
-    {
-        if (!World.TryGetFieldByCode(from, out var start))
-        {
-            return null;
-        }
-
-        var seen = new HashSet<int> { from };
-        var pending = new Queue<(FieldDef Field, RouteExit First)>();
-        pending.Enqueue((start, null));
-        while (pending.TryDequeue(out var current))
-        {
-            if (current.Field.FieldCode == target)
-            {
-                return current.First;
-            }
-
-            foreach (var gate in current.Field.Gates)
-            {
-                Add(gate.DestinationFieldId, gate.X, gate.Z, seam: true);
-            }
-
-            foreach (var gate in current.Field.WarpGates)
-            {
-                if (level >= gate.LimitLevel)
-                {
-                    Add(gate.DestinationFieldId, gate.X, gate.Z, seam: false);
-                }
-            }
-
-            void Add(string destination, int x, int z, bool seam)
-            {
-                if (World.TryGetField(destination, out var field) && seen.Add(field.FieldCode))
-                {
-                    var code = current.Field.FieldCode;
-                    pending.Enqueue((field, current.First ?? new RouteExit(code, field.FieldCode, new RoutePoint(code, x, z), seam)));
-                }
-            }
-        }
-
-        return null;
-    }
+    private static RouteExit FindWorldExit(int from, int target, int level) => QuestWorldRoute.FindFirstExit(World, from, target, level);
 
     private static EliteQuest EliteReport(QuestView quest) =>
         quest is { State: EliteQuests.Met } ? EliteQuests.Find(quest.Code) : null;
@@ -1155,8 +1121,10 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
         }
 
         var now = _clock.Elapsed.TotalSeconds;
-        if (now - _talkedAt < RepeatTalkSeconds)
+        var about = (destination, session.Quest?.Revision ?? -1);
+        if (about == _serviceTalkedAbout && now - _serviceTalkedAt < RepeatTalkSeconds)
         {
+            Show(status);
             return;
         }
 
@@ -1166,7 +1134,8 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
             && known && !scene.AutoMoving && scene.ApproachNpc(npc))
         {
             ClearRoute();
-            _talkedAt = now;
+            _serviceTalkedAbout = about;
+            _serviceTalkedAt = now;
         }
     }
 
@@ -1657,7 +1626,7 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
         var exit = route.ExitTowards(pose.FieldId, destination);
         if (exit is null)
         {
-            Show($"Vá para {(destination == route.Guide.FieldCode ? GuideName(route) : "a área de caça")} para continuar");
+            Show($"Vá para {(destination == route.Guide.FieldCode ? route.GuideShortName : "a área de caça")} para continuar");
             return;
         }
 
@@ -1925,7 +1894,9 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
         var slot = EquipmentSlot.Weapon;
         if (!items.Any(item => item.Equipped && ItemEquipmentMetadata.SlotOf(item.Kind) == EquipmentSlot.Weapon))
         {
-            move = items.FirstOrDefault(item => item.InBag && ItemEquipmentMetadata.SlotOf(item.Kind) == EquipmentSlot.Weapon);
+            var attributes = new CharacterAttributes(owner.Strength, owner.Spirit, owner.Talent, owner.Agility, owner.Health);
+            move = items.FirstOrDefault(item => item.InBag && ItemEquipmentMetadata.SlotOf(item.Kind) == EquipmentSlot.Weapon
+                && item.Details?.Usable(owner.Level, attributes) != false);
             if (move is not null)
             {
                 slot = ItemEquipmentMetadata.DefaultSlot(move.Kind, EquipmentSlot.Weapon,
@@ -1957,8 +1928,6 @@ internal sealed class QuestNavigator(VulkanWorldSession session)
 
     private int CrystalCount() =>
         session.Owner?.Items?.Where(item => item.Code == AdventurerJourneyRoute.Crystal).Sum(item => item.Count) ?? 0;
-
-    private static string GuideName(TribeRoute route) => route.GuideName.Replace("Adventurer ", "", StringComparison.Ordinal);
 
     private void Show(string status) => Volatile.Write(ref _status, status);
 }
