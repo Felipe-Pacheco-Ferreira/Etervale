@@ -1,10 +1,12 @@
 using PristonTale.Application.Support;
+using System.IO.Compression;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.FileProviders;
 using PristonTale.Application.Services;
 using PristonTale.Application.Sessions;
@@ -25,6 +27,7 @@ public static class WebHosting
 
     private static readonly TimeSpan StaticFileAge = TimeSpan.FromDays(7);
     private const string ImmutableFileCache = "public, max-age=31536000, immutable";
+    private const string CharacterMotionDirectory = BrowserClient.RequestPath + "/assets/char/tmABCD";
     private const int Ipv6NetworkBytes = 8;
 
     public static void AddPristonWeb(this WebApplicationBuilder builder, WebSettings settings)
@@ -48,6 +51,13 @@ public static class WebHosting
         services.AddSingleton(static _ => NewsFeed.Load(WebSettings.BesideExecutable(NewsFeed.FileName)));
         services.AddSingleton<AndroidPackage>();
         services.AddSingleton<BrowserClient>();
+        services.AddResponseCompression(static options =>
+        {
+            options.EnableForHttps = true;
+            options.MimeTypes = ["application/octet-stream"];
+            options.Providers.Add<BrotliCompressionProvider>();
+        });
+        services.Configure<BrotliCompressionProviderOptions>(static options => options.Level = CompressionLevel.Fastest);
         services.AddSingleton<SiteData>();
         services.AddSingleton(static _ => new WorldCatalog());
 
@@ -134,17 +144,35 @@ public static class WebHosting
     {
         var client = app.Services.GetRequiredService<BrowserClient>();
         Directory.CreateDirectory(client.Root);
+        // These public motion files account for most of each character preview pack.
+        app.UseWhen(static context => IsBrowserCharacterMotion(context.Request.Path),
+            static branch => branch.UseResponseCompression());
         app.UseStaticFiles(new StaticFileOptions
         {
             RequestPath = BrowserClient.RequestPath,
             FileProvider = new PhysicalFileProvider(client.Root),
             ContentTypeProvider = BrowserClient.ContentTypes(),
-            OnPrepareResponse = static context => context.Context.Response.Headers.CacheControl =
-                BrowserClient.IsFingerprinted(context.Context.Request.Path.Value ?? "") || context.Context.Request.Query.ContainsKey(BrowserClient.VersionQuery)
+            OnPrepareResponse = static context =>
+            {
+                var request = context.Context.Request;
+                var headers = context.Context.Response.Headers;
+                headers.CacheControl = BrowserClient.IsFingerprinted(request.Path.Value ?? "") || request.Query.ContainsKey(BrowserClient.VersionQuery)
                     ? ImmutableFileCache
-                    : "no-cache"
+                    : "no-cache";
+                if (IsBrowserCharacterMotion(request.Path))
+                {
+                    headers.AppendCommaSeparatedValues("Vary", "Accept-Encoding");
+                }
+            }
         });
     }
+
+    private static bool IsBrowserCharacterMotion(PathString path) =>
+        path.StartsWithSegments(CharacterMotionDirectory, StringComparison.OrdinalIgnoreCase, out var remaining)
+        && remaining.Value is { Length: 7 } file
+        && file[1] is 'm' or 'M'
+        && file[2] is >= '1' and <= '8'
+        && file.AsSpan(3).Equals(".smb", StringComparison.OrdinalIgnoreCase);
 
     // The address a request came from (after the trusted proxies), for the limits.
     public static IPAddress AddressOf(HttpContext context) => LimitKey(context.Connection.RemoteIpAddress);

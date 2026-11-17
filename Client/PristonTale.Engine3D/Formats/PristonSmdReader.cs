@@ -1,7 +1,9 @@
 using System.Buffers.Binary;
+using System.Collections.Concurrent;
 using System.Text;
 using Microsoft.Xna.Framework;
 using PristonTale.Engine3D.IO;
+using PristonTale.Contracts.Motion;
 using PristonTale.Contracts.Units;
 using PristonTale.Assets;
 
@@ -33,6 +35,7 @@ public sealed class PristonSmdReader
     ];
 
     private readonly PristonAssetCache _cache;
+    private ConcurrentDictionary<(string Path, string Motions), PristonModel> _previewSkeletons;
 
     public PristonSmdReader()
     {
@@ -61,6 +64,14 @@ public sealed class PristonSmdReader
         }
 
         return ParseModel(path);
+    }
+
+    internal PristonModel ReadPreviewSkeleton(string path, PristonModelInfo motions)
+    {
+        // A separate cache keeps the reduced rig out of every full model caller, even when both share an asset cache.
+        var cache = LazyInitializer.EnsureInitialized(ref _previewSkeletons);
+        var key = (path.ToLowerInvariant(), motions.Path.ToLowerInvariant());
+        return cache.GetOrAdd(key, static (_, args) => ParseModel(args.path, args.motions), (path, motions));
     }
 
     private static PristonStage ParseStage(string path)
@@ -133,7 +144,9 @@ public sealed class PristonSmdReader
         };
     }
 
-    private static PristonModel ParseModel(string path)
+    private static PristonModel ParseModel(string path) => ParseModel(path, null);
+
+    private static PristonModel ParseModel(string path, PristonModelInfo previewMotions)
     {
         var data = AssetMask.ReadSmd(path);
         var cursor = new BinaryCursor(data);
@@ -165,11 +178,15 @@ public sealed class PristonSmdReader
             throw new InvalidDataException($"{path} material block ends at {cursor.Position}, but First_ObjInfoPoint is {header.FirstObjectOffset}.");
         }
 
+        var frameRanges = EffectiveFrameRanges(header);
+        PreviewInterval[] previewFrames = previewMotions is null || header.MaterialCount != 0 || frameRanges.Count == 0
+            ? []
+            : PreviewFrames(previewMotions, frameRanges);
         var objects = new List<PristonModelObject>(header.ObjectCount);
         foreach (var info in infos)
         {
             cursor.Position = info.Offset;
-            objects.Add(ReadObject(cursor, info, path));
+            objects.Add(ReadObject(cursor, info, path, previewFrames));
         }
 
         var lastObjectEnd = infos.Count == 0
@@ -185,7 +202,7 @@ public sealed class PristonSmdReader
         var publicHeader = ToPublicHeader(
             header,
             stageSignatureWithModelLayout ? PristonSmdHeaderKind.StageHeaderWithModelLayout : header.Kind);
-        return new PristonModel(path, materialGroup.Materials, objects, EffectiveFrameRanges(header), bounds)
+        return new PristonModel(path, materialGroup.Materials, objects, frameRanges, bounds)
         {
             Header = publicHeader,
             MaterialGroup = materialGroup.Metadata,
@@ -721,7 +738,7 @@ public sealed class PristonSmdReader
         };
     }
 
-    private static PristonModelObject ReadObject(BinaryCursor cursor, ObjectInfo info, string path)
+    private static PristonModelObject ReadObject(BinaryCursor cursor, ObjectInfo info, string path, PreviewInterval[] previewFrames)
     {
         var objectStart = cursor.Position;
         var head = cursor.UInt32();
@@ -810,33 +827,51 @@ public sealed class PristonSmdReader
             textureLinks.Add(ReadTexLink(cursor, textureLinkPointer32, textureLinkCount));
         }
 
-        var rotationKeys = new List<PristonRotationKey>(rotationKeyCount);
-        for (var index = 0; index < rotationKeyCount; index++)
+        var rotationSegments = SliceSegments(allRotationSegments, frameSegmentCount);
+        var positionSegments = SliceSegments(allPositionSegments, frameSegmentCount);
+        var scaleSegments = SliceSegments(allScaleSegments, frameSegmentCount);
+        List<PristonRotationKey> rotationKeys;
+        List<PristonPositionKey> positionKeys;
+        List<PristonScaleKey> scaleKeys;
+        List<Matrix> previousRotationMatrices;
+        if (previewFrames.Length > 0 && frameSegmentCount > 0)
         {
-            var frame = cursor.Int32();
-            var rotation = ToMonoGameModelRotation(new Quaternion(cursor.Single(), cursor.Single(), cursor.Single(), cursor.Single()));
-            rotationKeys.Add(new PristonRotationKey(frame, rotation));
+            var rotation = PreviewKeys(cursor, rotationKeyCount, RotationKeySize, previewFrames, rotationSegments);
+            rotationKeys = ReadPreviewSeries(cursor, rotationKeyCount, RotationKeySize, rotation, ReadRotationKey);
+            rotationSegments = rotation.Segments;
+            var position = PreviewKeys(cursor, positionKeyCount, PositionKeySize, previewFrames, positionSegments);
+            positionKeys = ReadPreviewSeries(cursor, positionKeyCount, PositionKeySize, position, ReadPositionKey);
+            positionSegments = position.Segments;
+            var scale = PreviewKeys(cursor, scaleKeyCount, ScaleKeySize, previewFrames, scaleSegments);
+            scaleKeys = ReadPreviewSeries(cursor, scaleKeyCount, ScaleKeySize, scale, ReadScaleKey);
+            scaleSegments = scale.Segments;
+            previousRotationMatrices = ReadPreviewSeries(cursor, rotationKeyCount, MatrixSize, rotation, PristonBinaryUtil.ReadFloatMatrix);
         }
-
-        var positionKeys = new List<PristonPositionKey>(positionKeyCount);
-        for (var index = 0; index < positionKeyCount; index++)
+        else
         {
-            var frame = cursor.Int32();
-            positionKeys.Add(new PristonPositionKey(frame, ToMonoGameModelPosition(cursor.Single(), cursor.Single(), cursor.Single())));
-        }
+            rotationKeys = new List<PristonRotationKey>(rotationKeyCount);
+            for (var index = 0; index < rotationKeyCount; index++)
+            {
+                rotationKeys.Add(ReadRotationKey(cursor));
+            }
 
-        var scaleKeys = new List<PristonScaleKey>(scaleKeyCount);
-        for (var index = 0; index < scaleKeyCount; index++)
-        {
-            var frame = cursor.Int32();
-            var scaleFixed = ReadInt3(cursor);
-            scaleKeys.Add(new PristonScaleKey(frame, ToMonoGameModelScale(scaleFixed)));
-        }
+            positionKeys = new List<PristonPositionKey>(positionKeyCount);
+            for (var index = 0; index < positionKeyCount; index++)
+            {
+                positionKeys.Add(ReadPositionKey(cursor));
+            }
 
-        var previousRotationMatrices = new List<Matrix>(rotationKeyCount);
-        for (var index = 0; index < rotationKeyCount; index++)
-        {
-            previousRotationMatrices.Add(PristonBinaryUtil.ReadFloatMatrix(cursor));
+            scaleKeys = new List<PristonScaleKey>(scaleKeyCount);
+            for (var index = 0; index < scaleKeyCount; index++)
+            {
+                scaleKeys.Add(ReadScaleKey(cursor));
+            }
+
+            previousRotationMatrices = new List<Matrix>(rotationKeyCount);
+            for (var index = 0; index < rotationKeyCount; index++)
+            {
+                previousRotationMatrices.Add(PristonBinaryUtil.ReadFloatMatrix(cursor));
+            }
         }
 
         var physiqueBoneNames = new List<string>();
@@ -873,9 +908,9 @@ public sealed class PristonSmdReader
             positionKeys,
             scaleKeys,
             physiqueBoneNames,
-            SliceSegments(allRotationSegments, frameSegmentCount),
-            SliceSegments(allPositionSegments, frameSegmentCount),
-            SliceSegments(allScaleSegments, frameSegmentCount))
+            rotationSegments,
+            positionSegments,
+            scaleSegments)
         {
             BaseRotation = baseRotation,
             Head = head,
@@ -912,6 +947,173 @@ public sealed class PristonSmdReader
             SourceLength = info.Length
         };
     }
+
+    private static PreviewInterval[] PreviewFrames(PristonModelInfo info, IReadOnlyList<PristonFrameRange> frameRanges)
+    {
+        var frames = new List<PreviewInterval> { new(0, 1) }; // The renderer evaluates tick zero for the bind pose.
+        PristonMotionInfo firstLoop = null;
+        PristonMotionInfo firstValid = null;
+        for (var slot = PristonFormatConstants.CharacterMotionBase; slot < info.Motions.Count; slot++)
+        {
+            var motion = info.Motions[slot];
+            if (motion.EndFrame <= motion.StartFrame)
+            {
+                continue;
+            }
+
+            firstValid ??= motion;
+            if (motion.Repeat != 0)
+            {
+                firstLoop ??= motion;
+            }
+
+            if (slot == PristonFormatConstants.CharacterMotionBase
+                || motion.State is (uint)MotionCode.Stand or (uint)MotionCode.Walk or (uint)MotionCode.Run)
+            {
+                frames.Add(PreviewFrame(motion, frameRanges));
+            }
+        }
+
+        // The renderer falls back to a looping clip, then any valid clip if it cannot select a requested motion.
+        if ((firstLoop ?? firstValid) is { } fallback)
+        {
+            frames.Add(PreviewFrame(fallback, frameRanges));
+        }
+
+        return frames.Distinct().ToArray();
+    }
+
+    private static PreviewInterval PreviewFrame(PristonMotionInfo motion, IReadOnlyList<PristonFrameRange> frameRanges)
+    {
+        var index = motion.MotionFrame - 1;
+        var offset = (uint)index < (uint)frameRanges.Count ? (uint)(frameRanges[index].StartFrame / GameUnits.FrameTicks) : 0u;
+        return new PreviewInterval((long)(offset + motion.StartFrame) * GameUnits.FrameTicks,
+            (long)(offset + motion.EndFrame) * GameUnits.FrameTicks + 1);
+    }
+
+    private static PreviewKeyPlan PreviewKeys(BinaryCursor cursor, int keyCount, int keySize,
+        PreviewInterval[] frames, IReadOnlyList<PristonMotionSegment> segments)
+    {
+        var original = cursor.Position;
+        var source = cursor.ReadSpan(checked(keyCount * keySize));
+        cursor.Position = original;
+        var selected = new KeyRange[segments.Count];
+        var ranges = new List<KeyRange>(segments.Count + 2);
+        if (keyCount > 0)
+        {
+            // Preserve the animated/last-frame properties and the animator's scale range starting at key zero.
+            ranges.Add(new KeyRange(0, 1));
+            ranges.Add(new KeyRange(keyCount - 1, keyCount));
+        }
+
+        for (var index = 0; index < segments.Count; index++)
+        {
+            var segment = segments[index];
+            if (segment.KeyCount <= 0 || segment.StartFrame >= segment.EndFrame
+                || !frames.Any(interval => interval.Start < segment.EndFrame && interval.End > segment.StartFrame))
+            {
+                continue;
+            }
+
+            var first = Math.Clamp(segment.KeyIndex, 0, keyCount);
+            var end = (int)Math.Min(keyCount, (long)first + segment.KeyCount);
+            // Match the animator's interpolation window, including the first key at or beyond the segment's end.
+            while (end > first && end < keyCount
+                && BinaryPrimitives.ReadInt32LittleEndian(source[((end - 1) * keySize)..]) < segment.EndFrame)
+            {
+                end++;
+            }
+
+            if (end > first)
+            {
+                selected[index] = new KeyRange(first, end);
+                ranges.Add(selected[index]);
+            }
+        }
+
+        ranges.Sort(static (left, right) => left.Start.CompareTo(right.Start));
+        var merged = new List<KeyRange>(ranges.Count);
+        foreach (var range in ranges)
+        {
+            if (merged.Count > 0 && merged[^1].End >= range.Start)
+            {
+                var tail = merged[^1];
+                merged[^1] = new KeyRange(tail.Start, Math.Max(tail.End, range.End));
+            }
+            else
+            {
+                merged.Add(range);
+            }
+        }
+
+        var remapped = new PristonMotionSegment[segments.Count];
+        for (var index = 0; index < selected.Length; index++)
+        {
+            var selection = selected[index];
+            if (selection.Count == 0)
+            {
+                continue;
+            }
+
+            var offset = 0;
+            foreach (var range in merged)
+            {
+                if (selection.Start < range.End)
+                {
+                    var segment = segments[index];
+                    remapped[index] = segment with { KeyIndex = offset + selection.Start - range.Start, KeyCount = selection.Count };
+                    break;
+                }
+
+                offset += range.Count;
+            }
+        }
+
+        return new PreviewKeyPlan(merged, remapped, merged.Sum(static range => range.Count));
+    }
+
+    private static List<TKey> ReadPreviewSeries<TKey>(BinaryCursor cursor, int sourceCount, int keySize,
+        PreviewKeyPlan plan, Func<BinaryCursor, TKey> read)
+    {
+        var original = cursor.Position;
+        var keys = new List<TKey>(plan.Count);
+        foreach (var range in plan.Ranges)
+        {
+            cursor.Position = original + range.Start * keySize;
+            for (var index = range.Start; index < range.End; index++)
+            {
+                keys.Add(read(cursor));
+            }
+        }
+
+        cursor.Position = checked(original + sourceCount * keySize);
+        return keys;
+    }
+
+    private static PristonRotationKey ReadRotationKey(BinaryCursor cursor)
+    {
+        var frame = cursor.Int32();
+        var rotation = new Quaternion(cursor.Single(), cursor.Single(), cursor.Single(), cursor.Single());
+        return new PristonRotationKey(frame, ToMonoGameModelRotation(rotation));
+    }
+
+    private static PristonPositionKey ReadPositionKey(BinaryCursor cursor)
+    {
+        var frame = cursor.Int32();
+        return new PristonPositionKey(frame, ToMonoGameModelPosition(cursor.Single(), cursor.Single(), cursor.Single()));
+    }
+
+    private static PristonScaleKey ReadScaleKey(BinaryCursor cursor) =>
+        new(cursor.Int32(), ToMonoGameModelScale(ReadInt3(cursor)));
+
+    private readonly record struct PreviewInterval(long Start, long End);
+
+    private readonly record struct KeyRange(int Start, int End)
+    {
+        public int Count => End - Start;
+    }
+
+    private sealed record PreviewKeyPlan(IReadOnlyList<KeyRange> Ranges, PristonMotionSegment[] Segments, int Count);
 
     // With ObjHeadTypeNewNormal in the object's head the normal field holds the normal's end point (position + normal),
     // in the position's fixed-point units.

@@ -7,7 +7,7 @@ namespace PristonTale.Browser;
 // the project). They are fetched from the site and written to the runtime's in-memory file system under the
 // application's base directory, where MonoGame's content and AssetFiles read them as on the desktop. They come in three
 // waves: the opening scene before the game starts, the existing character bootstrap and arrival effect during the
-// opening, and the rest after a character enters the world. The class-specific models are loaded separately on demand.
+// opening, and the rest after a character enters the world. Class models are warmed after the opening's downloads.
 internal static class BootstrapFiles
 {
     private const string ListFile = "bootstrap.txt";
@@ -45,10 +45,14 @@ internal static class BootstrapFiles
     private static Uri? _clientAddress;
     private static string[] _remainingPaths = [];
     private static string[] _deferredPaths = [];
-    private static readonly SemaphoreSlim CharacterFetch = new(1);
-    private static Dictionary<PlayerClass, List<string>>? _characterPaths;
+    private static HttpClient? _characterHttp;
+    private static Task<Dictionary<PlayerClass, List<string>>>? _characterPaths;
+    private static readonly Dictionary<string, Task> CharacterDownloads = new(StringComparer.Ordinal);
+    private static CancellationTokenSource? _characterWarmup;
+    private static readonly HttpRequestOptionsKey<IDictionary<string, object>> FetchOptions = new("WebAssemblyFetchOptions");
 
     private static string Root => AppContext.BaseDirectory;
+    private static HttpClient CharacterHttp => _characterHttp ??= new HttpClient { BaseAddress = _clientAddress };
 
     public static string AssetRoot => Path.Combine(Root, AssetsFolder);
 
@@ -112,8 +116,39 @@ internal static class BootstrapFiles
 
     public static async Task FetchWorldAssetsAsync()
     {
+        _characterWarmup?.Cancel();
         using var http = new HttpClient { BaseAddress = _clientAddress };
         await FetchPathsAsync(http, _deferredPaths);
+    }
+
+    public static async Task PrefetchCharacterAssetsAsync()
+    {
+        if (_characterWarmup is not null)
+        {
+            return;
+        }
+
+        using var warmup = new CancellationTokenSource();
+        _characterWarmup = warmup;
+        try
+        {
+            var catalog = await CharacterPathsAsync(warmup.Token);
+            // Shared animation files unblock the largest portion of both lineups, then the rest can follow.
+            var entries = catalog.Values.SelectMany(static files => files)
+                .GroupBy(static entry => entry, StringComparer.Ordinal)
+                .OrderByDescending(static group => IsAnimation(group.Key))
+                .ThenByDescending(static group => group.Count())
+                .Select(static group => group.Key);
+            await FetchPathsAsync(entries, (entry, token) => FetchCharacterFileAsync(entry, true, token),
+                parallel: 2, cancellationToken: warmup.Token);
+        }
+        catch (OperationCanceledException) when (warmup.IsCancellationRequested)
+        {
+        }
+        finally
+        {
+            _characterWarmup = null;
+        }
     }
 
     public static async Task FetchCharacterAssetsAsync(IReadOnlyList<PlayerClass> classes, CancellationToken cancellationToken)
@@ -123,30 +158,57 @@ internal static class BootstrapFiles
             return;
         }
 
-        await CharacterFetch.WaitAsync(cancellationToken);
-        try
+        var catalog = await CharacterPathsAsync(cancellationToken);
+        var entries = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var characterClass in classes)
         {
-            using var http = new HttpClient { BaseAddress = _clientAddress };
-            _characterPaths ??= ReadCharacterPaths(await FetchWithRetryAsync(
-                () => http.GetStringAsync(CharacterListFile, cancellationToken), cancellationToken));
-            var entries = new HashSet<string>(StringComparer.Ordinal);
-            foreach (var characterClass in classes)
+            if (!catalog.TryGetValue(characterClass, out var paths))
             {
-                if (!_characterPaths.TryGetValue(characterClass, out var paths))
-                {
-                    throw new InvalidDataException($"{CharacterListFile} is missing files for {characterClass}.");
-                }
-
-                entries.UnionWith(paths);
+                throw new InvalidDataException($"{CharacterListFile} is missing files for {characterClass}.");
             }
 
-            var largeFilesFirst = entries.OrderByDescending(static entry => EntryPath(entry).EndsWith(".smb", StringComparison.OrdinalIgnoreCase));
-            await FetchPathsAsync(http, largeFilesFirst, parallel: BackgroundFetches, cancellationToken: cancellationToken);
+            entries.UnionWith(paths);
         }
-        finally
+
+        var largeFilesFirst = entries.OrderByDescending(IsAnimation);
+        await FetchPathsAsync(largeFilesFirst, (entry, token) => FetchCharacterFileAsync(entry, false, token),
+            parallel: BackgroundFetches, cancellationToken: cancellationToken);
+    }
+
+    private static bool IsAnimation(string entry) => EntryPath(entry).EndsWith(".smb", StringComparison.OrdinalIgnoreCase);
+
+    private static Task<Dictionary<PlayerClass, List<string>>> CharacterPathsAsync(CancellationToken cancellationToken)
+    {
+        if (_characterPaths is null || !_characterPaths.IsCompletedSuccessfully && _characterPaths.IsCompleted)
         {
-            CharacterFetch.Release();
+            _characterPaths = LoadCharacterPathsAsync();
+            ObserveFault(_characterPaths);
         }
+
+        return _characterPaths.WaitAsync(cancellationToken);
+    }
+
+    private static async Task<Dictionary<PlayerClass, List<string>>> LoadCharacterPathsAsync() =>
+        ReadCharacterPaths(await FetchWithRetryAsync(() => CharacterHttp.GetStringAsync(CharacterListFile)));
+
+    private static Task FetchCharacterFileAsync(string entry, bool lowPriority, CancellationToken cancellationToken)
+    {
+        // Downloads belong to the shared file, so a picker leaving does not cancel another caller's request.
+        if (!CharacterDownloads.TryGetValue(entry, out var download) || download.IsFaulted || download.IsCanceled)
+        {
+            download = FetchFileAsync(CharacterHttp, entry, lowPriority: lowPriority);
+            CharacterDownloads[entry] = download;
+            ObserveFault(download);
+        }
+
+        return download.WaitAsync(cancellationToken);
+    }
+
+    private static void ObserveFault(Task task)
+    {
+        // A canceled caller can stop awaiting a shared fetch before the network itself answers.
+        _ = task.ContinueWith(static failed => { _ = failed.Exception; }, CancellationToken.None,
+            TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
     }
 
     private static Dictionary<PlayerClass, List<string>> ReadCharacterPaths(string list)
@@ -191,7 +253,12 @@ internal static class BootstrapFiles
     private const int ParallelFetches = 24;
     private const int BackgroundFetches = 4;
 
-    private static async Task FetchPathsAsync(HttpClient http, IEnumerable<string> entries, Action<int, int>? progress = null,
+    private static Task FetchPathsAsync(HttpClient http, IEnumerable<string> entries, Action<int, int>? progress = null,
+        int parallel = ParallelFetches) =>
+        FetchPathsAsync(entries, (entry, token) => FetchFileAsync(http, entry, token), progress, parallel);
+
+    private static async Task FetchPathsAsync(IEnumerable<string> entries, Func<string, CancellationToken, Task> fetch,
+        Action<int, int>? progress = null,
         int parallel = ParallelFetches, CancellationToken cancellationToken = default)
     {
         var files = entries.Distinct(StringComparer.Ordinal).ToArray();
@@ -204,7 +271,7 @@ internal static class BootstrapFiles
             while (++next < files.Length)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await FetchFileAsync(http, files[next], cancellationToken);
+                await fetch(files[next], cancellationToken);
                 completed++;
                 progress?.Invoke(completed, files.Length);
             }
@@ -214,7 +281,8 @@ internal static class BootstrapFiles
     }
 
     // entry: a line of the list, the path and, after a tab, the file's hash (bootstrap.txt from the publish).
-    private static async Task FetchFileAsync(HttpClient http, string entry, CancellationToken cancellationToken = default)
+    private static async Task FetchFileAsync(HttpClient http, string entry, CancellationToken cancellationToken = default,
+        bool lowPriority = false)
     {
         var separator = entry.IndexOf('\t');
         var path = EntryPath(entry);
@@ -228,8 +296,22 @@ internal static class BootstrapFiles
         var url = string.Join('/', path.Split('/').Select(Uri.EscapeDataString))
             + (separator < 0 ? string.Empty : "?v=" + entry[(separator + 1)..]);
         Directory.CreateDirectory(Path.GetDirectoryName(target)!);
-        var data = await FetchWithRetryAsync(() => http.GetByteArrayAsync(url, cancellationToken), cancellationToken);
+        var data = await FetchWithRetryAsync(() => DownloadAsync(http, url, lowPriority, cancellationToken), cancellationToken);
         await File.WriteAllBytesAsync(target, data);
+    }
+
+    private static async Task<byte[]> DownloadAsync(HttpClient http, string url, bool lowPriority, CancellationToken cancellationToken)
+    {
+        if (!lowPriority)
+        {
+            return await http.GetByteArrayAsync(url, cancellationToken);
+        }
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, url);
+        request.Options.Set(FetchOptions, new Dictionary<string, object> { ["priority"] = "low" });
+        using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadAsByteArrayAsync(cancellationToken);
     }
 
     private static string EntryPath(string entry)

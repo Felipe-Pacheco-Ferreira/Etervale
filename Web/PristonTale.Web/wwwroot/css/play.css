@@ -677,6 +677,29 @@ a {
     pointer-events: auto;
 }
 
+.heroes > .creation-controls-exiting {
+    z-index: 3;
+    pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .heroes > .creation-controls-exiting {
+        animation: creation-controls-out 200ms ease-out both;
+    }
+
+    .heroes > .creation-controls-entering {
+        animation: creation-controls-in 200ms ease-out both;
+    }
+}
+
+@keyframes creation-controls-out {
+    to { opacity: 0; }
+}
+
+@keyframes creation-controls-in {
+    from { opacity: 0; }
+}
+
 .heroes-head {
     position: absolute;
     top: 18px;
@@ -1246,6 +1269,32 @@ a {
     position: static;
 }
 
+.heroes[data-screen="tribe"][data-retained-lineup="true"] > .heroes-tribes {
+    right: clamp(9px, 1.1vw, 16px);
+    left: clamp(9px, 1.1vw, 16px);
+    justify-content: space-between;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.heroes[data-screen="tribe"][data-retained-lineup="true"] > .heroes-tribes .tribe {
+    width: min(12.1vw, 154px);
+    max-height: min(58dvh, 320px);
+    overflow-y: auto;
+    padding: 13px clamp(7px, 0.8vw, 10px);
+    pointer-events: auto;
+}
+
+.heroes[data-screen="tribe"][data-retained-lineup="true"] .tribe-mark {
+    width: 51px;
+    height: 51px;
+}
+
+.heroes[data-screen="tribe"][data-retained-lineup="true"] .tribe-name {
+    font-size: clamp(14px, 1.2vw, 16px);
+    letter-spacing: 0.06em;
+}
+
 .tribe {
     display: grid;
     justify-items: center;
@@ -1335,6 +1384,10 @@ a {
     border-color: var(--gold-light);
     box-shadow: 0 0 0 1px rgba(232, 199, 129, 0.4), 0 0 14px rgba(232, 199, 129, 0.25);
     transform: translateY(-5px);
+}
+
+.class-card:hover:not(:disabled) {
+    border-color: var(--gold-light);
 }
 
 .class-card canvas {
@@ -1550,6 +1603,29 @@ a {
 
     .heroes[data-screen="class"] .heroes-info {
         padding-inline: 12px;
+    }
+}
+
+@media (max-width: 1000px) {
+    .heroes[data-screen="tribe"][data-retained-lineup="true"] > .heroes-tribes {
+        top: auto;
+        right: auto;
+        bottom: 55px;
+        left: 50%;
+        align-items: end;
+        transform: translateX(-50%);
+    }
+
+    .heroes[data-screen="tribe"][data-retained-lineup="true"] > .heroes-tribes .tribe {
+        width: min(43vw, 182px);
+        max-height: 42dvh;
+        overflow-y: auto;
+        padding-block: 10px;
+    }
+
+    .heroes[data-screen="tribe"][data-retained-lineup="true"] .tribe-mark {
+        width: 42px;
+        height: 42px;
     }
 }
 

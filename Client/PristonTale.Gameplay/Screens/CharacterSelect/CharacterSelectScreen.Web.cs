@@ -31,6 +31,14 @@ public sealed partial class CharacterSelectScreen
     private int _webRosterEffectsStarted;
     private int _webRosterActorsShown;
     private const float WebJobArrivalStagger = 0.055f;
+    private const float WebLineupFadeOutSeconds = 0.55f;
+    private const float WebLineupFadeInSeconds = 0.32f;
+    private float _webLineupOpacity = 1f;
+    private bool _webLineupFading;
+    private Task<bool> _webFacePreparation;
+    private int _webFaceToApply = -1;
+    private bool _webFacePreparationFailed;
+    private string _webNameToSubmit;
     private bool _webJobsArriving;
     private float _webJobArrivalSeconds;
     private int _webJobEffectsStarted;
@@ -82,8 +90,98 @@ public sealed partial class CharacterSelectScreen
         _scene.SetRosterHidden(index, true);
     }
 
+    private void BeginWebLineupFade() => _webLineupFading = Backdrop is not null;
+
+    private void UpdateWebLineupFade(float dt)
+    {
+        if (!_webLineupFading)
+        {
+            return;
+        }
+
+        var showLineup = _state is not State.FaceSelect and not State.Name;
+        var speed = showLineup ? 1f / WebLineupFadeInSeconds : -1f / WebLineupFadeOutSeconds;
+        _webLineupOpacity = Math.Clamp(_webLineupOpacity + speed * dt, 0f, 1f);
+        var opacity = MathHelper.SmoothStep(0f, 1f, _webLineupOpacity);
+        var flash = MathF.Sin(_webLineupOpacity * MathHelper.Pi) * 0.55f;
+        for (var index = 0; index < _scene.JobCount; index++)
+        {
+            if (index != _jobSelected)
+            {
+                _scene.SetWebJobAppearance(index, opacity, flash);
+            }
+        }
+
+        _webLineupFading = opacity != (showLineup ? 1f : 0f);
+    }
+
+    private async Task<bool> PrepareWebFacesAsync(int index, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await _scene.PrepareJobFacesAsync(index, cancellationToken);
+            return true;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            return false;
+        }
+        catch (Exception exception)
+        {
+            Context.Log.Error("[CharSelect] face preparation failed", exception);
+            return false;
+        }
+    }
+
+    private void UpdateWebFacePreparation()
+    {
+        if (_webFacePreparation is not { IsCompletedSuccessfully: true })
+        {
+            return;
+        }
+
+        var ready = _webFacePreparation.Result;
+        _webFacePreparationFailed = !ready;
+        _webFacePreparation = null;
+        if (_webFaceToApply >= 0 && _state is State.FaceSelect or State.Name)
+        {
+            if (ready)
+            {
+                ApplyWebFace(_webFaceToApply);
+            }
+            else
+            {
+                _faceIndex = 0;
+                _errorMessage = ClientText.Get("CharSelect.ModelsFailed");
+            }
+        }
+
+        _webFaceToApply = -1;
+        var name = _webNameToSubmit;
+        _webNameToSubmit = null;
+        if (ready && name is not null && _state is State.FaceSelect or State.Name)
+        {
+            SubmitWebCharacter(name);
+        }
+    }
+
+    private void ApplyWebFace(int index)
+    {
+        _scene.ApplyFace(_jobSelected, index);
+        Backdrop?.SpawnCharacter(_scene.PreviewFootWorld(_jobSelected));
+    }
+
+    private void UpdateWebClassSelection()
+    {
+        var leavingLineup = (_state is State.FaceSelect or State.Name) && _webLineupOpacity > 0.65f;
+        var inLineup = _state == State.JobSelect && (!_webJobsArriving || _jobSelected < _webJobActorsShown);
+        var markActive = _jobSelected >= 0 && (inLineup || leavingLineup);
+        Backdrop?.SetClassSelection(markActive ? _scene.PreviewFootWorld(_jobSelected) : null);
+    }
+
     private void UpdateWebCreationEffects(float dt)
     {
+        UpdateWebLineupFade(dt);
         if (_webCreatedActor >= 0 && _cameraCtl.HasReached((int)State.CharacterSelect))
         {
             if (_webCreatedArrivalSeconds < 0f)
@@ -205,22 +303,40 @@ public sealed partial class CharacterSelectScreen
                 ChooseBrood(command.Index == 1 ? CharacterBrood.Morion : CharacterBrood.Tempskron);
                 break;
             case WebCharacterCommandKind.Class when _state == State.JobSelect && command.Index >= 0 && command.Index < _scene.JobCount:
-                _jobSelected = command.Index;
-                _audio.Play(LoginCue.PickCharacter);
-                _scene.SetJobHighlight(-1, _jobSelected);
+                SelectWebJob(command.Index);
                 break;
             case WebCharacterCommandKind.Next when _state == State.JobSelect:
                 OnCreateOk();
                 break;
             case WebCharacterCommandKind.Face when _state is State.FaceSelect or State.Name
                 && command.Index >= 0 && command.Index < CharSelectLayout.FacesPerJob && command.Index != _faceIndex:
+                if (_webFacePreparationFailed && command.Index != 0)
+                {
+                    _errorMessage = ClientText.Get("CharSelect.ModelsFailed");
+                    break;
+                }
+
+                _errorMessage = string.Empty;
                 _faceIndex = command.Index;
-                _scene.ApplyFace(_jobSelected, _faceIndex);
-                Backdrop?.SpawnCharacter(_scene.PreviewFootWorld(_jobSelected));
+                if (_webFacePreparation is not null && _faceIndex != 0)
+                {
+                    _webFaceToApply = _faceIndex;
+                }
+                else
+                {
+                    _webFaceToApply = -1;
+                    ApplyWebFace(_faceIndex);
+                }
                 break;
             case WebCharacterCommandKind.Create when _state is State.FaceSelect or State.Name:
-                _nameField.Set(command.Text);
-                BeginCreate();
+                if (_webFaceToApply >= 0)
+                {
+                    _webNameToSubmit = command.Text;
+                }
+                else
+                {
+                    SubmitWebCharacter(command.Text);
+                }
                 break;
             case WebCharacterCommandKind.Back when _state != State.CharacterSelect:
                 _audio.Play(LoginCue.Back);
@@ -231,6 +347,28 @@ public sealed partial class CharacterSelectScreen
                 Context.RequestScreen(new OpeningScreen(Context));
                 break;
         }
+    }
+
+    private void SubmitWebCharacter(string name)
+    {
+        _nameField.Set(name);
+        BeginCreate();
+    }
+
+    private void SelectWebJob(int index)
+    {
+        if (_jobSelected != index)
+        {
+            _jobSelected = index;
+            _scene.StepWebJob(index);
+            if (_webLineupFading)
+            {
+                _scene.SetWebJobAppearance(index, 1f, 0f);
+            }
+        }
+
+        _scene.SetJobHighlight(-1, _jobSelected);
+        _audio.Play(LoginCue.PickCharacter);
     }
 
     // A click on the stage: a character of the list (a second click enters the world) or a class of the lineup.
@@ -264,8 +402,7 @@ public sealed partial class CharacterSelectScreen
             {
                 var again = _jobSelected == _jobHovered && _lastClickIndex == _jobHovered
                     && _elapsedSeconds - _lastClickSeconds < CharacterSelectStage.DoublePressSeconds;
-                _jobSelected = _jobHovered;
-                _audio.Play(LoginCue.PickCharacter);
+                SelectWebJob(_jobHovered);
                 _lastClickIndex = _jobHovered;
                 _lastClickSeconds = _elapsedSeconds;
                 if (again)
@@ -354,6 +491,7 @@ public sealed partial class CharacterSelectScreen
 
             json.WriteEndArray();
             json.WriteString("tribe", _state is State.JobSelect or State.FaceSelect or State.Name ? _chosenBrood.ToString() : string.Empty);
+            json.WriteBoolean("retainedLineup", _state == State.RaceSelect && _scene.JobCount > 0);
             json.WriteNumber("job", _jobSelected);
             json.WriteStartArray("jobs");
             for (var index = 0; index < _scene.JobCount; index++)

@@ -38,6 +38,9 @@ public static partial class BrowserHost
     [JSExport]
     public static Task FetchRemainingAsync() => BootstrapFiles.FetchRemainingAsync();
 
+    [JSExport]
+    public static Task PrefetchCharacterAssetsAsync() => BootstrapFiles.PrefetchCharacterAssetsAsync();
+
     // The opening flight's moment (WebOpeningClock): the page reads it to record the flight and sets it to its recording's
     // moment when the live scene takes over.
     [JSExport]

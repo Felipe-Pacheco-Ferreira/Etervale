@@ -305,6 +305,16 @@ export function createHeroes(root, base, send, language, accountName) {
     nameInput.spellcheck = false;
 
     let state = null;
+    let classCardsKey = '';
+    let departingControls;
+    let enteringControls = [];
+    let transitionTimer;
+
+    const creationControls = {
+        tribe: [tribeRow],
+        class: [classRow, infoPanel],
+        appearance: [appearancePanel]
+    };
 
     const text = () => texts[language()] ?? texts['pt-BR'];
     const classText = cls => (classTexts[language()] ?? classTexts['pt-BR'])[cls] ?? ['', ''];
@@ -441,13 +451,24 @@ export function createHeroes(root, base, send, language, accountName) {
     }
 
     function drawClasses() {
-        state.jobs.forEach((job, index) => {
-            const card = button('class-card', '', () => send('Class', index), busy());
+        // A selection report updates the same buttons, preserving focus and the browser's double click target.
+        const key = JSON.stringify([language(), state.jobs.map(job => [job.cls, job.title, job.faces[0]])]);
+        if (key !== classCardsKey) {
+            classCardsKey = key;
+            classRow.replaceChildren(...state.jobs.map((job, index) => {
+                const card = button('class-card', '', () => send('Class', index));
+                card.addEventListener('dblclick', () => {
+                    if (state?.screen === 'class' && !busy()) send('Next');
+                });
+                card.append(faceCanvas(job.faces[0], base), element('strong', '', job.title), element('small', '', classText(job.cls)[0]));
+                return card;
+            }));
+        }
+
+        for (const [index, card] of Array.from(classRow.children).entries()) {
+            card.disabled = busy();
             card.setAttribute('aria-pressed', String(index === state.job));
-            card.addEventListener('dblclick', () => send('Next'));
-            card.append(faceCanvas(job.faces[0], base), element('strong', '', job.title), element('small', '', classText(job.cls)[0]));
-            classRow.append(card);
-        });
+        }
     }
 
     function drawAppearance(job) {
@@ -478,15 +499,57 @@ export function createHeroes(root, base, send, language, accountName) {
         appearancePanel.append(faces, form, hint);
     }
 
+    function finishCreationTransition() {
+        clearTimeout(transitionTimer);
+        departingControls?.remove();
+        departingControls = null;
+        for (const control of enteringControls) control.classList.remove('creation-controls-entering');
+        enteringControls = [];
+    }
+
+    function transitionCreation(previousScreen, screen) {
+        finishCreationTransition();
+        const outgoing = creationControls[previousScreen];
+        const incoming = creationControls[screen];
+        if (!outgoing || !incoming || globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+
+        // Keep outgoing canvases intact while the incoming controls fade in. The outgoing layer keeps its old layout.
+        const layer = element('div', 'heroes creation-controls-exiting');
+        layer.dataset.screen = previousScreen;
+        layer.dataset.retainedLineup = panel.dataset.retainedLineup;
+        layer.inert = true;
+        layer.setAttribute('aria-hidden', 'true');
+        for (const control of outgoing) {
+            if (!control.childElementCount) continue;
+            const shell = control.cloneNode();
+            shell.removeAttribute('data-role');
+            shell.append(...control.childNodes);
+            layer.append(shell);
+        }
+
+        if (!layer.childElementCount) return;
+        departingControls = layer;
+        enteringControls = incoming;
+        for (const control of enteringControls) control.classList.add('creation-controls-entering');
+        panel.append(layer);
+        transitionTimer = setTimeout(finishCreationTransition, 225);
+    }
+
     function draw() {
         const t = text();
         const screen = state.screen;
+        if (panel.dataset.screen !== screen) transitionCreation(panel.dataset.screen, screen);
         panel.dataset.screen = screen;
+        panel.dataset.retainedLineup = String(screen === 'tribe' && state.retainedLineup === true);
         browse.hidden = screen !== 'roster' || state.roster.length < 2;
         previous.disabled = next.disabled = busy();
         previous.setAttribute('aria-label', t.previousHero);
         next.setAttribute('aria-label', t.nextHero);
-        for (const container of [rosterPanel, infoPanel, tribeRow, classRow, appearancePanel, actions]) container.replaceChildren();
+        for (const container of [rosterPanel, infoPanel, tribeRow, appearancePanel, actions]) container.replaceChildren();
+        if (screen !== 'class') {
+            classRow.replaceChildren();
+            classCardsKey = '';
+        }
         const job = state.jobs[state.job];
         if (screen === 'roster') {
             kicker.textContent = t.account(accountName());
@@ -533,8 +596,11 @@ export function createHeroes(root, base, send, language, accountName) {
         report(json) {
             const next = JSON.parse(json);
             if (next.screen === 'closed') {
+                finishCreationTransition();
                 state = null;
                 panel.hidden = true;
+                panel.dataset.screen = 'roster';
+                classCardsKey = '';
                 return;
             }
 

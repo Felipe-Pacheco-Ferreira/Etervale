@@ -19,6 +19,9 @@ internal sealed class CharacterSelectScene
     internal static (float X, float Z) JobCharacterPos(int index, int count) => CharacterSelectStage.LineupPosition(index, count);
 
     private const float WebLineupSpacing = 0.70f;
+    private const float WebSelectionAdvance = 15f;
+    private const float WebSelectionSpeed = 54f;
+    private static readonly Vector3 WebPreviewFill = new(0.29f, 0.25f, 0.20f);
 
     private (float X, float Z) JobSlot(int jobIndex) => JobSlot(_jobActors[jobIndex].SlotIndex, _jobActors.Count);
 
@@ -26,6 +29,22 @@ internal sealed class CharacterSelectScene
     {
         var (x, z) = JobCharacterPos(index, count);
         return (_camera.UsesWebBackdrop ? x * WebLineupSpacing : x, z);
+    }
+
+    private (float X, float Z) JobStageSlot(int index)
+    {
+        if (index == _jobMoverIndex)
+        {
+            return (_jobMoveX, _jobMoveZ);
+        }
+
+        if (index == _forwardSubject)
+        {
+            return (0f, JobRestZ);
+        }
+
+        var slot = JobSlot(index);
+        return (slot.X, slot.Z - _jobActors[index].LineupAdvance);
     }
 
     private const float HitHeadHeight = CharacterSelectStage.PickHeight;
@@ -53,7 +72,11 @@ internal sealed class CharacterSelectScene
 
     private sealed record Placed(CharacterSummary Summary, (float X, float Z) Slot, PlayerActorHandles Handles);
     private readonly List<Placed> _placed = [];
-    private sealed record JobActor(PlayerClass Class, int SlotIndex, CharacterVisualSet Visuals, PlayerActorHandles Handles);
+    private sealed record JobActor(PlayerClass Class, int SlotIndex, CharacterVisualSet Visuals, PlayerActorHandles Handles)
+    {
+        public float LineupAdvance { get; set; }
+        public float LineupYaw { get; set; }
+    }
     private readonly List<JobActor> _jobActors = [];
 
     private JobMovePhase _jobPhase = JobMovePhase.None;
@@ -68,6 +91,7 @@ internal sealed class CharacterSelectScene
     private int _rosterSelection = -1;
     private int _jobHover = -1;
     private int _jobSelection = -1;
+    private int _steppedJob = -1;
     private PlayerActorHandles _facePreview = new(ActorHandle.None, ActorHandle.None);
     private CharacterVisualSet _facePreviewVisuals;
 
@@ -150,11 +174,12 @@ internal sealed class CharacterSelectScene
     public async Task PrepareJobLineupAsync(CharacterBrood brood, CancellationToken cancellationToken)
     {
         var jobs = JobsForBrood(brood);
-        var preparations = new List<Task>(jobs.Count * CharacterFace.FaceCount);
+        var faceCount = _camera.UsesWebBackdrop ? 1 : CharacterFace.FaceCount;
+        var preparations = new List<Task>(jobs.Count * faceCount);
         for (var jobIndex = 0; jobIndex < jobs.Count; jobIndex++)
         {
             var visuals = JobVisuals(jobs[jobIndex]);
-            for (var faceIndex = 0; faceIndex < CharacterFace.FaceCount; faceIndex++)
+            for (var faceIndex = 0; faceIndex < faceCount; faceIndex++)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 preparations.Add(_playerComposer.PrepareAsync(_assetRoot, visuals, faceIndex));
@@ -162,6 +187,16 @@ internal sealed class CharacterSelectScene
         }
 
         await Task.WhenAll(preparations).WaitAsync(cancellationToken);
+    }
+
+    internal async Task PrepareJobFacesAsync(int index, CancellationToken cancellationToken)
+    {
+        var visuals = _jobActors[index].Visuals;
+        for (var faceIndex = 1; faceIndex < CharacterFace.FaceCount; faceIndex++)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            await _playerComposer.PrepareAsync(_assetRoot, visuals, faceIndex).WaitAsync(cancellationToken);
+        }
     }
 
     public void BuildJobLineup(CharacterBrood brood)
@@ -179,6 +214,10 @@ internal sealed class CharacterSelectScene
                 MotionCode.Stand);
             ApplySelectPose(handles);
             _jobActors.Add(new JobActor(jobs[i], i, visuals, handles));
+            if (_camera.UsesWebBackdrop)
+            {
+                SetWebJobAppearance(i, 1f, 0f);
+            }
         }
     }
 
@@ -197,6 +236,7 @@ internal sealed class CharacterSelectScene
         _forwardSubject = -1;
         _jobHover = -1;
         _jobSelection = -1;
+        _steppedJob = -1;
     }
 
     public void OpenFacePreview(int jobIndex, int faceIndex)
@@ -234,7 +274,9 @@ internal sealed class CharacterSelectScene
         CompleteActiveSlide();
         _forwardSubject = jobIndex;
         _previewYaw = 0f;
+        _jobMoveYaw = _jobActors[jobIndex].LineupYaw;
         var slot = JobSlot(jobIndex);
+        slot.Z -= _jobActors[jobIndex].LineupAdvance;
         StartSlide(
             jobIndex,
             slot.X,
@@ -259,6 +301,7 @@ internal sealed class CharacterSelectScene
         }
 
         var slot = JobSlot(jobIndex);
+        slot.Z -= _jobActors[jobIndex].LineupAdvance;
         var active = _jobMoverIndex >= 0;
         var startX = active ? _jobMoveX : 0f;
         var startZ = active ? _jobMoveZ : JobRestZ;
@@ -312,8 +355,46 @@ internal sealed class CharacterSelectScene
         PlaceJobActor(_jobActors[actorIndex], (startX, startZ), MotionCode.Stand, _jobMoveYaw);
     }
 
+    internal void StepWebJob(int index) => _steppedJob = index;
+
+    private void UpdateLineupSteps(float dt)
+    {
+        var step = WebSelectionSpeed * dt;
+        var turn = JobTurnRate * dt;
+        for (var index = 0; index < _jobActors.Count; index++)
+        {
+            if (index == _jobMoverIndex || index == _forwardSubject)
+            {
+                continue;
+            }
+
+            var job = _jobActors[index];
+            var target = _steppedJob == index ? WebSelectionAdvance : 0f;
+            var remaining = target - job.LineupAdvance;
+            if (remaining == 0f && job.LineupYaw == 0f)
+            {
+                continue;
+            }
+
+            var yaw = remaining < 0f ? MathHelper.Pi : 0f;
+            job.LineupYaw = ApproachAngle(job.LineupYaw, yaw, turn);
+            var moving = remaining != 0f && MathF.Abs(MathHelper.WrapAngle(yaw - job.LineupYaw)) <= JobYawSettleEpsilon;
+            if (moving)
+            {
+                job.LineupAdvance = Math.Clamp(target, job.LineupAdvance - step, job.LineupAdvance + step);
+            }
+
+            PlaceJobActor(job, JobStageSlot(index), moving ? MotionCode.Walk : MotionCode.Stand, job.LineupYaw);
+        }
+    }
+
     public void UpdateRun(float dt)
     {
+        if (_camera.UsesWebBackdrop)
+        {
+            UpdateLineupSteps(dt);
+        }
+
         if (_jobMoverIndex < 0 || _jobMoverIndex >= _jobActors.Count)
         {
             return;
@@ -378,6 +459,7 @@ internal sealed class CharacterSelectScene
                     if (MathF.Abs(_jobMoveYaw) <= JobYawSettleEpsilon)
                     {
                         _jobMoveYaw = 0f;
+                        job.LineupYaw = 0f;
                         PlaceJobActor(job, (_jobMoveX, _jobMoveZ), MotionCode.Stand, 0f);
                         _jobMoverIndex = -1;
                         _jobPhase = JobMovePhase.None;
@@ -406,6 +488,10 @@ internal sealed class CharacterSelectScene
 
         var handles = job.Handles with { Head = head };
         _jobActors[jobIndex] = job with { Handles = handles };
+        if (_camera.UsesWebBackdrop)
+        {
+            SetWebJobAppearance(jobIndex, 1f, 0f);
+        }
         var intensity = HighlightIntensity(jobIndex, _jobHover, _jobSelection);
         SetHandlesColorAdd(handles, new Vector3(intensity));
 
@@ -427,12 +513,9 @@ internal sealed class CharacterSelectScene
 
     private Matrix CurrentJobActorWorld(int jobIndex)
     {
-        if (jobIndex == _forwardSubject)
-        {
-            var active = _jobMoverIndex >= 0;
-            return SlotWorld((active ? _jobMoveX : 0f, active ? _jobMoveZ : JobRestZ), active ? _jobMoveYaw : _previewYaw);
-        }
-        return SlotWorld(JobSlot(jobIndex));
+        var yaw = jobIndex == _jobMoverIndex ? _jobMoveYaw
+            : jobIndex == _forwardSubject ? _previewYaw : _jobActors[jobIndex].LineupYaw;
+        return SlotWorld(JobStageSlot(jobIndex), yaw);
     }
 
     internal void RotateForwardJob(float yaw)
@@ -448,11 +531,19 @@ internal sealed class CharacterSelectScene
 
     internal Vector3 PreviewFootWorld(int index) => CurrentJobActorWorld(index).Translation;
 
+    internal void SetWebJobAppearance(int index, float opacity, float flash)
+    {
+        var appearance = PristonActorAppearance.Normal with { Tint = WebPreviewFill * (1f + flash), Opacity = opacity };
+        var handles = _jobActors[index].Handles;
+        _actorScene.SetActorAppearance(handles.Body, appearance);
+        _actorScene.SetActorAppearance(handles.Head, appearance);
+    }
+
     // scale: how many times the desktop's pick box a character answers in (a finger needs a wider one than a cursor).
     public int PickRoster(Vector2 cursor, Viewport viewport, float scale = 1f) =>
         PickCharacter(cursor, viewport, _placed.Count, index => _placed[index].Slot, scale);
     public int PickJob(Vector2 cursor, Viewport viewport, float scale = 1f) =>
-        PickCharacter(cursor, viewport, _jobActors.Count, JobSlot, scale);
+        PickCharacter(cursor, viewport, _jobActors.Count, _camera.UsesWebBackdrop ? JobStageSlot : JobSlot, scale);
 
     public void SetRosterHighlight(int hoveredIndex, int selectedIndex)
     {

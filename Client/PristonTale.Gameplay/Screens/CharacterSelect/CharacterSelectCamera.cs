@@ -41,11 +41,30 @@ internal sealed class CharacterSelectCamera
     public Vector3 Position => _camera.Position;
     public bool HasReached(int step) => _currentState == step && _distance == CharacterSelectStage.RailDistance(step);
 
+    public bool AtClassFraming =>
+        _distance >= CharacterSelectStage.RailDistance(CharacterSelectStage.TribeStep)
+        && _distance <= CharacterSelectStage.RailDistance(CharacterSelectStage.ClassStep);
+
     public void Update(GraphicsDevice graphicsDevice, int targetState, float dt)
     {
-        (_distance, _currentState) = CharacterSelectStage.Dolly(_distance, _currentState, targetState, dt);
+        (_distance, _currentState) = _usesWebBackdrop
+            ? DollyWeb(_distance, _currentState, targetState, dt)
+            : CharacterSelectStage.Dolly(_distance, _currentState, targetState, dt);
         _swaySeconds += dt;
         Apply(graphicsDevice, CharacterSelectStage.Sway(_swaySeconds));
+    }
+
+    internal static (float Distance, int Step) DollyWeb(float distance, int currentState, int targetState, float dt)
+    {
+        var destination = CharacterSelectStage.RailDistance(targetState);
+        var from = CharacterSelectStage.RailDistance(currentState);
+        var difference = destination - distance;
+        var speed = MathF.Abs(difference) < MathF.Abs(destination - from) / 16f
+            ? CharacterSelectStage.DollySlowPerSecond : CharacterSelectStage.DollyFastPerSecond;
+        var step = speed * dt;
+        return MathF.Abs(difference) <= step + CharacterSelectStage.DollySnap
+            ? (destination, targetState)
+            : (distance + MathF.CopySign(step, difference), currentState);
     }
 
     private void Apply(GraphicsDevice graphicsDevice, float sway)
@@ -73,19 +92,13 @@ internal sealed class CharacterSelectCamera
         var tribe = CharacterSelectStage.RailDistance(CharacterSelectStage.TribeStep);
         var lineup = CharacterSelectStage.RailDistance(CharacterSelectStage.ClassStep);
         var appearance = CharacterSelectStage.RailDistance(CharacterSelectStage.NameStep);
-        if (distance <= tribe)
-        {
-            var framing = MathHelper.SmoothStep(1f, 0f, (distance - roster) / (tribe - roster));
-            target.Y += 5f * framing;
-            return (distance - 50f * framing, target);
-        }
-
         if (distance <= lineup)
         {
-            var framing = (distance - tribe) / (lineup - tribe);
+            // The tribe cards and the lineup use the same framing. Only the roster moves in from its closer view.
+            var framing = (distance - roster) / (tribe - roster);
             target.X += MathHelper.SmoothStep(0f, WebLineupTargetX, framing);
-            target.Y -= MathHelper.SmoothStep(0f, 30f, framing);
-            return (MathHelper.Lerp(tribe, 490f, framing), target);
+            target.Y += MathHelper.SmoothStep(5f, -30f, framing);
+            return (MathHelper.SmoothStep(250f, 490f, framing), target);
         }
 
         var portraitFraming = (distance - lineup) / (appearance - lineup);

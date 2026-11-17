@@ -247,6 +247,8 @@ let host = null;
 let gameReady = false;
 let filesReady = false;
 let filesRequest = null;
+let loginPainted = false;
+let charactersPrefetched = false;
 let credentials = null;
 let accountName = "";
 
@@ -352,6 +354,7 @@ function fetchRemaining() {
         filesReady = true;
         filesRequest = null;
         sendPending();
+        prefetchCharacters();
     }, error => {
         filesRequest = null;
         console.error('Falha ao carregar a seleção de personagens:', error);
@@ -363,6 +366,16 @@ function fetchRemaining() {
         showWorldsMessage(text.filesLoadFailed, 'error');
     });
 }
+
+function prefetchCharacters() {
+    const connection = navigator.connection;
+    if (charactersPrefetched || !loginPainted || !filesReady || document.hidden || connection?.saveData
+        || connection?.effectiveType === 'slow-2g' || connection?.effectiveType === '2g') return;
+    charactersPrefetched = true;
+    host.PrefetchCharacterAssetsAsync().catch(error => console.warn('Falha ao adiantar os modelos de criação:', error));
+}
+
+document.addEventListener('visibilitychange', prefetchCharacters);
 
 function sendPending() {
     if (!pending || !gameReady || !filesReady) return false;
@@ -771,7 +784,13 @@ try {
                 drawn++;
                 if (drawn === 4) {
                     loading.hidden = true;
-                    setTimeout(revealLogin, loginDelayMs);
+                    setTimeout(() => {
+                        revealLogin();
+                        requestAnimationFrame(() => requestAnimationFrame(() => {
+                            loginPainted = true;
+                            prefetchCharacters();
+                        }));
+                    }, loginDelayMs);
                     setTimeout(fetchRemaining, remainingDelayMs);
                     phases.scene = Math.round(performance.now());
                     console.info(`[Partida] runtime ${phases.runtime} ms; arquivos da cena +${phases.files - phases.runtime} ms; `

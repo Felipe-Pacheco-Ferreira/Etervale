@@ -33,11 +33,17 @@ internal static class CharacterSelectTests
     {
         var lineupDistance = CharacterSelectStage.RailDistance(CharacterSelectStage.ClassStep);
         var faceDistance = CharacterSelectStage.RailDistance(CharacterSelectStage.FaceStep);
+        var tribeDistance = CharacterSelectStage.RailDistance(CharacterSelectStage.TribeStep);
         var lineupZ = -CharacterSelectStage.LineupPosition(1, 5).Z;
         var faceZ = -CharacterSelectStage.RestZ;
         var (nativeEye, nativeTarget) = CharacterSelectCamera.Pose(faceDistance, 0f);
         var (lineupEye, lineupTarget) = CharacterSelectCamera.Pose(lineupDistance, 0f, webBackdrop: true);
         var (faceEye, faceTarget) = CharacterSelectCamera.Pose(faceDistance, 0f, webBackdrop: true);
+        var tribePose = CharacterSelectCamera.Pose(tribeDistance, 0f, webBackdrop: true);
+        Assert.True(tribePose == (lineupEye, lineupTarget), "the class framing is ready while the tribe cards are open");
+        var inTransit = lineupDistance + 60f;
+        var (reversing, _) = CharacterSelectCamera.DollyWeb(inTransit, CharacterSelectStage.ClassStep, CharacterSelectStage.ClassStep, 1f / 60f);
+        Assert.True(reversing > lineupDistance && reversing < inTransit, "going back mid-transition keeps the camera moving smoothly");
         Assert.True(nativeTarget.X == 0f && MathF.Abs((nativeEye - nativeTarget).Length() - faceDistance) < 0.01f,
             "the native rail keeps its original face pose");
         Assert.True(lineupTarget.X < lineupEye.Z - lineupZ && lineupEye.Z > lineupZ, "the lineup is framed from in front");

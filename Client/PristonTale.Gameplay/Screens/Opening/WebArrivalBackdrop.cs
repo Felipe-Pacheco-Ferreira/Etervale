@@ -18,6 +18,7 @@ internal sealed class WebArrivalBackdrop : IDisposable
     private const float NightHour = 23.4f;
     private const string BrazierEffect = "vfx.webarrival.brazier";
     private const string CharacterArrivalEffect = "vfx.webarrival.character";
+    private const string ClassSelectionEffect = "vfx.webarrival.class-selection";
 
     private readonly record struct CameraPose(Vector3 Eye, Vector3 Target, float FieldOfView)
     {
@@ -46,6 +47,8 @@ internal sealed class WebArrivalBackdrop : IDisposable
     private readonly VfxSystem _vfx;
     private readonly VfxLibrary _vfxLibrary;
     private CompiledVfx _characterArrival;
+    private CompiledVfx _classSelectionEffect;
+    private VfxHandle _classSelection;
     private readonly VfxRenderer _vfxRenderer;
     private readonly CharSelectFlames _flames;
     private readonly CameraPose _roster;
@@ -157,6 +160,62 @@ internal sealed class WebArrivalBackdrop : IDisposable
 
         _vfx.Spawn(_characterArrival, new VfxSpawn(0, 0, position, 0f));
     }
+
+    public void SetClassSelection(Vector3? position)
+    {
+        if (_vfx is null)
+        {
+            return;
+        }
+
+        if (position is not { } point)
+        {
+            _classSelection.StopNow();
+            _classSelection = default;
+            return;
+        }
+
+        if (_classSelection.Alive)
+        {
+            _classSelection.MoveTo(point);
+            return;
+        }
+
+        _classSelectionEffect ??= _vfxLibrary.TryGet(ClassSelectionEffect, out var existing)
+            ? existing : _vfxLibrary.Register(CreateClassSelection());
+        _classSelection = _vfx.Spawn(_classSelectionEffect, new VfxSpawn(0, 0, point, 0f));
+    }
+
+    private static VfxDefinition CreateClassSelection() => new()
+    {
+        Name = ClassSelectionEffect,
+        Duration = VfxDefinition.MaxDuration,
+        Components =
+        [
+            new VfxComponentDefinition
+            {
+                Kind = VfxComponentKind.Ground,
+                Follow = true,
+                Texture = "Effect/Particle/warp_magicsquare01a.tga",
+                Offset = [0f, 1.7f, 0f],
+                SizeMin = [48f, 48f],
+                SizeMax = [48f, 48f],
+                Color = [255f, 192f, 73f, 195f],
+                EndTime = [1f, 1f]
+            },
+            new VfxComponentDefinition
+            {
+                Kind = VfxComponentKind.Billboard,
+                Follow = true,
+                Texture = "Effect/Particle/flare.tga",
+                Offset = [0f, 25f, 0f],
+                SizeMin = [34f, 65f],
+                SizeMax = [34f, 65f],
+                Color = [255f, 200f, 96f, 36f],
+                EndTime = [1f, 1f]
+            }
+        ]
+    };
 
     public void UpdateScene(GameTime gameTime)
     {

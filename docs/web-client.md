@@ -78,14 +78,20 @@ The site's address (`/`) is the game: the canvas fills the window, and the page'
   accepts the login. Character selection takes ownership of the same renderer, camera, stage and flame effects at the
   roster pose. The characters appear in succession with a golden floor sigil, light and sparks. The browser frames
   the lead character closer in the roster. In creation, the chosen tribe's classes appear with the same golden effect.
-  The chosen class walks up to the appearance and name step, where a mouse drag turns its model. On success, the new
-  character appears with the golden effect in the roster. The opening manifest loads the sanctuary's textures, flame
-  frames and night sky before the first frame.
+  The first class is selected when the lineup appears. Choosing a different class moves it up a step with the gold
+  floor marker as the previous class returns to its slot. The chosen class runs up to the appearance and name step
+  while the rest fade away. A mouse drag turns the preview model. Going back restores the lineup, which stays visible
+  between the two tribe cards if the player backs up another step. On success, the new character appears with the
+  golden effect in the roster. The opening manifest loads the sanctuary's textures, flame frames and night sky
+  before the first frame.
 - The files come in waves (`BootstrapFiles`): the login scene's before the game starts (`PrepareAsync`), everything up
   to the character list right after (`FetchRemainingAsync`), and the first field's when a character enters. The roster
-  fetches additional starter models for classes on the account through `character-previews.txt`. Creation fetches the
-  chosen tribe's models and three faces per class from the same manifest and reuses files already present. The sky
-  builds a profile the first time it is drawn (`PristonSkyLibrary.LoadBootstrap(preloadAll: false)`), so the login
+  fetches additional starter models for classes on the account through `character-previews.txt`. Once the initial
+  opening downloads finish, idle background requests warm both tribes' starter models. The selected tribe shares
+  those requests. The web host compresses the large character motion banks with Brotli, and the class lineup prepares
+  only the default face for each model. In the browser preview, the skeleton reader decodes only the bind pose and
+  keys used by the idle, walk and run motions. The chosen class's other two faces are prepared as it runs forward.
+  The sky builds a profile the first time it is drawn (`PristonSkyLibrary.LoadBootstrap(preloadAll: false)`), so the login
   downloads and decodes only the opening's sky. Downloads for other sky profiles wait until the first field loads.
 - The login panel ("Bem-vindo") is HTML, not `LoginPanel`: real form fields, so paste, password managers and phone
   keyboards work. `BrowserHost.Start` sets `WebLoginOverlay.Report`; while it is set, `OpeningScreen` takes the login at

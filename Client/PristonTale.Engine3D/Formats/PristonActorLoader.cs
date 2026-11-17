@@ -10,13 +10,17 @@ public sealed class PristonActorLoader
 {
     private readonly PristonInxReader _inxReader;
     private readonly PristonSmdReader _smdReader;
+    private readonly bool _previewMotionsOnly;
 
     public PristonActorLoader() : this(null) { }
 
-    public PristonActorLoader(PristonAssetCache cache)
+    public PristonActorLoader(PristonAssetCache cache) : this(cache, false) { }
+
+    public PristonActorLoader(PristonAssetCache cache, bool previewMotionsOnly)
     {
         _inxReader = cache != null ? new PristonInxReader(cache) : new PristonInxReader();
         _smdReader = cache != null ? new PristonSmdReader(cache) : new PristonSmdReader();
+        _previewMotionsOnly = previewMotionsOnly;
     }
 
     // infoPath: the model info (.inx), or any name of it (PristonModelPaths.Info). Its model resolves through
@@ -33,7 +37,9 @@ public sealed class PristonActorLoader
 
         var motionInfo = ResolveMotionInfo(assetRoot, info);
         var motionPath = ResolveMotionPath(assetRoot, motionInfo.MotionFile);
-        var skeleton = _smdReader.ReadModel(motionPath);
+        var skeleton = _previewMotionsOnly && Path.GetExtension(motionPath).Equals(".smb", StringComparison.OrdinalIgnoreCase)
+            ? _smdReader.ReadPreviewSkeleton(motionPath, motionInfo)
+            : _smdReader.ReadModel(motionPath);
         var mesh = PristonPhysiqueRepair.Repair(_smdReader.ReadModel(model), skeleton);
         // Shared armor meshes require the INX high-LOD filter; models without groups render all objects.
         var renderObjectNames = SelectRenderObjectNames(info);

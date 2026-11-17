@@ -85,7 +85,7 @@ public sealed partial class CharacterSelectScreen : GameScreen
     public CharacterSelectScreen(ScreenContext context) : base(context)
     {
         _reader = new PristonSmdReader(_assetCache);
-        _actorLoader = new PristonActorLoader(_assetCache);
+        _actorLoader = new PristonActorLoader(_assetCache, previewMotionsOnly: _webOverlay);
     }
 
     public Func<MouseState> PointerInput { get; init; }
@@ -180,7 +180,8 @@ public sealed partial class CharacterSelectScreen : GameScreen
         var dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
         _audio.Update(dt);
 
-        var cameraStep = Backdrop is not null && _busy == Busy.PreparingJobLineup ? State.JobSelect : _state;
+        var cameraStep = Backdrop is not null && _state == State.RaceSelect
+            && (_busy == Busy.PreparingJobLineup || _scene.JobCount > 0) ? State.JobSelect : _state;
         _cameraCtl.Update(Context.GraphicsDevice, (int)cameraStep, dt);
 
         _scene.UpdateRun(dt);
@@ -210,6 +211,8 @@ public sealed partial class CharacterSelectScreen : GameScreen
             UpdateWebRosterArrival(dt);
             UpdateWebCreationEffects(dt);
             UpdateWeb(mouse);
+            UpdateWebFacePreparation();
+            UpdateWebClassSelection();
             ReportWeb();
         }
         else if (_busy == Busy.None && !Context.Presentation.AwaitingConfirmation)
@@ -624,7 +627,7 @@ public sealed partial class CharacterSelectScreen : GameScreen
 
         if (_jobPreparationTask.IsCompletedSuccessfully)
         {
-            if (Backdrop is not null && !_cameraCtl.HasReached((int)State.JobSelect))
+            if (Backdrop is not null && !_cameraCtl.AtClassFraming)
             {
                 return;
             }
@@ -646,9 +649,11 @@ public sealed partial class CharacterSelectScreen : GameScreen
     private void BuildJobLineup()
     {
         _scene.BuildJobLineup(_chosenBrood);
+        _webLineupFading = false;
+        _webLineupOpacity = 1f;
         _jobHovered = -1;
         _lastClickIndex = -1;
-        _jobSelected = -1;
+        _jobSelected = _webOverlay && _scene.JobCount > 0 ? 0 : -1;
         _faceIndex = 0;
     }
 
@@ -704,14 +709,12 @@ public sealed partial class CharacterSelectScreen : GameScreen
         }
         _scene.StartForwardRun(_jobSelected);
         _scene.SetJobHighlight(-1, -1);
+        BeginWebLineupFade();
         if (Backdrop is not null)
         {
-            for (var index = 0; index < _scene.JobCount; index++)
-            {
-                _scene.SetJobHidden(index, index != _jobSelected);
-            }
+            _webFacePreparationFailed = false;
+            _webFacePreparation = PrepareWebFacesAsync(_jobSelected, _backendCts.Token);
         }
-
         _state = State.FaceSelect;
         _errorMessage = string.Empty;
     }
@@ -829,12 +832,23 @@ public sealed partial class CharacterSelectScreen : GameScreen
                 _state = State.CharacterSelect;
                 break;
             case State.JobSelect:
-                ClearJobActors();
+                if (Backdrop is not null)
+                {
+                    FinishWebJobArrival();
+                    _scene.StepWebJob(-1);
+                    _scene.SetJobHighlight(-1, -1);
+                }
+                else
+                {
+                    ClearJobActors();
+                }
                 _state = State.RaceSelect;
                 break;
             case State.FaceSelect:
             case State.Name:
                 _scene.CloseFacePreview();
+                _webFaceToApply = -1;
+                _webNameToSubmit = null;
                 if (Backdrop is not null)
                 {
                     _scene.ApplyFace(_jobSelected, 0);
@@ -842,10 +856,7 @@ public sealed partial class CharacterSelectScreen : GameScreen
                 ReturnChosenJobToLineup();
                 if (Backdrop is not null)
                 {
-                    for (var index = 0; index < _scene.JobCount; index++)
-                    {
-                        _scene.SetJobHidden(index, false);
-                    }
+                    BeginWebLineupFade();
                     _faceIndex = 0;
                     _scene.SetJobHighlight(-1, _jobSelected);
                 }
@@ -912,6 +923,9 @@ public sealed partial class CharacterSelectScreen : GameScreen
     private void ClearJobActors()
     {
         FinishWebJobArrival();
+        _webLineupFading = false;
+        _webLineupOpacity = 1f;
+        _webFaceToApply = -1;
         _scene.ClearJobLineup();
         _jobHovered = -1;
         _jobSelected = -1;
