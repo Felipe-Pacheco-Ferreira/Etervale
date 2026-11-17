@@ -24,7 +24,12 @@ struct MGG_Texture;
 #include "minivorbis.h"
 
 #define MINIMP3_ONLY_MP3
+// Etervale fork: WebAssembly has neither SSE nor NEON, so the browser build decodes with minimp3's portable code.
+#if defined(__EMSCRIPTEN__)
+#define MINIMP3_NO_SIMD
+#else
 #define MINIMP3_ONLY_SIMD
+#endif
 #define MINIMP3_IMPLEMENTATION
 #include "minimp3_ex.h"
 

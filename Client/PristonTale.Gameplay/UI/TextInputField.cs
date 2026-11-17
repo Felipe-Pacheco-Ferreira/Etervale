@@ -17,6 +17,19 @@ public sealed class TextInputField
 
     public void Clear() => _text.Clear();
 
+    // Text typed elsewhere (the browser page's own field), kept to the characters and length the field takes.
+    public void Set(string text)
+    {
+        _text.Clear();
+        foreach (var ch in text ?? string.Empty)
+        {
+            if (_text.Length < MaxLength && Accepts(ch))
+            {
+                _text.Append(ch);
+            }
+        }
+    }
+
     // The characters the window typed since the last frame (TypedText): the system's own key repeat makes a held
     // Backspace ('\b') or letter repeat, as in any text box. Letters, digits, '.', '-' and '_' are taken.
     public void Update(ReadOnlySpan<char> typed, double dtSeconds)

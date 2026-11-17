@@ -12,7 +12,10 @@ public enum RegistrationResult
     Created = 0,
     InvalidName = 1,
     InvalidPassword = 2,
-    NameTaken = 3
+    NameTaken = 3,
+    InvalidEmail = 4,
+    EmailTaken = 5,
+    InvalidReferral = 6
 }
 
 // Account is the new account when Result is Created.
@@ -46,7 +49,11 @@ public sealed class AccountAppService(IAccountRepository accounts)
         return record.IsBlocked ? new CredentialCheck(null, LoginFailure.LoginDenied) : new CredentialCheck(record, LoginFailure.None);
     }
 
-    public async Task<Registration> RegisterAsync(string name, string password, CancellationToken ct = default)
+    public Task<Registration> RegisterAsync(string name, string password, CancellationToken ct = default) =>
+        RegisterAsync(name, password, null, ct);
+
+    // contact: the e-mail and referral code of the entry page's registration; null for registrations without them.
+    public async Task<Registration> RegisterAsync(string name, string password, AccountContact? contact, CancellationToken ct = default)
     {
         if (!AccountRules.IsValidName(name))
         {
@@ -58,6 +65,16 @@ public sealed class AccountAppService(IAccountRepository accounts)
             return new Registration(RegistrationResult.InvalidPassword);
         }
 
+        if (contact is not null && !AccountRules.IsValidEmail(contact.Email))
+        {
+            return new Registration(RegistrationResult.InvalidEmail);
+        }
+
+        if (contact is not null && !AccountRules.IsValidReferralCode(contact.ReferralCode))
+        {
+            return new Registration(RegistrationResult.InvalidReferral);
+        }
+
         var hash = PasswordHasher.Hash(password);
         await RegistrationGate.WaitAsync(ct);
         try
@@ -67,14 +84,26 @@ public sealed class AccountAppService(IAccountRepository accounts)
                 return new Registration(RegistrationResult.NameTaken);
             }
 
-            return new Registration(RegistrationResult.Created, await accounts.CreateAsync(name, hash, ct));
+            if (contact is not null && await accounts.IsEmailTakenAsync(contact.Email, ct))
+            {
+                return new Registration(RegistrationResult.EmailTaken);
+            }
+
+            var account = contact is null ? await accounts.CreateAsync(name, hash, ct) : await accounts.CreateAsync(name, hash, contact, ct);
+            return new Registration(RegistrationResult.Created, account);
         }
         catch (DbException) when (!ct.IsCancellationRequested)
         {
-            // Another process (the account tool, another site) took the exact name between the check and the insert.
+            // Another process (the account tool, another site) took the exact name or e-mail between the check and the
+            // insert.
             if (await accounts.IsUserIdTakenAsync(name, ct))
             {
                 return new Registration(RegistrationResult.NameTaken);
+            }
+
+            if (contact is not null && await accounts.IsEmailTakenAsync(contact.Email, ct))
+            {
+                return new Registration(RegistrationResult.EmailTaken);
             }
 
             throw;

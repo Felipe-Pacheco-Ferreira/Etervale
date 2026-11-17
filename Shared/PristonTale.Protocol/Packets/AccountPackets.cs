@@ -271,9 +271,10 @@ public readonly record struct CharacterResultPacket(byte Action, bool Ok, int Fa
 
 // Both directions {header, uint16 Version = 1, uint16 0, uint32 Counter, int64 TimeMs}: the client sends one
 // every 4 s; the server echoes it with its own time and closes connections silent for 60 s.
-public readonly record struct HeartbeatPacket(uint Counter, long TimeMs) : IFramePacket
+public readonly record struct HeartbeatPacket(uint Counter, long TimeMs, int OnlinePlayers = -1) : IFramePacket
 {
     public const int Size = 8 + 4 + 4 + 8;
+    public const int MaxSize = Size + 4;
 
     public int Write(Span<byte> destination)
     {
@@ -281,6 +282,10 @@ public readonly record struct HeartbeatPacket(uint Counter, long TimeMs) : IFram
         WireHeader.Write(ref writer, AccountWire.CurrentVersion);
         writer.UInt32(Counter);
         writer.Int64(TimeMs);
+        if (OnlinePlayers >= 0)
+        {
+            writer.Int32(OnlinePlayers);
+        }
         return writer.Finish();
     }
 
@@ -289,6 +294,7 @@ public readonly record struct HeartbeatPacket(uint Counter, long TimeMs) : IFram
         var reader = new PacketReader(packet, Size);
         WireHeader.ReadVersion(ref reader, "Heartbeat");
         reader.Skip(2);
-        return new HeartbeatPacket(reader.UInt32(), reader.Int64());
+        var heartbeat = new HeartbeatPacket(reader.UInt32(), reader.Int64());
+        return reader.Remaining >= 4 ? heartbeat with { OnlinePlayers = reader.Int32() } : heartbeat;
     }
 }

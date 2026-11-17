@@ -20,13 +20,33 @@ public static class TlsTransport
 
     // A server address: "host", "host:port" or "tcp://host:port", with DefaultPort when the port is left out, and
     // optionally "?cert=<sha-256 hex>" to pin the server certificate (checked here, so a bad pin is refused up front).
+    // A WebSocket address (WebSocketTransport) is "wss://host[:port]/path", or "ws://" for a server on this machine; it
+    // keeps the scheme's own default port. Native WSS clients can pin a certificate for a local deployment.
     public static Uri ParseAddress(string text)
     {
         var trimmed = text.Trim();
         var absolute = trimmed.Contains("://", StringComparison.Ordinal) ? trimmed : "tcp://" + trimmed;
-        if (!Uri.TryCreate(absolute, UriKind.Absolute, out var address) || address.Scheme != "tcp" || address.Host.Length == 0 || address.Port == 0)
+        if (!Uri.TryCreate(absolute, UriKind.Absolute, out var address) || !(address.Scheme == "tcp" || WebSocketTransport.Carries(address))
+            || address.Host.Length == 0 || address.Port == 0)
         {
-            throw new ArgumentException($"\"{text}\" is not a server address: expected host, host:port or tcp://host:port.", nameof(text));
+            throw new ArgumentException($"\"{text}\" is not a server address: expected host, host:port, tcp://host:port or wss://host/path.", nameof(text));
+        }
+
+        if (WebSocketTransport.Carries(address))
+        {
+            if (address.Scheme == Uri.UriSchemeWs && !ServerCertificatePolicy.IsLoopback(address.Host))
+            {
+                throw new ArgumentException($"\"{text}\": an unencrypted ws:// address is allowed only for a server on this machine; use wss://.", nameof(text));
+            }
+
+            if (address.Query.Length > 0 && (OperatingSystem.IsBrowser() || address.Scheme != Uri.UriSchemeWss ||
+                !address.Query.StartsWith("?cert=", StringComparison.OrdinalIgnoreCase) || address.Query.Contains('&') ||
+                ServerCertificatePolicy.FromAddress(address).PinnedSha256 is null))
+            {
+                throw new ArgumentException("Only native WSS clients may specify a certificate pin.", nameof(text));
+            }
+
+            return address;
         }
 
         if (address.IsDefaultPort)
@@ -53,7 +73,7 @@ public static class TlsTransport
                 ClientCertificateRequired = false,
                 CertificateRevocationCheckMode = X509RevocationMode.NoCheck
             }, deadline.Token);
-            return new FrameConnection(socket, tls, options);
+            return new FrameConnection(tls, TransportLink.Of(socket), options);
         }
         catch
         {
@@ -80,7 +100,7 @@ public static class TlsTransport
                 CertificateRevocationCheckMode = X509RevocationMode.NoCheck,
                 RemoteCertificateValidationCallback = (_, certificate, _, errors) => policy.Accepts(certificate, errors)
             }, deadline.Token);
-            return new FrameConnection(socket, tls, options);
+            return new FrameConnection(tls, TransportLink.Of(socket), options);
         }
         catch
         {
@@ -138,6 +158,6 @@ public sealed record ServerCertificatePolicy(string Host, byte[]? PinnedSha256 =
 
     private static bool IsHex(string text) => text.Length % 2 == 0 && text.All(char.IsAsciiHexDigit);
 
-    private static bool IsLoopback(string host) =>
+    public static bool IsLoopback(string host) =>
         host.Equals("localhost", StringComparison.OrdinalIgnoreCase) || IPAddress.TryParse(host.Trim('[', ']'), out var address) && IPAddress.IsLoopback(address);
 }

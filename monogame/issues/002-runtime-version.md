@@ -18,7 +18,8 @@ change. A library from elsewhere fails late and obscurely:
 
 ## Change
 
-- Runtime: `MGG_Etervale_RuntimeVersion()` returns `MGVK_ETERVALE_RUNTIME_VERSION` (`vulkan/MGG_Vulkan.cpp`).
+- Runtime: `MGG_Etervale_RuntimeVersion()` returns `MG_ETERVALE_RUNTIME_VERSION` (`include/mg_etervale.h`), in every
+  graphics backend (`vulkan/MGG_Vulkan.cpp`, and `webgpu/MGG_WebGPU.cpp` of the browser runtime, issue 021).
 - Framework: `MGG.EtervaleRuntimeVersion` is the version it is written for
   (`Platform/Native/Graphics.Interop.Etervale.cs`); `MGG.EnsureRuntimeVersion()` runs first in `NativeGamePlatform`'s
   constructor and throws an `InvalidOperationException` that names the found and the needed version and how to rebuild

@@ -10,7 +10,7 @@ using System.IO;
 namespace MonoGame.Effect
 {
     /// <summary>
-    /// Compiles an effect (.fx) for the Vulkan profile into the MGFX 12 bytes the fork's framework loads: the steps of
+    /// Compiles an effect (.fx) for the Vulkan or WebGPU profile into the MGFX 12 bytes the fork's framework loads: the steps of
     /// MonoGame's EffectProcessor (preprocess, parse techniques, compile every shader with DXC, write), without the
     /// content pipeline's types, so a test can run them too.
     /// </summary>
@@ -23,11 +23,21 @@ namespace MonoGame.Effect
         /// The options of a Vulkan build of <paramref name="sourceFile"/>. DXC's temporary files go next to
         /// <paramref name="outputFile"/> and are deleted afterwards.
         /// </summary>
-        public static Options VulkanOptions(string sourceFile, string outputFile, bool debug, string? defines) => new()
+        public static Options VulkanOptions(string sourceFile, string outputFile, bool debug, string? defines) =>
+            ProfileOptions(ShaderProfile.Vulkan, sourceFile, outputFile, debug, defines);
+
+        /// <summary>
+        /// The options of a WebGPU build of <paramref name="sourceFile"/> for the browser runtime (issue 022): the Vulkan
+        /// build's reflection with WGSL code, which needs Slang (monogame/pipeline/fetch-slang.sh).
+        /// </summary>
+        public static Options WebGpuOptions(string sourceFile, string outputFile, bool debug, string? defines) =>
+            ProfileOptions(ShaderProfile.WebGpu, sourceFile, outputFile, debug, defines);
+
+        private static Options ProfileOptions(ShaderProfile profile, string sourceFile, string outputFile, bool debug, string? defines) => new()
         {
             SourceFile = sourceFile,
             OutputFile = outputFile,
-            Profile = ShaderProfile.Vulkan,
+            Profile = profile,
             Debug = debug,
             Defines = defines,
         };

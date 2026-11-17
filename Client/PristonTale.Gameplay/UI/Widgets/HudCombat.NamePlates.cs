@@ -35,7 +35,7 @@ public sealed partial class HudCombat
     // Whether a monster's name box carries its life bar.
     public static bool ShowsPlateBar(bool classic, bool hovered, bool traced, bool attacked) => classic ? hovered : traced || attacked;
 
-    public void DrawNamePlates(HudPainter painter, HudLayout layout, Func<ulong, HudOverheadPoint?> project, ulong hovered, ulong traced, bool classic)
+    public void DrawNamePlates(HudPainter painter, HudLayout layout, Func<ulong, HudOverheadPoint?> project, ulong hovered, ulong traced, bool classic, bool hideUnfocused = false)
     {
         _plates.Clear();
         foreach (var (id, entity) in _entities)
@@ -47,7 +47,7 @@ public sealed partial class HudCombat
             var summon = kind == EntityKind.Monster && entity.Spawn.OwnerId != 0;
             var shown = kind == EntityKind.Npc || member || mate || kind == EntityKind.Player && id != _self && focus
                 || (kind == EntityKind.Monster && entity.Life > 0 && (summon || focus));
-            if (shown && project(id) is { } point && (focus || member || point.Depth < HudNameColors.OverheadDepth))
+            if (shown && (!hideUnfocused || focus || member) && project(id) is { } point && (focus || member || point.Depth < HudNameColors.OverheadDepth))
             {
                 _plates.Add((id, point, focus));
             }

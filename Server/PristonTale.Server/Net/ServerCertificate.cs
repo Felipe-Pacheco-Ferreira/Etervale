@@ -21,14 +21,22 @@ internal static class ServerCertificate
             logger.LogWarning("Created a self-signed TLS certificate at {Path}; remote clients must pin it or use a trusted certificate", path);
         }
 
-        var certificate = X509CertificateLoader.LoadPkcs12FromFile(path, password);
+        var certificate = LoadFile(path, password);
+        logger.LogInformation("TLS certificate {Subject}, SHA-256 {Sha256}, valid until {Expiry:yyyy-MM-dd}", certificate.Subject,
+            Convert.ToHexString(SHA256.HashData(certificate.RawData)), certificate.NotAfter);
+        return certificate;
+    }
+
+    // A PKCS#12 file with its private key; also the WebSocket edge's certificate (Network:WebSocket:CertificatePath).
+    public static X509Certificate2 LoadFile(string path, string? password)
+    {
+        var certificate = X509CertificateLoader.LoadPkcs12FromFile(path, string.IsNullOrEmpty(password) ? null : password);
         if (!certificate.HasPrivateKey)
         {
+            certificate.Dispose();
             throw new InvalidOperationException($"The TLS certificate {path} has no private key.");
         }
 
-        logger.LogInformation("TLS certificate {Subject}, SHA-256 {Sha256}, valid until {Expiry:yyyy-MM-dd}", certificate.Subject,
-            Convert.ToHexString(SHA256.HashData(certificate.RawData)), certificate.NotAfter);
         return certificate;
     }
 

@@ -9,14 +9,26 @@ the one inside the `dotnet-mgcb` tool. What it adds to MonoGame v3.8.6's Vulkan 
 - **shader model 6.5**: `vs_6_5`, `ps_6_5`, `cs_6_5`, for Vulkan 1.2 (SPIR-V 1.5) with `SPV_KHR_ray_query`;
 - **MGFX 12**: each shader's stage, storage list, thread group size and requirements, each pass's compute shader. The
   framework of `../framework` reads MGFX 10 to 12.
+- **a WebGPU profile** for the browser runtime (`../issues/022`): the Web platform builds each shader through the
+  Vulkan build (its reflection and binding header) and writes WGSL compiled by Slang from the same HLSL, with the
+  locations of the vertex inputs;
+- **the `MGFX_ATOMIC_*` macros** (`_UINT`, `_LOAD`, `_STORE`, `_ADD`, `_MIN`, `_MAX`, `_OR`) for an effect's atomics,
+  defined by a prelude both profiles put before the HLSL: HLSL's `uint` and `Interlocked` functions for DXC, Slang's
+  `Atomic<uint>` for the WGSL build (`../issues/022`).
+
+The WebGPU profile needs Slang: `fetch-slang.sh` (Linux, macOS) or `fetch-slang.ps1` (Windows) puts the pinned
+release, checked by SHA-256, into `tools/slang` (git-ignored), and the compiler project copies it next to its assembly.
+The Vulkan profile does not use it.
 
 A `vs_6_0`/`ps_6_0` effect compiles to the same shaders as with upstream's processor: a game's 28 effects, 142
 shaders, were identical byte for byte (issue 007).
 
 | Path | Contents |
 |---|---|
-| `MonoGame.Effect.Compiler/` | `Effect/`: MonoGame v3.8.6's `Tools/MonoGame.Effect.Compiler/Effect`, Vulkan profile only (the DirectX, OpenGL/MojoShader, PSSL and Wine files are left out), with the fork's changes marked `Etervale fork`; `Dxc.cs` (the DXC of the `dotnet-mgcb` tool) and `EffectCompiler.cs` (the public façade: parse, compile, write) are the fork's own. Library `MonoGame.Effect.Compiler.dll`, net8.0. |
-| `MonoGame.Effect.Processor/` | `SpirvEffectProcessor`: MonoGame's `EffectProcessor` over the compiler, DesktopVK only. Built into `bin/` (git-ignored), the folder `Content.mgcb` loads with `/reference`. It is compiled against the content-pipeline and framework assemblies of the `dotnet-mgcb` tool itself (`EtervaleMgcbTool` in `Directory.Build.props`, not copied), so the plugin binds to what MGCB loaded. |
+| `MonoGame.Effect.Compiler/` | `Effect/`: MonoGame v3.8.6's `Tools/MonoGame.Effect.Compiler/Effect`, Vulkan profile only (the DirectX, OpenGL/MojoShader, PSSL and Wine files are left out), with the fork's changes marked `Etervale fork`; `Dxc.cs` (the DXC of the `dotnet-mgcb` tool), `Slang.cs` and `ShaderProfile.WebGpu.cs` (the WebGPU profile) and `EffectCompiler.cs` (the public façade: parse, compile, write) are the fork's own. Library `MonoGame.Effect.Compiler.dll`, net8.0. |
+| `MonoGame.Effect.Processor/` | `SpirvEffectProcessor`: MonoGame's `EffectProcessor` over the compiler: DesktopVK builds the Vulkan profile, Web the WebGPU profile. Built into `bin/` (git-ignored), the folder `Content.mgcb` loads with `/reference`. It is compiled against the content-pipeline and framework assemblies of the `dotnet-mgcb` tool itself (`EtervaleMgcbTool` in `Directory.Build.props`, not copied), so the plugin binds to what MGCB loaded. |
+| `StockEffects/` | Compiles the browser runtime's stock effects (`../runtime/src/webgpu/effects/*.fx`) for the WebGPU profile into the C headers the runtime embeds: `dotnet run -c Release --project monogame/pipeline/StockEffects`. |
+| `fetch-slang.sh`, `fetch-slang.ps1` | Fetch Slang for the WebGPU profile into `tools/slang`. |
 | `ThirdParty/CppNet/` | The C preprocessor (C# port of JCPP), vendored unchanged from the tag's `external/CppNet` submodule; compiled into the compiler as upstream links it. |
 | `Directory.Build.props` | net8.0 (MGCB is a net8.0 tool), C# 12, nullable, implicit usings, warnings as errors; MonoGame's settings for this code, not the repository's analyzers. The tool's location: `dotnet tool restore` puts `dotnet-mgcb` in the NuGet cache. |
 | `CREDITS.md` | Licences (MS-PL for MonoGame's code, Apache-2.0 for CppNet). |

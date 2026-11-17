@@ -100,6 +100,9 @@ public static class HostingExtensions
             log: services.GetRequiredService<IGameLog>(),
             localizedData: services.GetRequiredService<WorldDataLanguagesHolder>()));
         builder.Services.AddHostedService<WorldTickService>();
+        builder.Services.AddHostedService<PublicActivityService>();
+        builder.Services.AddHostedService<AccountBlockService>();
+        builder.Services.AddSingleton<WhisperActivity>();
         AddChat(builder);
         builder.Services.AddSingleton(services =>
         {
@@ -185,8 +188,28 @@ public static class HostingExtensions
                 Warehouses = services.GetRequiredService<IWarehouseRepository>()
             };
         });
+        var supportPath = builder.Configuration["SupportTickets:Path"];
+        if (!string.IsNullOrWhiteSpace(supportPath))
+        {
+            builder.Services.AddSingleton(new PristonTale.Application.Support.SupportTickets(DataPath.Resolve(supportPath)));
+        }
+
+        builder.Services.AddSingleton<GameMailReader>();
+        builder.Services.AddSingleton<PristonTale.Persistence.Repositories.GameMailClaims>();
+        builder.Services.AddSingleton<GameMailRewardService>();
         builder.Services.AddSingleton(services => new ChatAppService(services.GetRequiredService<ChatDirectory>(),
             services.GetRequiredService<WorldServer>(), services.GetRequiredService<GameMasterCommands>(),
-            clans: services.GetRequiredService<PristonTale.Application.Clans.ClanAppService>()));
+            clans: services.GetRequiredService<PristonTale.Application.Clans.ClanAppService>())
+        {
+            Tickets = services.GetService<PristonTale.Application.Support.SupportTickets>(),
+            ReadDistributorAsync = services.GetRequiredService<GameMailReader>().PendingItemsAsync,
+            ReadMailAsync = services.GetRequiredService<GameMailReader>().ListAsync,
+            OpenMailAsync = services.GetRequiredService<GameMailReader>().ReadPageAsync,
+            ClaimMailAsync = services.GetRequiredService<GameMailRewardService>().ClaimAsync,
+            ObserveDeliveredWhisper = string.IsNullOrWhiteSpace(builder.Configuration["PublicActivity:WhisperPath"])
+                ? null : services.GetRequiredService<WhisperActivity>().Record,
+            ObserveGroupChat = string.IsNullOrWhiteSpace(builder.Configuration["PublicActivity:WhisperPath"])
+                ? null : services.GetRequiredService<WhisperActivity>().RecordChannel
+        });
     }
 }

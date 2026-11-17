@@ -1,0 +1,283 @@
+@page "/"
+@inject BrowserClient Client
+@inject WebSettings Settings
+@inject TermsOfUse Terms
+@inject Turnstile Turnstile
+@using PristonTale.Contracts.Sessions
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>@Settings.Site.Name</title>
+    <meta name="description" content="Priston Avalon, MMORPG de fantasia. Jogue direto no navegador, sem instalar nada.">
+    <meta name="theme-color" content="#0a0c11">
+    <meta name="color-scheme" content="dark">
+    <link rel="icon" type="image/png" sizes="32x32" href="~/img/favicon-32.png">
+    <link rel="apple-touch-icon" href="~/img/icon-192.png">
+    <link rel="stylesheet" href="~/css/play.css" asp-append-version="true">
+</head>
+<body class="stage">
+    @* The game draws into #canvas (the MonoGame runtime's window), which fills the window; the page's panels sit over it.
+       The keyboard reaches the game only while the canvas has the focus, so the form's fields keep their keys. *@
+    <div class="game" id="jogo" data-endpoint="@Client.Endpoint" data-state="loading">
+        <canvas id="canvas" class="game-canvas" tabindex="0" aria-label="@Settings.Site.Name"></canvas>
+
+        <div class="game-bar">
+            <label class="game-language">
+                <span class="dot" aria-hidden="true"></span>
+                <span class="game-language-label" data-text="language">Idioma</span>
+                <select data-role="language" aria-label="Idioma do jogo">
+                    <option value="pt-BR">Português</option>
+                    <option value="en">English</option>
+                </select>
+            </label>
+            <details class="game-menu">
+                <summary class="icon-button" aria-label="Menu do site" title="Menu do site">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2-1.6-2-3.4-2.4 1a7.4 7.4 0 0 0-1.7-1L15 3.5h-4l-.4 2.5a7.4 7.4 0 0 0-1.7 1l-2.4-1-2 3.4 2 1.6a7.6 7.6 0 0 0 0 2l-2 1.6 2 3.4 2.4-1a7.4 7.4 0 0 0 1.7 1l.4 2.5h4l.4-2.5a7.4 7.4 0 0 0 1.7-1l2.4 1 2-3.4zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg>
+                </summary>
+                <nav class="game-menu-list" aria-label="Site">
+                    <a href="/inicio">Início do site</a>
+                    <a href="/noticias">Notícias</a>
+                    <a href="/rankings">Rankings</a>
+                    <a href="/eventos">Eventos</a>
+                    <a href="/download">Download</a>
+                    <a href="/conta">Minha conta</a>
+                    <a href="/suporte">Suporte</a>
+                </nav>
+            </details>
+            @if (Client.IsAvailable)
+            {
+                <button type="button" class="icon-button opening-sound" data-role="opening-sound" aria-pressed="false"
+                        aria-label="Música da abertura" title="Música da abertura" hidden>
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 9h4l5-4v14l-5-4H4z"/>
+                        <path class="sound-waves" d="M16 9a4 4 0 0 1 0 6m2-8a7 7 0 0 1 0 10"/>
+                        <path class="sound-muted" d="m16 10 4 4m0-4-4 4"/>
+                    </svg>
+                </button>
+                <audio data-role="opening-music" preload="none" loop hidden></audio>
+            }
+            <button type="button" class="icon-button" data-role="fullscreen" aria-label="Tela cheia" title="Tela cheia">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg>
+            </button>
+        </div>
+
+        @if (!Client.IsAvailable)
+        {
+            <section class="card card-login">
+                <h1 class="card-title">Em breve</h1>
+                <div class="card-ornament" aria-hidden="true"><span></span></div>
+                <p class="card-text">A versão para navegador está sendo preparada.</p>
+                <a class="card-button" href="/download">Baixar o jogo</a>
+                <nav class="card-links"><a href="/inicio">Ir para o site</a></nav>
+            </section>
+        }
+        else
+        {
+            <div class="card card-framed auth-shell">
+                <partial name="_LoginCorners" />
+                <section class="card-login auth-view" data-role="login" aria-labelledby="login-title" hidden>
+                    <h1 class="card-title" id="login-title" data-text="title">Bem-vindo</h1>
+                    <div class="card-ornament" aria-hidden="true"><span></span></div>
+                    <section class="login-recent" data-role="recent-session" aria-labelledby="recent-session-title" hidden>
+                        <h2 id="recent-session-title" data-text="recentAccounts">Contas recentes</h2>
+                        <div class="login-recent-row">
+                            <button type="button" class="login-recent-account" data-role="resume-session">
+                                <span class="login-recent-avatar" data-role="recent-avatar" aria-hidden="true"></span>
+                                <span>
+                                    <strong data-role="recent-account"></strong>
+                                    <small data-text="connected">Conectado</small>
+                                </span>
+                            </button>
+                            <button type="button" class="login-recent-forget" data-role="forget-session" aria-label="Esquecer conta">×</button>
+                        </div>
+                    </section>
+                    <form data-role="login-form" autocomplete="on" novalidate>
+                        <label class="field">
+                            <span data-text="account">Conta</span>
+                            <input name="username" data-role="account" placeholder="Sua ID" autocomplete="username" maxlength="20" spellcheck="false" autocapitalize="off" required>
+                        </label>
+                        <label class="field">
+                            <span data-text="password">Senha</span>
+                            <input name="password" type="password" data-role="password" placeholder="••••••••" autocomplete="current-password" maxlength="20" required>
+                        </label>
+                        <div class="login-checks">
+                            <label class="check">
+                                <input type="checkbox" data-role="remember">
+                                <span data-text="remember">Lembrar conta</span>
+                            </label>
+                            <label class="check">
+                                <input type="checkbox" data-role="stay-connected">
+                                <span data-text="stayConnected">Manter conectado</span>
+                            </label>
+                        </div>
+                        <p class="card-message" data-role="message" role="status" aria-live="polite"></p>
+                        <button type="submit" class="card-button" data-role="submit" data-text="submit">Entrar</button>
+                    </form>
+                    <nav class="card-links" aria-label="Conta">
+                        <a href="/suporte" data-text="forgotPassword" data-recovery="password">Esqueci a senha</a>
+                        <span aria-hidden="true">·</span>
+                        <a href="/suporte" data-text="forgotId" data-recovery="id">Esqueci o ID</a>
+                    </nav>
+                    <nav class="card-links card-links-strong" aria-label="Site">
+                        <a href="/cadastro" data-text="register" data-role="open-register">Criar conta</a>
+                        <span aria-hidden="true">·</span>
+                        <a href="/inicio" data-text="leave">Sair</a>
+                    </nav>
+                    <a class="card-button card-button-outline" href="/download">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v11H3zM8 20h8M12 16v4"/></svg>
+                        <span data-text="install">Instalar no PC</span>
+                    </a>
+                </section>
+
+                @* After the login form: the worlds of /api/worlds, each with its status, ping and players (its game server's
+                   /status). Choosing one logs in on its server. *@
+                <section class="card-worlds auth-view" data-role="worlds" aria-labelledby="worlds-title" hidden>
+                    <p class="card-kicker" data-text="servers">Servidores</p>
+                    <h1 class="card-title" id="worlds-title" data-text="chooseWorld">Escolha o mundo</h1>
+                    <div class="card-ornament" aria-hidden="true"><span></span></div>
+                    <p class="card-subtitle" data-role="worlds-account"></p>
+                    <ul class="world-list" data-role="world-list"></ul>
+                    <p class="card-message" data-role="worlds-message" role="status" aria-live="polite"></p>
+                    <button type="button" class="card-back" data-role="switch-account">‹ <span data-text="switchAccount">Trocar de conta</span></button>
+                </section>
+            </div>
+
+            <dialog class="card card-framed card-recovery" data-role="recovery" aria-labelledby="recovery-title"
+                    aria-describedby="recovery-info">
+                <partial name="_LoginCorners" />
+                <div class="recovery-content">
+                    <p class="recovery-eyebrow" data-text="recoverAccount">Recuperar conta</p>
+                    <h2 class="card-title" id="recovery-title" data-role="recovery-title"></h2>
+                    <div class="card-ornament" aria-hidden="true"><span></span></div>
+                    <p class="recovery-info" id="recovery-info" data-role="recovery-info"></p>
+                    <form data-role="recovery-form" method="dialog">
+                        <label class="field">
+                            <span data-role="recovery-label"></span>
+                            <input data-role="recovery-input" required autofocus>
+                        </label>
+                        <p class="card-message" data-role="recovery-message" aria-live="polite"></p>
+                        <div class="recovery-actions">
+                            <button type="submit" class="card-button" data-role="recovery-submit"></button>
+                            <button type="button" class="card-button card-button-outline" data-role="recovery-cancel"
+                                    data-text="cancel">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </dialog>
+
+            @* "Criar conta" over the scene: posts to RegistrationApi (/api/conta). The terms must be scrolled to their end
+               before they can be accepted; the Cloudflare check shows only when Security:Turnstile* is configured. *@
+            <section class="card card-framed card-register" data-role="register" aria-labelledby="register-title" hidden>
+                <partial name="_LoginCorners" />
+                <div class="register-content">
+                    <h1 class="card-title" id="register-title">Criar conta</h1>
+                    <div class="card-ornament" aria-hidden="true"><span></span></div>
+                    <form data-role="register-form" autocomplete="on" novalidate>
+                        <label class="field">
+                            <span>Conta</span>
+                            <input name="account" data-field="account" autocomplete="username" maxlength="@AccountRules.MaxNameLength" spellcheck="false"
+                                   autocapitalize="off" placeholder="@AccountRules.MinNameLength a @AccountRules.MaxNameLength letras ou números">
+                        </label>
+                        <label class="field">
+                            <span>E-mail</span>
+                            <input name="email" type="email" data-field="email" autocomplete="email" maxlength="@AccountRules.MaxEmailLength"
+                                   placeholder="voce@exemplo.com">
+                        </label>
+                        <label class="field">
+                            <span>Senha</span>
+                            <input name="password" type="password" data-field="password" autocomplete="new-password" maxlength="@AccountRules.MaxPasswordLength"
+                                   placeholder="@AccountRules.MinPasswordLength a @AccountRules.MaxPasswordLength caracteres">
+                        </label>
+                        <label class="field">
+                            <span>Confirmar senha</span>
+                            <input name="confirmation" type="password" data-field="confirmation" autocomplete="new-password"
+                                   maxlength="@AccountRules.MaxPasswordLength" placeholder="Repita a senha">
+                        </label>
+                        <label class="field">
+                            <span>Código de indicação (opcional)</span>
+                            <input name="referral" data-field="referral" maxlength="@AccountRules.MaxReferralCodeLength" spellcheck="false"
+                                   autocapitalize="characters" placeholder="QUEM TE CONVIDOU?">
+                        </label>
+                        @* Never shown: a form that fills it was sent by a bot. *@
+                        <input class="trap" name="site" data-field="site" tabindex="-1" autocomplete="off" aria-hidden="true">
+                        <div class="field">
+                            <span>Termos de uso</span>
+                            <div class="terms" data-role="terms" tabindex="0" aria-label="Regulamento geral e termos de uso">
+                                @foreach (var block in Terms.Blocks)
+                                {
+                                    switch (block.Kind)
+                                    {
+                                        case TermsBlockKind.Title:
+                                            <h2 class="terms-title">@block.Text</h2>
+                                            break;
+                                        case TermsBlockKind.Subtitle:
+                                            <p class="terms-subtitle">@block.Text</p>
+                                            break;
+                                        case TermsBlockKind.Notice:
+                                            <p class="terms-notice">@block.Text</p>
+                                            break;
+                                        case TermsBlockKind.Heading:
+                                            <h3 class="terms-heading">@block.Text</h3>
+                                            break;
+                                        default:
+                                            <p>@block.Text</p>
+                                            break;
+                                    }
+                                }
+                            </div>
+                        </div>
+                        <p class="terms-hint" data-role="terms-hint">Role o texto até o fim para poder aceitar.</p>
+                        <label class="check check-terms">
+                            <input type="checkbox" data-field="terms" data-role="terms-accept" disabled>
+                            <span>Li e aceito os Termos de Uso</span>
+                        </label>
+                        @if (Turnstile.Enabled)
+                        {
+                            <div class="cf-turnstile register-check" data-sitekey="@Turnstile.SiteKey" data-theme="dark" data-language="pt-br"></div>
+                        }
+                        <p class="card-message" data-role="register-message" role="status" aria-live="polite"></p>
+                        <div class="register-actions">
+                            <button type="submit" class="card-button" data-role="register-submit">Criar conta</button>
+                            <button type="button" class="card-button card-button-outline" data-role="register-cancel">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+            @if (Turnstile.Enabled)
+            {
+                <script src="@Turnstile.ScriptAddress" async defer></script>
+            }
+
+            @* The character screen over the 3D stage (CharacterSelectScreen.Web.cs reports its state; main.js draws it):
+               the list ("Seus heróis") and the creation's steps (tribe, class, appearance and name). The stage between
+               the panels still takes clicks. *@
+            <section class="heroes" data-role="heroes" data-screen="roster" hidden>
+                <header class="heroes-head">
+                    <p class="card-kicker" data-role="heroes-kicker"></p>
+                    <h1 class="heroes-title" data-role="heroes-title"></h1>
+                    <ol class="heroes-steps" data-role="heroes-steps"></ol>
+                </header>
+                <aside class="card heroes-panel heroes-roster" data-role="roster-panel"></aside>
+                <aside class="card heroes-panel heroes-info" data-role="info-panel"></aside>
+                <div class="heroes-tribes" data-role="tribe-row"></div>
+                <div class="heroes-classes" data-role="class-row"></div>
+                <aside class="card heroes-panel heroes-appearance" data-role="appearance-panel"></aside>
+                <p class="heroes-message" data-role="heroes-message" role="status" aria-live="polite"></p>
+                <footer class="heroes-actions" data-role="heroes-actions"></footer>
+            </section>
+
+            <div class="game-loading" data-role="loading" role="status" aria-live="polite">
+                <img class="loading-emblem" src="~/img/emblem-256.png" alt="" width="80" height="80">
+                <progress data-role="progress" max="100" aria-label="Carregamento do jogo"></progress>
+                <span data-role="status">Carregando o jogo…</span>
+            </div>
+            <script type="module" src="@BrowserClient.EntryScript"></script>
+        }
+    </div>
+</body>
+</html>

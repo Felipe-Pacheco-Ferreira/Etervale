@@ -666,7 +666,13 @@ internal sealed class PresenceDecoder : IEventHandleReader
         foreach (var item in items)
         {
             var key = item.Gold ? ItemCodes.GoldKey : ItemCodes.KeyOf(item.ItemCode);
-            added.Add(new GroundDropView(item.Id, item.ItemCode, key, item.Name, item.Amount, item.Gold, Position(item.X, item.Y, item.Z)));
+            added.Add(new GroundDropView(item.Id, item.ItemCode, key, item.Name, item.Amount, item.Gold, Position(item.X, item.Y, item.Z))
+            {
+                HasEquipmentDetails = item.HasEquipmentDetails,
+                RequiredLevel = item.RequiredLevel,
+                SpecJob = item.SpecJob,
+                Rare = item.Rare
+            });
         }
 
         return new PresenceUpdate(_tick, [], [], [], [], FieldId) { GroundAdded = added };

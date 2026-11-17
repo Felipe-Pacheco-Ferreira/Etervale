@@ -27,7 +27,7 @@ internal static class BinaryProtocolTests
         yield return ("TLS connections deliver frames in order, coalesce sends and check the server certificate", ConnectionAsync);
         yield return ("a connection counts its backlog until the stream takes it, and a batch of sends leaves in one write", BacklogAsync);
         yield return ("a connection whose backlog stops draining closes as stalled", StallAsync);
-        yield return ("a server address takes a host, host:port or tcp:// form, the game port when none is given", ServerAddressAsync);
+        yield return ("a server address takes a host, host:port or tcp:// form, the game port when none is given, or a wss:// WebSocket address", ServerAddressAsync);
         yield return ("operation results carry their line as a game text, and more arguments than its field holds are refused", GameTextAsync);
     }
 
@@ -278,7 +278,12 @@ internal static class BinaryProtocolTests
         var pinned = TlsTransport.ParseAddress($"[::1]?cert={pin}");
         Assert.True(pinned.Port == TlsTransport.DefaultPort && pinned.Query == $"?cert={pin}", $"an IPv6 address with a pin became {pinned}");
         Assert.True(TlsTransport.ParseAddress(pinned.AbsoluteUri) == pinned, "a parsed address did not parse to itself");
-        foreach (var invalid in new[] { "", "http://play.example.com", "play.example.com:0", "play.example.com:99999", "play.example.com?cert=zz", $"host?cert={pin}00" })
+        var web = TlsTransport.ParseAddress("wss://play.example.com/game");
+        Assert.True(WebSocketTransport.Carries(web) && web.Port == 443 && web.AbsolutePath == "/game", $"a WebSocket address became {web}");
+        Assert.True(WebSocketTransport.Carries(TlsTransport.ParseAddress("ws://127.0.0.1:10010/game")) && !WebSocketTransport.Carries(local),
+            "a local plain WebSocket address, or a TLS address taken for one");
+        foreach (var invalid in new[] { "", "http://play.example.com", "play.example.com:0", "play.example.com:99999", "play.example.com?cert=zz", $"host?cert={pin}00",
+            "ws://play.example.com/game", $"wss://play.example.com/game?cert={pin}" })
         {
             Assert.Throws<ArgumentException>(() => TlsTransport.ParseAddress(invalid), $"\"{invalid}\" was accepted as a server address");
         }
@@ -290,7 +295,7 @@ internal static class BinaryProtocolTests
     {
         using var socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
         var stream = new GatedStream();
-        await using var connection = new FrameConnection(socket, stream);
+        await using var connection = new FrameConnection(stream, TransportLink.Of(socket));
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         var run = connection.RunAsync(_ => ValueTask.CompletedTask, timeout.Token);
         var buffer = new byte[HeartbeatPacket.Size];
@@ -318,7 +323,7 @@ internal static class BinaryProtocolTests
     private static async Task StallAsync()
     {
         using var socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
-        await using var connection = new FrameConnection(socket, new GatedStream());
+        await using var connection = new FrameConnection(new GatedStream(), TransportLink.Of(socket));
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         var run = connection.RunAsync(_ => ValueTask.CompletedTask, timeout.Token);
         var buffer = new byte[HeartbeatPacket.Size];

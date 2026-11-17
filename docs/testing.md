@@ -51,7 +51,7 @@ Default case files by area (all `tests/PristonTale.Tests/<Name>.cs`):
 | Puzzles | `PuzzleTests` | Lucky bag seal and reveal, board completion and exchange, sealed ground drops |
 | Equipment | `EquipmentTests`, `RangedEquipmentTests` | Catalog rules, hands, class masks, bone attachments |
 | Item rules | `ItemRulesTests` | Wearable slots, requirements, two-handed swaps, drop and shop rolls, the item stat pipeline, block, carried weight, saved rolls, item details on the wire, item reader |
-| Protocol | `BinaryProtocolTests`, `ClientTests`, `NetworkHardeningTests` | Message layouts, framing, TLS and certificate checks, send backlog and batches, presence, abuse limits, connection caps |
+| Protocol | `BinaryProtocolTests`, `ClientTests`, `NetworkHardeningTests`, `WebSocketEdgeTests` | Message layouts, framing, TLS and certificate checks, send backlog and batches, presence, abuse limits, connection caps, the WebSocket edge (login, origin check, settings) |
 | World tick | `WorldTickTests` | The tick's absolute timeline: late ticks caught up, stalls skipped |
 | Starter gifts | `StarterGiftTests` | A new character's gifts: order, pace, perfect copies of its class's specialization worn or kept, the class's own weapon family and off-hand, chat line, stored count |
 | Multiplayer | `MultiplayerMovementTests`, `MultiplayerCombatTests`, `MultiplayerPresenceTests`, `MultiplayerSessionTests`, `MultiplayerSocialTests`, `PresencePipelineTests` | Propagation between real clients over TCP (see Multiplayer propagation); frames, shared encoding, revisions, crowd cap, event ticks, grid, status book |

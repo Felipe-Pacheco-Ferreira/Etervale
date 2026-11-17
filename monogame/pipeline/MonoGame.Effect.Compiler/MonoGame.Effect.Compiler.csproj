@@ -18,4 +18,10 @@
   <ItemGroup>
     <ProjectReference Include="../../framework/MonoGame.Framework/MonoGame.Framework.Native.csproj" Private="false" PrivateAssets="all" />
   </ItemGroup>
+
+  <!-- Slang for the WebGPU profile (issue 022), fetched by ../fetch-slang.sh or .ps1 into ../tools/slang (git-ignored). -->
+  <ItemGroup>
+    <None Include="../tools/slang/bin/**" Link="slang/bin/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+    <None Include="../tools/slang/lib/**" Link="slang/lib/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+  </ItemGroup>
 </Project>

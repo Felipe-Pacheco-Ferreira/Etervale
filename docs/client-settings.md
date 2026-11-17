@@ -27,7 +27,8 @@ the in-game Settings panel, and how a change reaches the display, the renderer a
 | `Client/PristonTale/Display/DisplayController.cs` | Window mode, back-buffer size and vertical sync through the Vulkan platform. |
 | `Client/PristonTale.Engine3D/Rendering/WindowPlacement.cs` | Where the windowed window goes: centred on the primary monitor, or its saved position while the title bar stays on screen (`DisplayController` applies it and maximizes a window that was). |
 | `Client/PristonTale/Display/DisplayValidationProbe.cs` | `--validate-display REPORT.json`: cycles display configurations and checks pacing. |
-| `Client/PristonTale.Gameplay/UI/Widgets/HudSettingsPanel.cs` | The in-game Settings panel (system menu, entry Settings). |
+| `Client/PristonTale.Gameplay/UI/Widgets/HudSettingsPanel.cs` | The in-game Settings panel (system menu, entry Settings): rows, clicks and labels. |
+| `Client/PristonTale.Gameplay/UI/Widgets/HudSettingsPanel.Drawing.cs` | How the panel is drawn: icon tabs, two titled cards, switches, drop-down value boxes, footer buttons. |
 | `Client/PristonTale.Gameplay/UI/DisplayConfirmation.cs` | Confirm (Enter or button) / revert (Escape or button) prompt of a display change. |
 | `Client/PristonTale.Engine3D/Rendering/PristonRenderer.cs` (`ApplyQuality`) | Reads the rendering fields when `RenderingChanged` fires. |
 | `tests/PristonTale.Tests/ClientSettingsTests.cs`, `PhotorealTests.cs` | Validation, older fog booleans, persistence, invalid documents, pacing; preset contents. |
@@ -144,6 +145,9 @@ forward, Shift+click backward. Resolution offers only the sizes the primary moni
 when windowed, and none when borderless (it covers the desktop). Graphics quality cycles Low, Medium, High, Ultra;
 from `Custom` it goes to Low (forward) or Ultra (backward). Anti-aliasing, Sun shadow, Shadow animation and Shadows set
 `quality` to `Custom`. Rows are inert while a display change awaits confirmation.
+
+A row whose label ends in on or off is drawn as a switch, any other "Name: value" row as the name with the value in a
+drop-down box, and a row with no value as a button. Every row still reacts to a click anywhere on it.
 
 ## Apply and confirm
 

@@ -36,6 +36,11 @@ public sealed class HudChat
 
     // Raised when the server asks the client to save and quit.
     public event Action CloseRequested;
+    internal Action<ChatLineInfo> VoiceFrame { get; set; }
+    internal Func<string, bool> GlobalBonusLine { get; set; }
+    internal Func<string, bool> TicketLine { get; set; }
+    internal Func<string, bool> ServerLine { get; set; }
+    internal Func<ChatLineInfo, bool> HideLine { get; set; }
 
     public bool KeyboardCaptured => Window.Focused;
 
@@ -54,7 +59,41 @@ public sealed class HudChat
 
     public void Receive(ChatLineInfo line, double nowMs)
     {
+        if (line.Kind == ChatKind.Voice)
+        {
+            VoiceFrame?.Invoke(line);
+            return;
+        }
+
+        if (HideLine?.Invoke(line) == true)
+        {
+            return;
+        }
+
+        if (line.Kind is ChatKind.CalendarEvent or ChatKind.GlobalBuff)
+        {
+            var portuguese = ClientText.Language == "pt-BR";
+            var message = (line.Kind, line.Text) switch
+            {
+                (ChatKind.CalendarEvent, "crystals:0") => portuguese ? "Evento de cristais desativado." : "Crystal event disabled.",
+                (ChatKind.CalendarEvent, "crystals:1") => portuguese ? "Evento de cristais: das 12h à meia-noite." : "Crystal event: noon to midnight.",
+                (ChatKind.CalendarEvent, "crystals:2") => portuguese ? "Evento de cristais: o dia inteiro." : "Crystal event: all day.",
+                (ChatKind.CalendarEvent, "drops") => portuguese ? "Os drops de evento mudaram. Consulte o calendário." : "Event drops changed. Check the calendar.",
+                (ChatKind.GlobalBuff, "aging") => portuguese ? "As condições globais de Aging mudaram." : "Global Aging settings changed.",
+                (ChatKind.GlobalBuff, "mixing") => portuguese ? "As condições globais de Mix e Alquimia mudaram." : "Global mixing and alchemy settings changed.",
+                (ChatKind.CalendarEvent, _) => portuguese ? $"Evento de EXP: {line.Text}%." : $"EXP event: {line.Text}%.",
+                _ => portuguese ? $"Multiplicador global de EXP: {line.Text}x." : $"Global EXP multiplier: {line.Text}x."
+            };
+            Window.Log.Add(message, ChatKind.Notice);
+            return;
+        }
+
         var text = line.Line.IsNone ? line.Text : ClientText.Format(line.Line);
+        if (line.Kind == ChatKind.Server && (GlobalBonusLine?.Invoke(text) == true || TicketLine?.Invoke(text) == true || ServerLine?.Invoke(text) == true))
+        {
+            return;
+        }
+
         var (kind, _) = line.SpeakerId == 0 ? (EntityKind.None, 0u) : Lookup(line.SpeakerId);
         if (kind != EntityKind.None && line.Kind != ChatKind.Party)
         {

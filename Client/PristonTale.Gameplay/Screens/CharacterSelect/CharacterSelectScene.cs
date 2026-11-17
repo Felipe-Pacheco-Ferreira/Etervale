@@ -18,7 +18,15 @@ internal sealed class CharacterSelectScene
 {
     internal static (float X, float Z) JobCharacterPos(int index, int count) => CharacterSelectStage.LineupPosition(index, count);
 
-    private (float X, float Z) JobSlot(int jobIndex) => JobCharacterPos(_jobActors[jobIndex].SlotIndex, _jobActors.Count);
+    private const float WebLineupSpacing = 0.70f;
+
+    private (float X, float Z) JobSlot(int jobIndex) => JobSlot(_jobActors[jobIndex].SlotIndex, _jobActors.Count);
+
+    private (float X, float Z) JobSlot(int index, int count)
+    {
+        var (x, z) = JobCharacterPos(index, count);
+        return (_camera.UsesWebBackdrop ? x * WebLineupSpacing : x, z);
+    }
 
     private const float HitHeadHeight = CharacterSelectStage.PickHeight;
     private const float HitHalfWidthPixels = CharacterSelectStage.PickHalfWidthPixels;
@@ -55,6 +63,7 @@ internal sealed class CharacterSelectScene
     private float _jobMoveYaw;
     private float _jobTargetX, _jobTargetZ;
     private int _forwardSubject = -1;
+    private float _previewYaw;
     private int _rosterHover = -1;
     private int _rosterSelection = -1;
     private int _jobHover = -1;
@@ -166,7 +175,7 @@ internal sealed class CharacterSelectScene
                 _assetRoot,
                 visuals,
                 0,
-                SlotWorld(JobCharacterPos(i, jobs.Count)),
+                SlotWorld(JobSlot(i, jobs.Count)),
                 MotionCode.Stand);
             ApplySelectPose(handles);
             _jobActors.Add(new JobActor(jobs[i], i, visuals, handles));
@@ -224,6 +233,7 @@ internal sealed class CharacterSelectScene
 
         CompleteActiveSlide();
         _forwardSubject = jobIndex;
+        _previewYaw = 0f;
         var slot = JobSlot(jobIndex);
         StartSlide(
             jobIndex,
@@ -252,6 +262,10 @@ internal sealed class CharacterSelectScene
         var active = _jobMoverIndex >= 0;
         var startX = active ? _jobMoveX : 0f;
         var startZ = active ? _jobMoveZ : JobRestZ;
+        if (!active)
+        {
+            _jobMoveYaw = _previewYaw;
+        }
         StartSlide(
             jobIndex,
             startX,
@@ -416,10 +430,23 @@ internal sealed class CharacterSelectScene
         if (jobIndex == _forwardSubject)
         {
             var active = _jobMoverIndex >= 0;
-            return SlotWorld((active ? _jobMoveX : 0f, active ? _jobMoveZ : JobRestZ), active ? _jobMoveYaw : 0f);
+            return SlotWorld((active ? _jobMoveX : 0f, active ? _jobMoveZ : JobRestZ), active ? _jobMoveYaw : _previewYaw);
         }
         return SlotWorld(JobSlot(jobIndex));
     }
+
+    internal void RotateForwardJob(float yaw)
+    {
+        if (yaw == 0f || _forwardSubject < 0 || _jobMoverIndex >= 0)
+        {
+            return;
+        }
+
+        _previewYaw = MathHelper.WrapAngle(_previewYaw + yaw);
+        SetHandlesWorld(_jobActors[_forwardSubject].Handles, CurrentJobActorWorld(_forwardSubject));
+    }
+
+    internal Vector3 PreviewFootWorld(int index) => CurrentJobActorWorld(index).Translation;
 
     // scale: how many times the desktop's pick box a character answers in (a finger needs a wider one than a cursor).
     public int PickRoster(Vector2 cursor, Viewport viewport, float scale = 1f) =>
@@ -546,6 +573,19 @@ internal sealed class CharacterSelectScene
             offHand: "",
             summary.InVillage,
             definition.MotionJobMask);
+        if (_camera.UsesWebBackdrop)
+        {
+            var defaults = definition.DefaultVisuals;
+            if (AssetFiles.ResolveFile(_assetRoot, visuals.Body.InxExtensionPath) is null)
+            {
+                visuals = visuals with { Body = defaults.Body };
+            }
+
+            if (AssetFiles.ResolveFile(_assetRoot, CharacterFace.ResolveHeadPath(visuals, summary.FaceIndex)) is null)
+            {
+                visuals = visuals with { Head = defaults.Head, FaceIndex = defaults.FaceIndex };
+            }
+        }
         return true;
     }
 
@@ -559,7 +599,7 @@ internal sealed class CharacterSelectScene
         };
     }
 
-    private static IReadOnlyList<PlayerClass> JobsForBrood(CharacterBrood brood)
+    internal static IReadOnlyList<PlayerClass> JobsForBrood(CharacterBrood brood)
     {
         return brood == CharacterBrood.Morion ? CharacterSelectArt.MorionLineup : CharacterSelectArt.TempskronLineup;
     }
@@ -602,13 +642,27 @@ internal sealed class CharacterSelectScene
         }
     }
 
-    private Vector3 RosterFootWorld(int i)
+    internal Vector3 RosterFootWorld(int i)
     {
         var slot = _placed[i].Slot;
         return SlotToWorld(slot, ResolveFloorY(slot));
     }
 
-    private Vector3 JobFootWorld(int i)
+    internal void SetRosterHidden(int index, bool hidden) => SetHandlesHidden(_placed[index].Handles, hidden);
+
+    internal void SetJobHidden(int index, bool hidden) => SetHandlesHidden(_jobActors[index].Handles, hidden);
+
+    private void SetHandlesHidden(PlayerActorHandles actors, bool hidden)
+    {
+        Span<ActorHandle> handles = stackalloc ActorHandle[PlayerActorHandles.Most];
+        var count = actors.CopyTo(handles);
+        foreach (var handle in handles[..count])
+        {
+            _actorScene.SetActorHidden(handle, hidden);
+        }
+    }
+
+    internal Vector3 JobFootWorld(int i)
     {
         var slot = JobSlot(i);
         return SlotToWorld(slot, ResolveFloorY(slot));

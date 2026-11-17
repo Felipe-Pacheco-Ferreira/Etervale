@@ -127,6 +127,8 @@ public sealed class PristonAudioLibrary : IDisposable
     public SoundEffect ThunderSound { get; private set; }
     public bool MusicEnabled { get; private set; } = true;
     public bool SoundEnabled { get; private set; } = true;
+    public float MusicGain { get; private set; } = 1f;
+    public float SoundGain { get; private set; } = 1f;
     public int AmbientCount => _ambients.Length;
     public int FieldAmbientCount => _fieldAmbients.Length;
     public int NpcSoundCount => _npcSoundCount;
@@ -264,6 +266,8 @@ public sealed class PristonAudioLibrary : IDisposable
         ArgumentNullException.ThrowIfNull(settings);
         MusicEnabled = settings.MusicEnabled;
         SoundEnabled = settings.SoundEnabled;
+        MusicGain = Math.Clamp(settings.MusicVolumePercent, 0, 100) / 100f;
+        SoundGain = Math.Clamp(settings.SoundVolumePercent, 0, 100) / 100f;
     }
 
     private SoundEffect Load(string assetRoot, string relativePath, Dictionary<string, SoundEffect> byPath)

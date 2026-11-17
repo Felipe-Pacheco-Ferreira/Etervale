@@ -18,6 +18,9 @@ namespace PristonTale.Gameplay.World;
 // and friend buttons. Letting the keys go stops the walk and the attack. The mouse keeps its usual clicks.
 public sealed partial class GameScene
 {
+    private Func<Keys, Keys> _cameraKeyResolver;
+    private Keys ResolveCameraKey(Keys action) => HudSettingsPanel.CameraKey(_presentation.Requested, action);
+
     private const double DashTapMs = 500;
 
     // A target stands within AimDepth of the player's line; a drop within LootDepth of it and LootReach along it.
@@ -80,7 +83,10 @@ public sealed partial class GameScene
             }
 
             _camera.Update(gameTime, _graphicsDevice, _playerBody.Position, _playerForward, _fieldCollision, PointerCaptured, CameraInputEnabled,
-                keysEnabled: !KeyboardCaptured);
+                keysEnabled: !KeyboardCaptured, resolveKey: _cameraKeyResolver ??= ResolveCameraKey,
+                sideButtons: _presentation.Requested.CameraMouseButtons, mouse4: _presentation.Requested.CameraMouse4,
+                mouse5: _presentation.Requested.CameraMouse5, invertOrbit: _presentation.Requested.InvertCameraOrbit,
+                invertScroll: _presentation.Requested.InvertCameraScroll);
             return;
         }
 

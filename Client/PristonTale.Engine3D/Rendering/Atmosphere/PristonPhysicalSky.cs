@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Graphics.PackedVector;
 using PristonTale.Engine3D.Diagnostics;
 using PristonTale.Engine3D.Rendering.Post;
 
@@ -71,7 +72,11 @@ public sealed class PristonPhysicalSky : IDisposable
     private readonly RenderTarget2D _multiple;
     private readonly RenderTarget2D _skyView;
     private readonly RenderTarget2D _cloudShadow;
-    private readonly Texture3D _noise;
+    // The clouds' noise volume is generated once per process (it is a few hundred million operations) and uploaded the
+    // first time the physical sky updates, so a renderer whose sky stays on the domes (the browser's Low preset) never
+    // pays for it.
+    private static readonly Lazy<HalfVector4[]> NoiseTexels = new(() => PristonCloudNoise.Generate(PristonCloudNoise.SizeHere));
+    private Texture3D _noise;
     private RenderTarget2D _clouds;
     private RenderTarget2D _cloudsHistory;
     private RenderTarget2D _cloudsUpdate;
@@ -91,8 +96,6 @@ public sealed class PristonPhysicalSky : IDisposable
         _skyView = Target(SkyViewWidth, SkyViewHeight);
         _cloudShadow = new RenderTarget2D(device, CloudShadowSize, CloudShadowSize, false, SurfaceFormat.Color, DepthFormat.None, 0,
             RenderTargetUsage.PreserveContents);
-        _noise = new Texture3D(device, PristonCloudNoise.Size, PristonCloudNoise.Size, PristonCloudNoise.Size, false, SurfaceFormat.HalfVector4);
-        _noise.SetData(PristonCloudNoise.Generate());
     }
 
     // The clouds' transmittance toward the sun over CloudShadowExtent km around the camera, and how surfaces read it
@@ -122,6 +125,13 @@ public sealed class PristonPhysicalSky : IDisposable
         Set("MultipleLut", _multiple);
         Pass(_skyView, "SkyView");
         Set("SkyViewLut", _skyView);
+        if (_noise is null)
+        {
+            var noiseSize = PristonCloudNoise.SizeHere;
+            _noise = new Texture3D(_device, noiseSize, noiseSize, noiseSize, false, SurfaceFormat.HalfVector4);
+            _noise.SetData(NoiseTexels.Value);
+        }
+
         Set("CloudNoise", _noise);
 
         // The hemisphere's texels around the horizon (four times as many up to the zenith's share of the height).
@@ -238,7 +248,7 @@ public sealed class PristonPhysicalSky : IDisposable
         _multiple.Dispose();
         _skyView.Dispose();
         _cloudShadow.Dispose();
-        _noise.Dispose();
+        _noise?.Dispose();
         _clouds?.Dispose();
         _cloudsHistory?.Dispose();
         _cloudsUpdate?.Dispose();

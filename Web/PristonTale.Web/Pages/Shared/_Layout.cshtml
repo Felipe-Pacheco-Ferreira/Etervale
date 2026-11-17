@@ -3,7 +3,7 @@
 @{
     var status = Monitor.Current;
     var title = ViewData["Title"] as string;
-    var description = ViewData["Description"] as string ?? "Priston Avalon: o servidor Etervale. Baixe o jogo para Android, crie sua conta e acompanhe rankings e eventos.";
+    var description = ViewData["Description"] as string ?? "Priston Avalon, MMORPG de fantasia. Jogue no navegador ou no Android e acompanhe os rankings e eventos.";
     var signedIn = User.Identity?.IsAuthenticated == true;
 }
 <!DOCTYPE html>
@@ -23,7 +23,7 @@
     <a class="skip" href="#conteudo">Ir para o conteúdo</a>
     <header class="topbar">
         <div class="topbar-inner">
-            <a class="brand" href="/">
+            <a class="brand" href="/inicio">
                 <img src="~/img/emblem-256.png" alt="" width="40" height="40">
                 <span>@Settings.Site.Name</span>
             </a>
@@ -48,7 +48,7 @@
         <div class="footer-inner">
             <div class="footer-brand">
                 <img src="~/img/emblem-256.png" alt="" width="28" height="28">
-                <span>@Settings.Site.Name · servidor Etervale</span>
+                <span>@Settings.Site.Name</span>
             </div>
             <nav aria-label="Rodapé">
                 <a href="/noticias">Notícias</a>

@@ -40,13 +40,14 @@ shows comes from server snapshots.
 | `Persistence/PristonTale.Persistence.Abstractions` | library | Repository interfaces and persisted records |
 | `Persistence/PristonTale.Persistence` | library | Dapper repositories, FluentMigrator migrations |
 | `Persistence/PristonTale.Persistence.Sqlite`, `.Postgres` | library | Provider wiring (`AddPristonSqlite`, `AddPristonPostgres`) |
-| `Server/PristonTale.Server` | exe | Generic host, DI composition, hosted services (migrations, catalog and terrain load, tick, TCP server), TCP edge mapping packets to application calls |
+| `Server/PristonTale.Server` | exe | Generic host, DI composition, hosted services (migrations, catalog and terrain load, tick, TCP server and its optional WebSocket edge), network edge mapping packets to application calls |
 | `Web/PristonTale.Web` | exe | The public website (ASP.NET Core Razor Pages, HTTPS): news, download, server status, rankings, event calendar, registration, sign-in and the account's characters, over the game server's database ([website.md](website.md)) |
 | `Client/PristonTale.Engine3D` | library | Original asset formats, IO, renderer, lighting, post-processing, sky, client settings |
 | `Client/PristonTale.Effects` | library | Particles and data-driven VFX |
 | `Client/PristonTale.Client.Net` | library | Client side of the protocol: connection, presence decoding, world catalog from the server |
 | `Client/PristonTale.Gameplay` | library | Screens, game scene, HUD and windows, remote actors, audio, skill presentation |
 | `Client/PristonTale` | exe | `Game1`, display management, content build (shaders, fonts) |
+| `Client/PristonTale.Browser` | WebAssembly | The browser client, started by the website's `/jogar` page ([web-client.md](web-client.md)) |
 | `tests/PristonTale.Tests` | exe | Console regression runner (not `dotnet test`) |
 | `tools/*` | exe | Importer, dev accounts, smoke client, load test, asset dump, glTF export, world JSON |
 | `monogame/` | vendored | MonoGame 3.8.6 fork with the Vulkan backend, effect processor and native runtime |
@@ -71,6 +72,7 @@ reference nothing.
 | Client.Net | Protocol, Simulation (no Application: the client never ships the server's authority) |
 | Gameplay | Engine3D, Effects, Simulation, Client.Net, MonoGame framework |
 | PristonTale | Gameplay, MonoGame framework, effect processor |
+| Browser | Client.Net |
 | Tests | Gameplay, Server, Protocol, WorldImport, GltfExport |
 
 Consequences:

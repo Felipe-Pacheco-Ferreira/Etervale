@@ -33,6 +33,7 @@ where to look. Setup, build and run commands are in the root [README.md](../READ
 | [world-import.md](world-import.md) | `tools/PristonTale.WorldImport`: authored data formats, parsers, catalog import, verify |
 | [client.md](client.md) | Client app, screens, game scene, HUD and windows, remote actors, audio, client networking |
 | [android.md](android.md) | `Client/PristonTale.Android`: login, character selection, Ricarten; how a desktop screen is ported; baked data and packaging |
+| [web-client.md](web-client.md) | `Client/PristonTale.Browser`: the browser client in the website's "Jogar na Web" page, the WebSocket path, the chosen stack and the roadmap to the whole game on WebGPU |
 | [hud-design.md](hud-design.md) | The Android Vulkan HUD's design language: plates, gold, bezels, medallions, gauges, buttons, motion, placement |
 | [rendering.md](rendering.md) | `Client/PristonTale.Engine3D`: original formats, renderer passes, lighting, shadows, post-processing |
 | [shaders.md](shaders.md) | Shader library under `Client/PristonTale/Content/Shaders` |
@@ -61,6 +62,7 @@ The MonoGame fork documents itself in [monogame/README.md](../monogame/README.md
 | Change lighting, shadows or a render pass | rendering.md | shaders.md, client-settings.md |
 | Add a client option | client-settings.md | client.md |
 | Change the Android client or port a screen to it | android.md | client.md, tools.md |
+| Change the browser client or its WebSocket path | web-client.md | protocol.md, server.md, website.md |
 | Add a skill or hit effect | effects.md | skills.md |
 | Change a server setting or connection limit | server.md | protocol.md |
 | Change the website, its pages or its security | website.md | application.md, persistence.md |
@@ -75,7 +77,7 @@ The MonoGame fork documents itself in [monogame/README.md](../monogame/README.md
 | `Server/` | Game server host |
 | `Web/` | Public website |
 | `Persistence/` | Storage abstractions, repositories, migrations, providers |
-| `Client/` | Engine3D, Effects, Client.Net, Gameplay, the client executable, the Android client |
+| `Client/` | Engine3D, Effects, Client.Net, Gameplay, the client executable, the Android clients, the browser client |
 | `tests/` | Regression runner |
 | `tools/` | Importer and developer tools |
 | `monogame/` | Vendored MonoGame fork (Vulkan) |

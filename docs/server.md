@@ -17,7 +17,7 @@ layouts live in [protocol.md](protocol.md).
 
 | Path | Responsibility |
 | --- | --- |
-| [Program.cs](../Server/PristonTale.Server/Program.cs) | Generic host: `Host.CreateApplicationBuilder(args)`, `AddPristonServer()`, `Run()`. No HTTP endpoints. |
+| [Program.cs](../Server/PristonTale.Server/Program.cs) | Generic host: `Host.CreateApplicationBuilder(args)`, `AddPristonServer()`, `Run()`. No HTTP endpoints besides the optional WebSocket edge. |
 | [Hosting/HostingExtensions.cs](../Server/PristonTale.Server/Hosting/HostingExtensions.cs) | `AddPristonServer`: every DI registration, provider selection, `WorldServerOptions`, `DefaultGamePort` (10009, the default of `Network:Port`). |
 | `Hosting/DatabaseMigrationService.cs` | Hosted service: `IDatabaseMigrator.MigrateAsync` on start. |
 | `Hosting/GameLogService.cs` | Hosted service: the item transfer writer, the currency sinks every `Logs:CurrencyMinutes`, the server's start and stop, the daily prune. |
@@ -29,7 +29,8 @@ layouts live in [protocol.md](protocol.md).
 | `World/StarterGiftService.cs`, `World/SessionWork.cs` | `BackgroundService` reading `WorldServer.StarterGiftRequests` and running `StarterGiftAppService.GiveAsync`; `SessionWork` is the loop it shares with `QuestUpkeepService` (a few sessions at a time, a failure logged). |
 | `World/BellatraService.cs` | `BackgroundService` reading `WorldServer.BellatraPrizes` and paying each with `BellatraAppService.PayAsync`, one after another, and beside it storing each paid prize's points and income (`BellatraClanAppService.Records`, a refused storage logged) ([application.md](application.md#bellatra)). |
 | `World/QuestUpkeepService.cs` | `BackgroundService` reading `WorldServer.QuestUpkeepRequests` and running `QuestAppService.RunUpkeepAsync`, at most 8 players at a time ([quests.md](quests.md)). |
-| [Net/GameTcpServer.cs](../Server/PristonTale.Server/Net/GameTcpServer.cs) | Listener, connection and handshake caps (in all and per address), TLS handshake, one `ClientSession` per connection, housekeeping (idle/login timeouts, bandwidth log). |
+| [Net/GameTcpServer.cs](../Server/PristonTale.Server/Net/GameTcpServer.cs) | Listener, connection and handshake caps (in all and per address), TLS handshake, one `ClientSession` per connection (`RunSessionAsync`, shared by both edges), housekeeping (idle/login timeouts, bandwidth log). |
+| `Net/GameTcpServer.WebSocket.cs`, `Net/WebSocketEdgeSettings.cs` | The optional WebSocket edge for browser clients: its own Kestrel listener, origin check, the same caps and sessions ([WebSocket edge](#websocket-edge)). |
 | `Net/ServerCertificate.cs` | Loads the TLS certificate, or creates and stores a self-signed one. |
 | [Net/ClientSession.cs](../Server/PristonTale.Server/Net/ClientSession.cs) | Per-connection state machine: packet dispatch to application services and replies. |
 | `Net/ClientSession.Chat.cs` | The session's `IChatLink`: chat lines, forced warps, close requests and kicks from game masters. |
@@ -149,7 +150,13 @@ that limit; negative values stop startup. The game settings live in the database
 | `Network:Port` | 10009 | `GameTcpServer` | TCP game port, 0 to 65535; 0 binds a free port (in-process tests read it from `GameTcpServer.BoundPort`). The client always connects to 10009. |
 | `Network:Certificate:Path` | `data/server-certificate.pfx` | `ServerCertificate` | TLS certificate (PKCS#12); relative paths resolve from the solution root. Created self-signed when missing. |
 | `Network:Certificate:Password` | none | `ServerCertificate` | Password of the PKCS#12 file. |
-| `Network:HandshakeTimeoutSeconds` | 10 | `NetworkLimits` | Deadline of the TLS handshake of an accepted socket; at least 1. |
+| `Network:HandshakeTimeoutSeconds` | 10 | `NetworkLimits` | Deadline of the TLS handshake of an accepted socket (and of a WebSocket request's headers); at least 1. |
+| `Network:WebSocket:Enabled` | `false` | `WebSocketEdgeSettings` | Opens the WebSocket edge for browser clients; nothing below is read while it is off. |
+| `Network:WebSocket:Url` | `https://localhost:10010` | `WebSocketEdgeSettings` | Kestrel listen URL. `https://` serves `wss` with `CertificatePath`, or Kestrel's default (the ASP.NET development certificate) when none is set; `http://` serves plain `ws` and must be a loopback address (`http://127.0.0.1:<port>`), for a reverse proxy on the same machine that terminates TLS. Port 0 binds a free one (`GameTcpServer.WebSocketAddress`). |
+| `Network:WebSocket:Path` | `/game` | `WebSocketEdgeSettings` | The one path that upgrades; others answer 404. |
+| `Network:WebSocket:AllowedOrigins` | `[]` | `WebSocketEdgeSettings` | Page origins allowed to open the socket, as browsers send them (`https://site.example`, `https://localhost:5443`: no path, user or default port); a request from another origin answers 403. Requests without an `Origin` header (not browsers) are admitted. |
+| `Network:WebSocket:KnownProxies` | `[]` | `WebSocketEdgeSettings` | Reverse proxies whose `X-Forwarded-For` is believed, so limits count the player's address; loopback always is. |
+| `Network:WebSocket:CertificatePath`, `CertificatePassword` | none | `WebSocketEdgeSettings` | PKCS#12 certificate of the `https` listener; relative paths resolve like `Network:Certificate:Path`. Browsers need one they trust: the self-signed game certificate does not do. |
 | `Server:ReportSeconds` | 30 | `ReportInterval` | Period of the tick, TCP and character save report lines; at least 1. |
 | `Network:PacketLimit` | 251 | `NetworkLimits` | Packets per window before the connection closes (`DescribeEntity` excluded). |
 | `Network:PacketWindowSeconds` | 5 | `NetworkLimits` | Fixed window of the packet limit. |
@@ -231,6 +238,25 @@ experience, item event and aging values.
 5. On close: `ClosePlayAsync` leaves the world and stores the capture taken as it left, the session token is removed
    from the registry, the per-address slot is released and the connection is disposed.
 6. On shutdown every connection is closed with `server stopping` and awaited.
+
+### WebSocket edge
+
+Off unless `Network:WebSocket:Enabled`. `GameTcpServer` then starts a Kestrel listener of its own after the TLS
+listener binds (`WebApplication.CreateEmptyBuilder`: it reads no configuration source, every value comes from
+`Network:WebSocket:*`; the host stays a generic host). A request is handled in this order:
+
+1. `GET /status` answers `{ "players", "capacity" }` (players in the world, `MaxConnections` or 0) with `no-store`, and `Access-Control-Allow-Origin` for an `Origin` in `AllowedOrigins`: the site's world list reads it and times it as the ping.
+2. Forwarded headers from `KnownProxies` set the remote address; a path other than `Path` answers 404, a request that
+   is not an upgrade 426, an `Origin` outside `AllowedOrigins` 403 (sampled log).
+3. The same caps as a TCP socket (`MaxConnections`, `MaxHandshakes`, per-address handshakes and connections) answer
+   503 past their limit; Kestrel's upgraded connections are capped at `MaxConnections` too.
+4. Once the server is stopping, upgrades answer 503. Otherwise the upgrade is accepted, `WebSocketTransport.Accept` wraps it in a `FrameConnection`, and `RunSessionAsync` runs the
+   same `ClientSession` as for TCP: idle and login timeouts, packet limits, login throttle and shutdown apply unchanged.
+
+The edge is meant for one of two layouts: behind the site's reverse proxy, with `Url` on `http://127.0.0.1:<port>`, the
+proxy terminating TLS for `wss://<site host>/game` and listed in `KnownProxies`; or, on a development machine,
+`https://localhost:<port>` with the ASP.NET development certificate, which the browser trusts once `dotnet dev-certs
+https --trust` has run.
 
 ### Inbound packet mapping
 
@@ -357,7 +383,8 @@ of the regression suite ([testing.md](testing.md#multiplayer-propagation)):
 
 | Guard | Scope | Behaviour |
 | --- | --- | --- |
-| Connection caps | process-wide and per address | Sockets past `MaxConnections` open, `MaxHandshakes` handshakes in progress or `MaxHandshakesPerIp` handshakes from one address are closed before TLS. |
+| Connection caps | process-wide and per address | Sockets past `MaxConnections` open, `MaxHandshakes` handshakes in progress or `MaxHandshakesPerIp` handshakes from one address are closed before TLS; WebSocket requests past them answer 503. |
+| Origin check | WebSocket edge | A browser page whose origin is not in `Network:WebSocket:AllowedOrigins` cannot open the socket (403). |
 | `ConnectionLimiter` | per remote address, process-wide | Refuses sockets above `MaxConnectionsPerIp`; released when the session ends. |
 | `PacketRateLimiter` | per connection, fixed window | Counts every decoded packet except `DescribeEntity`; exceeding it closes with `packet flood`. |
 | `TokenBucket` | per connection | `DescribeEntity` beyond the bucket is dropped (a few-byte request costs a description of up to a few hundred bytes). |

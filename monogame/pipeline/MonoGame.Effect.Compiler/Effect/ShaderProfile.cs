@@ -15,10 +15,10 @@ using MonoGame.Effect.TPGParser;
 
 namespace MonoGame.Effect
 {
-    // Etervale fork: the effect compiler of Etervale's MonoGame fork builds for Vulkan only (monogame/pipeline/README.md).
-    // Upstream found its profiles (OpenGL, DirectX 11 and 12, Vulkan) by scanning the loaded assemblies
-    // (LoadedTypeCollection); here the one profile is a static instance, and the content processor maps the DesktopVK
-    // platform to it (SpirvEffectProcessor).
+    // Etervale fork: the effect compiler of Etervale's MonoGame fork builds for Vulkan and, for the browser runtime, WebGPU
+    // (monogame/pipeline/README.md). Upstream found its profiles (OpenGL, DirectX 11 and 12, Vulkan) by scanning the loaded
+    // assemblies (LoadedTypeCollection); here the profiles are static instances, and the content processor maps the
+    // DesktopVK platform to Vulkan and Web to WebGPU (SpirvEffectProcessor).
     [TypeConverter(typeof(StringConverter))]
     public abstract class ShaderProfile
     {
@@ -30,12 +30,19 @@ namespace MonoGame.Effect
 
         public static readonly ShaderProfile Vulkan = new VulkanShaderProfile();
 
+        // Etervale fork (issue 022): the browser runtime's profile, mapped from the Web platform.
+        public static readonly ShaderProfile WebGpu = new WebGpuShaderProfile();
+
         /// <summary>
         /// Returns all the loaded shader profiles.
         /// </summary>
         public static IEnumerable<ShaderProfile> All
         {
-            get { yield return Vulkan; }
+            get
+            {
+                yield return Vulkan;
+                yield return WebGpu;
+            }
         }
 
         /// <summary>

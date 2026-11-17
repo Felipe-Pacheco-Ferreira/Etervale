@@ -1,6 +1,7 @@
 using PristonTale.Application.Services;
 using PristonTale.Application.Sessions;
 using PristonTale.Application.World;
+using PristonTale.Assets;
 using PristonTale.Gameplay.Screens.CharacterSelect;
 using PristonTale.Gameplay.UI.Rendering;
 using PristonTale.Gameplay.World.Remote;
@@ -22,9 +23,27 @@ internal static class CharacterSelectTests
         yield return ("a character in play is not deleted; once released it is", DeleteInPlayAsync);
         yield return ("a new or moved character takes the account's lowest free slot, none past the sixth", FreeSlotAsync);
         yield return ("character-select roster and class positions preserve the original ordering", OriginalPlacementAsync);
+        yield return ("character-select web camera brings the chosen class forward and to the right", WebCreationCameraAsync);
         yield return ("character-select face layout scales the authored canvas uniformly", FaceLayoutAsync);
         yield return ("the Assassin, the Shaman and the Martial Artist use the original creation definitions and class facts", ExtendedClassDefinitionsAsync);
         yield return ("a text box takes the window's typed text, so a held Backspace or key repeats, and only while focused", TypedTextAsync);
+    }
+
+    private static Task WebCreationCameraAsync()
+    {
+        var lineupDistance = CharacterSelectStage.RailDistance(CharacterSelectStage.ClassStep);
+        var faceDistance = CharacterSelectStage.RailDistance(CharacterSelectStage.FaceStep);
+        var lineupZ = -CharacterSelectStage.LineupPosition(1, 5).Z;
+        var faceZ = -CharacterSelectStage.RestZ;
+        var (nativeEye, nativeTarget) = CharacterSelectCamera.Pose(faceDistance, 0f);
+        var (lineupEye, lineupTarget) = CharacterSelectCamera.Pose(lineupDistance, 0f, webBackdrop: true);
+        var (faceEye, faceTarget) = CharacterSelectCamera.Pose(faceDistance, 0f, webBackdrop: true);
+        Assert.True(nativeTarget.X == 0f && MathF.Abs((nativeEye - nativeTarget).Length() - faceDistance) < 0.01f,
+            "the native rail keeps its original face pose");
+        Assert.True(lineupTarget.X < lineupEye.Z - lineupZ && lineupEye.Z > lineupZ, "the lineup is framed from in front");
+        Assert.True(faceTarget.X < 0f && faceTarget.Y < lineupTarget.Y && faceEye.Z - faceZ < lineupEye.Z - lineupZ,
+            "the forward subject comes closer and to the right of the web camera");
+        return Task.CompletedTask;
     }
 
     private static Task FreeSlotAsync()

@@ -17,6 +17,29 @@ public sealed class NewsFeed(string path)
 
     public static NewsFeed Load(string path) => new(path);
 
+    public void Publish(NewsItem item)
+    {
+        lock (_gate)
+        {
+            var posts = File.Exists(path)
+                ? JsonSerializer.Deserialize<List<NewsItem>>(File.ReadAllText(path), Options) ?? []
+                : [];
+            posts.Insert(0, item);
+            Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
+            var temporary = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
+            try
+            {
+                File.WriteAllText(temporary, JsonSerializer.Serialize(posts, new JsonSerializerOptions(Options) { WriteIndented = true }));
+                File.Move(temporary, path, overwrite: true);
+                _readAt = DateTime.MinValue;
+            }
+            finally
+            {
+                File.Delete(temporary);
+            }
+        }
+    }
+
     public IReadOnlyList<NewsItem> Items(ILogger logger)
     {
         var written = File.Exists(path) ? File.GetLastWriteTimeUtc(path) : DateTime.MinValue;

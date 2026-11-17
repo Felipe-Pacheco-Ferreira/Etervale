@@ -32,3 +32,5 @@ upstream notes, in `../upstream/`.
 | 018 | [window-size-before-swapchain](018-window-size-before-swapchain.md) | framework |
 | 019 | [mono-pan](019-mono-pan.md) | runtime |
 | 020 | [android-surface-after-background](020-android-surface-after-background.md) | runtime |
+| 021 | [webgpu-backend](021-webgpu-backend.md) | runtime, framework |
+| 022 | [webgpu-effects](022-webgpu-effects.md) | processor, runtime |

@@ -76,7 +76,7 @@ public sealed class FieldAudioController : IDisposable
     // playing under the clouds and the rain, as the original's did; the rain only adds its loop.
     public void UpdateWeather(float rain, bool sheltered, float seconds)
     {
-        _rainTarget = _library.SoundEnabled ? MathHelper.Clamp(rain, 0f, 1f) * RainVolume * (sheltered ? ShelteredRain : 1f) : 0f;
+        _rainTarget = _library.SoundEnabled ? MathHelper.Clamp(rain, 0f, 1f) * RainVolume * _library.SoundGain * (sheltered ? ShelteredRain : 1f) : 0f;
         if (_rain is null && _rainTarget > 0.001f && _library.RainSound is { } sound)
         {
             _rain = sound.CreateInstance();
@@ -101,7 +101,7 @@ public sealed class FieldAudioController : IDisposable
     {
         if (_library.SoundEnabled && _library.ThunderSound is { } sound)
         {
-            sound.Play(MathHelper.Clamp(volume, 0f, 1f), 0f, 0f);
+            sound.Play(MathHelper.Clamp(volume, 0f, 1f) * _library.SoundGain, 0f, 0f);
         }
     }
 
@@ -116,7 +116,7 @@ public sealed class FieldAudioController : IDisposable
     {
         if (_library.SoundEnabled)
         {
-            _library.PortalWarpSound.Play(1f, 0f, 0f);
+            _library.PortalWarpSound.Play(_library.SoundGain, 0f, 0f);
         }
     }
 
@@ -124,7 +124,7 @@ public sealed class FieldAudioController : IDisposable
     {
         if (_library.SoundEnabled)
         {
-            _library.WhisperSound.Play(SoftVolume, 0f, 0f);
+            _library.WhisperSound.Play(SoftVolume * _library.SoundGain, 0f, 0f);
         }
     }
 
@@ -144,14 +144,14 @@ public sealed class FieldAudioController : IDisposable
         }
 
         (_lastItemSound, _lastItemSoundAt) = (sound, now);
-        sound.Play(1f, 0f, 0f);
+        sound.Play(_library.SoundGain, 0f, 0f);
     }
 
     public void PlayQuestFanfare()
     {
         if (_library.SoundEnabled)
         {
-            _library.QuestFanfareSound.Play(1f, 0f, 0f);
+            _library.QuestFanfareSound.Play(_library.SoundGain, 0f, 0f);
         }
     }
 
@@ -159,7 +159,7 @@ public sealed class FieldAudioController : IDisposable
     {
         if (_library.SoundEnabled && _library.Event(cue) is { } sound)
         {
-            sound.Play(EventSounds.Volume(cue), 0f, 0f);
+            sound.Play(EventSounds.Volume(cue) * _library.SoundGain, 0f, 0f);
         }
     }
 
@@ -191,7 +191,7 @@ public sealed class FieldAudioController : IDisposable
     {
         if (_library.SoundEnabled)
         {
-            (success ? _library.QuestFanfareSound : _library.CraftFailureSound).Play(1f, 0f, 0f);
+            (success ? _library.QuestFanfareSound : _library.CraftFailureSound).Play(_library.SoundGain, 0f, 0f);
         }
     }
 
@@ -295,7 +295,7 @@ public sealed class FieldAudioController : IDisposable
         if (_playingMusicCode == _selectedMusicCode)
         {
             _musicFadeRemaining = 0f;
-            _music.Volume = MusicVolume;
+            _music.Volume = MusicVolume * _library.MusicGain;
             return;
         }
 
@@ -305,7 +305,7 @@ public sealed class FieldAudioController : IDisposable
         }
 
         _musicFadeRemaining = MathF.Max(0f, _musicFadeRemaining - seconds);
-        _music.Volume = MusicVolume * (_musicFadeRemaining / MusicFadeSeconds);
+        _music.Volume = MusicVolume * _library.MusicGain * (_musicFadeRemaining / MusicFadeSeconds);
         if (_musicFadeRemaining > 0f)
         {
             return;
@@ -325,7 +325,7 @@ public sealed class FieldAudioController : IDisposable
 
         _music = _selectedMusic.CreateInstance();
         _music.IsLooped = true;
-        _music.Volume = MusicVolume;
+        _music.Volume = MusicVolume * _library.MusicGain;
         _music.Play();
         _playingMusicCode = _selectedMusicCode;
     }
@@ -361,7 +361,7 @@ public sealed class FieldAudioController : IDisposable
 
         _fieldAmbient = _library.FieldAmbient(code).CreateInstance();
         _fieldAmbient.IsLooped = true;
-        _fieldAmbient.Volume = FieldAmbientVolume;
+        _fieldAmbient.Volume = FieldAmbientVolume * _library.SoundGain;
         _fieldAmbient.Play();
         _fieldAmbientCode = code;
     }
@@ -411,7 +411,7 @@ public sealed class FieldAudioController : IDisposable
         }
 
         var blend = 1f - MathF.Exp(-PositionalBlendRate * seconds);
-        _positionalAmbient.Volume = MathHelper.Lerp(_positionalAmbient.Volume, _positionalTargetVolume, blend);
+        _positionalAmbient.Volume = MathHelper.Lerp(_positionalAmbient.Volume, _positionalTargetVolume * _library.SoundGain, blend);
         if (bestCode < 0 && _positionalAmbient.Volume < 0.001f)
         {
             StopPositionalAmbience();

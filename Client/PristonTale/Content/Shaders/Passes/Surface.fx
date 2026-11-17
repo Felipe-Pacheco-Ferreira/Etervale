@@ -482,14 +482,6 @@ PrepassOut Prepass(VSOut i, bool masked)
 {
     float3 v = SafeNormalize(CameraPosition - i.WorldPosition);
     float3 n = OrientNormal(i.Normal, VisibleFaceNormal(i.WorldPosition, v));
-    if (masked)
-    {
-#ifdef GLTF
-        AlphaTest(GltfCoverage(i.Uv.xy, i.Uv.zw, i.Color));
-#else
-        AlphaTest(SampleBaseColor(i.Uv.xy, i.Color).a);
-#endif
-    }
 
     PrepassOut o;
     o.Color = 0.0;
@@ -507,6 +499,11 @@ PrepassOut PS_Prepass(VSOut i)
 
 PrepassOut PS_PrepassMasked(VSOut i)
 {
+#ifdef GLTF
+    AlphaTest(GltfCoverage(i.Uv.xy, i.Uv.zw, i.Color));
+#else
+    AlphaTest(SampleBaseColor(i.Uv.xy, i.Color).a);
+#endif
     return Prepass(i, true);
 }
 

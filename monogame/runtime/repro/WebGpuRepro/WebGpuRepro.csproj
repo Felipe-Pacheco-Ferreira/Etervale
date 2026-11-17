@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk.WebAssembly">
+  <!--
+    Verification program of the browser runtime (monogame/issues/021, 022): the fork's framework and the runtime built
+    for WebAssembly (src/web/mgruntime.cpp, linked into dotnet.native.wasm by the SDK's Emscripten), a Game that clears
+    the page's canvas through WebGPU, draws a texture with SpriteBatch and runs a compute check (Content/ComputeCheck.fx,
+    built for MGCB's Web platform and embedded in the assembly). Program.cs lists the checks; the page shows them. Not
+    part of the solution; needs the wasm-tools workload (dotnet workload install wasm-tools) and Slang
+    (monogame/pipeline/fetch-slang.sh or .ps1).
+
+      dotnet publish -c Release -o <folder> (project monogame/runtime/repro/WebGpuRepro)
+      serve <folder>/wwwroot over http://localhost or https and open it in a browser with WebGPU
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- [JSExport] marshalling is generated as unsafe code. -->
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- Not trimmed: ContentManager creates its readers by reflection, which the trimmer cannot follow. -->
+    <PublishTrimmed>false</PublishTrimmed>
+    <MonoGamePlatform>Web</MonoGamePlatform>
+  </PropertyGroup>
+  <Import Project="../../src/web/BrowserRuntime.props" />
+  <ItemGroup>
+    <ProjectReference Include="../../../framework/MonoGame.Framework/MonoGame.Framework.Native.csproj" />
+    <!-- The effect processor Content/Content.mgcb loads with /reference: built before the content, not referenced. -->
+    <ProjectReference Include="../../../pipeline/MonoGame.Effect.Processor/MonoGame.Effect.Processor.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
+    <PackageReference Include="MonoGame.Content.Builder.Task" />
+  </ItemGroup>
+  <!-- The built content goes into the assembly (EmbeddedContent in Program.cs reads it), so the page needs no file of it. -->
+  <Target Name="EmbedReproContent" DependsOnTargets="RunContentBuilder" AfterTargets="ResolveProjectReferences" BeforeTargets="PrepareResources">
+    <ItemGroup>
+      <EmbeddedResource Include="@(ExtraContent)" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
+  </Target>
+</Project>

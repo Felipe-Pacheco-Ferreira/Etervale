@@ -15,6 +15,9 @@ public enum ChatKind : byte
 
     // The assistant window's lines (quest hints).
     Assist = 9,
+    Voice = 10,
+    CalendarEvent = 11,
+    GlobalBuff = 12,
 
     // A spoken line of a player, the local player's own included.
     Player = 0x80

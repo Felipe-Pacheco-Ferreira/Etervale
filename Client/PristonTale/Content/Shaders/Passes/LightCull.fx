@@ -27,18 +27,20 @@ SamplerState LinearDepthSampler : register(s0) = sampler_state
 RWStructuredBuffer<uint> TileMasks : register(u0);
 
 
-groupshared uint TileMin;
-groupshared uint TileMax;
-groupshared uint TileMask;
+// Atomic counters of the group, through the effect processor's MGFX_ATOMIC_* macros (HLSL atomics on Vulkan, WGSL atomics
+// on WebGPU).
+groupshared MGFX_ATOMIC_UINT TileMin;
+groupshared MGFX_ATOMIC_UINT TileMax;
+groupshared MGFX_ATOMIC_UINT TileMask;
 
 [numthreads(GROUP_SIZE, GROUP_SIZE, 1)]
 void CS_Cull(uint3 group : SV_GroupID, uint3 thread : SV_GroupThreadID, uint index : SV_GroupIndex)
 {
     if (index == 0)
     {
-        TileMin = asuint(1.0e9);
-        TileMax = 0;
-        TileMask = 0;
+        MGFX_ATOMIC_STORE(TileMin, asuint(1.0e9));
+        MGFX_ATOMIC_STORE(TileMax, 0u);
+        MGFX_ATOMIC_STORE(TileMask, 0u);
     }
 
     GroupMemoryBarrierWithGroupSync();
@@ -49,8 +51,8 @@ void CS_Cull(uint3 group : SV_GroupID, uint3 thread : SV_GroupThreadID, uint ind
         if (depth < SkyDepthThreshold)
         {
             // Positive floats keep their order as unsigned integers.
-            InterlockedMin(TileMin, asuint(depth));
-            InterlockedMax(TileMax, asuint(depth));
+            MGFX_ATOMIC_MIN(TileMin, asuint(depth));
+            MGFX_ATOMIC_MAX(TileMax, asuint(depth));
         }
     }
 
@@ -60,8 +62,9 @@ void CS_Cull(uint3 group : SV_GroupID, uint3 thread : SV_GroupThreadID, uint ind
     if (Grid.w > 0.5)
     {
         // A tile of sky only: no surface for the lights to reach.
-        minDepth = TileMax == 0 ? 1.0e9 : asfloat(TileMin);
-        maxDepth = TileMax == 0 ? 0.0 : asfloat(TileMax);
+        uint tileMax = MGFX_ATOMIC_LOAD(TileMax);
+        minDepth = tileMax == 0 ? 1.0e9 : asfloat(MGFX_ATOMIC_LOAD(TileMin));
+        maxDepth = tileMax == 0 ? 0.0 : asfloat(tileMax);
     }
 
     uint light = index;
@@ -87,14 +90,14 @@ void CS_Cull(uint3 group : SV_GroupID, uint3 thread : SV_GroupThreadID, uint ind
             && dot(nBottom, p) >= -radius && dot(nTop, p) >= -radius;
         if (inside)
         {
-            InterlockedOr(TileMask, 1u << light);
+            MGFX_ATOMIC_OR(TileMask, 1u << light);
         }
     }
 
     GroupMemoryBarrierWithGroupSync();
     if (index == 0)
     {
-        TileMasks[group.y * (uint)Grid.x + group.x] = TileMask;
+        TileMasks[group.y * (uint)Grid.x + group.x] = MGFX_ATOMIC_LOAD(TileMask);
     }
 }
 

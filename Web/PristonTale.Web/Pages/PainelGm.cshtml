@@ -1,0 +1,228 @@
+@page "/conta/gm"
+@model PainelGmModel
+@{
+    ViewData["Title"] = "Painel GM";
+    var section = Model.Section;
+    var publicMessages = (Model.Activity?.Messages ?? [])
+        .Concat(Model.Whispers?.Messages.Where(message => message.Channel != "whisper") ?? [])
+        .OrderByDescending(message => message.At).ToArray();
+    var privateMessages = Model.Whispers?.Messages.Where(message => message.Channel == "whisper").Reverse().ToArray() ?? [];
+}
+
+<div class="page gm-panel">
+    <header class="page-head page-head-row">
+        <div>
+            <h1>Painel GM</h1>
+            <p>@User.Identity?.Name · Nível @Model.Level</p>
+        </div>
+        <a class="btn" asp-page="/Conta">Minha conta</a>
+    </header>
+    <nav class="gm-tabs" aria-label="Áreas do Painel GM">
+        <a asp-route-areaGm="visao" aria-current="@(section == "visao" ? "page" : null)">Visão geral</a>
+        @if (Model.CanLookupAccounts)
+        {
+            <a asp-route-areaGm="contas" aria-current="@(section == "contas" ? "page" : null)">Contas e personagens</a>
+        }
+        @if (Model.CanReadAudit)
+        {
+            <a asp-route-areaGm="noticias" aria-current="@(section == "noticias" ? "page" : null)">Notícias</a>
+            <a asp-route-areaGm="correios" aria-current="@(section == "correios" ? "page" : null)">Correios</a>
+            <a asp-route-areaGm="xp" aria-current="@(section == "xp" ? "page" : null)">Evento de XP</a>
+            <a asp-page="/AtendimentoGm">Atendimento</a>
+            <a asp-route-areaGm="auditoria" aria-current="@(section == "auditoria" ? "page" : null)">Auditoria</a>
+        }
+    </nav>
+    @if (section == "visao")
+    {
+    <div class="stats" id="gm-live-stats">
+        <div class="plate stat">
+            <span class="stat-label">Servidor do jogo</span>
+            <span class="stat-value">@(Model.Status is null ? "Verificando" : Model.Status.Online ? "Online" : "Offline")</span>
+            @if (Model.Status is { } status)
+            {
+                <span class="stat-note">Última verificação <time datetime="@status.CheckedAt.ToString("O")">@status.CheckedAt.ToString("HH:mm:ss") UTC</time></span>
+            }
+        </div>
+        <div class="plate stat"><span class="stat-label">Jogadores online</span><span class="stat-value">@(Model.Activity?.OnlinePlayers.ToString() ?? "Indisponível")</span></div>
+        <div class="plate stat"><span class="stat-label">Contas cadastradas</span><span class="stat-value">@Model.Totals.Accounts</span></div>
+        <div class="plate stat"><span class="stat-label">Personagens cadastrados</span><span class="stat-value">@Model.Totals.Characters</span></div>
+    </div>
+    <section id="gm-global-chat" aria-labelledby="gm-global-chat-title">
+        <h2 id="gm-global-chat-title">Chat global e avisos</h2>
+        @if (Model.Activity is null)
+        {
+            <p class="plate">O servidor ainda não forneceu dados recentes.</p>
+        }
+        else if (publicMessages.Length == 0)
+        {
+            <p class="plate">Nenhuma mensagem pública nesta sessão do servidor.</p>
+        }
+        else
+        {
+            <ul class="plate">
+                @foreach (var message in publicMessages)
+                {
+                    <li><time datetime="@message.At.ToString("O")">@message.At.ToString("HH:mm:ss") UTC</time>
+                        · @(message.Channel switch { "notice" => "Aviso", "local" => "Local", "party" => "Grupo", "clan" => "Clã", _ => "Comércio" }) · @message.Text</li>
+                }
+            </ul>
+        }
+    </section>
+    @if (Model.CanReadAudit)
+    {
+        <section id="gm-whispers">
+            <h2>Mensagens privadas</h2>
+            @if (Model.Whispers is null)
+            {
+                <p class="plate">Monitoramento de PMs indisponível.</p>
+            }
+            else if (privateMessages.Length == 0)
+            {
+                <p class="plate">Nenhum PM entregue nesta sessão do servidor.</p>
+            }
+            else
+            {
+                <ul class="plate">
+                    @foreach (var message in privateMessages)
+                    {
+                        <li><time datetime="@message.At.ToString("O")">@message.At.ToString("HH:mm:ss") UTC</time> · @message.Text</li>
+                    }
+                </ul>
+            }
+        </section>
+    }
+    <script src="~/js/gm-activity.js" asp-append-version="true" defer></script>
+    }
+
+    @if (Model.Feedback is { } feedback)
+    {
+        <p class="plate" role="status">@feedback</p>
+    }
+    @if (section == "noticias")
+    {
+        <section aria-labelledby="gm-news">
+            <h2 id="gm-news">Publicar notícia</h2>
+            <form class="plate gm-editor" method="post" asp-page-handler="Noticia">
+                <label>Título <input name="title" maxlength="120" required></label>
+                <label>Resumo <input name="summary" maxlength="300" required></label>
+                <label>Texto <textarea name="body" rows="6" maxlength="8000" required></textarea></label>
+                <button class="btn btn-primary" type="submit">Publicar notícia</button>
+            </form>
+        </section>
+    }
+    @if (section == "correios")
+    {
+        <section aria-labelledby="gm-mail">
+            <h2 id="gm-mail">Registrar mensagem</h2>
+            <p>As recompensas ficam registradas com a mensagem. O resgate dentro do jogo ainda está em desenvolvimento.</p>
+            <form class="plate gm-editor" method="post" asp-page-handler="Correio">
+                <label>Conta destinatária <input name="recipient" maxlength="32"></label>
+                <label><input type="checkbox" name="everyone" value="true"> Todos os jogadores</label>
+                <label>Assunto <input name="subject" maxlength="120" required></label>
+                <label>Mensagem <textarea name="body" rows="6" maxlength="8000" required></textarea></label>
+                <label>Códigos dos itens <input name="itemCode" maxlength="649" placeholder="WP101; DS101; GP101"></label>
+                <label>Quantidade de cada item <input type="number" name="itemCount" min="0" max="100"></label>
+                <label>Ouro <input type="number" name="gold" min="0" max="100000000"></label>
+                <button class="btn btn-primary" type="submit">Registrar mensagem</button>
+            </form>
+        </section>
+    }
+    @if (section == "xp")
+    {
+        <section aria-labelledby="gm-xp">
+            <h2 id="gm-xp">Evento de XP</h2>
+            <form class="plate gm-editor" method="post" asp-page-handler="Xp">
+                <label>XP por monstro (%) <input type="number" name="percent" min="0" max="100000" value="@Model.ExperiencePercent" required></label>
+                <p>100 equivale a ×1. Para um evento de ×2, use 200.</p>
+                <button class="btn btn-primary" type="submit">Salvar XP</button>
+            </form>
+        </section>
+    }
+    @if (section == "contas")
+    {
+        <section aria-labelledby="gm-player">
+            <h2 id="gm-player">Contas e personagens</h2>
+            <form class="plate gm-search" method="get">
+                <input type="hidden" name="areaGm" value="contas">
+                <label for="gm-account">Conta ou nome do personagem</label>
+                <input id="gm-account" name="conta" maxlength="32" required>
+                <button class="btn btn-primary" type="submit">Consultar</button>
+            </form>
+            @if (Model.FoundAccount is { } found)
+            {
+                <div class="plate">
+                    <strong>@found.Name</strong> · ID @found.Id · GM @found.Level · @(found.Blocked ? "Bloqueada" : "Ativa")
+                    @if (found.Tester)
+                    {
+                        <span class="tag">Conta de teste</span>
+                    }
+                    @if (Model.CanReadAudit)
+                    {
+                        <details>
+                            <summary><strong>Moderação da conta</strong></summary>
+                            <form class="gm-editor" method="post" asp-page-handler="Bloqueio">
+                                <input type="hidden" name="accountId" value="@found.Id">
+                                <input type="hidden" name="blocked" value="@(!found.Blocked ? "true" : "false")">
+                                <label>Motivo <input name="reason" maxlength="160" required></label>
+                                <button class="btn" type="submit">@(found.Blocked ? "Desbloquear conta" : "Bloquear conta")</button>
+                            </form>
+                        </details>
+                    }
+                    @foreach (var character in Model.FoundCharacters)
+                    {
+                        <details>
+                            <summary><strong>@character.Name</strong><span class="tag">Nível @character.Level</span></summary>
+                            <dl>
+                                <div><dt>ID / Classe</dt><dd>@character.Id / @character.JobCode</dd></div>
+                                <div><dt>XP / Ouro</dt><dd>@character.Exp / @character.Money</dd></div>
+                                <div><dt>PV / PM / RES</dt><dd>@character.Life / @character.Mana / @character.Stamina</dd></div>
+                                <div><dt>Força / Espírito / Talento</dt><dd>@character.Strength / @character.Spirit / @character.Talent</dd></div>
+                                <div><dt>Agilidade / Vitalidade / Pontos livres</dt><dd>@character.Agility / @character.Health / @character.StatPoints</dd></div>
+                                <div><dt>Mapa / X / Z</dt><dd>@character.FieldId / @character.PosX / @character.PosZ</dd></div>
+                                <div><dt>Última sessão gravada</dt><dd>@(character.LastPlayedAt?.ToString("u") ?? "Sem registro")</dd></div>
+                            </dl>
+                        </details>
+                    }
+                </div>
+            }
+            else if (Model.MatchingAccounts.Count > 1)
+            {
+                <ul class="gm-results">
+                    @foreach (var match in Model.MatchingAccounts)
+                    {
+                        <li><a class="gm-result" asp-route-areaGm="contas" asp-route-conta="@match.Account"><strong>@match.Character</strong><span>@match.Account</span></a></li>
+                    }
+                </ul>
+            }
+            else if (Model.Searched)
+            {
+                <p class="plate">Nenhuma conta disponível para consulta com esse nome.</p>
+            }
+        </section>
+    }
+    @if (section == "auditoria")
+    {
+        <section aria-labelledby="gm-audit">
+            <h2 id="gm-audit">Atividade GM</h2>
+            <nav class="gm-tabs" aria-label="Origem das ações">
+                <a asp-route-areaGm="auditoria" aria-current="@(Model.AuditOrigin == "" ? "page" : null)">Todas</a>
+                <a asp-route-areaGm="auditoria" asp-route-origem="site" aria-current="@(Model.AuditOrigin == "site" ? "page" : null)">Site</a>
+                <a asp-route-areaGm="auditoria" asp-route-origem="jogo" aria-current="@(Model.AuditOrigin == "jogo" ? "page" : null)">Jogo</a>
+            </nav>
+            @if (Model.Audit.Count == 0)
+            {
+                <p class="plate empty">Nenhuma ação registrada neste filtro.</p>
+            }
+            @foreach (var row in Model.Audit)
+            {
+                <article class="plate news-card">
+                    <time datetime="@row.CreatedAt.ToString("O")">@row.CreatedAt.ToString("dd/MM/yyyy HH:mm") UTC</time>
+                    <h3>@row.UserId <span class="tag">@(PainelGmModel.IsSiteAction(row) ? "Site" : "Jogo")</span></h3>
+                    <p>GM nível @row.GmLevel · @(row.Accepted ? "Aceito" : "Recusado") @row.CharacterName</p>
+                    <p><code>@row.Command</code></p>
+                    <p>@row.Result</p>
+                </article>
+            }
+        </section>
+    }
+</div>

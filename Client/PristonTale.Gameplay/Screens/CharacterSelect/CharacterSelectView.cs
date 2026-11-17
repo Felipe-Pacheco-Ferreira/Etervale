@@ -1,3 +1,4 @@
+using PristonTale.Gameplay.Localization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PristonTale.Assets;
@@ -152,7 +153,12 @@ internal sealed class CharacterSelectView
             _sb.Draw(_assets.TitleBox, new Rectangle(viewport.Width / 2 - 128, 0, 256, 128), Color.White);
         }
 
-        if (_assets.TitleTxt != null)
+        if (ClientText.Language == "pt-BR")
+        {
+            var title = stateIndex switch { 0 => "Personagens", 1 => "Tribo", 2 => "Classe", _ => "Rosto" };
+            DrawLocalizedLabel(title, new Rectangle(viewport.Width / 2 - 64, 53, 128, 30));
+        }
+        else if (_assets.TitleTxt != null)
         {
             var row = stateIndex switch { 0 => 0, 1 => 1, 2 => 2, _ => 3 };
             var src = new Rectangle(0, row * 30, 128, 30);
@@ -184,7 +190,11 @@ internal sealed class CharacterSelectView
             var opacity = m.RosterHasChars
                 ? 1f
                 : 0.5f + 0.5f * (0.5f + 0.5f * MathF.Sin((float)m.ElapsedSeconds * 3f));
-            _sb.Draw(_assets.NewCharBig, CharSelectLayout.NewCharPrompt(viewport), Color.White * opacity);
+            var bounds = CharSelectLayout.NewCharPrompt(viewport);
+            if (ClientText.Language == "pt-BR")
+                DrawLocalizedLabel("Criar personagem", bounds, opacity);
+            else
+                _sb.Draw(_assets.NewCharBig, bounds, Color.White * opacity);
         }
 
         if (m.Info is { } info)
@@ -423,6 +433,29 @@ internal sealed class CharacterSelectView
     private void DrawButton(Texture2D texture, int x, int y, Viewport viewport, bool leftAligned = false)
     {
         var bounds = new Rectangle(x, y, texture.Width, texture.Height);
-        _sb.Draw(texture, CharSelectLayout.ScaleButton(bounds, viewport, _buttonScale, leftAligned), Color.White);
+        bounds = CharSelectLayout.ScaleButton(bounds, viewport, _buttonScale, leftAligned);
+        _sb.Draw(texture, bounds, Color.White);
+        if (ClientText.Language != "pt-BR")
+            return;
+
+        var label = texture == _assets.BtNewChar ? "Criar"
+            : texture == _assets.BtSelect ? "Selecionar"
+            : texture == _assets.BtExit ? "Sair"
+            : texture == _assets.BtBack ? "Voltar"
+            : texture == _assets.BtDelete ? "Excluir" : null;
+        if (label != null)
+            DrawLocalizedLabel(label, bounds);
+    }
+
+    private void DrawLocalizedLabel(string text, Rectangle bounds, float opacity = 1f)
+    {
+        var inset = bounds;
+        inset.Inflate(-bounds.Width / 10, -bounds.Height / 6);
+        _sb.Draw(_assets.Pixel, inset, new Color(30, 22, 15) * opacity);
+        var size = _font.MeasureString(text);
+        var scale = MathF.Min(inset.Width * 0.9f / size.X, inset.Height * 0.9f / size.Y);
+        var position = bounds.Center.ToVector2() - size * (scale * 0.5f);
+        _sb.DrawString(_font, text, position, new Color(242, 212, 148) * opacity,
+            0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
     }
 }

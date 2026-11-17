@@ -1,0 +1,41 @@
+@page "/conta/gm/atendimento"
+@model AtendimentoGmModel
+@{
+    ViewData["Title"] = "Atendimento";
+}
+<div class="page gm-panel">
+    <header class="page-head page-head-row">
+        <h1>Atendimento</h1>
+        <a class="btn" asp-page="/PainelGm">Painel GM</a>
+    </header>
+    @if (Model.Queue.Count == 0)
+    {
+        <p>Nenhum ticket recebido.</p>
+    }
+    @foreach (var entry in Model.Queue)
+    {
+        <section class="plate">
+            <h2>@entry.Ticket.Subject</h2>
+            <small>Conta @entry.AccountId · @entry.Ticket.CreatedAt.ToString("dd/MM/yyyy HH:mm 'UTC'")</small>
+            <p>@entry.Ticket.Message</p>
+            @if (Model.HasAttachment(entry.AccountId, entry.Ticket.Id))
+            {
+                <a asp-page-handler="Anexo" asp-route-accountId="@entry.AccountId" asp-route-ticketId="@entry.Ticket.Id">Abrir anexo</a>
+            }
+            @if (entry.Ticket.Reply is { } reply)
+            {
+                <p>Resposta da equipe</p>
+                <p>@reply</p>
+            }
+            else
+            {
+                <form class="form" method="post">
+                    <input type="hidden" name="accountId" value="@entry.AccountId" />
+                    <input type="hidden" name="ticketId" value="@entry.Ticket.Id" />
+                    <label>Resposta <textarea name="resposta" rows="4" maxlength="4000" required></textarea></label>
+                    <button type="submit">Responder</button>
+                </form>
+            }
+        </section>
+    }
+</div>

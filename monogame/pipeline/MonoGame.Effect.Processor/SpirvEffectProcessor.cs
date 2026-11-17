@@ -18,7 +18,7 @@ namespace MonoGame.Effect.Processor;
 
 /// <summary>
 /// Processes an effect into the MGFX 12 format of Etervale's MonoGame fork: SM 6 shaders compiled by DXC to SPIR-V for
-/// the DesktopVK platform, with compute passes (<c>ComputeShader = compile cs_6_0 F();</c>), storage buffers and images,
+/// the DesktopVK platform (or to WGSL by Slang, over DXC's reflection, for the Web platform), with compute passes (<c>ComputeShader = compile cs_6_0 F();</c>), storage buffers and images,
 /// and the SM 6.5 profiles.
 /// </summary>
 [ContentProcessor(DisplayName = "Effect - Etervale fork (SPIR-V, MGFX 12)")]
@@ -51,13 +51,16 @@ public class SpirvEffectProcessor : ContentProcessor<EffectContent, CompiledEffe
             throw new InvalidContentException("Passed EffectContent input is invalid!");
         }
 
-        if (context.TargetPlatform != TargetPlatform.DesktopVK)
+        // DesktopVK builds SPIR-V for the Vulkan runtime (desktop and Android); Web builds WGSL for the browser runtime
+        // (Etervale fork, issue 022).
+        var debug = DebugMode == EffectProcessorDebugMode.Debug;
+        var options = context.TargetPlatform switch
         {
-            throw new InvalidContentException($"The Etervale fork's effect processor builds for DesktopVK (Vulkan) only, not {context.TargetPlatform}.", input.Identity);
-        }
-
-        var options = EffectCompiler.VulkanOptions(input.Identity.SourceFilename, context.OutputFilename,
-            DebugMode == EffectProcessorDebugMode.Debug, Defines);
+            TargetPlatform.DesktopVK => EffectCompiler.VulkanOptions(input.Identity.SourceFilename, context.OutputFilename, debug, Defines),
+            TargetPlatform.Web => EffectCompiler.WebGpuOptions(input.Identity.SourceFilename, context.OutputFilename, debug, Defines),
+            _ => throw new InvalidContentException(
+                $"The Etervale fork's effect processor builds for DesktopVK (Vulkan) and Web (WebGPU), not {context.TargetPlatform}.", input.Identity),
+        };
 
         // Parse the MGFX file expanding includes, macros, and returning the techniques.
         ShaderResult shaderResult;

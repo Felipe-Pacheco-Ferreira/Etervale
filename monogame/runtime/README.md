@@ -14,15 +14,15 @@ Everything the build needs is in the repository except SDL2 and FAudio, which ar
 
 | Path | Contents |
 |---|---|
-| `src/` | MonoGame v3.8.6's `native/monogame` with the fork's changes applied: `common/`, `include/`, `sdl/`, `vulkan/` (with the stock effects compiled for Vulkan, `*.vk.mgfxo.h`, so no shader tool is needed), `faudio/` and `premake5.lua`. Only the Vulkan runtime (`desktopvk`) is built, so MonoGame's `opengl/`, `directx12/` and `xaudio/` are left out. |
+| `src/` | MonoGame v3.8.6's `native/monogame` with the fork's changes applied: `common/`, `include/`, `sdl/`, `vulkan/` (with the stock effects compiled for Vulkan, `*.vk.mgfxo.h`, so no shader tool is needed), `faudio/` and `premake5.lua`. Only the Vulkan runtime (`desktopvk`) is built, so MonoGame's `opengl/`, `directx12/` and `xaudio/` are left out. The fork adds the browser build: `web/` (the canvas platform, silent audio, storage without a device, `mgruntime.cpp` that joins the sources into one translation unit, `BrowserRuntime.props`) and `webgpu/` (the WebGPU graphics backend: `MGG_WebGPU.cpp`, `_Resources.cpp`, `_Pipelines.cpp`, and the stock effects in `effects/` with their generated `*.wgpu.mgfxo.h`), described in changes 32 and 33; `include/mg_etervale.h` holds the interface version both backends return. |
 | `src/external/` | Vendored, with their licences: volk (`volk.h`, `volk.c`), VulkanMemoryAllocator (`vk_mem_alloc.h`), the Vulkan C headers, stb (`stb_image.h`, `stb_image_write.h`). Fetched by `build.sh` (git-ignored): `sdl2/sdl`, `faudio`. |
 | `externals.txt` | Every dependency pinned by commit (the commits of MonoGame v3.8.6's submodules), with its licence and whether it is vendored or fetched. |
-| `monogame-v3.8.6.patch` | The record of what `src/` changes against upstream (unified diff of `premake5.lua`, `vulkan/MGG_Vulkan.cpp`, `sdl/MGP_sdl.cpp`, `include/api_enums.h` and `faudio/MGA_faudio.cpp`), rewritten by `regenpatch.sh` after a change to `src/`. |
+| `monogame-v3.8.6.patch` | The record of what `src/` changes against upstream (unified diff of `premake5.lua`, `vulkan/MGG_Vulkan.cpp`, `sdl/MGP_sdl.cpp`, `include/api_enums.h`, `faudio/MGA_faudio.cpp`, `common/mg_audio.cpp` and `common/MGM.cpp`; the files the fork adds, `web/`, `webgpu/` and `include/mg_etervale.h`, are its own), rewritten by `regenpatch.sh` after a change to `src/`. |
 | `bin/<rid>/` | Built libraries, **git-ignored: never committed**. `build.sh` writes the one of the host (Linux, macOS); `build-windows.ps1` writes `bin/win-x64/`. The client (`Client/MonoGameRuntime.targets`) copies the one for its platform next to its executable and fails to build without it. |
 | `build-windows.ps1` | Builds the runtime on Windows into `bin/win-x64/` (see Building). |
 | `build.sh` | Builds the runtime for this machine (Linux x64/arm64, macOS) into `bin/<rid>/`: fetches SDL2 and FAudio, applies `patches/`, builds them (again when their patches or configuration change), always relinks the runtime, and prints SDL2's audio backends. On Linux SDL2 has the ALSA, PulseAudio and PipeWire backends (loaded at run time); the build stops with the install command when their headers are missing. |
 | `patches/<name>/*.patch` | the fork's fixes to a fetched dependency, applied after the checkout, one issue document each: `sdl2/0001-alsa-default-info-null-name.patch` (`../issues/010`: the ALSA backend wrote the default device's name through FAudio's NULL pointer). |
-| `repro/` | The fork's verification programs, built with net10.0, nullable and warnings as errors (`repro/Directory.Build.props`). `StateCacheRepro`: a stress test of the state caches (change 6) and of render-target read-back (change 7) that checks every pixel against the blend equation, plus a banded target (change 8), 80 000 draws before one `Present` (change 9) and draws that change only a pixel-shader constant (change 11, `Content/PixelConstants.fx`); it runs on the fork (the framework of `../framework` and this runtime) or, with the property `EtervaleFork=false`, on the official MonoGame packages. `ComputeRepro`: the compute path of change 21 (`../issues/005`–`008`), one check per extension: a storage image written by a dispatch and sampled by a draw, a mip of a storage texture, RW structured and raw buffers, indirect dispatch, uploads and dispatches in frame order, an upload from another thread, dispatch constants across frames in flight, and the refusal of SM 6.5 ray queries; its effects (`Content/Compute.fx`, `Content/RayQuery.fx`) are built by the fork's processor (`../pipeline`). `TextureLoadRepro`: textures a pixel shader reads only with `Load` (`../issues/011`), at t0 with a `sampler_state` naming it, at t1 without, and a sampled control, each copied exactly. `DepthSurfaceRepro`: a depth surface (`../issues/016`) drawn by passes without colour and read back exactly with `Load` and `GatherRed`, kept into a later pass and cleared. `Directory.Packages.props` pins their MonoGame packages. None is part of the solution. |
+| `repro/` | The fork's verification programs, built with net10.0, nullable and warnings as errors (`repro/Directory.Build.props`). `StateCacheRepro`: a stress test of the state caches (change 6) and of render-target read-back (change 7) that checks every pixel against the blend equation, plus a banded target (change 8), 80 000 draws before one `Present` (change 9) and draws that change only a pixel-shader constant (change 11, `Content/PixelConstants.fx`); it runs on the fork (the framework of `../framework` and this runtime) or, with the property `EtervaleFork=false`, on the official MonoGame packages. `ComputeRepro`: the compute path of change 21 (`../issues/005`–`008`), one check per extension: a storage image written by a dispatch and sampled by a draw, a mip of a storage texture, RW structured and raw buffers, indirect dispatch, uploads and dispatches in frame order, an upload from another thread, dispatch constants across frames in flight, and the refusal of SM 6.5 ray queries; its effects (`Content/Compute.fx`, `Content/RayQuery.fx`) are built by the fork's processor (`../pipeline`). `TextureLoadRepro`: textures a pixel shader reads only with `Load` (`../issues/011`), at t0 with a `sampler_state` naming it, at t1 without, and a sampled control, each copied exactly. `DepthSurfaceRepro`: a depth surface (`../issues/016`) drawn by passes without colour and read back exactly with `Load` and `GatherRed`, kept into a later pass and cleared. `WebGpuRepro`: the browser runtime (changes 32, 33, 35) published for WebAssembly, a `Game` that clears the page's canvas through WebGPU, draws a 2x2 texture with `SpriteBatch` and runs a compute check (`Content/ComputeCheck.fx`: atomics, storage buffers, a quad reading the dispatches' verdict); the page lists its checks and samples the canvas. `Directory.Packages.props` pins their MonoGame packages. None is part of the solution. |
 | `../upstream/*.md` | One note per change: the problem and the fix, as material for an issue the owner files himself. `05-effect-array-elements.md` is about MonoGame's C# (worked around in application code, not part of the patch). MonoGame accepts no contributions written with generative AI (its CONTRIBUTING.md), so these changes are not sent as pull requests. |
 | `../LICENSE-MonoGame.txt`, `CREDITS.md` | MonoGame's licence (MS-PL) and the credits of the vendored and fetched code. |
 
@@ -167,6 +167,22 @@ Since the C# half was forked too (`../issues/001-framework-from-source.md`), eac
 31. **Android surface after the background** (`sdl/MGP_sdl.cpp`, `vulkan/MGG_Vulkan.cpp`,
     `../issues/020-android-surface-after-background.md`): no frame is drawn without a swapchain or an Android window, and
     after the app returns the Vulkan surface and swapchain are made again for the new window (`MGVK_AndroidSurfaceReady`).
+32. **Browser runtime** (`web/`, `webgpu/`, `include/mg_etervale.h`, `common/MGM.cpp`, `include/api_enums.h`,
+    `../issues/021-webgpu-backend.md`): the same exports over WebGPU and the page's canvas, built into
+    `dotnet.native.wasm` by the .NET WebAssembly SDK; `MGGraphicsBackend::WebGPU`; the interface version moves to
+    `mg_etervale.h` (still 7); MP3 decoding without SIMD under Emscripten.
+33. **WebGPU drawing** (`webgpu/`, `web/BrowserRuntime.props`, `web/mgruntime.cpp`, `../issues/022-webgpu-effects.md`):
+    buffers with a CPU copy and a uniform ring with dynamic offsets, textures and render targets, samplers and states,
+    pipelines and bind groups cached per state, render passes opened on demand with clears as their load operation, the
+    stock `SpriteEffect` compiled for the processor's WebGPU profile (`webgpu/effects`); the included sources are inputs
+    of the native link.
+34. **Browser input** (`web/MGP_web.cpp`, `../issues/021-webgpu-backend.md`): the canvas's keys (virtual-key codes as
+    XNA keys, typed characters as `TextInput`), mouse buttons, moves and wheel, in drawing pixels; the keys the game takes
+    keep their browser action from running.
+35. **WebGPU compute** (`webgpu/`, `../issues/022-webgpu-effects.md`): `Dispatch` and `DispatchIndirect` in compute
+    passes with a pipeline per compute shader and the compute stage's own constants, textures and samplers; storage
+    buffers (`SetShaderBuffer`) in draws and dispatches, also as indirect arguments; a storage write submits the
+    commands that use the buffer first.
 
 The runtime also prints the swapchain image count and present mode, an early submission when the uniform buffer is
 full, and a warning when two resources of one shader share a binding.
@@ -196,6 +212,11 @@ Linux needs cmake, make, a C++17 compiler, premake5, pkg-config and the developm
 servers SDL2 is built for (Fedora: `alsa-lib-devel pulseaudio-libs-devel pipewire-devel`; Debian/Ubuntu:
 `libasound2-dev libpulse-dev libpipewire-0.3-dev`), plus the version-control client that fetches SDL2 and FAudio. macOS needs Xcode and the Vulkan SDK (MoltenVK), with
 `VULKAN_SDK` set. Windows uses `build-windows.ps1` (above).
+
+The browser build has no script: a `Microsoft.NET.Sdk.WebAssembly` project imports `src/web/BrowserRuntime.props`,
+and its `dotnet publish` compiles `src/web/mgruntime.cpp` with the Emscripten of the `wasm-tools` workload
+(`dotnet workload install wasm-tools`) into its `dotnet.native.wasm`, on any of the three systems. `repro/WebGpuRepro`
+is such a project.
 
 A local build needs the glibc of the machine that built it (Fedora 44: 2.43). A portable Linux library is built on an
 older distribution (Ubuntu 22.04: glibc 2.35), and release packages should ship that one.

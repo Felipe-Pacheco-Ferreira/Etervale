@@ -22,7 +22,7 @@ internal static class WebTests
 {
     public static IEnumerable<(string, Func<Task>)> Cases()
     {
-        yield return ("website: every response forbids scripts, framing and sniffing", HeadersAsync);
+        yield return ("website: every response forbids framing and sniffing, and scripts outside the play page", HeadersAsync);
         yield return ("website: settings out of range stop the start", SettingsAsync);
         yield return ("website: limits count an IPv4 address or an IPv6 /64 network", LimitKeysAsync);
         yield return ("website: a session ends when its account is blocked, gets a new password or is another one", SessionAsync);
@@ -43,6 +43,41 @@ internal static class WebTests
             "the content security policy");
         Assert.True(headers.XFrameOptions == "DENY" && headers.XContentTypeOptions == "nosniff" && headers["Referrer-Policy"] == "same-origin",
             "the frame, sniffing and referrer headers");
+        var play = SecurityHeaders.PlayPolicy("wss://jogo.example:10010/game");
+        Assert.True(play.Contains("script-src 'self' 'wasm-unsafe-eval';", StringComparison.Ordinal)
+            && play.Contains("connect-src 'self' wss://jogo.example:10010 https://jogo.example:10010;", StringComparison.Ordinal) && !play.Contains("unsafe-inline", StringComparison.Ordinal)
+            && play.Contains("frame-ancestors 'none'", StringComparison.Ordinal), $"the play page's policy: {play}");
+        Assert.True(SecurityHeaders.PlayPolicy("").Contains("connect-src 'self';", StringComparison.Ordinal), "the play page's policy without an endpoint");
+        Assert.True(!play.Contains("challenges.cloudflare.com", StringComparison.Ordinal) && play.Contains("media-src 'self';", StringComparison.Ordinal),
+            "without Turnstile the play page loads nothing from Cloudflare");
+        var guarded = SecurityHeaders.PlayPolicy(["wss://jogo.example:10010/game"], turnstile: true);
+        Assert.True(guarded.Contains("script-src 'self' 'wasm-unsafe-eval' https://challenges.cloudflare.com;", StringComparison.Ordinal)
+            && guarded.Contains("frame-src https://challenges.cloudflare.com;", StringComparison.Ordinal), $"Turnstile's script and frame: {guarded}");
+        var termsPath = Path.Combine(Path.GetTempPath(), $"termos-{Guid.NewGuid():N}.txt");
+        File.WriteAllLines(termsPath, ["REGULAMENTO", "AVALON", "LEITURA IMPORTANTE. Leia.", "1. OBJETO, ALCANCE E DEFINIÇÕES", "1.1. O Avalon é um jogo."]);
+        try
+        {
+            var kinds = PristonTale.Web.Services.TermsOfUse.Load(termsPath).Blocks.Select(static block => block.Kind).ToArray();
+            Assert.True(kinds.SequenceEqual([PristonTale.Web.Services.TermsBlockKind.Title, PristonTale.Web.Services.TermsBlockKind.Subtitle,
+                PristonTale.Web.Services.TermsBlockKind.Notice, PristonTale.Web.Services.TermsBlockKind.Heading, PristonTale.Web.Services.TermsBlockKind.Paragraph]),
+                "the terms' title, name, notice, section heading and clause");
+        }
+        finally
+        {
+            File.Delete(termsPath);
+        }
+
+        Assert.True(SecurityHeaders.PolicyFor("/", play) == play && SecurityHeaders.PolicyFor("", play) == play
+            && SecurityHeaders.PolicyFor("/download", play) == SecurityHeaders.ContentSecurityPolicy
+            && SecurityHeaders.PolicyFor("/inicio", play) == SecurityHeaders.ContentSecurityPolicy
+            && SecurityHeaders.PolicyFor("/jogar", play) == SecurityHeaders.ContentSecurityPolicy, "the policy each path gets");
+        Assert.True(BrowserClient.IsFingerprinted("/play/_framework/dotnet.native.a6k1euv12n.wasm") && !BrowserClient.IsFingerprinted("/play/_framework/dotnet.js")
+            && !BrowserClient.IsFingerprinted(BrowserClient.EntryScript), "only the browser client's hashed files are cached for good");
+        var types = BrowserClient.ContentTypes();
+        Assert.True(types.TryGetContentType("/play/Content/Fonts/UI.xnb", out var xnb) && xnb == "application/octet-stream"
+            && types.TryGetContentType("/play/_framework/dotnet.native.wasm", out var wasm) && wasm == "application/wasm"
+            && types.TryGetContentType("/play/assets/Hud/Textures/login-panel-v1.png", out var png) && png == "image/png",
+            "the browser client's content, runtime and atlas files are served with their types");
         return Task.CompletedTask;
     }
 
@@ -70,6 +105,10 @@ internal static class WebTests
         Assert.Throws<InvalidOperationException>(() => Read(("Security:FormPostsPerMinute", "0")), "refused: Security:FormPostsPerMinute = 0");
         Assert.Throws<InvalidOperationException>(() => Read(("Site:KnownProxies:0", "proxy.example")), "refused: Site:KnownProxies:0 = proxy.example");
         Assert.Throws<InvalidOperationException>(() => Read(("GameServer:ProbeSeconds", "1")), "refused: GameServer:ProbeSeconds = 1");
+        Assert.Throws<InvalidOperationException>(() => Read(("Play:GameEndpoint", "https://jogo.example")), "refused: Play:GameEndpoint = https://jogo.example");
+        Assert.Throws<InvalidOperationException>(() => Read(("Play:GameEndpoint", "ws://localhost:10010/game")), "refused: Play:GameEndpoint = ws://localhost");
+        Assert.True(defaults.Play.GameEndpoint.Length == 0 && Read(("Play:GameEndpoint", "wss://jogo.example/game")).Play.GameEndpoint.Length > 0,
+            "the web client is hidden until its endpoint is set");
         return Task.CompletedTask;
     }
 

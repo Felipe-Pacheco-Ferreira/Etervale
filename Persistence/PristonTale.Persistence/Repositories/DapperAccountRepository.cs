@@ -26,6 +26,32 @@ public sealed class DapperAccountRepository(IDbConnectionFactory connectionFacto
             new { userId, passwordHash }, cancellationToken: ct));
     }
 
+    public async Task<AccountRecord> CreateAsync(string userId, string passwordHash, AccountContact contact, CancellationToken ct = default)
+    {
+        await using var connection = await connectionFactory.OpenAsync(ct);
+        return await connection.QuerySingleAsync<AccountRecord>(new CommandDefinition(
+            """
+            INSERT INTO accounts (user_id, password_hash, email, referral_code)
+            VALUES (@userId, @passwordHash, @email, @referralCode)
+            RETURNING id, user_id, password_hash, is_blocked, is_tester, gm_level
+            """,
+            new
+            {
+                userId,
+                passwordHash,
+                email = contact.Email.ToLowerInvariant(),
+                referralCode = contact.ReferralCode.Length == 0 ? null : contact.ReferralCode
+            }, cancellationToken: ct));
+    }
+
+    public async Task<bool> IsEmailTakenAsync(string email, CancellationToken ct = default)
+    {
+        await using var connection = await connectionFactory.OpenAsync(ct);
+        return await connection.ExecuteScalarAsync<bool>(new CommandDefinition(
+            "SELECT EXISTS (SELECT 1 FROM accounts WHERE email = @email)",
+            new { email = email.ToLowerInvariant() }, cancellationToken: ct));
+    }
+
     public async Task<bool> IsUserIdTakenAsync(string userId, CancellationToken ct = default)
     {
         await using var connection = await connectionFactory.OpenAsync(ct);

@@ -16,8 +16,8 @@ internal static unsafe partial class MGG
     #region Runtime version (issue 002)
 
     /// <summary>
-    /// The interface version of monogame/runtime this framework is written for (MGVK_ETERVALE_RUNTIME_VERSION in
-    /// MGG_Vulkan.cpp). Both change together, with every change of an exported function.
+    /// The interface version of monogame/runtime this framework is written for (MG_ETERVALE_RUNTIME_VERSION in
+    /// mg_etervale.h). Both change together, with every change of an exported function.
     /// </summary>
     internal const int EtervaleRuntimeVersion = 7;
 

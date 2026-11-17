@@ -32,6 +32,36 @@ internal static class ClientTests
         yield return ("NPC, monster and player collision survives pending assets", CollisionRosterAsync);
         yield return ("an action field draws actors facing left or right, finds the nearest one ahead on the player's line and the player a walk bumps into, never one it walks away from", SideViewAsync);
         yield return ("cursor rays originate at the camera and reject an enclosing NPC pick volume", CursorPickingAsync);
+        yield return ("the browser page's login form is taken once and reports only while the page listens", WebLoginOverlayAsync);
+    }
+
+    private static Task WebLoginOverlayAsync()
+    {
+        var reports = new List<(PristonTale.Gameplay.UI.WebLoginState, string)>();
+        var previous = PristonTale.Gameplay.UI.WebLoginOverlay.Report;
+        try
+        {
+            PristonTale.Gameplay.UI.WebLoginOverlay.Report = null;
+            PristonTale.Gameplay.UI.WebLoginOverlay.Show(PristonTale.Gameplay.UI.WebLoginState.Form, "ignored");
+            Assert.True(!PristonTale.Gameplay.UI.WebLoginOverlay.Active && reports.Count == 0, "the desktop clients keep LoginPanel and report nothing");
+
+            PristonTale.Gameplay.UI.WebLoginOverlay.Report = (state, message) => reports.Add((state, message));
+            Assert.True(!PristonTale.Gameplay.UI.WebLoginOverlay.TryTake(out _, out _, out _), "nothing is taken before the page sends the form");
+            PristonTale.Gameplay.UI.WebLoginOverlay.Submit("satrox", "secret", "wss://atena.example/game");
+            Assert.True(PristonTale.Gameplay.UI.WebLoginOverlay.TryTake(out var account, out var password, out var world) && account == "satrox" && password == "secret"
+                && world == "wss://atena.example/game",
+                "the form is taken as sent, with the chosen world");
+            Assert.True(!PristonTale.Gameplay.UI.WebLoginOverlay.TryTake(out _, out _, out _), "a form is taken once");
+            PristonTale.Gameplay.UI.WebLoginOverlay.Show(PristonTale.Gameplay.UI.WebLoginState.Busy);
+            Assert.True(PristonTale.Gameplay.UI.WebLoginOverlay.Active && reports.Count == 1 && reports[0] == (PristonTale.Gameplay.UI.WebLoginState.Busy, ""),
+                "the page hears each step");
+        }
+        finally
+        {
+            PristonTale.Gameplay.UI.WebLoginOverlay.Report = previous;
+        }
+
+        return Task.CompletedTask;
     }
 
     private static Task MovementPacingAsync()

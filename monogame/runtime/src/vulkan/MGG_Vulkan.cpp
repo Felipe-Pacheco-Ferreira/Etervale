@@ -5,6 +5,7 @@
 #include "api_MGG.h"
 
 #include "mg_common.h"
+#include "mg_etervale.h"
 
 #include "AlphaTestEffect.vk.mgfxo.h"
 #include "BasicEffect.vk.mgfxo.h"
@@ -7237,15 +7238,10 @@ MG_EXPORT void MGG_GraphicsDevice_GetNativeHandles(const MGG_GraphicsDevice* dev
 }
 
 
-// Etervale fork: the version of the runtime's exported interface, which the fork's framework (monogame/framework,
-// MGG.EnsureRuntimeVersion) checks before anything else: a library built from other sources (the official package, or
-// a stale build of the fork) would fail later at the first missing export, or worse, call an export whose arguments
-// changed. Bumped with every change of an exported function (monogame/issues/002-runtime-version.md).
-#define MGVK_ETERVALE_RUNTIME_VERSION 7
-
+// Etervale fork: the version of the runtime's exported interface (include/mg_etervale.h).
 MG_EXPORT mgint MGG_Etervale_RuntimeVersion()
 {
-	return MGVK_ETERVALE_RUNTIME_VERSION;
+	return MG_ETERVALE_RUNTIME_VERSION;
 }
 
 

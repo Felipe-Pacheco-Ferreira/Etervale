@@ -304,8 +304,11 @@ class NativeGamePlatform : GamePlatform
             Game.GraphicsDevice.Present();
     }
 
+    // Etervale fork (issue 021): the browser runtime asks for the asynchronous run behaviour, and the page calls
+    // Game.Tick on each animation frame; BeforeUpdate does the event polling and the queued work RunLoop does on desktop.
     public override unsafe void StartRunLoop()
     {
+        _window.Show(true);
         MGP.Platform_StartRunLoop(Handle);
     }
 
@@ -332,6 +335,12 @@ class NativeGamePlatform : GamePlatform
 
     public override unsafe bool BeforeUpdate(GameTime gameTime)
     {
+        if (DefaultRunBehavior == GameRunBehavior.Asynchronous)
+        {
+            PollEvents();
+            Threading.Run();
+        }
+
         return MGP.Platform_BeforeUpdate(Handle) == 0 ? false : true;
     }
 

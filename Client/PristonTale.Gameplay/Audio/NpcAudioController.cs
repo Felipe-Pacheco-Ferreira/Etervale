@@ -35,7 +35,7 @@ public sealed class NpcAudioController(PristonAudioLibrary library) : IDisposabl
             }
 
             _talk = talk.CreateInstance();
-            _talk.Volume = 1f;
+            _talk.Volume = library.SoundGain;
             _talk.Play();
             return;
         }
@@ -81,7 +81,7 @@ public sealed class NpcAudioController(PristonAudioLibrary library) : IDisposabl
             return;
         }
 
-        variants[Random.Shared.Next(variants.Length)].Play(volume, 0f, 0f);
+        variants[Random.Shared.Next(variants.Length)].Play(volume * library.SoundGain, 0f, 0f);
     }
 
     public void Dispose()

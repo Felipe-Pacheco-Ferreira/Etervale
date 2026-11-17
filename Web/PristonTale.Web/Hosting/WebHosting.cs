@@ -1,9 +1,11 @@
+using PristonTale.Application.Support;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.Extensions.FileProviders;
 using PristonTale.Application.Services;
 using PristonTale.Application.Sessions;
 using PristonTale.Assets;
@@ -22,6 +24,7 @@ public static class WebHosting
     public const string AndroidDownloadPath = "/download/android";
 
     private static readonly TimeSpan StaticFileAge = TimeSpan.FromDays(7);
+    private const string ImmutableFileCache = "public, max-age=31536000, immutable";
     private const int Ipv6NetworkBytes = 8;
 
     public static void AddPristonWeb(this WebApplicationBuilder builder, WebSettings settings)
@@ -35,11 +38,16 @@ public static class WebHosting
         services.AddSingleton(new LoginThrottle(settings.Security.LoginFailuresPerAccount, settings.Security.LoginFailuresPerIp,
             settings.Security.LoginFailureWindowSeconds * 1000L));
         services.AddSingleton<RegistrationGate>();
+        services.AddHttpClient(nameof(Turnstile), static client => client.Timeout = TimeSpan.FromSeconds(10));
+        services.AddSingleton<Turnstile>();
+        services.AddSingleton(static _ => TermsOfUse.Load(WebSettings.BesideExecutable(TermsOfUse.FileName)));
         services.AddSingleton<ServerStatusMonitor>();
         services.AddHostedService(static provider => provider.GetRequiredService<ServerStatusMonitor>());
         services.AddSingleton(static _ => ClassTitles.Load(WebSettings.BesideExecutable(ClassTitles.FileName)));
+        services.AddSingleton(_ => new SupportTickets(WebSettings.BesideExecutable(settings.Site.SupportTicketsPath)));
         services.AddSingleton(static _ => NewsFeed.Load(WebSettings.BesideExecutable(NewsFeed.FileName)));
         services.AddSingleton<AndroidPackage>();
+        services.AddSingleton<BrowserClient>();
         services.AddSingleton<SiteData>();
         services.AddSingleton(static _ => new WorldCatalog());
 
@@ -48,7 +56,8 @@ public static class WebHosting
             .SetApplicationName("PristonAvalon.Web")
             .PersistKeysToFileSystem(new DirectoryInfo(WebSettings.BesideExecutable(settings.Site.KeysPath)));
         services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-            .AddCookie(options => AccountSession.Configure(options, settings.Security));
+            .AddCookie(options => AccountSession.Configure(options, settings.Security))
+            .AddCookie(BrowserSessionApi.Scheme, options => BrowserSessionApi.Configure(options, settings.Security));
         services.AddAuthorization();
         services.AddAntiforgery(static options =>
         {
@@ -95,14 +104,46 @@ public static class WebHosting
             OnPrepareResponse = static context => context.Context.Response.Headers.CacheControl =
                 "public, max-age=" + (long)StaticFileAge.TotalSeconds
         });
+        UseBrowserClient(app);
         app.UseRouting();
         app.UseRateLimiter();
         app.UseAuthentication();
         app.UseAuthorization();
         app.MapRazorPages();
+        RegistrationApi.Map(app);
+        BrowserSessionApi.Map(app);
+        app.MapGet("/api/worlds", static (WebSettings settings) => Results.Json(settings.Play.WorldList.Select(static world => new
+        {
+            world.Name,
+            world.Region,
+            world.Kind,
+            world.Endpoint,
+            Status = new UriBuilder(world.Endpoint) { Scheme = Uri.UriSchemeHttps, Path = "/status" }.Uri.AbsoluteUri
+        })));
+        app.MapGet(SecurityHeaders.LegacyPlayPagePath, static () => Results.Redirect(SecurityHeaders.PlayPagePath, permanent: true));
+        app.MapGet("/api/client/news", static (NewsFeed feed, ILogger<NewsFeed> logger) =>
+            Results.Json(feed.Items(logger).Take(20).Select(post => new { post.Date, post.Title, post.Summary, post.Body })));
         app.MapMethods(AndroidDownloadPath, [HttpMethods.Get, HttpMethods.Head], static (AndroidPackage package) => package.Current() is { } file
             ? Results.File(file.Path, AndroidPackage.ContentType, file.DownloadName, file.LastWrite, enableRangeProcessing: true)
             : Results.NotFound());
+    }
+
+    // The browser client's files under /play; like the site's own files they are served before the request limits, since
+    // one start fetches some eighty of them.
+    private static void UseBrowserClient(WebApplication app)
+    {
+        var client = app.Services.GetRequiredService<BrowserClient>();
+        Directory.CreateDirectory(client.Root);
+        app.UseStaticFiles(new StaticFileOptions
+        {
+            RequestPath = BrowserClient.RequestPath,
+            FileProvider = new PhysicalFileProvider(client.Root),
+            ContentTypeProvider = BrowserClient.ContentTypes(),
+            OnPrepareResponse = static context => context.Context.Response.Headers.CacheControl =
+                BrowserClient.IsFingerprinted(context.Context.Request.Path.Value ?? "") || context.Context.Request.Query.ContainsKey(BrowserClient.VersionQuery)
+                    ? ImmutableFileCache
+                    : "no-cache"
+        });
     }
 
     // The address a request came from (after the trusted proxies), for the limits.

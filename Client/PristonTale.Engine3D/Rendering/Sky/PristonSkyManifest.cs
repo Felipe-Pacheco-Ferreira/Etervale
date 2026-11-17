@@ -10,6 +10,8 @@ public sealed record PristonSkyLayer(string ModelPath, Color Color, bool Delayed
 
 public static class PristonSkyManifest
 {
+    public const string AssetPath = "Effect/Sky/test32.txt";
+
     public static IReadOnlyList<PristonSkyLayer[]> Read(string path)
     {
         using var stream = AssetFiles.OpenRead(path);

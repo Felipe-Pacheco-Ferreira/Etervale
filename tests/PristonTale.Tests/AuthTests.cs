@@ -15,6 +15,27 @@ internal static class AuthTests
         yield return ("account rules: names are 4 to 16 ASCII letters and digits from a letter; passwords 8 to 64 within the login field",
             RulesAsync);
         yield return ("registration creates a hashed account and refuses bad names, weak passwords and names taken in any case", RegisterAsync);
+        yield return ("the entry page's registration keeps the e-mail in lower case once per account and an optional referral code",
+            RegisterContactAsync);
+    }
+
+    private static async Task RegisterContactAsync()
+    {
+        var accounts = new AccountRepository();
+        var service = new AccountAppService(accounts);
+        Assert.True((await service.RegisterAsync("Hero", "segredo123", new AccountContact("sem-arroba", ""))).Result == RegistrationResult.InvalidEmail,
+            "an address without @");
+        Assert.True((await service.RegisterAsync("Hero", "segredo123", new AccountContact("hero@avalon.gg", "com espaço"))).Result
+            == RegistrationResult.InvalidReferral, "a referral code with a space");
+        Assert.True(accounts.CreateCalls == 0, "a refused registration reached storage");
+
+        var created = await service.RegisterAsync("Hero", "segredo123", new AccountContact("Hero@Avalon.GG", "AMIGO_1"));
+        Assert.True(created.Result == RegistrationResult.Created && accounts.Contacts[created.Account!.Id] == new AccountContact("hero@avalon.gg", "AMIGO_1"),
+            "the account keeps its e-mail in lower case and its referral code");
+        Assert.True((await service.RegisterAsync("Other", "segredo123", new AccountContact("HERO@avalon.gg", ""))).Result == RegistrationResult.EmailTaken
+            && accounts.CreateCalls == 1, "an e-mail already used, in any case");
+        Assert.True((await service.RegisterAsync("Third", "segredo123", new AccountContact("third@avalon.gg", ""))).Result == RegistrationResult.Created,
+            "the referral code is optional");
     }
 
     private static async Task LoginAsync()
@@ -120,6 +141,18 @@ internal static class AuthTests
 
             return Task.FromResult(record);
         }
+
+        public Dictionary<long, AccountContact> Contacts { get; } = [];
+
+        public async Task<AccountRecord> CreateAsync(string userId, string passwordHash, AccountContact contact, CancellationToken ct = default)
+        {
+            var record = await CreateAsync(userId, passwordHash, ct);
+            Contacts[record.Id] = contact with { Email = contact.Email.ToLowerInvariant() };
+            return record;
+        }
+
+        public Task<bool> IsEmailTakenAsync(string email, CancellationToken ct = default) =>
+            Task.FromResult(Contacts.Values.Any(contact => contact.Email == email.ToLowerInvariant()));
 
         public Task UpdateLastLoginAsync(long accountId, CancellationToken ct = default)
         {

@@ -6,6 +6,7 @@ namespace PristonTale.Client.Net;
 
 public interface IGameBackend : IAsyncDisposable
 {
+    int OnlinePlayers => -1;
     string? SessionToken { get; }
 
     // The protocol allows one login per connection: after a successful login or a closed connection, log in again

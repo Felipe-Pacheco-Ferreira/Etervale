@@ -21,6 +21,10 @@
     "AndroidApkPath": "downloads/priston-avalon.apk",
     "AndroidVersion": "0.57"
   },
+  "Play": {
+    "ClientPath": "play",
+    "GameEndpoint": ""
+  },
   "Security": {
     "LoginFailuresPerAccount": 5,
     "LoginFailuresPerIp": 20,

@@ -62,6 +62,7 @@ public sealed class FieldGroundLoot(ItemCatalog catalog, FieldTerrain? terrain =
             if (item is not null)
             {
                 item.Sealed = drop.Sealed;
+                view = WithEquipmentDetails(view, item);
             }
 
             _entries.Add(id, new Entry(view, item, payout.CreditedPlayerId, publicDrop ? nowMs : nowMs + OwnedDropMs, nowMs + LifetimeMs(definition), NoThrower)
@@ -98,6 +99,22 @@ public sealed class FieldGroundLoot(ItemCatalog catalog, FieldTerrain? terrain =
     public Guid PlaceThrown(ItemInstance? item, int gold, Vector3 position, ulong ownerId, long nowMs, long thrownBy) =>
         Add(item, gold, position, ownerId, nowMs, thrownBy);
 
+    private static GroundDropView WithEquipmentDetails(GroundDropView view, ItemInstance? item)
+    {
+        if (item is null || item.Sealed || !item.Definition.IsEquippable)
+        {
+            return view;
+        }
+
+        return view with
+        {
+            HasEquipmentDetails = true,
+            RequiredLevel = item.Roll.RequiredLevel,
+            SpecJob = item.Roll.SpecJob,
+            Rare = item.Definition.UniqueItem != 0 || item.Definition.UniqueVariant > 0 || item.Definition.SetCode != 0
+        };
+    }
+
     private Guid Add(ItemInstance? item, int gold, Vector3 position, ulong ownerId, long nowMs, long thrownBy = NoThrower)
     {
         var id = Guid.NewGuid();
@@ -105,7 +122,7 @@ public sealed class FieldGroundLoot(ItemCatalog catalog, FieldTerrain? terrain =
         var view = item is null
             ? new GroundDropView(id, 0u, ItemCodes.GoldKey, ItemCodes.GoldName, gold, true, spot)
             : new GroundDropView(id, item.Definition.Code, item.Definition.CatalogKey, item.Definition.Name, item.Count, false, spot);
-        _entries.Add(id, new Entry(view, item, ownerId, nowMs, nowMs + LifetimeMs(item?.Definition), thrownBy));
+        _entries.Add(id, new Entry(WithEquipmentDetails(view, item), item, ownerId, nowMs, nowMs + LifetimeMs(item?.Definition), thrownBy));
         _dirty = true;
         return id;
     }

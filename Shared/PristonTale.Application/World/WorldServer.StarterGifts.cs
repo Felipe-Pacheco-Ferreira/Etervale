@@ -150,6 +150,49 @@ public sealed partial class WorldServer
         }, waitForCapacity: true);
     }
 
+    public Task<PreparedCharacterOperation<bool>?> PrepareMailRewardAsync(PlayerSession session,
+        Func<Simulation.World.Ai.ISimRng, IEnumerable<ItemInstance>> makeItems, int gold)
+    {
+        return EnqueueAsync<PreparedCharacterOperation<bool>?>(NoOwner, () =>
+        {
+            if (session.Loaded is null || !TryGetPlaying(session, out var connection))
+            {
+                return null;
+            }
+
+            var original = connection.Player.Character;
+            var candidate = original.CloneForInventoryOperation();
+            foreach (var item in makeItems(_fields[connection.FieldId].Rng))
+            {
+                if (!candidate.ReceiveGroundLoot(item, 0))
+                {
+                    return new PreparedCharacterOperation<bool>(original, null, null, false);
+                }
+            }
+
+            if (gold > 0 && !candidate.ReceiveGroundLoot(null, gold))
+            {
+                return new PreparedCharacterOperation<bool>(original, null, null, false);
+            }
+
+            var snapshot = CharacterRecordFactory.Capture(session.Loaded, candidate, connection.FieldId, connection.Player.Position);
+            return new PreparedCharacterOperation<bool>(original, candidate, snapshot, true);
+        }, waitForCapacity: false);
+    }
+
+    public Task<bool> CommitMailRewardAsync(PlayerSession session, PreparedCharacterOperation<bool> operation, int gold) =>
+        EnqueueAsync(NoOwner, () =>
+        {
+            var candidate = CheckReceived(session, operation, "a mail claim");
+            if (!operation.Original.TryChangeMoney(gold))
+            {
+                throw new CommitInvariantException("The gold changed beyond capacity during a mail claim.");
+            }
+
+            operation.Original.CommitInventoryOperation(candidate);
+            return true;
+        }, waitForCapacity: true);
+
     // Tick only. The candidate of an item received, once the session still owns the character it was copied from.
     private static PlayerCharacter CheckReceived(PlayerSession session, PreparedOperation operation, string what) =>
         ReferenceEquals(session.Character, operation.Original) && operation.Candidate is { } candidate

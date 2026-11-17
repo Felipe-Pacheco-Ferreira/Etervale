@@ -81,10 +81,12 @@ public sealed class PristonCamera
     }
 
     public void Update(GameTime gameTime, GraphicsDevice graphicsDevice, Vector3 target, Vector3 forward,
-        IPristonCollisionQuery collisionWorld, bool pointerCaptured = false, bool inputEnabled = true, bool keysEnabled = true)
+        IPristonCollisionQuery collisionWorld, bool pointerCaptured = false, bool inputEnabled = true, bool keysEnabled = true, Func<Keys, Keys> resolveKey = null, int sideButtons = 0,
+        CameraMouseAction mouse4 = CameraMouseAction.Default, CameraMouseAction mouse5 = CameraMouseAction.Default,
+        bool invertOrbit = false, bool invertScroll = false)
     {
         UpdateOrbit(Mouse.GetState(), keysEnabled ? Keyboard.GetState() : default, pointerCaptured, graphicsDevice.Viewport.Bounds,
-            (float)gameTime.ElapsedGameTime.TotalSeconds, inputEnabled);
+            (float)gameTime.ElapsedGameTime.TotalSeconds, inputEnabled, resolveKey, keysEnabled, sideButtons, mouse4, mouse5, invertOrbit, invertScroll);
         EnsureProjection(graphicsDevice, _fieldOfViewRadians);
         UpdateFollow(target, (float)gameTime.ElapsedGameTime.TotalSeconds, collisionWorld);
     }
@@ -93,7 +95,9 @@ public sealed class PristonCamera
         => UpdateOrbit(mouse, default, pointerCaptured, viewport, deltaSeconds, inputEnabled);
 
     public void UpdateOrbit(MouseState mouse, KeyboardState keyboard, bool pointerCaptured = false, Rectangle viewport = default,
-        float deltaSeconds = 0f, bool inputEnabled = true)
+        float deltaSeconds = 0f, bool inputEnabled = true, Func<Keys, Keys> resolveKey = null, bool keysEnabled = true, int sideButtons = 0,
+        CameraMouseAction mouse4 = CameraMouseAction.Default, CameraMouseAction mouse5 = CameraMouseAction.Default,
+        bool invertOrbit = false, bool invertScroll = false)
     {
         if (!inputEnabled)
         {
@@ -108,11 +112,12 @@ public sealed class PristonCamera
             return;
         }
 
+        var orbitSign = invertOrbit ? -1f : 1f;
         if (!pointerCaptured && mouse.MiddleButton == ButtonState.Pressed && _lastMouse.MiddleButton == ButtonState.Pressed)
         {
             var dx = mouse.X - _lastMouse.X;
             var dy = mouse.Y - _lastMouse.Y;
-            _yaw -= dx * _settings.MouseOrbitSensitivity;
+            _yaw -= dx * _settings.MouseOrbitSensitivity * orbitSign;
             _pitch = MathHelper.Clamp(_pitch + dy * _settings.MouseOrbitSensitivity, _settings.MinPitch, _settings.MaxPitch);
         }
 
@@ -121,36 +126,69 @@ public sealed class PristonCamera
         {
             if (mouse.X < viewport.Left + _settings.EdgeOrbitWidth)
             {
-                _yaw -= _settings.EdgeOrbitRadiansPerSecond * deltaSeconds;
+                _yaw -= _settings.EdgeOrbitRadiansPerSecond * deltaSeconds * orbitSign;
             }
             else if (mouse.X > viewport.Right - _settings.EdgeOrbitWidth)
             {
-                _yaw += _settings.EdgeOrbitRadiansPerSecond * deltaSeconds;
+                _yaw += _settings.EdgeOrbitRadiansPerSecond * deltaSeconds * orbitSign;
             }
         }
 
         if (float.IsFinite(deltaSeconds) && deltaSeconds > 0f)
         {
-            var orbit = _settings.EdgeOrbitRadiansPerSecond * deltaSeconds;
-            if (keyboard.IsKeyDown(Keys.Left))
+            var orbit = _settings.EdgeOrbitRadiansPerSecond * deltaSeconds * orbitSign;
+            if (Down(Keys.Left, CameraMouseAction.RotateLeft))
                 _yaw -= orbit;
-            else if (keyboard.IsKeyDown(Keys.Right))
+            else if (Down(Keys.Right, CameraMouseAction.RotateRight))
                 _yaw += orbit;
 
+            var tiltModifier = keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl);
+            if (Down(Keys.PageUp, CameraMouseAction.TiltUp) || tiltModifier && Down(Keys.Up))
+            {
+                _pitch = MathHelper.Clamp(_pitch - MathF.Abs(orbit), _settings.MinPitch, _settings.MaxPitch);
+            }
+            else if (Down(Keys.PageDown, CameraMouseAction.TiltDown) || tiltModifier && Down(Keys.Down))
+            {
+                _pitch = MathHelper.Clamp(_pitch + MathF.Abs(orbit), _settings.MinPitch, _settings.MaxPitch);
+            }
+
             var zoom = _settings.KeyboardZoomUnitsPerSecond * deltaSeconds;
-            if (keyboard.IsKeyDown(Keys.Up))
+            if (!tiltModifier && Down(Keys.Up) || MouseDown(CameraMouseAction.ZoomIn))
                 _distance = MathHelper.Clamp(_distance - zoom, _settings.MinDistance, _settings.MaxDistance);
-            else if (keyboard.IsKeyDown(Keys.Down))
+            else if (!tiltModifier && Down(Keys.Down) || MouseDown(CameraMouseAction.ZoomOut))
                 _distance = MathHelper.Clamp(_distance + zoom, _settings.MinDistance, _settings.MaxDistance);
         }
 
         var scroll = mouse.ScrollWheelValue - _lastMouse.ScrollWheelValue;
         if (!pointerCaptured && scroll != 0)
         {
-            _distance = MathHelper.Clamp(_distance - scroll * _settings.MouseZoomSensitivity, _settings.MinDistance, _settings.MaxDistance);
+            _distance = MathHelper.Clamp(_distance - scroll * _settings.MouseZoomSensitivity * (invertScroll ? -1f : 1f), _settings.MinDistance, _settings.MaxDistance);
         }
 
         _lastMouse = mouse;
+
+        bool Down(Keys key, CameraMouseAction action = CameraMouseAction.Disabled) =>
+            keyboard.IsKeyDown(resolveKey?.Invoke(key) ?? key) || MouseDown(action);
+
+        bool MouseDown(CameraMouseAction action) =>
+            action != CameraMouseAction.Disabled && keysEnabled && !pointerCaptured &&
+            ((mouse.XButton1 == ButtonState.Pressed && ResolveMouseAction(mouse4, false) == action) ||
+             (mouse.XButton2 == ButtonState.Pressed && ResolveMouseAction(mouse5, true) == action));
+
+        CameraMouseAction ResolveMouseAction(CameraMouseAction configured, bool second)
+        {
+            if (configured != CameraMouseAction.Default)
+            {
+                return configured;
+            }
+
+            if (sideButtons == 2)
+            {
+                return CameraMouseAction.Disabled;
+            }
+
+            return second != (sideButtons == 1) ? CameraMouseAction.RotateRight : CameraMouseAction.RotateLeft;
+        }
     }
 
     private void EnsureProjection(GraphicsDevice graphicsDevice, float fieldOfViewRadians)

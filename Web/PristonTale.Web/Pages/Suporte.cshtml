@@ -1,0 +1,41 @@
+@page
+@model SuporteModel
+@{
+    ViewData["Title"] = "Suporte";
+}
+<div class="page page-narrow">
+    <h1>Suporte</h1>
+    <form class="plate form" method="post">
+        <h2>Novo ticket</h2>
+        <div asp-validation-summary="All" role="alert"></div>
+        <label asp-for="Assunto">Assunto</label>
+        <input asp-for="Assunto" maxlength="100" required />
+        <label asp-for="Mensagem">Mensagem</label>
+        <textarea asp-for="Mensagem" rows="6" maxlength="4000" required></textarea>
+        <button type="submit">Enviar ticket</button>
+    </form>
+    <section class="plate">
+        <h2>Meus tickets</h2>
+        @if (Model.Tickets.Count == 0)
+        {
+            <p>Você ainda não enviou tickets.</p>
+        }
+        @foreach (var ticket in Model.Tickets)
+        {
+            <details>
+                <summary>@ticket.Subject · @ticket.CreatedAt.ToString("dd/MM/yyyy HH:mm 'UTC'")</summary>
+                <p>@ticket.Message</p>
+                @if (ticket.Reply is { } reply)
+                {
+                    <h3>Resposta da equipe</h3>
+                    <p>@reply</p>
+                }
+                else
+                {
+                    <p>Aguardando atendimento</p>
+                }
+                <small>@ticket.Id</small>
+            </details>
+        }
+    </section>
+</div>

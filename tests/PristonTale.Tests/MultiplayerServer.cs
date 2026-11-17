@@ -2,6 +2,7 @@ using System.Numerics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using PristonTale.Application.Services;
 using PristonTale.Application.World;
 using PristonTale.Persistence.Abstractions;
 using PristonTale.Persistence.Abstractions.Accounts;
@@ -44,7 +45,22 @@ internal sealed class MultiplayerServer : IAsyncDisposable
 
     public string Address { get; }
 
+    // The WebSocket edge's address when the settings enable it (Network:WebSocket:Enabled).
+    public Uri? WebSocketAddress { get; private init; }
+
     public WorldServer World => _host.Services.GetRequiredService<WorldServer>();
+
+    public async Task<string> IssueBrowserTicketAsync(string userId, TimeSpan lifetime, CancellationToken ct)
+    {
+        var account = await _host.Services.GetRequiredService<IAccountRepository>().FindByUserIdAsync(userId, ct)
+            ?? throw new InvalidOperationException("Missing test account.");
+        var ticket = BrowserLoginTicket.Generate();
+        var now = DateTimeOffset.UtcNow;
+        await _host.Services.GetRequiredService<IBrowserLoginTickets>().IssueAsync(
+            BrowserLoginTicket.Digest(ticket), account.Id, BrowserLoginTicket.Digest(account.PasswordHash),
+            now.ToUnixTimeSeconds(), (now + lifetime).ToUnixTimeSeconds(), ct);
+        return ticket;
+    }
 
     // Runs a statement on the server's database, to put storage in the state a scenario needs.
     public async Task ExecuteAsync(string sql)
@@ -83,7 +99,8 @@ internal sealed class MultiplayerServer : IAsyncDisposable
             host.Services.GetRequiredService<WorldDataHolder>().Current = world;
             var listener = host.Services.GetServices<IHostedService>().OfType<GameTcpServer>().Single();
             var port = await listener.BoundPort.WaitAsync(TimeSpan.FromSeconds(10));
-            return new MultiplayerServer(host, directory, port);
+            var webSocket = await listener.WebSocketAddress.WaitAsync(TimeSpan.FromSeconds(10));
+            return new MultiplayerServer(host, directory, port) { WebSocketAddress = webSocket };
         }
         catch
         {

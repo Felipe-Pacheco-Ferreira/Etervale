@@ -46,6 +46,7 @@ public sealed class GameplayScreen : GameScreen
         _scene.PresenceObserved += _hud.Combat.Observe;
         _scene.PresenceObserved += _hud.StringEffect.Observe;
         _scene.PresenceObserved += _hud.ObserveQuests;
+        _scene.PresenceObserved += ObserveHuntTargets;
         _hud.QuestFanfare += _scene.PlayQuestFanfare;
         _hud.SiegeEnded += _scene.PlaySiegeEnd;
         _hud.SiegeClosed += _scene.RestoreFieldMusic;
@@ -81,6 +82,8 @@ public sealed class GameplayScreen : GameScreen
         _hud.UseItem = _scene.UseItemAsync;
         _hud.Chat.PlayerName = _scene.Player.Name;
         _hud.Chat.Send = _scene.SendChatAsync;
+        _hud.SendRewards = _scene.SendRewardsAsync;
+        _hud.Chat.VoiceFrame = line => _voice.Receive(line, Context.Presentation.Requested);
         _hud.Overhead = _scene.Overhead;
         _hud.GroundLabels = _groundLabels;
         _hud.GroundLabelPlaced = _scene.PlaceGroundLabel;
@@ -89,6 +92,7 @@ public sealed class GameplayScreen : GameScreen
         _hud.Chat.WhisperArrived += _scene.PlayWhisper;
         _hud.Chat.CloseRequested += RequestExit;
         _hud.ExitRequested += RequestExit;
+        _hud.LobbyRequested += ReturnToLobby;
         _hud.Restart.Restart = _scene.RestartAsync;
         _hud.Restart.ExitRequested += RequestExit;
         _hud.WingGate.Travel = _scene.TravelWingGateAsync;
@@ -137,6 +141,60 @@ public sealed class GameplayScreen : GameScreen
         }
     }
 
+    private readonly Dictionary<ulong, int> _huntMonsters = [];
+    private ulong _autoHuntTarget;
+
+    private void ObserveHuntTargets(PristonTale.Client.Net.Presence.PresenceUpdate update)
+    {
+        foreach (var spawn in update.Spawns)
+        {
+            if (spawn.Kind == PristonTale.Contracts.World.EntityKind.Monster && spawn.OwnerId == 0)
+            {
+                _huntMonsters[spawn.EntityId] = spawn.QuestCode;
+            }
+        }
+
+        foreach (var entity in update.Removed)
+        {
+            _huntMonsters.Remove(entity);
+        }
+    }
+
+    private void UpdateAutoHunt()
+    {
+        var code = _hud.AutoHuntQuestCode;
+        if (_hud.InTown || code == 0 || _scene.PlayerDead || !Context.IsWindowActive ||
+            (!_hud.PointerCaptured && Mouse.GetState().LeftButton == ButtonState.Pressed))
+        {
+            _hud.AutoHuntEnabled = false;
+        }
+
+        var target = 0UL;
+        if (_hud.AutoHuntEnabled)
+        {
+            var nearest = float.PositiveInfinity;
+            foreach (var (entity, questCode) in _huntMonsters)
+            {
+                if (questCode == code && _scene.TrackQuestMonster(entity, out var distance) && distance < nearest)
+                {
+                    nearest = distance;
+                    target = entity;
+                }
+            }
+        }
+
+        if (target != _autoHuntTarget)
+        {
+            if (target != 0 || _scene.AttackTargetId == _autoHuntTarget)
+            {
+                _scene.SetQuestHuntTarget(target);
+            }
+            _autoHuntTarget = target;
+        }
+    }
+
+    private readonly PristonTale.Gameplay.Audio.DesktopVoice _voice = new();
+
     public override void Update(GameTime gameTime)
     {
         var catalog = _pendingHudCatalog;
@@ -180,6 +238,11 @@ public sealed class GameplayScreen : GameScreen
             UpdateMotionKeys();
             UpdateDebugKeys();
         }
+        var settings = Context.Presentation.Requested;
+        _voice.Update(settings, _scene.SelfEntityId, Context.IsWindowActive && !Context.Presentation.AwaitingConfirmation &&
+            !_hud.BlocksPushToTalk && Keyboard.GetState().IsKeyDown(HudSettingsPanel.KeyOf(settings, HudSettingsPanel.VoiceShortcut)),
+            _scene.SendChatAsync);
+        UpdateAutoHunt();
         _scene.Update(gameTime);
         _hud.TargetId = _scene.SelectedTargetId;
         _hud.HelperPet = _scene.SelfHelperPet();
@@ -195,7 +258,10 @@ public sealed class GameplayScreen : GameScreen
         Context.GraphicsDevice.Clear(_scene.SkyColor);
         _scene.Draw();
         _scene.CollectGroundLabels(_groundLabels);
-        _scene.DrawCombatText(Context.SpriteBatch, Context.Font);
+        if (!Context.Presentation.Requested.HideDamageNumbers)
+        {
+            _scene.DrawCombatText(Context.SpriteBatch, Context.Font);
+        }
         _hud.Draw();
     }
 
@@ -271,18 +337,25 @@ public sealed class GameplayScreen : GameScreen
     // The server's shutdown asks every client to save and quit: the game closes as from the window's close button.
     private void RequestExit() => Context.ExitRequested = true;
 
+    private void ReturnToLobby(bool servers) => Context.RequestScreen(servers
+        ? new Opening.ServerSelectScreen(Context)
+        : new CharacterSelect.CharacterSelectScreen(Context));
+
     public override void Dispose()
     {
+        _voice.Dispose();
         if (_scene is not null && _hud is not null)
         {
             _scene.PresenceObserved -= _hud.Combat.Observe;
             _scene.PresenceObserved -= _hud.StringEffect.Observe;
             _scene.PresenceObserved -= _hud.ObserveQuests;
+            _scene.PresenceObserved -= ObserveHuntTargets;
             _scene.PresenceObserved -= _hud.ObserveChat;
             _scene.PresenceObserved -= _hud.ObserveGuide;
             _hud.Chat.WhisperArrived -= _scene.PlayWhisper;
             _hud.Chat.CloseRequested -= RequestExit;
             _hud.ExitRequested -= RequestExit;
+            _hud.LobbyRequested -= ReturnToLobby;
             _hud.Restart.ExitRequested -= RequestExit;
             _hud.QuestFanfare -= _scene.PlayQuestFanfare;
             _hud.SiegeEnded -= _scene.PlaySiegeEnd;

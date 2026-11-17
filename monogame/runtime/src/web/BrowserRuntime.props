@@ -1,0 +1,25 @@
+<Project>
+  <!--
+    Etervale fork: links the browser build of the runtime (mgruntime.cpp, monogame/issues/021) into a
+    Microsoft.NET.Sdk.WebAssembly project. The SDK's Emscripten compiles the file at the native link, so the project needs
+    the wasm-tools workload; the framework's DllImport("mgruntime") resolves to it by its file name.
+  -->
+  <PropertyGroup>
+    <WasmBuildNative>true</WasmBuildNative>
+    <EtervaleRuntimeSource>$(MSBuildThisFileDirectory)../</EtervaleRuntimeSource>
+    <EmccExtraLDFlags>$(EmccExtraLDFlags) -sUSE_WEBGPU=1 -std=c++17 -I"$(EtervaleRuntimeSource)include" -I"$(EtervaleRuntimeSource)external/stb"</EmccExtraLDFlags>
+  </PropertyGroup>
+  <ItemGroup>
+    <NativeFileReference Include="$(MSBuildThisFileDirectory)mgruntime.cpp" />
+    <EtervaleRuntimeSourceFile Include="$(EtervaleRuntimeSource)web/*.cpp;$(EtervaleRuntimeSource)webgpu/**/*.cpp;$(EtervaleRuntimeSource)webgpu/**/*.h" />
+    <EtervaleRuntimeSourceFile Include="$(EtervaleRuntimeSource)common/*.cpp;$(EtervaleRuntimeSource)common/*.h;$(EtervaleRuntimeSource)include/*.h" />
+    <UpToDateCheckInput Include="@(EtervaleRuntimeSourceFile)" />
+  </ItemGroup>
+  <!-- The SDK relinks when a linked file changes; mgruntime.cpp includes the other sources, so they are inputs too
+       (_WasmLinkDependencies is the input list of the SDK's _BrowserWasmLinkDotNet target). -->
+  <Target Name="EtervaleRuntimeLinkInputs" BeforeTargets="_BrowserWasmLinkDotNet">
+    <ItemGroup>
+      <_WasmLinkDependencies Include="@(EtervaleRuntimeSourceFile)" />
+    </ItemGroup>
+  </Target>
+</Project>

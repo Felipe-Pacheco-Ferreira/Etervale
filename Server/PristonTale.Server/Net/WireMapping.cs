@@ -166,5 +166,11 @@ internal static class WireMapping
         GameUnits.ToFixed(drop.Position.X),
         GameUnits.ToFixed(drop.Position.Y),
         GameUnits.ToFixed(drop.Position.Z),
-        drop.Name);
+        drop.Name)
+    {
+        HasEquipmentDetails = drop.HasEquipmentDetails,
+        RequiredLevel = (byte)Math.Clamp(drop.RequiredLevel, 0, byte.MaxValue),
+        SpecJob = drop.SpecJob,
+        Rare = drop.Rare
+    };
 }

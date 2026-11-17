@@ -11,7 +11,8 @@ How the code works is documented in [docs/](docs/README.md).
 
 ## Requirements
 
-- .NET 10 SDK.
+- .NET 10 SDK, with the `wasm-tools` workload (`dotnet workload install wasm-tools`): the solution includes the browser
+  client, which links the MonoGame runtime into WebAssembly.
 - [Game data archive](https://drive.google.com/file/d/1b9z7PrSsWzTBY_O-uoIOw4bK-vwKq4p1/view?usp=sharing),
   **published 2026-11-07 at 02:45 (UTC-03:00)**.
 - For the client: a GPU and driver with Vulkan 1.1 or later. The client uses MonoGame's Native platform on Vulkan
@@ -160,6 +161,32 @@ dotnet run --project Web/PristonTale.Web -c Release --no-build -- --Database:Sql
 
 It listens on `https://localhost:5443` (and redirects `http://localhost:5080`). Settings, security measures and
 deployment: [docs/website.md](docs/website.md).
+
+### Web client
+
+The browser client runs inside the website's "Jogar na Web" page. Enable the game server's WebSocket edge, publish the
+client into the site's `play` folder and give the site the edge's address:
+
+```bash
+dotnet run --project Server/PristonTale.Server -c Release --no-build -- --Network:WebSocket:Enabled=true --Network:WebSocket:AllowedOrigins:0=https://localhost:5443
+pwsh Client/PristonTale.Browser/publish.ps1 -Target Web/PristonTale.Web/bin/Release/net10.0/play
+dotnet run --project Web/PristonTale.Web -c Release --no-build -- --Database:SqlitePath=<copy-of-the-database.db> --Play:GameEndpoint=wss://localhost:10010/game
+```
+
+On Linux and macOS use `Client/PristonTale.Browser/publish.sh <folder>`. Open `https://localhost:5443/jogar` in a
+browser with WebGPU; it must trust the ASP.NET development certificate (`dotnet dev-certs https --trust`). The publish
+includes the font, opening scene and its music. Details and roadmap: [docs/web-client.md](docs/web-client.md).
+
+Effects built for the browser runtime (WebGPU) need Slang, fetched once per machine; the runtime's own checks run in
+a verification page:
+
+```bash
+monogame/pipeline/fetch-slang.sh
+dotnet publish monogame/runtime/repro/WebGpuRepro -c Release -o <folder>
+```
+
+On Windows run `monogame/pipeline/fetch-slang.ps1` instead. Serve `<folder>/wwwroot` on `http://localhost` and open it
+in a browser with WebGPU: the page lists the runtime's checks.
 
 ## Validate
 

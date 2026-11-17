@@ -1,0 +1,21 @@
+#----------------------------- Global Properties ----------------------------#
+
+/outputDir:bin/$(Platform)
+/intermediateDir:obj/$(Platform)
+/platform:Web
+/config:
+/profile:HiDef
+/compress:False
+
+#-------------------------------- References --------------------------------#
+
+# The fork's effect processor (monogame/pipeline), built before this content by the project's reference.
+/reference:../../../../pipeline/bin/MonoGame.Effect.Processor.dll
+
+#---------------------------------- Content ---------------------------------#
+
+#begin ComputeCheck.fx
+/importer:EffectImporter
+/processor:SpirvEffectProcessor
+/processorParam:DebugMode=Auto
+/build:ComputeCheck.fx

@@ -1,4 +1,4 @@
-﻿// MonoGame - Copyright (C) MonoGame Foundation, Inc
+// MonoGame - Copyright (C) MonoGame Foundation, Inc
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
@@ -124,6 +124,7 @@ namespace Microsoft.Xna.Framework.Audio
                 SoundEffect.Initialize();                
                 if (_allMicrophones == null)
                     _allMicrophones = new List<Microphone>();
+                PlatformEnumerate();
                 return new ReadOnlyCollection<Microphone>(_allMicrophones);
             }
         }
@@ -135,7 +136,11 @@ namespace Microsoft.Xna.Framework.Audio
         /// </summary>
         public static Microphone Default
         {
-            get { SoundEffect.Initialize(); return _default; }
+            get
+            {
+                _ = All;
+                return _default;
+            }
         }       
 
         #endregion
@@ -211,7 +216,7 @@ namespace Microsoft.Xna.Framework.Audio
         /// <summary>
         /// Event fired when the audio data are available.
         /// </summary>
-        // Etervale fork: XNA API that the Native platform never raises (Microphone.Native.cs captures nothing), so the
+        // The Native capture path is polled, so the
         // compiler reports it unused (CS0067); the event stays for source compatibility.
 #pragma warning disable CS0067
         public event EventHandler<EventArgs> BufferReady;
@@ -231,7 +236,7 @@ namespace Microsoft.Xna.Framework.Audio
 
         internal static void StopMicrophones()
         {
-            // stopping all running microphones before shutting down audio devices
+            _default?.Stop();
             if (_allMicrophones != null)
                 for (int i = 0; i < _allMicrophones.Count; i++)
                     _allMicrophones[i].Stop();

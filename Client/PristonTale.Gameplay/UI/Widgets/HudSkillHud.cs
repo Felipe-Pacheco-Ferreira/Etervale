@@ -430,6 +430,9 @@ public sealed class HudSkillHud : IDisposable
         _gauge = null;
     }
 
+    public void DrawActionSlot(HudPainter painter, Rectangle bounds, uint skillCode, SkillCooldownBook cooldowns, double nowMs) =>
+        DrawSocket(painter, bounds, 0, skillCode, cooldowns, nowMs);
+
     private void DrawSocket(HudPainter painter, Rectangle socket, int y, uint skillCode, SkillCooldownBook cooldowns, double nowMs)
     {
         if (skillCode is 0 or HudSkillBindings.BasicAttackId || !_buttons.TryGetValue(skillCode, out var button) || painter.Texture(button) is not { } texture)

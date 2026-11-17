@@ -16,8 +16,16 @@ public sealed class PristonSkyLibrary : IDisposable
 
     private readonly PristonTextureLoader _textures;
     private readonly List<PristonGpuMesh> _meshes = [];
-    private readonly List<RenderBatch[]> _profiles = [];
-    private readonly List<bool> _animated = [];
+    private readonly Dictionary<(string Path, Color Color), PreparedLayer> _cache = [];
+    private readonly Dictionary<PreparedLayer, RenderBatch[]> _caps = [];
+    private readonly HashSet<Texture2D> _counted = [];
+    private IReadOnlyList<PristonSkyLayer[]> _manifest = [];
+    private RenderBatch[][] _profiles = [];
+    private bool[] _animated = [];
+    private string _root;
+    private PristonSmdReader _reader;
+    private PristonGpuMeshBuilder _builder;
+    private PristonMaterialRuntimeFactory _materials;
 
     private PristonSkyLibrary(GraphicsDevice device, IClientLog log)
     {
@@ -25,19 +33,29 @@ public sealed class PristonSkyLibrary : IDisposable
         _textures.Initialize();
     }
 
-    public int ProfileCount => _profiles.Count;
+    public int ProfileCount => _manifest.Count;
     public long MeshBytes { get; private set; }
     public long TextureBytes { get; private set; }
 
-    public static PristonSkyLibrary LoadBootstrap(GraphicsDevice device, string assetRoot, IClientLog log = null)
+    // preloadAll: build every profile now (the desktop and Android clients); otherwise a profile is built the first time
+    // it is drawn, so the browser's login reads and decodes only the opening's sky instead of all of them.
+    public static PristonSkyLibrary LoadBootstrap(GraphicsDevice device, string assetRoot, IClientLog log = null, bool preloadAll = true)
     {
         log ??= ConsoleClientLog.Instance;
         var started = Stopwatch.GetTimestamp();
         var library = new PristonSkyLibrary(device, log);
         try
         {
-            library.Load(device, assetRoot);
-            log.Info($"[Sky] {library.ProfileCount} profiles ready in {Stopwatch.GetElapsedTime(started).TotalMilliseconds:F1} ms; "
+            library.Open(device, assetRoot);
+            if (preloadAll)
+            {
+                for (var profile = 0; profile < library.ProfileCount; profile++)
+                {
+                    library.Profile(profile);
+                }
+            }
+
+            log.Info($"[Sky] {library.ProfileCount} profiles {(preloadAll ? "ready" : "listed")} in {Stopwatch.GetElapsedTime(started).TotalMilliseconds:F1} ms; "
                 + $"meshes {library.MeshBytes} B; textures {library.TextureBytes} B.");
             return library;
         }
@@ -48,16 +66,39 @@ public sealed class PristonSkyLibrary : IDisposable
         }
     }
 
-    private void Load(GraphicsDevice device, string root)
+    private void Open(GraphicsDevice device, string root)
     {
-        var manifest = PristonSkyManifest.Read(AssetFiles.Combine(root, "Effect/Sky/test32.txt"));
-        var reader = new PristonSmdReader();
-        var builder = new PristonGpuMeshBuilder(device);
-        var materials = new PristonMaterialRuntimeFactory(_textures);
-        var cache = new Dictionary<(string Path, Color Color), PreparedLayer>();
-        var caps = new Dictionary<PreparedLayer, RenderBatch[]>();
+        _root = root;
+        _manifest = PristonSkyManifest.Read(AssetFiles.Combine(root, PristonSkyManifest.AssetPath));
+        _profiles = new RenderBatch[_manifest.Count][];
+        _animated = new bool[_manifest.Count];
+        _reader = new PristonSmdReader();
+        _builder = new PristonGpuMeshBuilder(device);
+        _materials = new PristonMaterialRuntimeFactory(_textures);
+    }
+
+    private RenderBatch[] Profile(int index)
+    {
+        if (_profiles[index] is { } built)
+        {
+            return built;
+        }
+
+        var batches = Build(_manifest[index]);
+        _profiles[index] = batches;
+        _animated[index] = Array.Exists(batches, static batch => IsAnimated(batch.Material));
+        return batches;
+    }
+
+    private RenderBatch[] Build(PristonSkyLayer[] profile)
+    {
+        var root = _root;
+        var reader = _reader;
+        var builder = _builder;
+        var materials = _materials;
+        var cache = _cache;
+        var caps = _caps;
         var textures = new HashSet<Texture2D>();
-        foreach (var profile in manifest)
         {
             var batches = new List<RenderBatch>();
             var top = float.NegativeInfinity;
@@ -141,21 +182,23 @@ public sealed class PristonSkyLibrary : IDisposable
                 batches.InsertRange(afterOuter, cap);
             }
 
-            _profiles.Add(batches.ToArray());
-            _animated.Add(batches.Exists(static batch => IsAnimated(batch.Material)));
-        }
+            foreach (var texture in textures)
+            {
+                if (_counted.Add(texture))
+                {
+                    TextureBytes += PristonTextureLoader.EstimateBytes(texture);
+                }
+            }
 
-        foreach (var texture in textures)
-        {
-            TextureBytes += PristonTextureLoader.EstimateBytes(texture);
+            return batches.ToArray();
         }
     }
 
     internal ReadOnlySpan<RenderBatch> GetBatches(int profile)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(profile);
-        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(profile, _profiles.Count);
-        return _profiles[profile];
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(profile, _profiles.Length);
+        return Profile(profile);
     }
 
     private PristonGpuMesh Upload(PristonGpuMeshBuilder builder, List<PristonCornerVertex> vertices)
@@ -239,7 +282,13 @@ public sealed class PristonSkyLibrary : IDisposable
     // Scrolling, multi-frame or water layers change the composed sky over time even within one profile.
     internal bool IsAnimated(int profile)
     {
-        return profile >= 0 && profile < _animated.Count && _animated[profile];
+        if (profile < 0 || profile >= _animated.Length)
+        {
+            return false;
+        }
+
+        Profile(profile);
+        return _animated[profile];
     }
 
     private static bool IsAnimated(PristonMaterialRuntime material)
@@ -268,8 +317,8 @@ public sealed class PristonSkyLibrary : IDisposable
         }
 
         _meshes.Clear();
-        _profiles.Clear();
-        _animated.Clear();
+        _profiles = [];
+        _animated = [];
         _textures.Dispose();
     }
 }

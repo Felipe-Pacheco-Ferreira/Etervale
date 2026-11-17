@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using PristonTale.Gameplay.Localization;
 using PristonTale.Gameplay.UI.Rendering;
 
 namespace PristonTale.Gameplay.UI.Widgets;
@@ -7,55 +8,51 @@ public enum HudSystemEntry
 {
     Settings,
     Help,
-    Exit
+    Exit,
+    Characters,
+    Servers
 }
 
-// The exit button's menu: the original's 128x64 ExitMenu.tga sheet (Help above Quit) at 698,504 with its hover plaques,
-// and Etervale's settings plaque just above it.
 public static class HudSystemMenu
 {
-    public const int X = 698;
-    public const int Y = 504;
-    private const int PlaqueWidth = 96;
-    private const int PlaqueHeight = 19;
-    private const int SettingsY = Y - PlaqueHeight - 2;
-    // The rows of the sheet the original answers: Help on top, Quit at the bottom.
-    private const int HelpY = Y;
-    private const int ExitY = Y + 31;
+    private const int Width = 112;
+    private const int Height = 27;
+    private const int X = 688;
+    private const int Bottom = 556;
 
-    private static readonly string[] Hover = [null, HudArt.SystemHelp, HudArt.SystemExit];
+    private static readonly (HudSystemEntry Entry, string Portuguese, string English)[] Rows =
+    [
+        (HudSystemEntry.Servers, "Servidores", "Servers"),
+        (HudSystemEntry.Characters, "Personagens", "Characters"),
+        (HudSystemEntry.Settings, "Configurações", "Settings"),
+        (HudSystemEntry.Help, "Ajuda", "Help"),
+        (HudSystemEntry.Exit, "Sair", "Quit")
+    ];
 
-    // The plaques; the sheet's lowest chain hangs over the menu buttons and takes no clicks.
-    public static Rectangle Bounds => new(X, SettingsY, PlaqueWidth, ExitY + PlaqueHeight + 1 - SettingsY);
+    public static Rectangle Bounds => new(X, Bottom - Height * Rows.Length, Width, Height * Rows.Length);
 
-    public static Rectangle Entry(HudSystemEntry entry) => entry switch
-    {
-        HudSystemEntry.Settings => new Rectangle(X, SettingsY, PlaqueWidth, PlaqueHeight),
-        HudSystemEntry.Help => new Rectangle(X, HelpY, PlaqueWidth, PlaqueHeight + 1),
-        _ => new Rectangle(X, ExitY, PlaqueWidth, PlaqueHeight + 1)
-    };
+    private static Rectangle Row(int index) => new(X, Bounds.Top + index * Height, Width, Height);
 
-    public static HudSystemEntry? At(Point design)
-    {
-        for (var index = 0; index < Hover.Length; index++)
-        {
-            if (Entry((HudSystemEntry)index).Contains(design))
-            {
-                return (HudSystemEntry)index;
-            }
-        }
-
-        return null;
-    }
+    public static HudSystemEntry? At(Point design) =>
+        Bounds.Contains(design) ? Rows[(design.Y - Bounds.Top) / Height].Entry : null;
 
     public static void Draw(HudPainter painter, HudLayout layout, Point pointer)
     {
-        var offset = layout.BottomOffset;
-        painter.Sprite(HudArt.SystemMenu, X, Y + offset);
-        painter.Sprite(HudArt.SystemSettings, X, SettingsY + offset);
-        if (At(new Point(pointer.X, pointer.Y - offset)) is { } entry && Hover[(int)entry] is { } hover)
+        var portuguese = ClientText.Language == "pt-BR";
+        for (var index = 0; index < Rows.Length; index++)
         {
-            painter.Sprite(hover, X, Entry(entry).Y + offset);
+            var row = Row(index);
+            row.Offset(0, layout.BottomOffset);
+            var hovered = row.Contains(pointer);
+            painter.ColorBox(row, 128, 101, 71, 255);
+            row.Inflate(-1, -1);
+            painter.ColorBox(row, hovered ? 97 : 61, hovered ? 65 : 44, hovered ? 30 : 28, 255);
+            painter.ColorBox(new Rectangle(row.Left, row.Top, row.Width, 2), 157, 128, 88, 255);
+            painter.ColorBox(new Rectangle(row.Left, row.Bottom - 3, row.Width, 3), 44, 37, 32, 255);
+            painter.ColorBox(new Rectangle(row.Left + 2, row.Top + 4, 3, 3), 177, 152, 119, 255);
+            painter.ColorBox(new Rectangle(row.Right - 5, row.Top + 4, 3, 3), 177, 152, 119, 255);
+            var label = portuguese ? Rows[index].Portuguese : Rows[index].English;
+            painter.TextCentered(label, row.Left + 6, row.Right - 6, row.Top + 5, hovered ? Color.Wheat : Color.Gold);
         }
     }
 }

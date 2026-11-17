@@ -27,7 +27,9 @@ SamplerState SourceSampler : register(s0) = sampler_state
     Texture = (Source); MinFilter = Linear; MagFilter = Linear; MipFilter = Point; AddressU = Clamp; AddressV = Clamp;
 };
 
-RWByteAddressBuffer Histogram : register(u0);
+// The bins and the frame's histogram are atomic counters, through the effect processor's MGFX_ATOMIC_* macros (HLSL
+// atomics on Vulkan, WGSL atomics on WebGPU).
+RWStructuredBuffer<MGFX_ATOMIC_UINT> Histogram : register(u0);
 RWStructuredBuffer<float4> State : register(u1);
 
 #define BINS 128
@@ -39,14 +41,14 @@ static const float MinEv = -4.0;
 static const float MaxEv = 17.0;
 static const float WeightScale = 64.0;
 
-groupshared uint Bins[BINS];
+groupshared MGFX_ATOMIC_UINT Bins[BINS];
 
 [numthreads(16, 16, 1)]
 void CS_Histogram(uint3 id : SV_DispatchThreadID, uint index : SV_GroupIndex)
 {
     if (index < BINS)
     {
-        Bins[index] = 0;
+        MGFX_ATOMIC_STORE(Bins[index], 0u);
     }
 
     GroupMemoryBarrierWithGroupSync();
@@ -61,14 +63,17 @@ void CS_Histogram(uint3 id : SV_DispatchThreadID, uint index : SV_GroupIndex)
         uint bin = min((uint)(t * BINS), BINS - 1);
         float2 d = (uv - 0.5) * float2(NightCurve.w, 1.0);
         float weight = exp(-dot(d, d) / (2.0 * 0.35 * 0.35));
-        InterlockedAdd(Bins[bin], (uint)(weight * WeightScale + 0.5));
+        MGFX_ATOMIC_ADD(Bins[bin], (uint)(weight * WeightScale + 0.5));
     }
 
     GroupMemoryBarrierWithGroupSync();
-    if (index < BINS && Bins[index] != 0)
+    if (index < BINS)
     {
-        uint unused;
-        Histogram.InterlockedAdd(index * 4, Bins[index], unused);
+        uint count = MGFX_ATOMIC_LOAD(Bins[index]);
+        if (count != 0)
+        {
+            MGFX_ATOMIC_ADD(Histogram[index], count);
+        }
     }
 }
 
@@ -81,8 +86,8 @@ float CompensationStops(float ev)
 [numthreads(BINS, 1, 1)]
 void CS_Adapt(uint index : SV_GroupIndex)
 {
-    Bins[index] = Histogram.Load(index * 4);
-    Histogram.Store(index * 4, 0);
+    MGFX_ATOMIC_STORE(Bins[index], MGFX_ATOMIC_LOAD(Histogram[index]));
+    MGFX_ATOMIC_STORE(Histogram[index], 0u);
     GroupMemoryBarrierWithGroupSync();
     if (index != 0)
     {
@@ -90,9 +95,9 @@ void CS_Adapt(uint index : SV_GroupIndex)
     }
 
     float total = 0.0;
-    for (uint k = 0; k < BINS; k++)
+    for (uint i = 0; i < BINS; i++)
     {
-        total += (float)Bins[k];
+        total += (float)MGFX_ATOMIC_LOAD(Bins[i]);
     }
 
     float low = total * LowPercentile;
@@ -102,7 +107,7 @@ void CS_Adapt(uint index : SV_GroupIndex)
     float count = 0.0;
     for (uint b = 0; b < BINS; b++)
     {
-        float n = (float)Bins[b];
+        float n = (float)MGFX_ATOMIC_LOAD(Bins[b]);
         float take = clamp(cumulative + n, low, high) - clamp(cumulative, low, high);
         float centre = MinLog2 + (b + 0.5) * (MaxLog2 - MinLog2) / BINS;
         sum += take * centre;

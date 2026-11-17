@@ -51,53 +51,95 @@ public sealed partial class GameplayHud
         return true;
     }
 
+    private void OpenNews()
+    {
+        _systemMenu = false;
+        _news.Open(_context.Presentation.Requested);
+    }
+
     private void UpdateKeys(KeyboardState keyboard)
     {
         if (keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl))
         {
+            if (Pressed(keyboard, Keys.B))
+            {
+                _actionBarVisible = !_actionBarVisible;
+            }
+
             return;
         }
 
-        if (Pressed(keyboard, Keys.I) || Pressed(keyboard, Keys.V))
+        if (_actionBarVisible)
+        {
+            for (var slot = 0; slot < HudSkillBindings.ShortcutCount; slot++)
+            {
+                if (_settings.ShortcutPressed(keyboard, _previousKeyboard, HudSettingsPanel.FirstActionBarShortcut + slot))
+                {
+                    SelectActionSlot(slot);
+                    return;
+                }
+            }
+        }
+
+        if (_settings.ShortcutPressed(keyboard, _previousKeyboard, 0) || (_settings.DefaultInventoryKey && Pressed(keyboard, Keys.I)))
         {
             TogglePanel(_inventorySlide);
             HelpPetKey("InvenTory");
         }
 
-        if (Pressed(keyboard, Keys.C))
+        if (_settings.ShortcutPressed(keyboard, _previousKeyboard, 1))
         {
             TogglePanel(_statusSlide);
             HelpPetKey("CarStatus");
         }
 
-        if (Pressed(keyboard, Keys.S))
+        if (_settings.ShortcutPressed(keyboard, _previousKeyboard, 2))
         {
             TogglePanel(_skillSlide);
             HelpPetKey("Skill");
         }
 
-        if (Pressed(keyboard, Keys.X))
+        if (_settings.ShortcutPressed(keyboard, _previousKeyboard, 5))
         {
             _systemMenu = !_systemMenu;
             HelpPetKey("System");
         }
 
-        if (Pressed(keyboard, Keys.Q))
+        if (_settings.ShortcutPressed(keyboard, _previousKeyboard, 3))
         {
             ToggleQuestWindow();
             HelpPetKey("Quest");
         }
 
-        if (Pressed(keyboard, Keys.D))
+        if (_settings.ShortcutPressed(keyboard, _previousKeyboard, 4))
         {
             TogglePartyWindow();
             HelpPetKey("Party");
         }
 
-        if (Pressed(keyboard, Keys.R))
+        if (_settings.ShortcutPressed(keyboard, _previousKeyboard, 6))
         {
             RunToggleRequested?.Invoke();
             HelpPetKey("RunAndWalk");
+        }
+
+        if (_settings.ShortcutPressed(keyboard, _previousKeyboard, 7))
+        {
+            _settings.Open();
+            _settingsOpen = true;
+            _systemMenu = false;
+            return;
+        }
+
+        if (_settings.ShortcutPressed(keyboard, _previousKeyboard, HudSettingsPanel.MinimapShortcut))
+        {
+            _mapVisible = !_mapVisible;
+        }
+
+        if (_settings.ShortcutPressed(keyboard, _previousKeyboard, HudSettingsPanel.NewsShortcut))
+        {
+            OpenNews();
+            return;
         }
 
         if (Pressed(keyboard, Keys.Space))
@@ -105,7 +147,7 @@ public sealed partial class GameplayHud
             YahooKeyPressed?.Invoke();
         }
 
-        if (Pressed(keyboard, Keys.E))
+        if (_settings.ShortcutPressed(keyboard, _previousKeyboard, 8))
         {
             _inventory.ToggleBagPage();
         }
@@ -115,15 +157,15 @@ public sealed partial class GameplayHud
             _skills.TurnPageByKey();
         }
 
-        if (Pressed(keyboard, Keys.W))
+        if (_settings.ShortcutPressed(keyboard, _previousKeyboard, 9))
         {
             _inventory.ToggleWeaponPair();
         }
 
         var shift = keyboard.IsKeyDown(Keys.LeftShift) || keyboard.IsKeyDown(Keys.RightShift);
-        for (var box = 0; box < BeltKeys.Length; box++)
+        for (var box = 0; box < BeltSlotCount; box++)
         {
-            if (Pressed(keyboard, BeltKeys[box]))
+            if (_settings.ShortcutPressed(keyboard, _previousKeyboard, 10 + box))
             {
                 _inventory.BeltKey(box, shift);
                 HelpPetKey("Potion_ShortKey", KeyIndex + box);
@@ -142,6 +184,16 @@ public sealed partial class GameplayHud
 
     private void Click(OwnerState state, HudLayout layout, Point pointer, Point design, KeyboardState keyboard)
     {
+        if (ClickGlobalBonuses(layout, pointer) || ClickShopDirectory(layout, pointer) || ClickRecentDrops(layout, pointer) || ClickRewards(layout, pointer) || _news.Click(pointer) || ClickActionBar(layout, pointer))
+        {
+            return;
+        }
+
+        if (_mail.Click(pointer, _chat) || (!_settingsOpen && !ModalOpen && ClickQuickMenu(layout, pointer)))
+        {
+            return;
+        }
+
         // The count box holds every click until it closes.
         if (_countBox.IsOpen)
         {
@@ -169,6 +221,11 @@ public sealed partial class GameplayHud
         if (_settingsOpen && HudSettingsPanel.Box.Contains(pointer))
         {
             if (HudSettingsPanel.OkButton.Contains(pointer))
+            {
+                _settings.Save();
+                _settingsOpen = false;
+            }
+            else if (HudSettingsPanel.CancelButton.Contains(pointer) || HudSettingsPanel.CloseButton.Contains(pointer))
             {
                 _settingsOpen = false;
             }
@@ -226,8 +283,15 @@ public sealed partial class GameplayHud
         if (_systemMenu)
         {
             var entry = HudSystemMenu.At(design);
+            if (entry is HudSystemEntry.Characters or HudSystemEntry.Servers)
+            {
+                _systemMenu = false;
+                LobbyRequested?.Invoke(entry == HudSystemEntry.Servers);
+                return;
+            }
             if (entry == HudSystemEntry.Settings)
             {
+                _settings.Open();
                 _settingsOpen = true;
                 _systemMenu = false;
                 return;
@@ -440,7 +504,7 @@ public sealed partial class GameplayHud
             return true;
         }
 
-        if (HudBar.Captures(design) || MinimapShown && HudMinimap.Box(layout).Contains(pointer) || _skillHud.BuffAt(pointer) != 0
+        if (GlobalBonusesCapture(layout, pointer) || ShopDirectoryCaptures(layout, pointer) || RecentDropsCapture(layout, pointer) || RewardsCapture(layout, pointer) || ActionBarCaptures(layout, pointer) || QuickMenuCaptures(layout, pointer) || HudBar.Captures(design) || MinimapShown && HudMinimap.Box(layout).Contains(pointer) || _skillHud.BuffAt(pointer) != 0
             || WindowContains(layout, _inventorySlide, pointer) || WindowContains(layout, _statusSlide, pointer) || WindowContains(layout, _skillSlide, pointer)
             || _skills.MasterBoxShown && HudSkillTreeLayout.MasterBox.Contains(pointer))
         {
@@ -520,7 +584,7 @@ public sealed partial class GameplayHud
     }
 
     // The potion belt's boxes, left to right.
-    private static readonly Keys[] BeltKeys = [Keys.D1, Keys.D2, Keys.D3];
+    private const int BeltSlotCount = 3;
 
     private bool Pressed(KeyboardState state, Keys key) => state.IsKeyDown(key) && !_previousKeyboard.IsKeyDown(key);
 }

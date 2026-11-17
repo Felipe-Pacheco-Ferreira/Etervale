@@ -14,6 +14,12 @@
         <p>Horários do servidor (@SiteText.ZoneName(zone, calendar.Now)).</p>
     </header>
 
+    <section class="plate" aria-labelledby="bonus-globais">
+        <h2 id="bonus-globais">Bônus globais</h2>
+        <p>Taxa base de experiência ×@Model.ExperienceMultiplier</p>
+        <p>Taxa do evento de experiência @calendar.Calendar.ExperiencePercent%</p>
+    </section>
+
     <section aria-labelledby="agora">
         <h2 id="agora">Agora</h2>
         @if (calendar.Running.Count == 0)

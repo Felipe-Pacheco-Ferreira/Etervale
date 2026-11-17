@@ -10,6 +10,12 @@ public static class PristonCloudNoise
 {
     public const int Size = 64;
 
+    // The browser runs .NET on one thread without native code, where Size takes many seconds; the volume tiles, so a
+    // smaller one keeps the same shapes with less detail.
+    public const int BrowserSize = 32;
+
+    public static int SizeHere => OperatingSystem.IsBrowser() ? BrowserSize : Size;
+
     public static HalfVector4[] Generate(int size = Size)
     {
         var values = new float[size * size * size * 4];

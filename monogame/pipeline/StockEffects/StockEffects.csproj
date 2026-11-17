@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Compiles the browser runtime's stock effects (monogame/runtime/src/webgpu/effects/*.fx) for the WebGPU profile and
+    writes them as C headers next to their sources (<name>.wgpu.mgfxo.h), which MGG_WebGPU.cpp embeds (issue 022). Run it
+    after changing an effect there; it needs DXC (dotnet tool restore) and Slang (../fetch-slang.sh or .ps1).
+
+      dotnet run -c Release (project monogame/pipeline/StockEffects)
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- net8.0 like the compiler (MGCB is a net8.0 tool); runs on the installed .NET 10. -->
+    <RollForward>Major</RollForward>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../MonoGame.Effect.Compiler/MonoGame.Effect.Compiler.csproj" />
+    <!-- The compiler takes the XNA types from the framework without copying it (MGCB brings its own); this tool runs alone. -->
+    <ProjectReference Include="../../framework/MonoGame.Framework/MonoGame.Framework.Native.csproj" />
+  </ItemGroup>
+</Project>

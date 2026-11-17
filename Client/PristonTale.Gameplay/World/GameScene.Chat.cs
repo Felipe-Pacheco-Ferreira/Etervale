@@ -29,6 +29,9 @@ public sealed partial class GameScene
         return _playChannel is not null ? _playChannel.SendChatAsync(text, party, _presenceCts.Token) : Task.CompletedTask;
     }
 
+    internal Task SendRewardsAsync(PristonTale.Protocol.Packets.RewardEventsAction action, PristonTale.Simulation.Events.RewardTrack track, int index) =>
+        _playChannel?.SendRewardEventsAsync(action, track, index, _presenceCts.Token) ?? Task.CompletedTask;
+
     public void PressYahooKey()
     {
         // Space attacks in an action field.

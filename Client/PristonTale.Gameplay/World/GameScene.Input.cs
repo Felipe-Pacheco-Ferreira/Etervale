@@ -438,7 +438,9 @@ public sealed partial class GameScene
     }
 
     // Holding A names every drop in view, as in the original.
-    private bool ShowAllDropLabels => !PointerCaptured && !KeyboardCaptured && Keyboard.GetState().IsKeyDown(Keys.A);
+    private bool ShowAllDropLabels => _presentation.Requested.AlwaysShowGroundLabels ||
+        (!PointerCaptured && !KeyboardCaptured &&
+         Keyboard.GetState().IsKeyDown(HudSettingsPanel.KeyOf(_presentation.Requested, HudSettingsPanel.GroundLabelsShortcut)));
 
     private TargetLiveness QueryTargetLiveness(ulong entityId)
     {

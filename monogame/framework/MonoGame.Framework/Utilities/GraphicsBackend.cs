@@ -32,6 +32,12 @@ namespace MonoGame.Framework.Utilities
         /// <summary>
         /// Represents the Microsoft DirectX 12 graphics backend.
         /// </summary>
-        DirectX12
+        DirectX12,
+
+        // Etervale fork: the browser runtime (monogame/issues/021-webgpu-backend.md).
+        /// <summary>
+        /// Represents the WebGPU graphics backend of the browser runtime.
+        /// </summary>
+        WebGPU
     }
 }

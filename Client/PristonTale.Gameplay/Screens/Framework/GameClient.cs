@@ -2,6 +2,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using PristonTale.Client.Net;
+using PristonTale.Contracts.Characters;
 using PristonTale.Engine3D.Diagnostics;
 using PristonTale.Engine3D.Rendering;
 using PristonTale.Gameplay.Screens.Opening;
@@ -17,13 +18,14 @@ public sealed class GameClient : IDisposable
     private readonly GraphicsDevice _graphicsDevice;
     private readonly ContentManager _content;
     private readonly string _assetRoot;
-    private readonly string _serverAddress;
+    private string _serverAddress;
 
     private SpriteBatch _spriteBatch;
     private IGameBackend _backend;
     private ScreenContext _context;
     private GameScreen _screen;
     private GameScreen _pendingScreen;
+    private Task _leavingWorld;
     private Task _shutdown;
     private SpriteFont _font;
     private HudAtlas _uiAtlas;
@@ -44,6 +46,9 @@ public sealed class GameClient : IDisposable
         ClientText.Use(_presentation.Requested.Language);
     }
 
+    public Func<Task> PrepareWorldAssetsAsync { get; init; }
+    public Func<IReadOnlyList<PlayerClass>, CancellationToken, Task> PrepareCharacterAssetsAsync { get; init; }
+
     public string StatusText
     {
         get
@@ -59,16 +64,26 @@ public sealed class GameClient : IDisposable
 
     public void LoadContent()
     {
+        var started = System.Diagnostics.Stopwatch.GetTimestamp();
+        var browser = OperatingSystem.IsBrowser();
         _spriteBatch = new SpriteBatch(_graphicsDevice);
         var font = _content.Load<SpriteFont>("Fonts/UI");
         _font = font;
-        _uiAtlas = HudAtlas.LoadBootstrap(_graphicsDevice, _assetRoot, ConsoleClientLog.Instance);
+        var fontReady = System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+        if (!browser)
+        {
+            _uiAtlas = HudAtlas.LoadBootstrap(_graphicsDevice, _assetRoot, ConsoleClientLog.Instance);
+        }
         _cursor = HudCursor.Load(_graphicsDevice, _assetRoot, ConsoleClientLog.Instance);
         _cursor.Show(HudCursorKind.Default);
-        _sky = PristonSkyLibrary.LoadBootstrap(_graphicsDevice, _assetRoot, ConsoleClientLog.Instance);
+        var interfaceReady = System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+        _sky = PristonSkyLibrary.LoadBootstrap(_graphicsDevice, _assetRoot, ConsoleClientLog.Instance, preloadAll: !browser);
+        var skyReady = System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds;
         _effects = PristonTale.Gameplay.Effects.EffectLibrary.LoadBootstrap(_graphicsDevice, _content, _assetRoot, ConsoleClientLog.Instance);
-        _audio = PristonAudioLibrary.LoadBootstrap(_assetRoot, ConsoleClientLog.Instance);
-        _audio.ApplySettings(_presentation.Requested);
+        ConsoleClientLog.Instance.Info($"[Startup] font {fontReady:F0} ms, interface {interfaceReady - fontReady:F0} ms, sky {skyReady - interfaceReady:F0} ms, "
+            + $"effects {System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds - skyReady:F0} ms.");
+        _audio = browser ? null : PristonAudioLibrary.LoadBootstrap(_assetRoot, ConsoleClientLog.Instance);
+        _audio?.ApplySettings(_presentation.Requested);
         _backend = new GameServerConnection(_serverAddress);
         _context = new ScreenContext(
             _graphicsDevice,
@@ -84,8 +99,17 @@ public sealed class GameClient : IDisposable
             _sky,
             _effects,
             _audio,
-            RenewBackend);
-        _displayConfirmation = new DisplayConfirmation(_context);
+            RenewBackend)
+        {
+            ServerAddress = _serverAddress,
+            SelectServer = SelectServer,
+            PrepareWorldAssetsAsync = PrepareWorldAssetsAsync,
+            PrepareCharacterAssetsAsync = PrepareCharacterAssetsAsync
+        };
+        if (!browser)
+        {
+            _displayConfirmation = new DisplayConfirmation(_context);
+        }
         // First screen: the opening / authentication scene (the login form overlays it next).
         SetScreen(new OpeningScreen(_context));
     }
@@ -115,10 +139,25 @@ public sealed class GameClient : IDisposable
         _displayConfirmation?.Update();
         _screen?.Update(gameTime);
         _cursor?.Show(_screen?.Cursor ?? HudCursorKind.Default);
-        if (_pendingScreen != null)
+        if (_pendingScreen != null && (_leavingWorld is null || _leavingWorld.IsCompleted))
         {
+            if (_screen is Gameplay.GameplayScreen)
+            {
+                var gameplay = _screen;
+                _screen = null;
+                gameplay.Dispose();
+                _leavingWorld = gameplay.Closing;
+                return;
+            }
+
             var next = _pendingScreen;
             _pendingScreen = null;
+            if (_leavingWorld?.IsFaulted == true)
+            {
+                _context.Log.Error("Could not leave the character session", _leavingWorld.Exception);
+                next = new OpeningScreen(_context);
+            }
+            _leavingWorld = null;
             SetScreen(next);
         }
     }
@@ -127,7 +166,14 @@ public sealed class GameClient : IDisposable
     {
         if (_shutdown is null)
         {
-            _screen?.Draw();
+            if (_screen is not null)
+            {
+                _screen.Draw();
+            }
+            else if (_leavingWorld is not null)
+            {
+                _graphicsDevice.Clear(Color.Black);
+            }
             _displayConfirmation?.Draw();
             DrawDiagnostics();
             return;
@@ -161,6 +207,13 @@ public sealed class GameClient : IDisposable
         _screen.Enter();
     }
 
+    private void SelectServer(string address)
+    {
+        _serverAddress = address;
+        _context.ServerAddress = address;
+        RenewBackend();
+    }
+
     private void RenewBackend()
     {
         var previous = _backend;
@@ -169,7 +222,8 @@ public sealed class GameClient : IDisposable
         _ = Task.Run(() => DisposeBackendAsync(previous));
     }
 
-    private static async Task DisposeBackendAsync(IGameBackend backend)
+    // Also closes the browser client's used connections.
+    internal static async Task DisposeBackendAsync(IGameBackend backend)
     {
         try
         {

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
+using PristonTale.Contracts.Texts;
 using Microsoft.Xna.Framework.Input;
 using PristonTale.Gameplay.Screens.Framework;
 using PristonTale.Gameplay.UI.Chat;
@@ -80,6 +81,8 @@ public sealed partial class GameplayHud : IDisposable
     private readonly HudTargetPortrait _portrait;
     private readonly HudNotice _notice = new();
     private readonly HudChat _chat = new();
+    private readonly HudNews _news = new();
+    private readonly HudMail _mail = new();
     private readonly HudSlide _inventorySlide = new();
     private readonly HudSlide _statusSlide = new();
     private readonly HudSlide _skillSlide = new();
@@ -134,10 +137,38 @@ public sealed partial class GameplayHud : IDisposable
         Func<QuestCommand, Task<QuestOutcome>> requestQuest = null)
     {
         _context = context;
+        _news.Send = command => _chat.Send?.Invoke(command, false);
+        _chat.GlobalBonusLine = ReceiveGlobalBonuses;
+        _chat.TicketLine = _news.ReceiveTicket;
+        _chat.HideLine = line =>
+        {
+            var settings = _context.Presentation.Requested;
+            return (settings.HideTradeChat && line.Kind == PristonTale.Contracts.Social.ChatKind.Trade) ||
+                (settings.HideCalendarNotices && line.Kind == PristonTale.Contracts.Social.ChatKind.CalendarEvent) ||
+                (settings.HideGlobalBuffNotices && line.Kind == PristonTale.Contracts.Social.ChatKind.GlobalBuff) ||
+                (settings.HideEventRewardNotices && line.Line.Id == GameTextId.RewardClaimed) ||
+                (settings.HideClanMembershipNotices && line.Line.Id is GameTextId.ClanJoined or GameTextId.ClanLeft) ||
+                (settings.HideBellatraResults && line.Line.Id is GameTextId.BellatraOut or GameTextId.BellatraCleared) ||
+                (settings.HideBellatraBossNotices && line.Line.Id == GameTextId.BellatraBossDown) ||
+                (settings.HideBellatraTeamNotices && line.Line.Id is GameTextId.BellatraQuake or GameTextId.BellatraStun
+                    or GameTextId.BellatraFreeze or GameTextId.BellatraRabbit or GameTextId.BellatraStygian
+                    or GameTextId.BellatraGuardian or GameTextId.BellatraPoints or GameTextId.BellatraSealIdle) ||
+                (settings.HideCastleNotices && line.Kind == PristonTale.Contracts.Social.ChatKind.Notice &&
+                 line.Line.Id is PristonTale.Contracts.Texts.GameTextId.CastleTaken
+                     or PristonTale.Contracts.Texts.GameTextId.SiegeInAnHour
+                     or PristonTale.Contracts.Texts.GameTextId.SiegeInHalfAnHour
+                     or PristonTale.Contracts.Texts.GameTextId.SiegeLeague
+                     or PristonTale.Contracts.Texts.GameTextId.SiegeOver
+                     or PristonTale.Contracts.Texts.GameTextId.SiegeRestartsSoon
+                     or PristonTale.Contracts.Texts.GameTextId.SiegeStarted);
+        };
         _clanWindow = new HudClanWindow(context.Log);
         _castleWindow.AskAmount = AskWithdrawal;
         _bellatraWindow.AskAmount = AskRedemption;
         _settings = new HudSettingsPanel(context.Presentation);
+        _bindings.KeyLabel = index => _settings.ShortcutLabel(HudSettingsPanel.FirstSkillShortcut + index);
+        _bindings.KeyPressed = (keyboard, previous, index) =>
+            _settings.ShortcutPressed(keyboard, previous, HudSettingsPanel.FirstSkillShortcut + index);
         _sprites = new HudSprites(context.GraphicsDevice, context.AssetRoot, context.Log);
         _sprites.Request(HudArt.Static);
         _sprites.Request(HudNpcArt.All);
@@ -214,6 +245,7 @@ public sealed partial class GameplayHud : IDisposable
     public void ObserveChat(PristonTale.Client.Net.Presence.PresenceUpdate update) => _chat.Observe(update, _clock.Elapsed.TotalMilliseconds);
 
     // The input line has the keyboard: game keys must not act on typed letters.
+    internal bool BlocksPushToTalk => _settingsOpen || KeyboardCaptured || _news.TicketTyping || _countBox.IsOpen || _personalShop.SignOpen || _clanWindow.Typing;
     public bool KeyboardCaptured => _chat.KeyboardCaptured;
 
     // Where a speaker's bubble hangs on screen, from the scene; null when the speaker is not drawn.
@@ -282,6 +314,7 @@ public sealed partial class GameplayHud : IDisposable
 
     // Quit in the exit button's menu.
     public event Action ExitRequested;
+    public event Action<bool> LobbyRequested;
 
     public event Action YahooKeyPressed;
 
@@ -300,7 +333,11 @@ public sealed partial class GameplayHud : IDisposable
     public event Action<string> ItemSound;
 
     // The quest part of each presence update (the journal, quest notices and dialogs the world opened).
-    public void ObserveQuests(PristonTale.Client.Net.Presence.PresenceUpdate update) => _quests.Observe(update);
+    public void ObserveQuests(PristonTale.Client.Net.Presence.PresenceUpdate update) {
+        _quests.Observe(update);
+        ObserveRewards(update);
+        ObserveRecentDrops(update);
+    }
 
     public bool IsReady
     {
@@ -343,6 +380,18 @@ public sealed partial class GameplayHud : IDisposable
 
     internal void HandleEscape()
     {
+        if (_settingsOpen && _settings.EditingLootNames)
+        {
+            _settings.CancelLootNames();
+            return;
+        }
+
+        if (_settingsOpen && _settings.CapturingKey)
+        {
+            _settings.CancelKeyCapture();
+            return;
+        }
+
         if (!ClosePanel())
         {
             _systemMenu = true;
@@ -351,6 +400,11 @@ public sealed partial class GameplayHud : IDisposable
 
     public bool ClosePanel()
     {
+        if (CloseGlobalBonuses() || CloseShopDirectory() || CloseRecentDrops() || CloseRewards() || _news.Dismiss())
+        {
+            return true;
+        }
+
         if (_countBox.IsOpen)
         {
             _countBox.Close();
@@ -404,6 +458,26 @@ public sealed partial class GameplayHud : IDisposable
         return closed;
     }
 
+    private PristonTale.Client.Net.Presence.PremiumTimerSnapshot _previousPremiumTimers;
+
+    private void UpdatePremiumNotices()
+    {
+        if (ReferenceEquals(_previousPremiumTimers, PremiumTimers))
+        {
+            return;
+        }
+
+        if (_context.Presentation.Requested.ShowPremiumBuffNotices &&
+            _previousPremiumTimers is { } previous && PremiumTimers is { } current &&
+            current.Timers.Any(timer => timer.RemainingSeconds > 0 &&
+                !previous.Timers.Any(old => old.Kind == timer.Kind && old.RemainingSeconds > 0)))
+        {
+            _chat.Assist(ClientText.Language == "pt-BR" ? "Buff premium ativado." : "Premium buff activated.");
+        }
+
+        _previousPremiumTimers = PremiumTimers;
+    }
+
     public void Update(OwnerState state)
     {
         var now = _clock.Elapsed.TotalSeconds;
@@ -422,6 +496,7 @@ public sealed partial class GameplayHud : IDisposable
         _wingGate.Update();
         _itemUse.Restore(state, InCastleField, _clock.Elapsed.TotalMilliseconds);
         _restart.Update(PlayerDead, _clock.Elapsed.TotalMilliseconds);
+        UpdatePremiumNotices();
         _premium.Apply(PremiumTimers, _clock.Elapsed.TotalMilliseconds);
         _quests.Update();
         _npc.Update(_context.Font);
@@ -469,9 +544,21 @@ public sealed partial class GameplayHud : IDisposable
         var layout = Layout();
         HudMessageBox.Place(layout);
         var pointer = layout.ToLogical(mouse.Position);
+        _mail.UpdateDrag(layout, pointer, mouse.LeftButton == ButtonState.Pressed);
+        _mail.RefreshInbox(_chat);
+        _news.UpdateTickets();
+        RefreshGlobalBonuses();
         var design = new Point(pointer.X, pointer.Y - layout.BottomOffset);
         UpdateTeleportPrefetch(pointer);
-        if (_quests.Dialog is not null && HudQuestDialog.Box.Contains(pointer))
+        if (_news.Scroll(pointer, mouse.ScrollWheelValue - _previousMouse.ScrollWheelValue))
+        {
+            // The open feed takes wheel input before other panels.
+        }
+        else if (_settingsOpen && HudSettingsPanel.Box.Contains(pointer))
+        {
+            _settings.Scroll(mouse.ScrollWheelValue - _previousMouse.ScrollWheelValue);
+        }
+        else if (_quests.Dialog is not null && HudQuestDialog.Box.Contains(pointer))
         {
             _questDialog.Scroll(mouse.ScrollWheelValue - _previousMouse.ScrollWheelValue);
         }
@@ -501,6 +588,14 @@ public sealed partial class GameplayHud : IDisposable
             }
         }
 
+        if (_context.Presentation.Requested.ShowExperienceNotices && _state is { } previous &&
+            state is not null && state.Experience > previous.Experience)
+        {
+            var gain = state.Experience - previous.Experience;
+            var text = ClientText.Language == "pt-BR" ? $"EXP ganha: {gain:N0}" : $"EXP gained: {gain:N0}";
+            _chat.Assist(text);
+        }
+
         _state = state;
         if (state is not null && !ReferenceEquals(state.Skills, _syncedSkills))
         {
@@ -522,10 +617,15 @@ public sealed partial class GameplayHud : IDisposable
         UpdateHelp(state);
         var clicked = mouse.LeftButton == ButtonState.Pressed && _previousMouse.LeftButton == ButtonState.Released;
         // A click the HUD takes stays its own when it closes the window under it (a close button over the ground).
-        var clickTaken = clicked && Captures(layout, pointer, design);
+        var clickTaken = clicked && (_news.Captures(pointer) || _mail.Captures(pointer) || Captures(layout, pointer, design));
         var typedText = _context.TypedText.Drain();
         // A count box or the shop's sign box takes the keyboard: neither the chat nor a game key sees what is typed there.
-        var boxTyping = _countBox.IsOpen || _personalShop.SignOpen || _clanWindow.Typing;
+        var boxTyping = _news.TicketTyping || _countBox.IsOpen || _personalShop.SignOpen || _clanWindow.Typing;
+        if (_news.TicketTyping)
+        {
+            _news.TypeTicket(typedText, Pressed(keyboard, Keys.Back));
+        }
+        else
         if (_countBox.IsOpen)
         {
             _typingKeyboard = keyboard;
@@ -554,14 +654,24 @@ public sealed partial class GameplayHud : IDisposable
         {
             _quests.AnswerSkillReset(true);
         }
-        else
+        else if (!_settingsOpen)
         {
             _chat.Update(keyboard, _previousKeyboard, typedText, _clock.Elapsed.TotalMilliseconds, _chat.Window.Log.Tab);
         }
 
         var typing = boxTyping || _chat.KeyboardCaptured;
         _inventory.SidesLocked = _warehouse.IsOpen && (_inventory.Dragging != Guid.Empty || _warehouse.Dragging != Guid.Empty);
-        if (!typing)
+        if (_settingsOpen && _settings.EditingLootNames)
+        {
+            _settings.TypeLootNames(typedText, Pressed(keyboard, Keys.Back), Pressed(keyboard, Keys.Enter));
+
+        }
+
+        else if (_settingsOpen && _settings.CapturingKey)
+        {
+            _settings.CaptureKey(keyboard, _previousKeyboard);
+        }
+        else if (!typing && !_settingsOpen)
         {
             UpdateKeys(keyboard);
         }
@@ -609,7 +719,8 @@ public sealed partial class GameplayHud : IDisposable
         _skills.RefreshRanks(_state);
         var hoveredSkill = _skillSlide.FullyOpen && _skillMaster == 0 ? _skills.HoveredSkill(skillOrigin, pointer) : 0;
         _bindings.Update(typing ? default : keyboard, mouse, hoveredSkill);
-        PointerCaptured = clickTaken || Captures(layout, pointer, design) || _chat.Window.Contains(layout, pointer, SideWindowOpen) || _inventory.Dragging != Guid.Empty || _warehouse.Dragging != Guid.Empty;
+        PointerCaptured = clickTaken || _news.Captures(pointer) || _mail.Captures(pointer) || Captures(layout, pointer, design) ||
+            _chat.Window.Contains(layout, pointer, SideWindowOpen) || _inventory.Dragging != Guid.Empty || _warehouse.Dragging != Guid.Empty;
         _inventory.PickupLocked = PlayerActing || storedCarried;
         _inventory.ActionStarts = PlayerActionStarts;
         _inventory.Update(state, layout, _inventorySlide.FullyOpen && !_settingsOpen && !ModalOpen, keyboard, mouse);
@@ -662,7 +773,7 @@ public sealed partial class GameplayHud : IDisposable
         var pressed = _previousMouse.LeftButton == ButtonState.Pressed;
         _painter.Begin(layout);
         _dropNames.Draw(_painter, layout, GroundLabels, GroundLabelPlaced);
-        Combat.DrawNamePlates(_painter, layout, Overhead, HoveredId, TracedId, _context.Presentation.Requested.ClassicNamePlates);
+        Combat.DrawNamePlates(_painter, layout, Overhead, HoveredId, TracedId, _context.Presentation.Requested.ClassicNamePlates, _context.Presentation.Requested.HideUnfocusedNames);
         _chat.Bubbles.Signs = ShopSigns;
         _chat.Bubbles.Draw(_painter, layout, _clock.Elapsed.TotalMilliseconds, Overhead, _nameColor ??= id => _chat.NameColor(id, TargetId), TargetId);
         if (_helpPet.Bubble is { } petLine && HelperPet.Point is { } petPoint)
@@ -734,6 +845,7 @@ public sealed partial class GameplayHud : IDisposable
         _bar.Draw(_painter, layout, _state, new HudBarView(World.TimeOfDay, World.Running, _mapVisible, left, RightAttackEnabled,
             _hoveredButton, pressed && _hoveredButton is not null, _hoveredToggle));
         _inventoryPanel.DrawBelt(_painter, HudInventoryLayout.Origin(layout), _state, _inventory, _icons);
+        DrawActionBar(layout);
         _skillHud.DrawSockets(_painter, layout.BottomOffset, _bindings.LeftSkillId, _bindings.RightSkillId, Cooldowns, SkillClockMs);
         if (Statuses is not null && SelfId != 0)
         {
@@ -747,12 +859,32 @@ public sealed partial class GameplayHud : IDisposable
         _skillHud.DrawQuestTimer(_painter, _questView, QuestTimeLeftMs);
 
         StringEffect.Draw(_painter, layout);
+        if (!_context.Presentation.Requested.HideOnlineCount && _context.Backend.OnlinePlayers is >= 0 and var online)
+        {
+            var text = online.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo(ClientText.Language)) + " online";
+            var counterWidth = _painter.Measure(text) + 28;
+            var counter = new Rectangle((layout.Width - counterWidth) / 2, 3, counterWidth, 20);
+            _painter.ColorBox(new Rectangle(counter.X + 5, counter.Y, counter.Width - 10, 20), 18, 36, 34, 224);
+            _painter.ColorBox(new Rectangle(counter.X + 2, counter.Y + 3, 3, 14), 18, 36, 34, 224);
+            _painter.ColorBox(new Rectangle(counter.Right - 5, counter.Y + 3, 3, 14), 18, 36, 34, 224);
+            _painter.ColorBox(new Rectangle(counter.X + 10, counter.Y + 6, 9, 9), 52, 112, 70, 210);
+            _painter.ColorBox(new Rectangle(counter.X + 11, counter.Y + 7, 7, 7), 117, 220, 101, 255);
+            _painter.TextCentered(text, counter.X + 20, counter.Right - 5, counter.Y + 3, Color.Wheat);
+        }
+
         _bar.DrawHoverText(_painter, layout, _state, pointer);
         if (_systemMenu)
         {
             HudSystemMenu.Draw(_painter, layout, pointer);
         }
 
+        DrawQuickMenu(layout, pointer);
+        DrawRewards(layout);
+        DrawRecentDrops(layout);
+        DrawShopDirectory(layout);
+        DrawGlobalBonuses(layout);
+        _mail.Draw(_painter, _icons, pointer);
+        _news.Draw(_painter);
         _painter.Flush();
         _helpPet.Draw(_painter, pointer);
         DrawHelp(pointer);

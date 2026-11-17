@@ -31,6 +31,37 @@ namespace MonoGame.Effect
         {
         }
 
+        // Etervale fork (issue 022): the atomic operations of an effect, written as these macros so one source compiles with
+        // DXC and with Slang. The effect preprocessor does not define them, so they reach the compilers as written, and each
+        // compiler defines them from this prelude with its own preprocessor: DXC (__SLANG__ undefined) as HLSL's plain uint
+        // and Interlocked functions, Slang as its Atomic<uint>, the only form it turns into WGSL atomics. A variable or
+        // RWStructuredBuffer element of type MGFX_ATOMIC_UINT is read and written through MGFX_ATOMIC_LOAD and _STORE only.
+        internal const string AtomicsPrelude =
+            "#ifdef __SLANG__\n" +
+            "#define MGFX_ATOMIC_UINT Atomic<uint>\n" +
+            "#define MGFX_ATOMIC_LOAD(a) (a).load()\n" +
+            "#define MGFX_ATOMIC_STORE(a, v) (a).store(v)\n" +
+            "#define MGFX_ATOMIC_ADD(a, v) (a).add(v)\n" +
+            "#define MGFX_ATOMIC_MIN(a, v) (a).min(v)\n" +
+            "#define MGFX_ATOMIC_MAX(a, v) (a).max(v)\n" +
+            "#define MGFX_ATOMIC_OR(a, v) (a).or(v)\n" +
+            "#else\n" +
+            "#define MGFX_ATOMIC_UINT uint\n" +
+            "#define MGFX_ATOMIC_LOAD(a) (a)\n" +
+            "#define MGFX_ATOMIC_STORE(a, v) a = (v)\n" +
+            "#define MGFX_ATOMIC_ADD(a, v) InterlockedAdd(a, v)\n" +
+            "#define MGFX_ATOMIC_MIN(a, v) InterlockedMin(a, v)\n" +
+            "#define MGFX_ATOMIC_MAX(a, v) InterlockedMax(a, v)\n" +
+            "#define MGFX_ATOMIC_OR(a, v) InterlockedOr(a, v)\n" +
+            "#endif\n" +
+            "#line 1\n";
+
+        // Etervale fork (issue 022): the WebGPU profile reuses the DXC build for its reflection and replaces the code.
+        protected VulkanShaderProfile(string name, byte formatId)
+            : base(name, formatId)
+        {
+        }
+
         internal override void AddMacros(Dictionary<string, string> macros)
         {
             macros.Add("SM6", "1");
@@ -200,8 +231,8 @@ namespace MonoGame.Effect
                 // Replace the entrypoint name with "main" for simplicity at runtime.
                 var shaderContent = Regex.Replace(shaderResult.FileContent, @"(?<=\s+)" + shaderFunction + @"(?=\s*[(])", "main");
 
-                // Write preprocessed hlsl file.
-                File.WriteAllText(hlslFile, shaderContent);
+                // Write preprocessed hlsl file. Etervale fork (issue 022): after the atomics prelude.
+                File.WriteAllText(hlslFile, AtomicsPrelude + shaderContent);
 
                 string stdout = string.Empty;
                 string stderr = string.Empty;
@@ -430,59 +461,7 @@ namespace MonoGame.Effect
                             ? int.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture)
                             : 0;
 
-                        var usage = VertexElementUsage.TextureCoordinate;
-
-                        if (m.Groups[1].Success)
-                        {
-                            switch (m.Groups[1].Value.ToUpper(CultureInfo.InvariantCulture))
-                            {
-                                default:
-                                    // Give a warning which hopefully someone notices.
-                                    errorsAndWarnings += $"Unknown vertex shader input semantic `{m.Groups[1].Value}`; defaulting to texture coord.\n";
-                                    usage = VertexElementUsage.TextureCoordinate;
-                                    break;
-                                case "TEXCOORD":
-                                    usage = VertexElementUsage.TextureCoordinate;
-                                    break;
-                                // NOTE: Some shaders incorrectly pass in SV_POSITION to
-                                // the vertex shader which is allowed in DX11, so we allow
-                                // it here as well.
-                                case "SV_POSITION":
-                                case "POSITION":
-                                    usage = VertexElementUsage.Position;
-                                    break;
-                                case "NORMAL":
-                                    usage = VertexElementUsage.Normal;
-                                    break;
-                                case "TANGENT":
-                                    usage = VertexElementUsage.Tangent;
-                                    break;
-                                case "BINORMAL":
-                                    usage = VertexElementUsage.Binormal;
-                                    break;
-                                case "COLOR":
-                                    usage = VertexElementUsage.Color;
-                                    break;
-                                case "BLENDINDICES":
-                                    usage = VertexElementUsage.BlendIndices;
-                                    break;
-                                case "BLENDWEIGHT":
-                                    usage = VertexElementUsage.BlendWeight;
-                                    break;
-                                case "DEPTH":
-                                    usage = VertexElementUsage.Depth;
-                                    break;
-                                case "FOG":
-                                    usage = VertexElementUsage.Fog;
-                                    break;
-                                case "POINTSIZE":
-                                    usage = VertexElementUsage.PointSize;
-                                    break;
-                                case "TESSELLATEFACTOR":
-                                    usage = VertexElementUsage.TessellateFactor;
-                                    break;
-                            }
-                        }
+                        var usage = m.Groups[1].Success ? UsageOf(m.Groups[1].Value, ref errorsAndWarnings) : VertexElementUsage.TextureCoordinate;
 
                         uint locationCount = 1;
                         var pointerType = input.Pointer?.PointerType;
@@ -651,8 +630,8 @@ namespace MonoGame.Effect
                         writer.Write((UInt64)b.pImmutableSamplers);
                     }
 
-                    // Finally write the shader bytecode.
-                    writer.Write(shaderData.Bytecode);
+                    // Finally write the shader code (Etervale fork, issue 022: the WebGPU profile writes WGSL in its place).
+                    WriteShaderCode(writer, shaderData, hlslFile, stage, shaderProfile, ref errorsAndWarnings);
 
                     // Store the combined binding layout info and shader code.
                     shaderData.ShaderCode = stream.ToArray();
@@ -673,6 +652,54 @@ namespace MonoGame.Effect
                     catch { }
                 }
             }
+        }
+
+        // The vertex element usage of an HLSL input semantic name (without its index). Etervale fork (issue 022): one
+        // table for the Vulkan reflection and the WebGPU profile's input locations.
+        internal static VertexElementUsage UsageOf(string semanticName, ref string errorsAndWarnings)
+        {
+            switch (semanticName.ToUpper(CultureInfo.InvariantCulture))
+            {
+                default:
+                    // Give a warning which hopefully someone notices.
+                    errorsAndWarnings += $"Unknown vertex shader input semantic `{semanticName}`; defaulting to texture coord.\n";
+                    return VertexElementUsage.TextureCoordinate;
+                case "TEXCOORD":
+                    return VertexElementUsage.TextureCoordinate;
+                // NOTE: Some shaders incorrectly pass in SV_POSITION to
+                // the vertex shader which is allowed in DX11, so we allow
+                // it here as well.
+                case "SV_POSITION":
+                case "POSITION":
+                    return VertexElementUsage.Position;
+                case "NORMAL":
+                    return VertexElementUsage.Normal;
+                case "TANGENT":
+                    return VertexElementUsage.Tangent;
+                case "BINORMAL":
+                    return VertexElementUsage.Binormal;
+                case "COLOR":
+                    return VertexElementUsage.Color;
+                case "BLENDINDICES":
+                    return VertexElementUsage.BlendIndices;
+                case "BLENDWEIGHT":
+                    return VertexElementUsage.BlendWeight;
+                case "DEPTH":
+                    return VertexElementUsage.Depth;
+                case "FOG":
+                    return VertexElementUsage.Fog;
+                case "POINTSIZE":
+                    return VertexElementUsage.PointSize;
+                case "TESSELLATEFACTOR":
+                    return VertexElementUsage.TessellateFactor;
+            }
+        }
+
+        // The code after the binding header: the SPIR-V DXC wrote.
+        private protected virtual void WriteShaderCode(BinaryWriter writer, ShaderData shaderData, string hlslFile, MgfxShaderStage stage, string shaderModel,
+            ref string errorsAndWarnings)
+        {
+            writer.Write(shaderData.Bytecode);
         }
 
         static bool IsWritable(MgfxStorageKind kind) =>

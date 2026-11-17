@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -14,7 +15,7 @@ using PristonTale.Assets;
 
 namespace PristonTale.Gameplay.Screens.Opening;
 
-internal sealed class OpeningCinematic : IDisposable
+public sealed class OpeningCinematic : IDisposable
 {
     private const string StagePath = "StartImage/Opening/Map/stage.smd";
     private const string CameraPathFile = "StartImage/Opening/opening_camera.cam";
@@ -103,7 +104,9 @@ internal sealed class OpeningCinematic : IDisposable
 
     public void Load()
     {
+        var started = Stopwatch.GetTimestamp();
         var stage = _reader.ReadStage(_assetPath(StagePath));
+        var stageRead = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
         if (_effects is not null)
         {
             var collision = new PristonCollisionWorld(stage);
@@ -112,9 +115,14 @@ internal sealed class OpeningCinematic : IDisposable
             _effectSystem = new VfxSystem(VfxNoAnchors.Instance, new TransientLightServices(_renderer.TransientLights), _effectLibrary.Vfx.Library);
             _terrainFire = new MeteorEffects(new SystemScriptEffects(_effectSystem, _effectLibrary.Vfx.Library), _renderer.TransientLights, collision);
         }
+
+        var effectsReady = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
         _renderer.ConfigureFieldLighting(intensity: 4f, rangeScale: 1f, overrideLights: null, glowIntensity: 1f, glowScale: 1f);
         _renderer.AddStage(stage, LoadScenery());
+        var stageReady = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
         LoadOpeningNpcs();
+        _log.Info($"[Opening] stage read {stageRead:F0} ms, effects {effectsReady - stageRead:F0} ms, stage and scenery "
+            + $"{stageReady - effectsReady:F0} ms, NPCs {Stopwatch.GetElapsedTime(started).TotalMilliseconds - stageReady:F0} ms.");
 
         _renderer.SetTimeOfDay(11f);
         _renderer.DayLengthSeconds = 0f;

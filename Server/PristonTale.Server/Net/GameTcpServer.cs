@@ -12,7 +12,9 @@ using PristonTale.Server.Hosting;
 
 namespace PristonTale.Server.Net;
 
-public sealed class GameTcpServer(
+// The game server's network edges: the TLS listener here and the optional WebSocket edge (GameTcpServer.WebSocket.cs).
+// Both share the connection limits, the login throttle and the session registry.
+public sealed partial class GameTcpServer(
     AuthAppService auth,
     CharacterAppService characters,
     SessionAppService sessionsApp,
@@ -93,6 +95,7 @@ public sealed class GameTcpServer(
         port = ((IPEndPoint)listener.LocalEndPoint!).Port;
         _boundPort.TrySetResult(port);
         logger.LogInformation("Etervale TLS listening on port {Port}", port);
+        var webSocketEdge = await StartWebSocketEdgeAsync(services, stoppingToken);
         var housekeeping = HousekeepingAsync(stoppingToken);
         try
         {
@@ -103,12 +106,7 @@ public sealed class GameTcpServer(
                 if (Refusal(address) is var refusal and not ConnectionRefusal.None)
                 {
                     socket.Close();
-                    if (_refusedLog.TryEnter(Environment.TickCount64, out var suppressed))
-                    {
-                        logger.LogWarning("Refused connection from {Address}: {Refusal} at its limit ({Suppressed} similar refusals not logged)",
-                            address, refusal, suppressed);
-                    }
-
+                    LogRefused(address, refusal);
                     continue;
                 }
 
@@ -131,6 +129,7 @@ public sealed class GameTcpServer(
             }
 
             await Task.WhenAll(_connections.Keys);
+            await StopWebSocketEdgeAsync(webSocketEdge);
             await housekeeping;
         }
     }
@@ -169,6 +168,14 @@ public sealed class GameTcpServer(
         }
 
         return ConnectionRefusal.None;
+    }
+
+    private void LogRefused(IPAddress? address, ConnectionRefusal refusal)
+    {
+        if (_refusedLog.TryEnter(Environment.TickCount64, out var suppressed))
+        {
+            logger.LogWarning("Refused connection from {Address}: {Refusal} at its limit ({Suppressed} similar refusals not logged)", address, refusal, suppressed);
+        }
     }
 
     private async Task RunClientAsync(Socket socket, SslStreamCertificateContext certificate, SessionServices services, IPAddress? address,
@@ -210,7 +217,14 @@ public sealed class GameTcpServer(
             _handshakesPerAddress?.Release(address);
         }
 
-        var session = new ClientSession(connection, services);
+        await RunSessionAsync(connection, services, address, cancellationToken);
+    }
+
+    // An authenticated connection, from either edge, until its session ends; releases the address's connection slot.
+    private async Task RunSessionAsync(FrameConnection connection, SessionServices services, IPAddress? address, CancellationToken cancellationToken,
+        bool browserTickets = false)
+    {
+        var session = new ClientSession(connection, services, browserTickets);
         _clients[session] = 0;
         if (cancellationToken.IsCancellationRequested)
         {

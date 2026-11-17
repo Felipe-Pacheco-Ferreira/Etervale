@@ -32,6 +32,11 @@ public sealed class SkillSoundBank : IDisposable
 
     public void Preload(IEnumerable<string> paths)
     {
+        if (OperatingSystem.IsBrowser())
+        {
+            return;
+        }
+
         var batch = paths.Where(path => !string.IsNullOrWhiteSpace(path) && _requested.Add(path)).ToArray();
         if (batch.Length == 0)
         {

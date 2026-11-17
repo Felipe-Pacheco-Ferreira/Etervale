@@ -8,7 +8,13 @@ public sealed class EventosModel(SiteData data) : PageModel
 {
     public SiteCalendar Calendar { get; private set; } = null!;
 
-    public async Task OnGetAsync(CancellationToken ct) => Calendar = await data.CalendarAsync(ct);
+    public int ExperienceMultiplier { get; private set; }
+
+    public async Task OnGetAsync(CancellationToken ct)
+    {
+        Calendar = await data.CalendarAsync(ct);
+        ExperienceMultiplier = (await data.SettingsAsync(ct)).World.ExperienceMultiplier;
+    }
 
     // The lines under an event's card: the experience event's share, the drops of the drop events.
     public IEnumerable<string> Details(CalendarEventKind kind)

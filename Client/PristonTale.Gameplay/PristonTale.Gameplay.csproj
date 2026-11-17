@@ -21,5 +21,7 @@
     </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="PristonTale.Tests" />
+    <!-- The browser client runs the opening's login controller without the opening's 3D scene. -->
+    <InternalsVisibleTo Include="PristonTale.Browser" />
   </ItemGroup>
 </Project>

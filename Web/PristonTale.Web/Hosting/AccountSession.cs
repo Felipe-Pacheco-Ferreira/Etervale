@@ -57,7 +57,7 @@ public static class AccountSession
         if (context.Principal is null || !Matches(context.Principal, account))
         {
             context.RejectPrincipal();
-            await context.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            await context.HttpContext.SignOutAsync(context.Scheme.Name);
         }
     }
 }

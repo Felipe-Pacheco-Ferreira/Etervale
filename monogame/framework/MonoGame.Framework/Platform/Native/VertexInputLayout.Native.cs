@@ -1,4 +1,4 @@
-﻿// MonoGame - Copyright (C) MonoGame Foundation, Inc
+// MonoGame - Copyright (C) MonoGame Foundation, Inc
 // This file is subject to the terms and conditions defined in
 // file 'LICENSE.txt', which is part of this source code package.
 
@@ -11,8 +11,32 @@ namespace Microsoft.Xna.Framework.Graphics;
 
 partial class VertexInputLayout
 {
+    private const int WebGpuShaderProfile = 81;
+
     public void GenerateInputElements(VertexAttribute[] inputs, out MGG_InputElement[] elements, out int[] strides)
     {
+        if (GraphicsDevice.ShaderProfile == WebGpuShaderProfile)
+        {
+            // WebGPU matches the declaration against Slang's WGSL inputs in the native backend. DXC can remove
+            // inputs that Slang still declares, so filtering against DXC's reflection here would lose those elements.
+            var declared = new System.Collections.Generic.List<MGG_InputElement>();
+            var semantics = new System.Collections.Generic.HashSet<(VertexElementUsage, int)>();
+            strides = new int[Count];
+            for (var slot = 0; slot < Count; slot++)
+            {
+                var declaration = VertexDeclarations[slot];
+                strides[slot] = declaration.VertexStride;
+                foreach (var element in declaration.InternalVertexElements)
+                {
+                    if (semantics.Add((element.VertexElementUsage, element.UsageIndex)))
+                        declared.Add(element.AsInputElement(slot, InstanceFrequencies[slot]));
+                }
+            }
+
+            elements = declared.ToArray();
+            return;
+        }
+
         elements = new MGG_InputElement[inputs.Length];
         strides = new int[Count];
 

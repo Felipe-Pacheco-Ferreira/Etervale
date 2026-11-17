@@ -117,6 +117,7 @@ monogame/runtime/src/*.sln
 monogame/runtime/src/*.vcxproj*
 monogame/runtime/src/obj/
 monogame/runtime/build/
+monogame/pipeline/tools/
 monogame/runtime/work/
 monogame/runtime/bin/
 monogame/pipeline/bin/

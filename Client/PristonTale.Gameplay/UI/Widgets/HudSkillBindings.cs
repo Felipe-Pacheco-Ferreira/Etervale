@@ -12,7 +12,9 @@ public sealed class HudSkillBindings
     public const uint BasicAttackId = 0x11111111;
     public static readonly HudSkillChoice BasicAttack = new(BasicAttackId, "Basic attack", 1, SkillMouseUse.Both);
     private readonly Dictionary<uint, HudSkillChoice> _choices = new() { [BasicAttackId] = BasicAttack };
-    // The F1 to F8 keys.
+    internal Func<int, string> KeyLabel { get; set; } = static index => (Keys.F1 + index).ToString();
+    internal Func<KeyboardState, KeyboardState, int, bool> KeyPressed { get; set; } =
+        static (current, previous, index) => current.IsKeyDown(Keys.F1 + index) && !previous.IsKeyDown(Keys.F1 + index);
     public const int ShortcutCount = 8;
     private readonly HudSkillShortcut[] _shortcuts = new HudSkillShortcut[ShortcutCount];
     private KeyboardState _previousKeys;
@@ -116,8 +118,7 @@ public sealed class HudSkillBindings
         var control = keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl);
         for (var index = 0; index < _shortcuts.Length && !control; index++)
         {
-            var key = Keys.F1 + index;
-            if (!keyboard.IsKeyDown(key) || _previousKeys.IsKeyDown(key))
+            if (!KeyPressed(keyboard, _previousKeys, index))
             {
                 continue;
             }

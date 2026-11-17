@@ -4,12 +4,14 @@ using PristonTale.Gameplay.Audio;
 using PristonTale.Gameplay.Screens.CharacterSelect;
 using PristonTale.Gameplay.Screens.Framework;
 using PristonTale.Gameplay.Localization;
+using PristonTale.Gameplay.UI;
 
 namespace PristonTale.Gameplay.Screens.Opening;
 
 public sealed class OpeningScreen : GameScreen
 {
     private OpeningCinematic _cinematic;
+    private WebArrivalBackdrop _webBackdrop;
     private OpeningLoginController _loginController;
 
     private LoginAudio _audio;
@@ -30,19 +32,24 @@ public sealed class OpeningScreen : GameScreen
 
     public override void Enter()
     {
-        _cinematic = new OpeningCinematic(
-            Context.GraphicsDevice,
-            Context.Content,
-            Context.Log,
-            AssetPath,
-            Context.AssetRoot,
-            Context.Sky,
-            Context.Presentation,
-            Context.Effects);
-        _cinematic.Load();
+        var started = System.Diagnostics.Stopwatch.GetTimestamp();
+        if (WebLoginOverlay.Active)
+        {
+            _webBackdrop = new WebArrivalBackdrop(Context);
+        }
+        else
+        {
+            _cinematic = new OpeningCinematic(Context.GraphicsDevice, Context.Content, Context.Log, AssetPath,
+                Context.AssetRoot, Context.Sky, Context.Presentation, Context.Effects);
+            _cinematic.Load();
+        }
+
+        var loaded = System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds;
         _audio = LoginAudio.Opening(Context.Audio);
         _loginController = new OpeningLoginController(Context, _audio, PointerInput is not null);
-        _status = ClientText.Format("Status.Opening", _cinematic.StatusSuffix);
+        _status = ClientText.Format("Status.Opening", _cinematic?.StatusSuffix ?? "3D");
+        Context.Log.Info($"[Opening] scene {loaded:F0} ms, login "
+            + $"{System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds - loaded:F0} ms.");
     }
 
     public override void Update(GameTime gameTime)
@@ -50,7 +57,19 @@ public sealed class OpeningScreen : GameScreen
         var dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
         _audio.Update(dt);
 
-        _cinematic.Update(gameTime);
+        _cinematic?.Update(gameTime);
+        _webBackdrop?.UpdateFlight(gameTime);
+        if (_webBackdrop is { Entering: true })
+        {
+            if (_webBackdrop.AtRoster)
+            {
+                // The next screen takes the live renderer before this screen is disposed.
+                Context.RequestScreen(new CharacterSelectScreen(Context) { Backdrop = _webBackdrop });
+                _webBackdrop = null;
+            }
+
+            return;
+        }
 
         var keyboard = Keyboard.GetState();
         var pointer = PointerInput?.Invoke() ?? Mouse.GetState();
@@ -62,12 +81,20 @@ public sealed class OpeningScreen : GameScreen
 
         if (!_loginRevealed)
         {
-            if (AnyKeyPressed(keyboard, _lastKeyboard) || _cinematic.IsOver || PointerInput is not null && pointer.LeftButton == ButtonState.Pressed)
+            if (AnyKeyPressed(keyboard, _lastKeyboard) || _cinematic?.IsOver == true || PointerInput is not null && pointer.LeftButton == ButtonState.Pressed
+                || WebLoginOverlay.Active)
                 _loginRevealed = true;
         }
         else if (_loginController.Update(keyboard, _lastKeyboard, pointer, dt) == OpeningLoginController.LoginResult.Succeeded)
         {
-            Context.RequestScreen(new CharacterSelectScreen(Context));
+            if (_webBackdrop is not null)
+            {
+                _webBackdrop.BeginEntry();
+            }
+            else
+            {
+                Context.RequestScreen(new CharacterSelectScreen(Context));
+            }
         }
 
         _lastKeyboard = keyboard;
@@ -83,7 +110,8 @@ public sealed class OpeningScreen : GameScreen
 
     public override void Draw()
     {
-        _cinematic.Draw();
+        _cinematic?.Draw();
+        _webBackdrop?.Draw();
 
         var viewport = Context.GraphicsDevice.Viewport;
         if (!_loginRevealed)
@@ -102,5 +130,6 @@ public sealed class OpeningScreen : GameScreen
         _loginController?.Dispose();
         _audio?.Dispose();
         _cinematic?.Dispose();
+        _webBackdrop?.Dispose();
     }
 }

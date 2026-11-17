@@ -34,6 +34,11 @@ public sealed partial class WorldServer
         });
     }
 
+    public Task<ulong[]> VoiceMapPeersAsync(ulong speakerId) => EnqueueAsync(speakerId, () =>
+        _connections.TryGetValue(speakerId, out var speaker)
+            ? _connections.Values.Where(connection => connection.FieldId == speaker.FieldId).Select(connection => connection.Player.EntityId).ToArray()
+            : Array.Empty<ulong>());
+
     // The name of a monster, NPC or player anywhere in the world.
     public Task<string?> EntityNameAsync(ulong requesterId, ulong entityId)
     {

@@ -1,5 +1,6 @@
 using System.Globalization;
 using PristonTale.Application.GameMasters;
+using PristonTale.Application.Sessions;
 using PristonTale.Application.World;
 using PristonTale.Simulation.Social;
 using PristonTale.Contracts.Social;
@@ -29,6 +30,20 @@ public sealed class ChatAppService
     public WorldServer World { get; }
     public GameMasterCommands GameMasters { get; }
     public Func<long> NowMs { get; init; } = static () => Environment.TickCount64;
+    private sealed record TicketDraft(string Subject, long Expires)
+    {
+        public System.Text.StringBuilder Body { get; } = new();
+    }
+
+    private readonly System.Runtime.CompilerServices.ConditionalWeakTable<ChatMember, TicketDraft> _ticketDrafts = new();
+
+    public Support.SupportTickets? Tickets { get; init; }
+    public Func<long, Task<IReadOnlyList<string>>>? ReadDistributorAsync { get; init; }
+    public Func<long, Task<IReadOnlyList<string>>>? ReadMailAsync { get; init; }
+    public Func<long, long, int, Task<IReadOnlyList<string>>>? OpenMailAsync { get; init; }
+    public Func<PlayerSession, long, Task<string>>? ClaimMailAsync { get; init; }
+    public Action<string, string, string>? ObserveDeliveredWhisper { get; init; }
+    public Action<string, string>? ObserveGroupChat { get; init; }
 
     // The client's flood rules, checked again on lines that reach other players. A party, trade or clan line counts
     // toward the rapid-line rule only, as the client counts its channel lines; commands and the yahoo word are free.
@@ -40,6 +55,12 @@ public sealed class ChatAppService
     {
         if (!Directory.TryGet(entityId, out var member))
         {
+            return;
+        }
+
+        if (text.StartsWith("/voice ", StringComparison.Ordinal))
+        {
+            await RouteVoiceAsync(member, text[7..]);
             return;
         }
 
@@ -104,6 +125,7 @@ public sealed class ChatAppService
         }
 
         var line = new ChatLine(ChatKind.Party, entityId, ChatRules.Shorten(ChatRules.Compose(member.Name, text)));
+        ObserveGroupChat?.Invoke("party", line.Text);
         foreach (var id in _parties.MembersOf(entityId))
         {
             if (id != entityId && Directory.TryGet(id, out var hearer))
@@ -116,11 +138,131 @@ public sealed class ChatAppService
     }
 
     // Called with each heartbeat: a standing notice the player has not received yet goes out now.
+    private sealed class EventNoticeState
+    {
+        public int ExperienceEventPercent;
+        public required WorldServerOptions Previous;
+    }
+
+    private readonly System.Runtime.CompilerServices.ConditionalWeakTable<ChatMember, EventNoticeState> _eventNotices = new();
+
     public void Heartbeat(ulong entityId)
     {
-        if (Directory.TryGet(entityId, out var member) && Directory.TryTakeNotice(member, out var text))
+        if (!Directory.TryGet(entityId, out var member))
+        {
+            return;
+        }
+
+        var options = World.Options;
+        var state = _eventNotices.GetValue(member, _ => new EventNoticeState
+        {
+            ExperienceEventPercent = options.ExperienceEventPercent,
+            Previous = options
+        });
+        if (state.ExperienceEventPercent != options.ExperienceEventPercent)
+        {
+            state.ExperienceEventPercent = options.ExperienceEventPercent;
+            member.Link.Deliver(new ChatLine(ChatKind.CalendarEvent, 0, state.ExperienceEventPercent.ToString(CultureInfo.InvariantCulture)));
+        }
+
+        if (state.Previous.ExperienceMultiplier != options.ExperienceMultiplier)
+        {
+
+            member.Link.Deliver(new ChatLine(ChatKind.GlobalBuff, 0, options.ExperienceMultiplier.ToString(CultureInfo.InvariantCulture)));
+        }
+
+        if (state.Previous.CrystalEvent != options.CrystalEvent)
+        {
+            member.Link.Deliver(new ChatLine(ChatKind.CalendarEvent, 0, "crystals:" + options.CrystalEvent));
+        }
+
+        if (state.Previous.ItemEvents != options.ItemEvents)
+        {
+            member.Link.Deliver(new ChatLine(ChatKind.CalendarEvent, 0, "drops"));
+        }
+
+        if (state.Previous.Aging != options.Aging)
+        {
+            member.Link.Deliver(new ChatLine(ChatKind.GlobalBuff, 0, "aging"));
+        }
+
+        if (state.Previous.Mixing != options.Mixing)
+        {
+            member.Link.Deliver(new ChatLine(ChatKind.GlobalBuff, 0, "mixing"));
+        }
+
+        state.Previous = options;
+
+        if (Directory.TryTakeNotice(member, out var text))
         {
             member.Link.Deliver(new ChatLine(ChatKind.Notice, 0, ChatRules.Notice(text)));
+        }
+    }
+
+    private sealed class VoicePeer
+    {
+        public int Listening;
+        public long NextFrame;
+    }
+
+    private readonly System.Runtime.CompilerServices.ConditionalWeakTable<ChatMember, VoicePeer> _voicePeers = new();
+
+    private async Task RouteVoiceAsync(ChatMember sender, string payload)
+    {
+        var peer = _voicePeers.GetValue(sender, static _ => new VoicePeer());
+        if (payload.StartsWith("listen ", StringComparison.Ordinal))
+        {
+            if (int.TryParse(payload.AsSpan(7), out var mask))
+            {
+                Volatile.Write(ref peer.Listening, mask & VoiceFormat.ChannelsMask);
+            }
+            return;
+        }
+
+        var now = NowMs();
+        if (payload.Length != 2 + ((VoiceFormat.FrameBytes + 2) / 3) * 4 ||
+            payload[1] != ' ' || payload[0] is < '0' or > '3' || now < peer.NextFrame)
+        {
+            return;
+        }
+
+        peer.NextFrame = now + 15;
+        var audio = new byte[VoiceFormat.FrameBytes];
+        if (!Convert.TryFromBase64Chars(payload.AsSpan(2), audio, out var size) || size != audio.Length)
+        {
+            return;
+        }
+
+        var channel = (VoiceChannel)(payload[0] - '0');
+        var clan = channel == VoiceChannel.Clan ? _clans.ClanOf(sender.EntityId) : 0;
+        if (channel == VoiceChannel.Clan && clan == 0)
+        {
+            return;
+        }
+
+        try
+        {
+            IEnumerable<ulong> recipients = channel switch
+            {
+                VoiceChannel.Party => _parties.MembersOf(sender.EntityId).ToArray(),
+                VoiceChannel.Clan => Directory.Members.Where(member => _clans.ClanOf(member.EntityId) == clan).Select(member => member.EntityId).ToArray(),
+                VoiceChannel.Map => await World.VoiceMapPeersAsync(sender.EntityId),
+                _ => await World.PlayersNearAsync(sender.EntityId, ChatRules.AreaRangeSquared)
+            };
+
+            var frame = new ChatLine(ChatKind.Voice, sender.EntityId, payload);
+            foreach (var recipient in recipients)
+            {
+                if (recipient != sender.EntityId && Directory.TryGet(recipient, out var target) &&
+                    _voicePeers.TryGetValue(target, out var listener) && (Volatile.Read(ref listener.Listening) & (1 << (int)channel)) != 0)
+                {
+                    target.Link.Deliver(frame);
+                }
+            }
+        }
+        catch (WorldBusyException)
+        {
+            // Drop the voice frame instead of delaying world updates.
         }
     }
 
@@ -142,6 +284,7 @@ public sealed class ChatAppService
             return;
         }
 
+        Directory.RecordLocalMessage(line.Text);
         foreach (var id in near)
         {
             if (Directory.TryGet(id, out var hearer))
@@ -151,8 +294,162 @@ public sealed class ChatAppService
         }
     }
 
+    private async Task<bool> HandleTicketsAsync(ChatMember member, string text)
+    {
+        void Send(string value) => member.Link.Deliver(ChatLine.Reply("Ticket> " + value));
+
+        if (Tickets is null)
+        {
+            Send("error");
+            return true;
+        }
+
+        try
+        {
+            if (text.StartsWith("/ticketstart ", StringComparison.OrdinalIgnoreCase))
+            {
+                var subject = text[13..].Trim();
+                _ticketDrafts.Remove(member);
+                if (subject.Length is < 1 or > 100)
+                {
+                    Send("error");
+                    return true;
+                }
+
+                _ticketDrafts.Add(member, new TicketDraft(subject, NowMs() + 15000));
+                return true;
+            }
+
+            if (text.StartsWith("/ticketpart ", StringComparison.OrdinalIgnoreCase) || text == "/ticketsave")
+            {
+                if (!_ticketDrafts.TryGetValue(member, out var draft) || draft.Expires < NowMs())
+                {
+                    _ticketDrafts.Remove(member);
+                    Send("error");
+                    return true;
+                }
+
+                if (text == "/ticketsave")
+                {
+                    _ticketDrafts.Remove(member);
+                    if (string.IsNullOrWhiteSpace(draft.Body.ToString()))
+                    {
+                        Send("error");
+                        return true;
+                    }
+
+                    var ticketId = await Tickets.CreateAsync(member.AccountId, draft.Subject, draft.Body.ToString().Trim(), CancellationToken.None);
+                    Send($"saved {ticketId:N}");
+                    return true;
+                }
+
+                var part = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(text[12..]));
+                if (draft.Body.Length + part.Length > 1500)
+                {
+                    _ticketDrafts.Remove(member);
+                    Send("error");
+                    return true;
+                }
+
+                draft.Body.Append(ChatCommandText.Clean(part));
+                return true;
+            }
+
+            if (text.StartsWith("/novoticket ", StringComparison.OrdinalIgnoreCase))
+            {
+                var fields = text[12..].Split('|', 2);
+                if (fields.Length != 2 || fields[0].Trim().Length is < 1 or > 100 || string.IsNullOrWhiteSpace(fields[1]))
+                {
+                    Send("error");
+                    return true;
+                }
+
+                await Tickets.CreateAsync(member.AccountId, fields[0].Trim(), fields[1].Trim(), CancellationToken.None);
+                Send("saved");
+                return true;
+            }
+
+            Send("begin");
+            foreach (var ticket in (await Tickets.ListAsync(member.AccountId, CancellationToken.None)).Take(10))
+            {
+                Send("line " + ticket.Subject);
+                WriteLines(ticket.Message);
+                if (ticket.Reply is { } reply)
+                {
+                    Send("line Resposta do GM:");
+                    WriteLines(reply);
+                }
+                else
+                {
+                    Send("line Aguardando atendimento");
+                }
+                Send("line ");
+            }
+            Send("end");
+        }
+        catch (Exception error) when (error is IOException or UnauthorizedAccessException or System.Text.Json.JsonException or FormatException)
+        {
+            Send("error");
+        }
+
+        return true;
+
+        void WriteLines(string value)
+        {
+            foreach (var line in value.Replace("\r", "").Split('\n'))
+            {
+                for (var offset = 0; offset < line.Length; offset += 48)
+                {
+                    Send("line " + line.Substring(offset, Math.Min(48, line.Length - offset)));
+                }
+            }
+        }
+    }
+
     private Task<bool> PlayerCommandAsync(ChatMember member, string text)
     {
+        if (text.Equals("/bonusglobais", StringComparison.OrdinalIgnoreCase))
+        {
+            if (!Floods(member, text, channel: true))
+            {
+                var world = World.Options;
+                var values = FormattableString.Invariant($"GlobalBonus> {world.ExperienceMultiplier} {world.ExperienceEventPercent} {world.Aging.PricePercent} {world.Mixing.PricePercent}");
+                member.Link.Deliver(ChatLine.Reply(values));
+            }
+
+            return Task.FromResult(true);
+        }
+
+        if (text.Equals("/tickets", StringComparison.OrdinalIgnoreCase) ||
+            text == "/ticketsave" ||
+            text.StartsWith("/ticketstart ", StringComparison.OrdinalIgnoreCase) ||
+            text.StartsWith("/ticketpart ", StringComparison.OrdinalIgnoreCase) ||
+            text.StartsWith("/novoticket ", StringComparison.OrdinalIgnoreCase))
+        {
+            return HandleTicketsAsync(member, text);
+        }
+
+        const string claim = "/resgatarcorreio ";
+        if (ClaimMailAsync is not null && text.StartsWith(claim, StringComparison.OrdinalIgnoreCase))
+        {
+            return ClaimMailRewardAsync(member, text[claim.Length..]);
+        }
+
+        if (ReadDistributorAsync is not null && text == "/distribuidor")
+        {
+            return ShowMailAsync(member, distributor: true);
+        }
+
+        if (ReadMailAsync is not null && string.Equals(text, "/correio", StringComparison.OrdinalIgnoreCase))
+        {
+            return ShowMailAsync(member);
+        }
+
+        if (OpenMailAsync is not null && text.StartsWith("/correio ", StringComparison.OrdinalIgnoreCase))
+        {
+            return ShowMailAsync(member, text[9..]);
+        }
+
         if (ChatCommandText.Match("/bosstime", text) > 0)
         {
             member.Link.Deliver(ChatLine.Reply(GameText.Of(GameTextId.BossTime, World.BossMinute.ToString("00", CultureInfo.InvariantCulture))));
@@ -202,6 +499,7 @@ public sealed class ChatAppService
             if (message.Length > 0 && !Floods(member, message, channel: true))
             {
                 var line = new ChatLine(ChatKind.Clan, 0, ChatRules.ClipToCapacity(member.Name + "> " + message));
+                ObserveGroupChat?.Invoke("clan", line.Text);
                 foreach (var other in Directory.Members)
                 {
                     if (_clans.ClanOf(other.EntityId) == clan)
@@ -215,6 +513,49 @@ public sealed class ChatAppService
         }
 
         return Task.FromResult(false);
+    }
+
+    private async Task<bool> ClaimMailRewardAsync(ChatMember member, string argument)
+    {
+        if (long.TryParse(argument, out var id) && id > 0 && !Floods(member, "/resgatarcorreio", channel: true))
+        {
+            member.Link.Deliver(ChatLine.Reply($"Correio resgate> {id} {await ClaimMailAsync!(member.Session, id)}"));
+        }
+
+        return true;
+    }
+
+    private async Task<bool> ShowMailAsync(ChatMember member, string? arguments = null, bool distributor = false)
+    {
+        if (Floods(member, "/correio", channel: true))
+        {
+            return true;
+        }
+
+        IReadOnlyList<string> lines;
+        if (arguments is null)
+        {
+            lines = await (distributor ? ReadDistributorAsync! : ReadMailAsync!)(member.AccountId);
+        }
+        else
+        {
+            var parts = arguments.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var page = 1;
+            if (parts.Length is < 1 or > 2 || !long.TryParse(parts[0], out var id) || id <= 0 ||
+                (parts.Length == 2 && (!int.TryParse(parts[1], out page) || page is < 1 or > 20)))
+            {
+                return true;
+            }
+
+            lines = await OpenMailAsync!(member.AccountId, id, page);
+        }
+
+        foreach (var line in lines)
+        {
+            member.Link.Deliver(ChatLine.Reply(ChatRules.ClipToCapacity(line)));
+        }
+
+        return true;
     }
 
     private static int PartyRequestLength(string text) => Math.Max(ChatCommandText.Match("//party", text), ChatCommandText.Match("//PARTY", text));
@@ -278,5 +619,6 @@ public sealed class ChatAppService
 
         sender.Link.Deliver(new ChatLine(ChatKind.Whisper, 0, ChatRules.ClipToCapacity("To> " + name + ": " + message)));
         target.Link.Deliver(new ChatLine(ChatKind.Whisper, 0, ChatRules.ClipToCapacity("From> " + sender.Name + ": " + message)));
+        ObserveDeliveredWhisper?.Invoke(sender.Name, target.Name, message.Trim());
     }
 }

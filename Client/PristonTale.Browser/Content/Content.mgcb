@@ -1,0 +1,128 @@
+#----------------------------- Global Properties ----------------------------#
+
+/outputDir:bin/$(Platform)
+/intermediateDir:obj/$(Platform)
+/platform:Web
+/config:
+/profile:HiDef
+/compress:False
+
+#---------------------------------- Content ---------------------------------#
+
+# The browser client's content: the desktop client's sources (Client/PristonTale/Content) built for the Web platform.
+/reference:../../../monogame/pipeline/bin/MonoGame.Effect.Processor.dll
+#begin ../../PristonTale/Content/Fonts/UI.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:TextureFormat=Color
+/build:../../PristonTale/Content/Fonts/UI.spritefont;Fonts/UI.spritefont
+
+#begin ../../PristonTale/Content/Shaders/Passes/Surface.fx
+/importer:EffectImporter
+/processor:SpirvEffectProcessor
+/processorParam:DebugMode=Auto
+/build:../../PristonTale/Content/Shaders/Passes/Surface.fx;Effects/StaticSurface.fx
+
+#begin ../../PristonTale/Content/Shaders/Passes/Surface.fx
+/importer:EffectImporter
+/processor:SpirvEffectProcessor
+/processorParam:DebugMode=Auto
+/processorParam:Defines=SKINNED
+/build:../../PristonTale/Content/Shaders/Passes/Surface.fx;Effects/SkinnedSurface.fx
+
+#begin ../../PristonTale/Content/Shaders/Passes/Surface.fx
+/importer:EffectImporter
+/processor:SpirvEffectProcessor
+/processorParam:DebugMode=Auto
+/processorParam:Defines=SKINNED;GLTF
+/build:../../PristonTale/Content/Shaders/Passes/Surface.fx;Effects/GltfSurface.fx
+
+#begin ../../PristonTale/Content/Shaders/Passes/Unlit.fx
+/importer:EffectImporter
+/processor:SpirvEffectProcessor
+/processorParam:DebugMode=Auto
+/build:../../PristonTale/Content/Shaders/Passes/Unlit.fx;Effects/Unlit.fx
+
+#begin ../../PristonTale/Content/Shaders/Passes/Vfx.fx
+/importer:EffectImporter
+/processor:SpirvEffectProcessor
+/processorParam:DebugMode=Auto
+/build:../../PristonTale/Content/Shaders/Passes/Vfx.fx;Effects/Vfx.fx
+
+#begin ../../PristonTale/Content/Shaders/Passes/Atmosphere.fx
+/importer:EffectImporter
+/processor:SpirvEffectProcessor
+/processorParam:DebugMode=Auto
+/build:../../PristonTale/Content/Shaders/Passes/Atmosphere.fx;Effects/Atmosphere.fx
+
+#begin ../../PristonTale/Content/Shaders/Passes/Rain.fx
+/importer:EffectImporter
+/processor:SpirvEffectProcessor
+/processorParam:DebugMode=Auto
+/build:../../PristonTale/Content/Shaders/Passes/Rain.fx;Effects/Rain.fx
+
+#begin ../../PristonTale/Content/Shaders/Passes/SkyComposite.fx
+/importer:EffectImporter
+/processor:SpirvEffectProcessor
+/processorParam:DebugMode=Auto
+/build:../../PristonTale/Content/Shaders/Passes/SkyComposite.fx;Effects/SkyComposite.fx
+
+#begin ../../PristonTale/Content/Shaders/Passes/AmbientOcclusion.fx
+/importer:EffectImporter
+/processor:SpirvEffectProcessor
+/processorParam:DebugMode=Auto
+/build:../../PristonTale/Content/Shaders/Passes/AmbientOcclusion.fx;Effects/AmbientOcclusion.fx
+
+#begin ../../PristonTale/Content/Shaders/Passes/LightCull.fx
+/importer:EffectImporter
+/processor:SpirvEffectProcessor
+/processorParam:DebugMode=Auto
+/build:../../PristonTale/Content/Shaders/Passes/LightCull.fx;Effects/LightCull.fx
+
+#begin ../../PristonTale/Content/Shaders/Passes/Environment.fx
+/importer:EffectImporter
+/processor:SpirvEffectProcessor
+/processorParam:DebugMode=Auto
+/build:../../PristonTale/Content/Shaders/Passes/Environment.fx;Effects/Environment.fx
+
+#begin ../../PristonTale/Content/Shaders/Passes/Reflections.fx
+/importer:EffectImporter
+/processor:SpirvEffectProcessor
+/processorParam:DebugMode=Auto
+/build:../../PristonTale/Content/Shaders/Passes/Reflections.fx;Effects/Reflections.fx
+
+#begin ../../PristonTale/Content/Shaders/Passes/Volumetric.fx
+/importer:EffectImporter
+/processor:SpirvEffectProcessor
+/processorParam:DebugMode=Auto
+/build:../../PristonTale/Content/Shaders/Passes/Volumetric.fx;Effects/Volumetric.fx
+
+#begin ../../PristonTale/Content/Shaders/Passes/PostTemporal.fx
+/importer:EffectImporter
+/processor:SpirvEffectProcessor
+/processorParam:DebugMode=Auto
+/build:../../PristonTale/Content/Shaders/Passes/PostTemporal.fx;Effects/PostTemporal.fx
+
+#begin ../../PristonTale/Content/Shaders/Passes/PostExposure.fx
+/importer:EffectImporter
+/processor:SpirvEffectProcessor
+/processorParam:DebugMode=Auto
+/build:../../PristonTale/Content/Shaders/Passes/PostExposure.fx;Effects/PostExposure.fx
+
+#begin ../../PristonTale/Content/Shaders/Passes/PostBloom.fx
+/importer:EffectImporter
+/processor:SpirvEffectProcessor
+/processorParam:DebugMode=Auto
+/build:../../PristonTale/Content/Shaders/Passes/PostBloom.fx;Effects/PostBloom.fx
+
+#begin ../../PristonTale/Content/Shaders/Passes/PostFinal.fx
+/importer:EffectImporter
+/processor:SpirvEffectProcessor
+/processorParam:DebugMode=Auto
+/build:../../PristonTale/Content/Shaders/Passes/PostFinal.fx;Effects/PostFinal.fx
+
+#begin ../../PristonTale/Content/Shaders/Passes/PostSmaa.fx
+/importer:EffectImporter
+/processor:SpirvEffectProcessor
+/processorParam:DebugMode=Auto
+/build:../../PristonTale/Content/Shaders/Passes/PostSmaa.fx;Effects/PostSmaa.fx

@@ -13,6 +13,54 @@ public static class AccountRules
     public const int MaxNameLength = 16;
     public const int MinPasswordLength = 8;
     public const int MaxPasswordLength = 64;
+    public const int MaxEmailLength = 254;
+    public const int MaxReferralCodeLength = 32;
+
+    // An address of the form local@domain.tld without spaces: the registration keeps it for the account's support and
+    // recovery; nothing is sent to it, so the check only rejects what cannot be an address.
+    public static bool IsValidEmail(string? email)
+    {
+        if (string.IsNullOrEmpty(email) || email.Length > MaxEmailLength)
+        {
+            return false;
+        }
+
+        var at = email.IndexOf('@');
+        var dot = email.LastIndexOf('.');
+        if (at < 1 || at != email.LastIndexOf('@') || dot < at + 2 || dot == email.Length - 1)
+        {
+            return false;
+        }
+
+        foreach (var character in email)
+        {
+            if (char.IsWhiteSpace(character) || char.IsControl(character))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // The optional code of who invited the player: empty, or letters, digits, '-' and '_'.
+    public static bool IsValidReferralCode(string? code)
+    {
+        if (code is null || code.Length > MaxReferralCodeLength)
+        {
+            return false;
+        }
+
+        foreach (var character in code)
+        {
+            if (!char.IsAsciiLetterOrDigit(character) && character is not '-' and not '_')
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     public static bool IsValidName(string? name)
     {

@@ -69,6 +69,7 @@ internal sealed partial class ClientSession : IMovementVerdictSink
     private static readonly TimeSpan SendStallTimeout = TimeSpan.FromSeconds(30);
 
     private readonly FrameConnection _connection;
+    private readonly bool _browserTickets;
     private readonly SessionServices _services;
     private readonly byte[] _scratch = new byte[FrameCodec.MaxFrameSize];
     private readonly object _sendGate = new();
@@ -84,9 +85,10 @@ internal sealed partial class ClientSession : IMovementVerdictSink
     private readonly TokenBucket _storedRate;
     private readonly SessionPacketQueue _packets = new();
 
-    public ClientSession(FrameConnection connection, SessionServices services)
+    public ClientSession(FrameConnection connection, SessionServices services, bool browserTickets)
     {
         _connection = connection;
+        _browserTickets = browserTickets;
         _services = services;
         ConnectedMs = Environment.TickCount64;
         LastReceivedMs = ConnectedMs;
@@ -165,8 +167,8 @@ internal sealed partial class ClientSession : IMovementVerdictSink
 
     private void AnswerHeartbeat(HeartbeatPacket heartbeat)
     {
-        var beat = heartbeat with { TimeMs = Environment.TickCount64 };
-        SendLarge(beat.Write, HeartbeatPacket.Size);
+        var beat = heartbeat with { TimeMs = Environment.TickCount64, OnlinePlayers = _services.World.PlayerCount };
+        SendLarge(beat.Write, HeartbeatPacket.MaxSize);
         if (_player is not null && _session is { } playing)
         {
             _services.Chat.Heartbeat(playing.EntityId);
@@ -414,7 +416,9 @@ internal sealed partial class ClientSession : IMovementVerdictSink
             return;
         }
 
-        var outcome = await _services.Auth.LoginAsync(request.Account, request.Password);
+        var outcome = _browserTickets && BrowserLoginTicket.IsTicket(request.Password)
+            ? await _services.Auth.LoginWithBrowserTicketAsync(request.Account, request.Password, _connection.Closed)
+            : await _services.Auth.LoginAsync(request.Account, request.Password);
         if (!outcome.Ok || !_services.Registry.TryGet(outcome.SessionToken, out var session))
         {
             if (outcome.Failure == LoginFailure.BadCredentials)

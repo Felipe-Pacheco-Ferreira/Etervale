@@ -171,7 +171,9 @@ frame.
 `GameServerConnection` implements `IGameBackend` over one TLS connection (`TlsTransport.ConnectAsync`, then
 `FrameConnection`; `Shared/PristonTale.Protocol/Transport`). The address (`TlsTransport.ParseAddress`) is `host`,
 `host:port` or `tcp://host:port`, port 10009 when left out, optionally with `?cert=<sha-256 hex>` to pin the server
-certificate. Wire details live in [protocol.md](protocol.md).
+certificate. A `wss://` address connects through `WebSocketTransport` instead (the browser client,
+[web-client.md](web-client.md)); everything above the connection is the same. Wire details live in
+[protocol.md](protocol.md).
 
 | Step | Client sends | Completes on |
 |---|---|---|
@@ -288,6 +290,12 @@ coordinates; their consumers mirror them with `WorldSpace` instead of negating Z
   it has a clip for plays (most often the death) and the main model again for the others, as the original does; its
   `Actor` is the model shown, so sounds, effects, picking and outlines follow it. The renderer hides an actor with
   `SetActorHidden` (kept with its clip and world, left out of the batch lists).
+The desktop system menu opens a server selector after the character session closes. The selector lists the current server and valid addresses from `GameServers` in the client settings. Selecting an entry opens login on a new connection.
+
+The system menu opens News from the HTTPS URL in NewsEndpoint (the website route /api/client/news).
+
+- Settings > Keys can rebind the settings window, bag page, weapon set, and three belt slots alongside the window shortcuts.
+- Settings > Other can bypass the ground loot filter while preserving the selected item categories.
 - `GroundLootPresentation` lays each drop as the original does: a yaw drawn from its position
   (`(x + z) >> 2` in fixed point, 4096 per turn), and weapons (`0x01xxxxxx` codes) turned a quarter turn about X so they
   lie flat. The turned mesh rests on the floor by its lowest rotated corner (`GroundLootPresentation.Orientation`).
@@ -424,7 +432,7 @@ destination. Renderer side of stage publication: [rendering.md](rendering.md).
 | Hold `A` | `GameScene.CollectGroundLabels`, `TryPickLoot` | Show and pick every ground item label |
 | Middle drag, cursor at screen edge, wheel, Left/Right, Up/Down | `PristonCamera.UpdateOrbit` (Engine3D) | Orbit (drag, edge, Left/Right at the edge orbit's speed), zoom (wheel; Up/Down at 300 units a second); the mouse is ignored while the HUD captures the pointer, the arrows while a text input has the keyboard |
 | `I` or `V`, `C`, `S`, `X`, `Q`, `D` | `GameplayHud.UpdateKeys` | Inventory, status, skills, system menu, quest window, party window (ignored with Ctrl held) |
-| `F1`-`F8` | `HudSkillBindings` | Select a skill shortcut; while pressing a skill in the tree, bind it ([skills.md](skills.md)) |
+| `F1`-`F8` (remappable) | `HudSkillBindings` | Select a skill shortcut; while pressing a skill in the tree, bind it ([skills.md](skills.md)) |
 | `Enter`, `Page Up`/`Page Down`, `Up`/`Down` | `HudChat.Update` | Open the chat input or send its line, scroll the chat, recall commands; while typing, HUD, binding, debug and motion keys and the `A` labels are suppressed |
 | `Esc` | `Game1` | Close the chat window first, then HUD panels, else quit |
 | `F9` | `Game1.Update` | Show or hide the diagnostics overlay (frame rate and timing, the screen's status; `GameClient.Diagnostics`) |
@@ -1035,3 +1043,19 @@ budget; never read files in `Update`/`Draw` after `BeginRemotePresence`. Resolve
 - [protocol.md](protocol.md) — opcodes, packets, framing and TLS.
 - [application.md](application.md), [server.md](server.md) — the authority behind each request.
 - [testing.md](testing.md) — regression runner and capture probes.
+News and Support lets the signed-in player create a text ticket and read recent tickets and staff replies. The game host and website must point to the same support ticket directory.
+The More menu in the desktop HUD opens News and Support, Mail, Quests, and Settings. When the journal reports a kill objective, the tracker shows its target and progress and opens the quest journal.
+The in-game ticket description accepts up to 1,500 characters. A submission sends ordered fragments over the authenticated game connection, then commits the draft on the server.
+The PC News and Support header shows the HTTPS social links configured in DiscordUrl, InstagramUrl, and XUrl. With an HTTPS NewsEndpoint, More also links to the event calendar, rankings, and account page on that site.
+The ground loot filter includes summoning crystals and cores. The AlwaysShowGroundNames client setting lists case-insensitive name fragments that override item categories.
+Settings can hide the quest tracker or reset the loot category, specialization, and level restrictions with Show all.
+The desktop Keys tab remaps free-camera rotation, zoom, and tilt. The side mouse buttons rotate the free camera while the pointer is outside captured HUD controls.
+The desktop camera settings can swap or disable the side mouse buttons. Holding Ctrl with a zoom shortcut tilts the free camera.
+Skill shortcuts accept Shift and Alt combinations. The skill tree labels use the saved combination.
+The desktop ticket composer can open the HTTPS website upload form after saving a ticket. The site authenticates the owner and links one image or video of up to 20 MB to the same ticket. Administrators download it from the support queue.
+The desktop native runtime exposes SDL microphone enumeration and polled mono PCM capture at 16 kHz. Opening capture is an explicit operation on the selected device.
+On desktop, Settings > Audio groups music and incoming voice on the left, and sound effects and microphone controls on the right. Voice is opt-in. Choose the listening channels, volume, transmit channel, device, and push-to-talk key. Capture stops when the key is released or the game loses focus.
+More can open configured HTTPS service pages for the item shop, auction, coin history, Eragon, item distributor, and community buffs. Unconfigured links are hidden. The client links do not implement the underlying services.
+More > Item Distributor shows unclaimed mail with item attachments and uses the same inventory claim operation as Mail.
+The desktop HUD Video tab can hide unfocused name plates while retaining the focus and party plates, hide floating combat numbers, or keep ground item names visible. The desktop layout is shared by the Windows and browser clients.
+The Other tab can invert free-camera rotation and wheel zoom independently. Inverting rotation keeps vertical tilt direction unchanged.

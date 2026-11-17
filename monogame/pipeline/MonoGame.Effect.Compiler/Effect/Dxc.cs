@@ -59,9 +59,13 @@ namespace MonoGame.Effect
         }
 
         /// <summary>Runs DXC with <paramref name="arguments"/>; returns its exit code.</summary>
-        public static int Run(string arguments, out string stdout, out string stderr)
+        public static int Run(string arguments, out string stdout, out string stderr) =>
+            RunTool(Executable.Value, arguments, out stdout, out stderr);
+
+        /// <summary>Runs a command-line tool of the effect compiler (DXC, Slang); returns its exit code.</summary>
+        internal static int RunTool(string executable, string arguments, out string stdout, out string stderr)
         {
-            var info = new ProcessStartInfo(Executable.Value, arguments)
+            var info = new ProcessStartInfo(executable, arguments)
             {
                 UseShellExecute = false,
                 RedirectStandardOutput = true,

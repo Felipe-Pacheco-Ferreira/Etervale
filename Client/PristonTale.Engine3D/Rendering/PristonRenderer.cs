@@ -246,7 +246,10 @@ public sealed partial class PristonRenderer : IDisposable
             try
             {
                 // PreserveContents: the cascades refresh at different rates, and binding a DiscardContents target clears it.
-                return new RenderTarget2D(_graphicsDevice, size, size, false, SurfaceFormat.Depth32Float, DepthFormat.None, 0,
+                // The Web effect samples this atlas through a filterable color binding.
+                var color = OperatingSystem.IsBrowser() ? SurfaceFormat.HalfVector4 : SurfaceFormat.Depth32Float;
+                var depth = OperatingSystem.IsBrowser() ? PristonDepth.Format : DepthFormat.None;
+                return new RenderTarget2D(_graphicsDevice, size, size, false, color, depth, 0,
                     RenderTargetUsage.PreserveContents);
             }
             catch (Exception exception) when (size > MinimumShadowMapSize && exception is ArgumentException or InvalidOperationException or OutOfMemoryException)

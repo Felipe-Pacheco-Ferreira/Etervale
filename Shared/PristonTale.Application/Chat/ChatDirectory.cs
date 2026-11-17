@@ -1,3 +1,4 @@
+using PristonTale.Contracts.Social;
 using PristonTale.Simulation.Social;
 using System.Collections.Concurrent;
 using PristonTale.Application.Sessions;
@@ -68,6 +69,32 @@ public sealed class ChatDirectory
     private string _notice = "";
     private int _noticeCounter;
     private readonly object _noticeGate = new();
+    private readonly object _activityGate = new();
+    private readonly Queue<PublicGameMessage> _activity = new();
+    private long _sequence;
+
+    public PublicGameMessage[] RecentPublicMessages()
+    {
+        lock (_activityGate)
+        {
+            return _activity.ToArray();
+        }
+    }
+
+    private void RecordPublicMessage(string channel, string text)
+    {
+        lock (_activityGate)
+        {
+            if (_activity.Count == 100)
+            {
+                _activity.Dequeue();
+            }
+
+            _activity.Enqueue(new PublicGameMessage(++_sequence, DateTimeOffset.UtcNow, channel, text));
+        }
+    }
+
+    internal void RecordLocalMessage(string text) => RecordPublicMessage("local", text);
 
     public IEnumerable<ChatMember> Members => _byEntity.Values;
 
@@ -125,6 +152,8 @@ public sealed class ChatDirectory
             _notice = text;
             _noticeCounter++;
         }
+
+        RecordPublicMessage("notice", text);
     }
 
     public bool TryTakeNotice(ChatMember member, out string text)
@@ -144,6 +173,11 @@ public sealed class ChatDirectory
 
     public void Broadcast(ChatLine line)
     {
+        if (line.Kind == ChatKind.Trade)
+        {
+            RecordPublicMessage("trade", line.Text);
+        }
+
         foreach (var member in _byEntity.Values)
         {
             member.Link.Deliver(line);

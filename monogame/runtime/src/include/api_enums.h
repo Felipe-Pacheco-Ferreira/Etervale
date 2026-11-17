@@ -545,6 +545,7 @@ enum class MGGraphicsBackend : mgint
     Vulkan = 2,
     Metal = 3,
     DirectX12 = 4,
+    WebGPU = 5, // Etervale fork: the browser runtime (issues/021).
 };
 
 enum class MGSystemCursor : mgint

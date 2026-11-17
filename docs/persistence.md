@@ -184,6 +184,8 @@ FluentMigrator scans `PristonTale.Persistence` for `[Migration(n)]` classes. Ver
 | 39 | `M039CastleTreasury` | `castle_treasury`, the clan money ledger (each movement: clan, kind `TreasuryKind` 0 Bellatra income / 1 castle tax / 2 castle withdrawal / 3 Bellatra redemption, amount, receiving character, time; indexed by clan) |
 | 40 | `M040Bellatra` | `bellatra_state` (one row: the day as yyyymmdd and its operating clan), `bellatra_points` (a day's points per clan, keyed by day and clan), `bellatra_balances` (each clan's Bellatra income) |
 | 41 | `M041RewardEvents` | `characters.events` (JSON, `jsonb` on PostgreSQL, default `{}`): the character's events and rewards; characters stored before start the welcome campaign on their next entry |
+| 44 | `M044AccountContact` | `accounts.email` (nullable, unique index `ux_accounts_email`) and `accounts.referral_code` (nullable), filled by the website's entry-page registration |
+| 45 | `M045BrowserLoginTickets` | `browser_login_tickets` stores digests of one-use game login tickets, bound to an account and password stamp with a short expiry. Issuance clears expired tickets. |
 
 Upgrade path: databases from the earlier migration set at version 12 upgrade in place. Databases at
 versions 1-11 make `M013Baseline` throw; bring them to 12 with the previous release or back up and recreate them.
@@ -201,7 +203,7 @@ The PostgreSQL `jsonb` columns are `M013Baseline.JsonColumns` and M041's: `chara
 
 | Table | Columns and constraints |
 | --- | --- |
-| `accounts` | `id` int64 identity PK; `user_id` unique; `password_hash` (`PasswordHasher` format); `is_blocked`, `is_tester` bool; `created_at` UTC default; `last_login_at` nullable; `gm_level` 0 to 4 (default 0, player) |
+| `accounts` | `id` int64 identity PK; `user_id` unique; `password_hash` (`PasswordHasher` format); `is_blocked`, `is_tester` bool; `created_at` UTC default; `last_login_at` nullable; `gm_level` 0 to 4 (default 0, player); `email` nullable, lower case, unique index `ux_accounts_email` (the entry page's registration); `referral_code` nullable (up to 32 letters, digits, `-`, `_`) |
 | `server_settings` | `name` PK; `value` text; `description`; `updated_at` UTC default. Rows and meanings: [server.md](server.md#server-settings-table) |
 | `gm_audit` | `id` int64 identity PK; `account_id` int64 (indexed, no FK so the trail outlives the account); `user_id`, `character_name`, `gm_level`, `command`, `required_level`, `accepted` bool, `result`; `created_at` UTC default |
 

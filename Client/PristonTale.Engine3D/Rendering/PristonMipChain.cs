@@ -16,16 +16,18 @@ internal static class PristonMipChain
     public static Color[][] Build(Color[] pixels, int width, int height, byte alphaCutoff)
     {
         var levels = new List<Color[]> { pixels };
-        var baseCoverage = alphaCutoff == 0 ? -1f : Coverage(pixels, alphaCutoff);
+        var opaque = IsOpaque(pixels);
+        var baseCoverage = alphaCutoff == 0 || opaque ? -1f : Coverage(pixels, alphaCutoff);
         var preserveCoverage = baseCoverage is > 0f and < 1f;
         var premultiplied = ToLinear(pixels, premultiply: true);
-        var straight = ToLinear(pixels, premultiply: false);
+        // With alpha of one, the premultiplied and straight colours are identical at every level.
+        var straight = opaque ? premultiplied : ToLinear(pixels, premultiply: false);
         while (width > 1 || height > 1)
         {
             var nextWidth = Math.Max(1, width / 2);
             var nextHeight = Math.Max(1, height / 2);
             premultiplied = Downsample(premultiplied, width, height, nextWidth, nextHeight);
-            straight = Downsample(straight, width, height, nextWidth, nextHeight);
+            straight = opaque ? premultiplied : Downsample(straight, width, height, nextWidth, nextHeight);
             var alphaScale = preserveCoverage ? FindCoverageScale(premultiplied, baseCoverage, alphaCutoff) : 1f;
             levels.Add(ToColors(premultiplied, straight, alphaScale));
             width = nextWidth;
@@ -33,6 +35,19 @@ internal static class PristonMipChain
         }
 
         return levels.ToArray();
+    }
+
+    private static bool IsOpaque(Color[] pixels)
+    {
+        foreach (var pixel in pixels)
+        {
+            if (pixel.A != byte.MaxValue)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     // A chain of data rather than colour (roughness, metallic, occlusion): the stored values averaged as they are.

@@ -17,7 +17,7 @@
     float DebugView;        /* PristonDebugView ordinal; 0 = shaded */ \
     float3 GroundAmbient;   /* ambient radiance of downward-facing surfaces */ \
     float BlinkPulse;       /* the global [0.35, 1] pulse of blinking materials */ \
-    float EmissionScale;    /* radiance of emissive albedo 1: at least 1 / Exposure, brighter at night */ \
-    float3 FrameReserved;
+    float3 FrameReserved;   /* each float3 starts a 16-byte register: WGSL aligns a uniform vec3 to 16 bytes */ \
+    float EmissionScale;    /* radiance of emissive albedo 1: at least 1 / Exposure, brighter at night */
 
 #endif

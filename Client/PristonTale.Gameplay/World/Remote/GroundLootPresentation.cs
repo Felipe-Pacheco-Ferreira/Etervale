@@ -30,6 +30,7 @@ public sealed class GroundLootPresentation(IActorScene scene, PristonActorLoader
     private readonly Dictionary<string, Task<PristonActor>> _prepared = new(StringComparer.OrdinalIgnoreCase);
     private int _floorRevision;
     private Guid _hovered;
+    public Func<GroundDropView, bool> IsVisible { get; init; } = static _ => true;
 
     public void InvalidateFloor() => _floorRevision++;
 
@@ -99,7 +100,7 @@ public sealed class GroundLootPresentation(IActorScene scene, PristonActorLoader
                 entry.FloorRevision = _floorRevision;
             }
 
-            if (!entry.FloorFound)
+            if (!entry.FloorFound || !IsVisible(entry.Drop))
             {
                 if (entry.Handle.IsValid)
                 {
@@ -169,7 +170,7 @@ public sealed class GroundLootPresentation(IActorScene scene, PristonActorLoader
 
     public bool TryGet(Guid id, out Vector3 position)
     {
-        if (_entries.TryGetValue(id, out var entry) && entry.FloorFound)
+        if (_entries.TryGetValue(id, out var entry) && entry.FloorFound && IsVisible(entry.Drop))
         {
             position = entry.Position;
             return true;
@@ -228,7 +229,7 @@ public sealed class GroundLootPresentation(IActorScene scene, PristonActorLoader
         float nearest = float.MaxValue;
         foreach (var entry in _entries.Values)
         {
-            if (!entry.FloorFound)
+            if (!entry.FloorFound || !IsVisible(entry.Drop))
             {
                 continue;
             }
@@ -263,7 +264,7 @@ public sealed class GroundLootPresentation(IActorScene scene, PristonActorLoader
         foreach (var entry in _entries.Values)
         {
             entry.LabelBounds = Rectangle.Empty;
-            entry.Shown = TryAnchorLabel(entry, viewport, camera, entry.Drop.Id == hovered, showAll);
+            entry.Shown = IsVisible(entry.Drop) && TryAnchorLabel(entry, viewport, camera, entry.Drop.Id == hovered, showAll);
         }
 
         var kept = 0;

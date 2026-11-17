@@ -9,13 +9,20 @@ public readonly record struct GroundItemEntry(Guid Id, uint ItemCode, bool Gold,
     public const int MaxNameBytes = 64;
     public const int MaxSize = 16 + 4 + 4 + 4 + 12 + 2 + MaxNameBytes;
     private const byte GoldFlag = 1;
+    private const byte EquipmentFlag = 2;
+    private const byte RareFlag = 4;
+    public bool HasEquipmentDetails { get; init; }
+    public byte RequiredLevel { get; init; }
+    public uint SpecJob { get; init; }
+    public bool Rare { get; init; }
 
     public void Write(ref PacketWriter writer)
     {
         writer.Guid(Id);
         writer.UInt32(ItemCode);
-        writer.Byte(Gold ? GoldFlag : (byte)0);
-        writer.Zero(3);
+        writer.Byte((byte)((Gold ? GoldFlag : 0) | (HasEquipmentDetails ? EquipmentFlag : 0) | (Rare ? RareFlag : 0)));
+        writer.Byte(RequiredLevel);
+        writer.UInt16((ushort)((SpecJob & 0xFF) | ((SpecJob >> 8) & 0xFF00)));
         writer.Int32(Amount);
         writer.Int32(X);
         writer.Int32(Y);
@@ -28,9 +35,16 @@ public readonly record struct GroundItemEntry(Guid Id, uint ItemCode, bool Gold,
         var id = reader.Guid();
         var code = reader.UInt32();
         var flags = reader.Byte();
-        reader.Skip(3);
+        var level = reader.Byte();
+        var spec = (uint)reader.UInt16();
         return new GroundItemEntry(id, code, (flags & GoldFlag) != 0, reader.Int32(), reader.Int32(), reader.Int32(), reader.Int32(),
-            Utf8Text.Read(ref reader, MaxNameBytes, "Ground item"));
+            Utf8Text.Read(ref reader, MaxNameBytes, "Ground item"))
+        {
+            HasEquipmentDetails = (flags & EquipmentFlag) != 0,
+            RequiredLevel = level,
+            SpecJob = (spec & 0xFF) | ((spec & 0xFF00) << 8),
+            Rare = (flags & RareFlag) != 0
+        };
     }
 }
 

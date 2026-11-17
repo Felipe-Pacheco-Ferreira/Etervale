@@ -18,7 +18,7 @@ server's database and the account, calendar and ranking code of `Shared/PristonT
 | [Program.cs](../Web/PristonTale.Web/Program.cs) | Builds the host from `web-settings.json` beside the executable and the command line only, then `AddPristonWeb` / `UsePristonWeb` |
 | `Hosting/WebHosting.cs` | Every service registration and the request pipeline: database, data protection keys, cookie authentication, anti-forgery, rate limits, HSTS, HTTPS redirection, forwarded headers, static files, the Android download endpoint |
 | `Hosting/WebSettings.cs` | The settings records, their defaults and validation (a value out of range stops the start) |
-| `Hosting/SecurityHeaders.cs` | The headers every response carries (CSP, X-Frame-Options, ...) |
+| `Hosting/SecurityHeaders.cs` | The headers every response carries (CSP, X-Frame-Options, ...), and the play page's own policy |
 | `Hosting/AccountSession.cs` | The session cookie: claims, options, and the check of each request against the stored account |
 | `Services/ServerStatusMonitor.cs` | Background TCP probe of the game server; pages read its last result |
 | `Services/SiteData.cs` | Cached reads for the pages: totals, rankings, the settings table, the event calendar |
@@ -26,11 +26,13 @@ server's database and the account, calendar and ranking code of `Shared/PristonT
 | `Services/ClassTitles.cs` | Class titles in Portuguese from the client's `DataText.pt-BR.resx`, copied as `content/class-titles.pt-BR.resx` |
 | `Services/NewsFeed.cs` | The posts of `content/news.json`, read again when the file changes |
 | `Services/AndroidPackage.cs` | The APK of `Downloads:AndroidApkPath` with its size and SHA-256 |
+| `Services/BrowserClient.cs` | The published browser client of `Play:ClientPath`, served under `/play`, and whether it is offered ([web-client.md](web-client.md)) |
 | `Services/RegistrationGate.cs` | Registrations per address and window |
 | `Services/SiteText.cs` | Portuguese words for events and drops, number, date and time formats, the level medallion's stone |
-| `Pages/` | `Index` (home), `Noticias`, `Download`, `Rankings`, `Eventos`, `Entrar`, `Cadastro`, `Conta`, `Sair`, `Erro`, and `Shared/_Layout` |
-| `wwwroot/` | `css/site.css` and the images (`img/`, cut from the client's Priston Avalon art) |
+| `Pages/` | `Jogar` (the entry, `/`), `Index` (the portal, `/inicio`), `Noticias`, `Download`, `Rankings`, `Eventos`, `Entrar`, `Cadastro`, `Conta`, `Sair`, `Erro`, and `Shared/_Layout` |
+| `wwwroot/` | `css/site.css` (the portal), `css/play.css` (the entry page) and the images (`img/`, cut from the client's Priston Avalon art) |
 | `content/news.json` | The news posts |
+| `content/termos.txt` | The rules and terms of use the registration shows and asks to accept (`Services/TermsOfUse.cs`): one block per line, the title, the game's name, the notice starting with "LEITURA IMPORTANTE.", numbered section headings in capitals and the clauses |
 | `web-settings.json` | Settings beside the executable |
 
 Shared code it uses: `AccountAppService` (credential check and registration), `LoginThrottle`, `AccountRules`
@@ -42,10 +44,18 @@ settings table as the server reads it), `IRankingRepository`, `IAccountRepositor
 
 | Address | Page | Reads |
 | --- | --- | --- |
-| `/` | Hero art, server status, accounts and characters, experience rate, Android version, the latest news, the next events and the top five | Everything below |
-| `/noticias` | Every news post, newest first | `content/news.json` |
+| `/` | The game itself, filling the window (`Jogar`, no site layout). The page shows loading progress while the browser client starts, then plays the live opening flight with the login panel and a bar for language, site menu and full screen. "Em breve" while the client or its endpoint is missing ([web-client.md](web-client.md#entry-page)). | `Play:*` |
+| `/inicio` | The portal: hero art, server status, accounts and characters, experience rate, Android version, the latest news, the next events and the top five | Everything below |
+| /api/client/news | Latest 20 news posts as JSON for the game client | content/news.json |
+| `/api/worlds` | The worlds the entry page offers after the login: name, region, kind (`Normal`/`AntiKs`), `endpoint` (wss) and `status` (the edge's `https://host:port/status`) | `Play:Worlds` (or `Play:GameEndpoint` alone as the world "Avalon") |
+| `/api/play-session` | GET identifies the remembered browser account. Same-origin HTTPS POST verifies credentials and sets a separate encrypted, HTTP-only cookie for 14 days. DELETE forgets the account in this browser. | `BrowserSessionApi`, `AccountSession` |
+| `POST /api/play-session/ticket` | Exchanges a valid browser cookie for a single-use game login ticket that expires after 45 seconds. The website and accepting game world must share the account database. | `BrowserSessionApi`, `browser_login_tickets` |
+| `POST /api/conta` | The entry page's "Criar conta" (`Hosting/RegistrationApi.cs`): JSON from the site's own origin (else 403) with account, e-mail, password and its confirmation, optional referral code, accepted terms and the Turnstile token when configured; answers `{ ok, field, message }`. Counts against `FormPostsPerMinute` and `RegistrationsPerIp`; the account keeps its e-mail (lower case, one per account) and referral code (migration 44) | `AccountAppService.RegisterAsync`, `content/termos.txt` |
+| /noticias | Every news post, newest first | `content/news.json` |
 | `/download` | The APK's version, size, date and SHA-256, the download button and how to install | `Downloads:*` |
 | `/download/android` | The APK itself (`application/vnd.android.package-archive`, range requests) | `Downloads:AndroidApkPath` |
+| `/jogar` | Permanent redirect to `/`, the former address of the play page | |
+| `/play/*` | The browser client's files, including `main.js`, `_framework/`, the assets listed by `bootstrap.txt`, and the opening music served on demand. Hashed files are cached for a year and the loader and entry script are revalidated. | `Play:ClientPath` |
 | `/rankings`, `/rankings?classe=<class>` | The 50 highest characters, of all classes or one (`ClassTitles.Slug`, the `PlayerClass` name in lower case) | `IRankingRepository.TopAsync` |
 | `/eventos` | Events running now, the next 24 hours, the field bosses (next calls and each boss's hours) and the next days | `SiteData.CalendarAsync` |
 | `/cadastro` | Registration; signs the new account in | `AccountAppService.RegisterAsync` |
@@ -53,6 +63,9 @@ settings table as the server reads it), `IRankingRepository`, `IAccountRepositor
 | `/conta` | The signed-in account's characters: class title, level medallion, experience to the next level, clan, field, gold, last play | `ICharacterRepository`, `IClanRepository` |
 | `/sair` | Sign-out (a form post) | |
 | `/erro/{code}` | Error and status pages (404, 400 expired form, 429, 500) | |
+
+On the entry page, "Esqueci o ID" and "Esqueci a senha" open dialogs over the login. The forms display an unavailable
+message on submission until email delivery is connected to the recovery flow.
 
 Data shown and its sources:
 
@@ -92,11 +105,15 @@ from a build of the repository, else the executable's directory).
 | `GameServer:ProbeSeconds` | 30 | Probe period, at least 5. |
 | `Downloads:AndroidApkPath` | `downloads/priston-avalon.apk` | The package offered; the page says "em breve" while it is missing. |
 | `Downloads:AndroidVersion` | empty (`0.57` in the file) | Shown on the pages and in the download's file name. |
+| `Play:ClientPath` | `play` | Folder of the published browser client, relative to the executable (created when missing). |
+| `Play:GameEndpoint` | empty | The game server's WebSocket edge, `wss://` only (`wss://host:port/game`; the page is HTTPS, where browsers refuse plain `ws`); empty keeps `/` on "em breve". It and each world's endpoint (with the same host and port over `https`, for `/status`) are the only origins the play page may connect to. |
+| `Play:Worlds` | `[]` | The worlds of "Escolha o mundo": `Name`, `Region` (default `Brasil`), `Kind` (`Normal` or `AntiKs`) and `Endpoint` (`wss://`, required); empty offers `GameEndpoint` as one world named "Avalon". |
 | `Security:LoginFailuresPerAccount`, `LoginFailuresPerIp`, `LoginFailureWindowSeconds` | 5, 20, 300 | `LoginThrottle` limits of the sign-in form. |
 | `Security:RegistrationsPerIp`, `RegistrationWindowMinutes` | 3, 60 | Registrations one address may attempt per window. |
 | `Security:RequestsPerMinute` | 120 | Requests per address and minute, any page (static files excluded). |
 | `Security:FormPostsPerMinute` | 10 | Posts of the sign-in and registration forms per address and minute. |
 | `Security:SessionMinutes` | 120 | Session lifetime, sliding; 5 to 10080. |
+| `Security:TurnstileSiteKey`, `Security:TurnstileSecret` | empty | Cloudflare Turnstile on "Criar conta": the widget shows and `/api/conta` checks its token with Cloudflare only when both are set; the play page then also allows `https://challenges.cloudflare.com` for scripts and frames. Keep the secret in the settings file beside the executable. |
 | `Kestrel:Endpoints:*` | `http://localhost:5080`, `https://localhost:5443` | Standard Kestrel endpoints; give the HTTPS one a `Certificate` (`Path`, `Password`) in production. |
 | `Kestrel:Limits:MaxRequestBodySize` | 65536 | Largest request body. |
 | `Logging:LogLevel:*` | `Information` | Standard .NET logging filter. |
@@ -127,10 +144,15 @@ from a build of the repository, else the executable's directory).
   plain text.
 - **SQL.** Typed Dapper queries with parameters only (`CommandDefinition`), in the persistence projects.
 - **Headers.** `Content-Security-Policy: default-src 'none'; img-src 'self'; style-src 'self'; font-src 'self';
-  manifest-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests` (the site
-  runs no script and needs no inline style), `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`,
+  manifest-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests` (every
+  page but `/` runs no script, and none needs an inline style), `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`,
   `Referrer-Policy: same-origin`, `Permissions-Policy` denying camera, microphone, location, payment and USB,
   `Cross-Origin-Opener-Policy` and `Cross-Origin-Resource-Policy: same-origin`. Account and form pages are `no-store`.
+- **Play page.** `/` alone (exactly; no other path) gets `default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self'
+  <origin of Play:GameEndpoint>` plus the shared directives (`SecurityHeaders.PlayPolicy`): the site's own module
+  scripts and WebAssembly, and fetches only from the site and the game endpoint. No inline script: the endpoint reaches
+  the script in a `data-endpoint` attribute. The game server checks the page's origin itself
+  (`Network:WebSocket:AllowedOrigins`).
 - **Redirects.** `?voltar=` after sign-in is followed only when it is a local address.
 - **Secrets.** None in the repository: the certificate, its password, the PostgreSQL connection string and the keys
   directory live beside the executable on the host.
@@ -174,6 +196,9 @@ database: the site writes the accounts it registers.
 - **Publish a new Android version:** copy the new APK beside the old one and rename it over `Downloads:AndroidApkPath`
   (a rename, so the SHA-256 is never taken from a half-copied file), and set `Downloads:AndroidVersion` (restart for the
   version; the size and SHA-256 follow the file at once, computed by the first download page that reads it).
+- **Publish the browser client:** `Client/PristonTale.Browser/publish.ps1 -Target <site-directory>/play` (or
+  `publish.sh <site-directory>/play`), set `Play:GameEndpoint`, and enable the game server's WebSocket edge with the
+  site's origin in `Network:WebSocket:AllowedOrigins` ([web-client.md](web-client.md#run-it)).
 - **Add a page:** a Razor page under `Pages/` with its link in `Shared/_NavLinks.cshtml`; styles in
   `wwwroot/css/site.css` only (the CSP refuses inline styles and scripts).
 - **Change a limit:** the `Security:*` settings; the account rules are `AccountRules` and change the game's rules too.
@@ -198,3 +223,12 @@ database: the site writes the accounts it registers.
 - [persistence.md](persistence.md): `IRankingRepository`, `IAccountRepository`.
 - [server.md](server.md): the game server's own login throttle and settings table.
 - [hud-design.md](hud-design.md): the look the site follows.
+
+The account page links to /conta/gm for game-master accounts. The panel checks the current account level on each request. Administrators can read the last 50 game-master command audit records.
+
+Moderators and higher can look up accounts below their level and see the characters on those accounts. The GM dashboard also shows population totals and the latest server probe.
+
+The GM panel shows saved character details. Administrators can publish plain-text news and save the XP event percentage. The game server reads that value at its next settings reload.
+
+Set GameServer:PublicActivityPath and the game server's PublicActivity:Path to the same private JSON file. The server writes a snapshot every second. The GM overview discards snapshots older than 20 seconds. A local Discord bridge can read the file, deduplicate messages by StreamId and Sequence, and disable Discord mentions when relaying text. The stream contains trade chat and server notices.
+The website stores support tickets under Site:SupportTicketsPath, beside the executable by default. The game host can resolve the same storage through SupportTickets:Path.

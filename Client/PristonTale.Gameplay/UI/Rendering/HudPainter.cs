@@ -20,6 +20,7 @@ public sealed class HudPainter : IDisposable
 
     private readonly SpriteBatch _batch;
     private readonly SpriteFont _font;
+    internal SpriteFont Font => _font;
     private HashSet<char> _glyphs;
     private readonly HudSprites _sprites;
     private readonly Texture2D _white;
@@ -190,6 +191,62 @@ public sealed class HudPainter : IDisposable
         {
             var half = height == 1 ? halfWidth : halfWidth * (height - 1 - row) / (height - 1);
             Fill(new Rectangle(centerX - half, top + row, 2 * half + 1, 1), premultiplied);
+        }
+    }
+
+    // A box whose corners are cut in steps (radius rows, each one pixel less inset), which reads as rounded at HUD sizes.
+    public void RoundedFill(Rectangle bounds, Color premultiplied, int radius = 1) => RoundedGradient(bounds, premultiplied, premultiplied, radius);
+
+    // A rounded box shaded from top to bottom: one fill per row.
+    public void RoundedGradient(Rectangle bounds, Color top, Color bottom, int radius = 1)
+    {
+        if (top == bottom)
+        {
+            Fill(new Rectangle(bounds.X, bounds.Y + radius, bounds.Width, bounds.Height - 2 * radius), top);
+        }
+
+        for (var row = 0; row < bounds.Height; row++)
+        {
+            var edge = Math.Min(row, bounds.Height - 1 - row);
+            if (top == bottom && edge >= radius)
+            {
+                continue;
+            }
+
+            var inset = Math.Max(0, radius - edge);
+            var color = top == bottom ? top : Color.Lerp(top, bottom, bounds.Height > 1 ? row / (float)(bounds.Height - 1) : 0f);
+            Fill(new Rectangle(bounds.X + inset, bounds.Y + row, bounds.Width - 2 * inset, 1), color);
+        }
+    }
+
+    // A rounded box with a one-pixel border.
+    public void FramedBox(Rectangle bounds, Color border, Color fill, int radius = 1) => FramedBox(bounds, border, fill, fill, radius);
+
+    // A rounded box with a one-pixel border, shaded from top to bottom.
+    public void FramedBox(Rectangle bounds, Color border, Color top, Color bottom, int radius = 1)
+    {
+        RoundedFill(bounds, border, radius);
+        bounds.Inflate(-1, -1);
+        RoundedGradient(bounds, top, bottom, radius);
+    }
+
+    // A filled circle: one fill per row.
+    public void Disc(int centerX, int centerY, int radius, Color premultiplied)
+    {
+        for (var row = -radius; row <= radius; row++)
+        {
+            var half = (int)MathF.Round(MathF.Sqrt(radius * radius - row * row));
+            Fill(new Rectangle(centerX - half, centerY + row, 2 * half + 1, 1), premultiplied);
+        }
+    }
+
+    // A diamond (a square standing on a corner): one fill per row.
+    public void Diamond(int centerX, int centerY, int radius, Color premultiplied)
+    {
+        for (var row = -radius; row <= radius; row++)
+        {
+            var half = radius - Math.Abs(row);
+            Fill(new Rectangle(centerX - half, centerY + row, 2 * half + 1, 1), premultiplied);
         }
     }
 

@@ -1,6 +1,5 @@
 using System.Buffers.Binary;
 using System.Collections.Concurrent;
-using System.Net.Sockets;
 using System.Numerics;
 using System.Threading.Channels;
 using PristonTale.Client.Net.Online;
@@ -26,16 +25,15 @@ using PristonTale.Contracts.Texts;
 
 namespace PristonTale.Client.Net;
 
-// Client side of Etervale's protocol over one TCP connection. Login, character and world-entry requests run one at a
-// time and complete on their reply opcodes; inventory and progression commands and NPC service requests correlate by
-// operation id and NPC clicks by NPC entityId.
+// Client side of Etervale's protocol over one connection (TLS over TCP, or a WebSocket). Login, character and
+// world-entry requests run one at a time and complete on their reply opcodes; inventory and progression commands and
+// NPC service requests correlate by operation id and NPC clicks by NPC entityId.
 public sealed class GameServerConnection : IGameBackend
 {
     private static readonly TimeSpan HeartbeatInterval = TimeSpan.FromSeconds(4);
     private static readonly TimeSpan DescriptionRetryInterval = TimeSpan.FromMilliseconds(Online.PresenceDecoder.DescriptionRetryMs);
 
-    private readonly string _host;
-    private readonly int _port;
+    private readonly Uri _address;
     private readonly ServerCertificatePolicy _certificatePolicy;
     private readonly SemaphoreSlim _connectGate = new(1, 1);
     private readonly SemaphoreSlim _requestGate = new(1, 1);
@@ -78,10 +76,8 @@ public sealed class GameServerConnection : IGameBackend
 
     public GameServerConnection(string address)
     {
-        var uri = TlsTransport.ParseAddress(address);
-        _host = uri.Host;
-        _port = uri.Port;
-        _certificatePolicy = ServerCertificatePolicy.FromAddress(uri);
+        _address = TlsTransport.ParseAddress(address);
+        _certificatePolicy = ServerCertificatePolicy.FromAddress(_address);
         _presence = new PresenceDecoder(_catalog, RequestDescription);
         PersonalShops = new PersonalShopRequests(packet => Send(packet));
     }
@@ -92,6 +88,8 @@ public sealed class GameServerConnection : IGameBackend
 
     // The player's game master level from WorldJoined (0 for players).
     public int GameMasterLevel { get; private set; }
+    private int _onlinePlayers = -1;
+    public int OnlinePlayers => Volatile.Read(ref _onlinePlayers);
 
     // The server's game clock: the WorldJoined value carried forward on the local clock.
     public bool HasGameClock { get; private set; }
@@ -457,7 +455,9 @@ public sealed class GameServerConnection : IGameBackend
                 return;
             }
 
-            var connection = await TlsTransport.ConnectAsync(_host, _port, _certificatePolicy, ct);
+            var connection = WebSocketTransport.Carries(_address)
+                ? await WebSocketTransport.ConnectAsync(_address, ct)
+                : await TlsTransport.ConnectAsync(_address.Host, _address.Port, _certificatePolicy, ct);
             _connection = connection;
             _run = RunAsync(connection);
             _heartbeat = HeartbeatAsync(connection);
@@ -554,7 +554,7 @@ public sealed class GameServerConnection : IGameBackend
                 _characterReply?.TrySetResult(CharacterResultPacket.Read(packet));
                 break;
             case EtervaleOpcodes.Heartbeat:
-                HeartbeatPacket.Read(packet);
+                Volatile.Write(ref _onlinePlayers, HeartbeatPacket.Read(packet).OnlinePlayers);
                 break;
             case EtervaleOpcodes.WorldEntry:
                 OnWorldEntry(WorldEntryPacket.Read(packet));

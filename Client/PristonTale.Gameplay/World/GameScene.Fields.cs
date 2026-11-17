@@ -54,12 +54,16 @@ public sealed partial class GameScene
     public void LoadField(string assetRoot, FieldDef field, EnteredCharacter entered = null)
     {
         _assetRoot = assetRoot;
+        if (OperatingSystem.IsBrowser())
+            _log.Info($"[WebWorld] {field.Name}: renderer");
         EnsureRenderer();
 
         _fieldStreamer?.Dispose();
         _fieldStreamer = new FieldResourceStreamer(assetRoot, _reader, _renderer, _log, ConfigureFieldLighting);
         UnloadAllFields();
 
+        if (OperatingSystem.IsBrowser())
+            _log.Info($"[WebWorld] {field.Name}: field resources");
         var loaded = AddFieldToWorld(assetRoot, field);
         SetActiveField(loaded);
 
@@ -83,11 +87,15 @@ public sealed partial class GameScene
         _playerForward = Vector3.Forward;
 
         _renderer.ClearActors();
+        if (OperatingSystem.IsBrowser())
+            _log.Info($"[WebWorld] {field.Name}: player models");
         AddPlayerActors(assetRoot, entered?.FaceIndex ?? 0, entered?.Tier ?? 0, entered?.HairIndex ?? 0);
 
         _camera = new PristonCamera(_playerBody.Position, _playerForward, ToCameraSettings(field.Camera));
         Status = $"Loaded {field.Name}: {loaded.Stage.Vertices.Count} vertices, {loaded.Stage.Faces.Count} faces, " +
                  $"{field.StageObjectSmds.Count} animation SMDs + {_player.Name}";
+        if (OperatingSystem.IsBrowser())
+            _log.Info($"[WebWorld] {field.Name}: streaming");
         ScanStreaming();
     }
 
@@ -104,7 +112,10 @@ public sealed partial class GameScene
         var actorScene = _actorScene;
         _playerComposer = new PlayerActorComposer(actorScene, _actorLoader);
         _monsterComposer = new ModelActorComposer(actorScene, _actorLoader);
-        _groundLoot = new GroundLootPresentation(actorScene, _actorLoader, _assetRoot, _log);
+        _groundLoot = new GroundLootPresentation(actorScene, _actorLoader, _assetRoot, _log)
+        {
+            IsVisible = drop => GroundLootFilter.IsVisible(_presentation.Requested, drop)
+        };
         _lootInteraction = new GroundLootInteraction(ApplyInventoryAsync, _log, drop => _fieldAudio?.PlayItem(drop.CatalogKey, drop.Gold),
             drop => PickupToCursor?.Invoke(drop.ItemCode) == true, (ok, revision) => PickupToCursorAnswered?.Invoke(ok, revision));
         _lootFloor = LootFloorAt;

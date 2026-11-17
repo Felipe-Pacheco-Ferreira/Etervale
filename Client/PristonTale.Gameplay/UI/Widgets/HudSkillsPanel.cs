@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Graphics;
 using PristonTale.Gameplay.UI.Rendering;
 using PristonTale.Simulation.Characters;
@@ -554,7 +555,15 @@ public sealed class HudSkillsPanel(SpriteFont font, HudSprites sprites)
         {
             if (bindings.Shortcut(index).SkillId == skillCode)
             {
-                painter.Sprite(HudArt.ShortKeys[index], node.X + 9, node.Y - 6);
+                var label = bindings.KeyLabel(index);
+                if (Enum.TryParse<Keys>(label, out var key) && key is >= Keys.F1 and <= Keys.F8)
+                {
+                    painter.Sprite(HudArt.ShortKeys[key - Keys.F1], node.X + 9, node.Y - 6);
+                }
+                else
+                {
+                    painter.Text(label, node.X + 9, node.Y - 6, HudTextColors.BoxTitle);
+                }
             }
         }
     }

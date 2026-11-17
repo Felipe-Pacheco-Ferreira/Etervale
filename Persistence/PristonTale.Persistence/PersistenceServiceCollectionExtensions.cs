@@ -24,6 +24,7 @@ public static class PersistenceServiceCollectionExtensions
         Func<IMigrationRunnerBuilder, IMigrationRunnerBuilder> provider)
     {
         services.AddSingleton<IAccountRepository, DapperAccountRepository>();
+        services.AddSingleton<IBrowserLoginTickets, DapperBrowserLoginTickets>();
         services.AddSingleton<ICharacterRepository, DapperCharacterRepository>();
         services.AddSingleton<IWorldDataRepository, DapperWorldDataRepository>();
         services.AddSingleton<IWarehouseRepository, DapperWarehouseRepository>();

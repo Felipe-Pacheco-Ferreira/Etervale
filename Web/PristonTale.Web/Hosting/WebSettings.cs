@@ -12,6 +12,7 @@ public sealed record SiteSettings
     public int HstsDays { get; init; } = 365;
 
     // Where the keys that protect the session and form cookies are kept, relative to the executable.
+    public string SupportTicketsPath { get; init; } = Path.Combine("content", "support-tickets");
     public string KeysPath { get; init; } = "keys";
 
     // Reverse proxies whose X-Forwarded-For and X-Forwarded-Proto are believed; loopback always is.
@@ -42,6 +43,8 @@ public sealed record GameServerSettings
     public int Port { get; init; } = 10009;
 
     public int ProbeSeconds { get; init; } = 30;
+    public string PublicActivityPath { get; init; } = "";
+    public string WhisperActivityPath { get; init; } = "";
 }
 
 public sealed record DownloadSettings
@@ -50,6 +53,37 @@ public sealed record DownloadSettings
     public string AndroidApkPath { get; init; } = Path.Combine("downloads", "priston-avalon.apk");
 
     public string AndroidVersion { get; init; } = "";
+}
+
+public sealed record PlaySettings
+{
+    // The published browser client, relative to the executable (Client/PristonTale.Browser/publish.ps1 or publish.sh).
+    public string ClientPath { get; init; } = "play";
+
+    // The game server's WebSocket edge the browser connects to (wss://host:port/game); empty hides the web client. Only wss:
+    // the play page is served over HTTPS, where a browser refuses plain ws.
+    public string GameEndpoint { get; init; } = "";
+
+    // The worlds the entry page offers after the login ("Escolha o mundo"), each a game server's WebSocket edge; empty
+    // offers GameEndpoint alone, under the default world name.
+    public WorldSettings[] Worlds { get; init; } = [];
+
+    public IReadOnlyList<WorldSettings> WorldList => Worlds.Length > 0
+        ? Worlds
+        : GameEndpoint.Length > 0 ? [new WorldSettings { Endpoint = GameEndpoint }] : [];
+}
+
+public sealed record WorldSettings
+{
+    public string Name { get; init; } = "Avalon";
+
+    public string Region { get; init; } = "Brasil";
+
+    // The world's rules as the list labels them: Normal or AntiKs.
+    public string Kind { get; init; } = "Normal";
+
+    // wss://host:port/game; the page reads the world's load from https://host:port/status on the same edge.
+    public string Endpoint { get; init; } = "";
 }
 
 public sealed record SecuritySettings
@@ -71,11 +105,19 @@ public sealed record SecuritySettings
     public int FormPostsPerMinute { get; init; } = 10;
 
     public int SessionMinutes { get; init; } = 120;
+
+    // Cloudflare Turnstile on the entry page's registration: the widget's site key and the server's secret key. Both
+    // empty leaves the check out (local tests); the secret belongs in the settings file beside the executable only.
+    public string TurnstileSiteKey { get; init; } = "";
+
+    public string TurnstileSecret { get; init; } = "";
+
+    public bool TurnstileEnabled => TurnstileSiteKey.Length > 0 && TurnstileSecret.Length > 0;
 }
 
 // The settings of web-settings.json beside the executable and of the command line (--Section:Key=value).
 public sealed record WebSettings(SiteSettings Site, DatabaseSettings Database, GameServerSettings GameServer, DownloadSettings Downloads,
-    SecuritySettings Security)
+    SecuritySettings Security, PlaySettings Play)
 {
     public const string FileName = "web-settings.json";
 
@@ -86,7 +128,8 @@ public sealed record WebSettings(SiteSettings Site, DatabaseSettings Database, G
             configuration.GetSection("Database").Get<DatabaseSettings>() ?? new DatabaseSettings(),
             configuration.GetSection("GameServer").Get<GameServerSettings>() ?? new GameServerSettings(),
             configuration.GetSection("Downloads").Get<DownloadSettings>() ?? new DownloadSettings(),
-            configuration.GetSection("Security").Get<SecuritySettings>() ?? new SecuritySettings());
+            configuration.GetSection("Security").Get<SecuritySettings>() ?? new SecuritySettings(),
+            configuration.GetSection("Play").Get<PlaySettings>() ?? new PlaySettings());
         settings.Validate();
         return settings;
     }
@@ -99,6 +142,7 @@ public sealed record WebSettings(SiteSettings Site, DatabaseSettings Database, G
         Require(!string.IsNullOrWhiteSpace(Site.Name), "Site:Name is required.");
         Require(Site.HttpsPort is > 0 and <= 65535, "Site:HttpsPort must be 1 to 65535.");
         Require(Site.HstsDays >= 0, "Site:HstsDays must not be negative.");
+        Require(!string.IsNullOrWhiteSpace(Site.SupportTicketsPath), "Site:SupportTicketsPath is required.");
         Require(!string.IsNullOrWhiteSpace(Site.KeysPath), "Site:KeysPath is required.");
         foreach (var proxy in Site.KnownProxies)
         {
@@ -118,6 +162,12 @@ public sealed record WebSettings(SiteSettings Site, DatabaseSettings Database, G
         Require(Security.RegistrationsPerIp >= 1 && Security.RegistrationWindowMinutes >= 1,
             "Security: the registration limit and window must be at least 1.");
         Require(Security.RequestsPerMinute >= 1 && Security.FormPostsPerMinute >= 1, "Security: the request limits must be at least 1.");
+        Require(!string.IsNullOrWhiteSpace(Play.ClientPath), "Play:ClientPath is required.");
+        Require(Play.GameEndpoint.Length == 0 || Uri.TryCreate(Play.GameEndpoint, UriKind.Absolute, out var endpoint) && endpoint.Scheme == Uri.UriSchemeWss,
+            "Play:GameEndpoint must be empty or a wss:// address.");
+        Require(Play.Worlds.All(static world => !string.IsNullOrWhiteSpace(world.Name) && world.Kind is "Normal" or "AntiKs"
+                && Uri.TryCreate(world.Endpoint, UriKind.Absolute, out var address) && address.Scheme == Uri.UriSchemeWss),
+            "Play:Worlds: each world needs a name, a Kind of Normal or AntiKs and a wss:// Endpoint.");
         Require(Security.SessionMinutes is >= 5 and <= 7 * 24 * 60, "Security:SessionMinutes must be 5 to 10080.");
     }
 

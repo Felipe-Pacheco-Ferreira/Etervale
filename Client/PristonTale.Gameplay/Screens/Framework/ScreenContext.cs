@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using PristonTale.Client.Net;
+using PristonTale.Contracts.Characters;
 using PristonTale.Engine3D.Diagnostics;
 using PristonTale.Gameplay.Audio;
 
@@ -56,6 +57,11 @@ public sealed class ScreenContext
     public PristonTale.Gameplay.UI.Rendering.HudAtlas UiAtlas { get; }
 
     public IClientLog Log { get; }
+
+    internal string ServerAddress { get; set; }
+    internal Action<string> SelectServer { get; init; }
+    internal Func<Task> PrepareWorldAssetsAsync { get; init; }
+    internal Func<IReadOnlyList<PlayerClass>, CancellationToken, Task> PrepareCharacterAssetsAsync { get; init; }
 
     public IGameBackend Backend { get; private set; }
 

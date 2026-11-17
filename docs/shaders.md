@@ -140,7 +140,9 @@ Material codes (`MaterialDecl.hlsli`, mirrored by `PristonMaterialDescription.cs
 - **One cbuffer per stage** (MonoGame's Vulkan effects): frame block first, then the pass's and the draw's values. A
   name is declared once per effect; a value both stages need is passed from the vertex stage as a varying. MonoGame
   uploads a stage's whole cbuffer when any parameter changes, so the C# side skips unchanged values and identical
-  texture rebinds.
+  texture rebinds. A `float3` or `float4` starts a 16-byte register and a `float2` an 8-byte boundary (`float3` then
+  `float`, never `float` then `float3`): HLSL packs tighter, but the WebGPU build keeps HLSL's offsets and WGSL refuses
+  a uniform `vec3` off 16 bytes, an error the browser reports, not the content build.
 - **Shared declarations come in pairs:** `XDecl.hlsli` defines macros expanded inside the cbuffer (constants) and at
   file scope with the effect's registers (resources); `X.hlsli`, included after the cbuffer, holds the functions.
 - **Every texture and sampler has an explicit register**, the sampler on its texture's index, at most 16 per stage.
@@ -152,6 +154,13 @@ Material codes (`MaterialDecl.hlsli`, mirrored by `PristonMaterialDescription.cs
   `StructuredBuffer` take t registers in any stage, `RW*` resources u registers in compute shaders only
   (`monogame/issues/005-compute-and-uav.md`, `006-structured-buffers.md`, `007-mgcb-profiles.md`,
   `008-shader-model-6.5.md`).
+- **Atomics** go through the effect processor's macros, so one source compiles for Vulkan and WebGPU
+  (`monogame/issues/022-webgpu-effects.md`): a counter is a `groupshared MGFX_ATOMIC_UINT` or an element of a
+  `RWStructuredBuffer<MGFX_ATOMIC_UINT>`, changed with `MGFX_ATOMIC_ADD`, `_MIN`, `_MAX` or `_OR` and read or written
+  only with `MGFX_ATOMIC_LOAD` and `MGFX_ATOMIC_STORE` (WGSL has no plain access to an atomic). No `Interlocked*` call
+  and no `RWByteAddressBuffer` atomics: Slang cannot turn them into WGSL.
+- **Loop variables** are not reused as names later in the function: Slang keeps a `for` variable in scope after the
+  loop, as old HLSL did, so a later declaration of the same name fails the WebGPU build.
 - **Clip space and uv:** D3D clip space, +Y up, depth 0 to 1. Scene and portrait depth is reversed, 1 at the near
   plane (`PristonDepth.Perspective`); shadow casters use the ordinary XNA range. Render
   target and texture coordinates start top-left, so a projected position maps to uv = (x, -y) * 0.5 + 0.5 (sun shadow

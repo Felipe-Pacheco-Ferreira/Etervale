@@ -4,6 +4,11 @@ using PristonTale.Engine3D.Rendering.Lighting;
 
 namespace PristonTale.Engine3D.Rendering;
 
+public enum CameraMouseAction
+{
+    Default, Disabled, RotateLeft, RotateRight, ZoomIn, ZoomOut, TiltUp, TiltDown
+}
+
 [JsonConverter(typeof(JsonStringEnumConverter<WindowMode>))]
 public enum WindowMode
 {
@@ -53,9 +58,56 @@ public sealed record ClientSettings
     public bool VerticalSync { get; init; }
     public bool MusicEnabled { get; init; } = true;
     public bool SoundEnabled { get; init; } = true;
+    public int MusicVolumePercent { get; init; } = 100;
+    public int SoundVolumePercent { get; init; } = 100;
     public int MaxFps { get; init; }
     public int BackgroundMaxFps { get; init; } = 30;
     public float UiScale { get; init; } = 1f;
+    public int[] ShortcutKeys { get; init; } = [];
+    public string[] GameServers { get; init; } = [];
+    public bool VoiceEnabled { get; init; }
+    public int VoiceReceiveMask { get; init; } = 15;
+    public int VoiceVolumePercent { get; init; } = 80;
+    public int VoiceTransmitChannel { get; init; }
+    public string VoiceMicrophone { get; init; } = "";
+    public string DiscordUrl { get; init; } = "";
+    public string InstagramUrl { get; init; } = "";
+    public string XUrl { get; init; } = "";
+    public string ItemShopUrl { get; init; } = "";
+    public string AuctionUrl { get; init; } = "";
+    public string CoinHistoryUrl { get; init; } = "";
+    public string EragonUrl { get; init; } = "";
+    public string CommunityBuffsUrl { get; init; } = "";
+    public string NewsEndpoint { get; init; } = "";
+    public bool DisableGroundLootFilter { get; init; }
+    public bool HideGroundGold { get; init; }
+    public bool HideGroundPotions { get; init; }
+    public bool HideGroundWeapons { get; init; }
+    public int GroundMinimumEquipmentLevel { get; init; }
+    public int GroundMaximumEquipmentLevel { get; init; }
+    public uint HiddenGroundSpecJobs { get; init; }
+    public bool HideGroundEquipmentWithoutSpec { get; init; }
+    public bool AlwaysShowRareGroundEquipment { get; init; }
+    public string[] AlwaysShowGroundNames { get; init; } = [];
+    public ulong HiddenGroundCategories { get; init; }
+    public bool HideTradeChat { get; init; }
+    public bool HideClanMembershipNotices { get; init; }
+    public bool ShowExperienceNotices { get; init; }
+    public bool HideCalendarNotices { get; init; }
+    public bool HideGlobalBuffNotices { get; init; }
+    public bool HideEventRewardNotices { get; init; }
+    public bool ShowPremiumBuffNotices { get; init; }
+    public bool HideBellatraResults { get; init; }
+    public bool HideBellatraBossNotices { get; init; }
+    public bool HideBellatraTeamNotices { get; init; }
+    public bool HideCastleNotices { get; init; }
+    public CameraMouseAction CameraMouse4 { get; init; }
+    public CameraMouseAction CameraMouse5 { get; init; }
+    public bool InvertCameraOrbit { get; init; }
+    public bool InvertCameraScroll { get; init; }
+    public int CameraMouseButtons { get; init; }
+    public bool HideQuestTracker { get; init; }
+    public bool HideOnlineCount { get; init; }
     public int MultiSampleCount { get; init; } = 4;
     public int ShadowMapSize { get; init; } = 4096;
     // Cube faces of the lamp shadows (the nearest LampShadowCount lamps, 0, 2 or 4), in pixels.
@@ -75,6 +127,9 @@ public sealed record ClientSettings
     public bool ClassicTargetHealthBar { get; init; }
     // Classic: the name boxes over monsters and NPCs use the speech bubble frame and the HUD text size, and a monster's
     // life bar shows while the cursor is on it; otherwise a compact box, the bar once the monster was clicked or attacked.
+    public bool HideUnfocusedNames { get; init; }
+    public bool HideDamageNumbers { get; init; }
+    public bool AlwaysShowGroundLabels { get; init; }
     public bool ClassicNamePlates { get; init; }
     // The level guide's notice on reaching a level it has a guide for (its On/Off switch in the guide window).
     public bool LevelGuide { get; init; } = true;
@@ -126,6 +181,8 @@ public sealed record ClientSettings
             MaxFps = IsValidFps(MaxFps) ? MaxFps : defaults.MaxFps,
             BackgroundMaxFps = IsValidFps(BackgroundMaxFps) ? BackgroundMaxFps : defaults.BackgroundMaxFps,
             UiScale = float.IsFinite(UiScale) && UiScale is >= 0.75f and <= 1.5f ? UiScale : defaults.UiScale,
+            MusicVolumePercent = Math.Clamp(MusicVolumePercent, 0, 100),
+            SoundVolumePercent = Math.Clamp(SoundVolumePercent, 0, 100),
             MultiSampleCount = MultiSampleCount is 0 or 2 or MostMultiSamples ? MultiSampleCount : defaults.MultiSampleCount,
             ShadowMapSize = ShadowMapSize is 1024 or 2048 or 4096 or 8192 ? ShadowMapSize : defaults.ShadowMapSize,
             LampShadowTileSize = LampShadowTileSize is 256 or 512 or 1024 ? LampShadowTileSize : defaults.LampShadowTileSize,

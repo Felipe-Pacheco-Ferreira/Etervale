@@ -11,6 +11,10 @@
             <h1>Minha conta</h1>
             <p>Conta <strong>@Model.Account.UserId</strong> · @Model.Characters.Count @(Model.Characters.Count == 1 ? "personagem" : "personagens")</p>
         </div>
+        @if (Model.Account.GmLevel is >= 1 and <= 4)
+        {
+            <a class="btn btn-primary" asp-page="/PainelGm">Painel GM</a>
+        }
         <form method="post" asp-page="/Sair">
             <button class="btn" type="submit">Sair</button>
         </form>
@@ -62,7 +66,7 @@
         }
     </div>
 
-    <section class="plate tips">
+    <section class="plate tips" id="seguranca">
         <h2>Segurança da conta</h2>
         <ul>
             <li>A equipe nunca pede sua senha, nem no jogo nem fora dele.</li>

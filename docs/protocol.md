@@ -1,6 +1,6 @@
 # Network protocol
 
-Etervale is online only. Client and server speak Etervale's own message set over TLS: every message has an Etervale code (`0x4554xxxx`), entity ids and sequences are 64-bit, and text is
+Etervale is online only. Client and server speak Etervale's own message set over TLS (TCP, or a WebSocket for the browser): every message has an Etervale code (`0x4554xxxx`), entity ids and sequences are 64-bit, and text is
 UTF-8. The server is authoritative; the client sends requests and reports and draws what the server decides.
 The codecs live in `Shared/PristonTale.Protocol`; the server edge is `Server/PristonTale.Server/Net`
 ([server.md](server.md)) and the client edge is `Client/PristonTale.Client.Net` ([client.md](client.md)).
@@ -45,8 +45,10 @@ The codecs live in `Shared/PristonTale.Protocol`; the server edge is `Server/Pri
 | `Packets/TradePackets.cs` | Trade request, answer, offer, lock and cancel; the request a player receives, the trade window and its items' values. |
 | `Packets/ContactPackets.cs` | Friends page: a change to a list, a refresh, and one list with the friends' presence. |
 | `Packets/NpcPackets.cs` | NPC result, service request/result, shop catalog and quotes, warehouse, teleport list, item work result. |
-| [Transport/FrameConnection.cs](../Shared/PristonTale.Protocol/Transport/FrameConnection.cs) | One TLS stream: receive loop and coalesced single-writer send. |
-| `Transport/TlsTransport.cs` | Server and client handshakes, `ServerCertificatePolicy` (system trust, loopback, pin). |
+| [Transport/FrameConnection.cs](../Shared/PristonTale.Protocol/Transport/FrameConnection.cs) | One authenticated stream (TLS or WebSocket): receive loop and coalesced single-writer send. |
+| `Transport/TransportLink.cs` | The carrier under a connection's stream: its endpoints and how to abort it (`TransportLink.Of(socket)` for TCP). |
+| `Transport/TlsTransport.cs` | Server and client handshakes, `ParseAddress` (every address form, TCP and WebSocket), `ServerCertificatePolicy` (system trust, loopback, pin). |
+| `Transport/WebSocketTransport.cs` | The same frames over a WebSocket: the client connect (`ClientWebSocket`, also in the browser) and the server's wrap of an accepted socket. |
 | `Transport/IPacketSink.cs` | `Send`; implemented by `FrameConnection` and test sinks. |
 | `Server/PristonTale.Server/Net/` | `ClientSession` dispatch, `PresenceEncoder`, `WireMapping`, `NpcWireMapping`. |
 | `Client/PristonTale.Client.Net/GameServerConnection.cs` | Client requests, heartbeat, request/reply correlation. |
@@ -90,6 +92,19 @@ system trusts for the host name, any certificate when the host is loopback, or e
 packet memory is valid only until the handler's task completes. Sends from any thread append to one pending buffer that
 a single writer flushes, so all frames queued during one write leave together in the same TLS records.
 
+### WebSocket transport
+
+Browsers cannot open raw TCP, so the server can also carry the same frames over a WebSocket (the optional edge of
+[server.md](server.md#websocket-edge)); the browser client uses it ([web-client.md](web-client.md)).
+
+| Item | Value |
+| --- | --- |
+| Address | `wss://host[:port]/path` (default port 443); `ws://` only for a server on this machine. No `cert=` pin: the browser checks the certificate. `TlsTransport.ParseAddress` accepts every form and `WebSocketTransport.Carries` tells the two apart |
+| Messages | Binary only. Each flush of the connection's writer is one message; the reader treats the messages as one byte stream, so a frame may span messages and a message may hold several frames |
+| Session | Identical to TCP from `ServerHello` on: one login per connection, the same opcodes, limits and timeouts |
+
+`GameServerConnection` picks the transport from the address scheme; the desktop and Android clients keep TCP.
+
 ## Login, character select and world entry
 
 Bodies start with `uint16 Version = 1`; text is UTF-8 with a `uint16` byte length.
@@ -97,7 +112,7 @@ Bodies start with `uint16 Version = 1`; text is UTF-8 with a `uint16` byte lengt
 | Step | Packet | Notes |
 | --- | --- | --- |
 | Connect | S→C `ServerHello` (`0x45540F00`) | `{uint16 Version, uint16 0, uint32 Protocol, MinimumProtocol, int32 FullPlayers, text ServerName (32 B)}`: `FullPlayers` = players in the world when the player limit (`server.max_users` or `/user_limit`) is reached, else 0 (then only game masters may log in); `ServerName` is `server.name`. |
-| Log in | C→S `Login` (`0x45540F01`) | `{uint16 Version, uint16 0, uint32 Protocol, text Account (64 B), text Password (128 B), text Language (16 B)}`. `Protocol` is `ProtocolVersion.Current` (26); a change of any message's layout raises it and `ProtocolVersion.Minimum`, so a client built before it is refused instead of misreading the world (a login without the language, from a client before protocol 4, is still read so the server can answer it is outdated). `Language` is the client's language (`en` or `pt-BR`; any other value is English): the server sends names and NPC dialog in it, falling back to English. |
+| Log in | C→S `Login` (`0x45540F01`) | `{uint16 Version, uint16 0, uint32 Protocol, text Account (64 B), text Password (128 B), text Language (16 B)}`. `Protocol` is `ProtocolVersion.Current` (26); a change of any message's layout raises it and `ProtocolVersion.Minimum`, so a client built before it is refused instead of misreading the world (a login without the language, from a client before protocol 4, is still read so the server can answer it is outdated). `Language` is the client's language (`en` or `pt-BR`; any other value is English). On WebSocket, a website-issued single-use ticket marked with U+001F followed by `avalon:` and 64 hexadecimal digits can occupy the password field. |
 | Result | S→C `CharacterList` (`0x45540F03`), then `LoginResult` (`0x45540F02`) | `LoginResult` = `{uint16 Version, uint8 Status, uint8 0}`: 0 ok, 1 bad credentials (also unknown accounts), 2 account blocked, 3 already logged in on this connection, 4 busy (throttled, full or storage failure), 5 client protocol older than the server's minimum. A failed login sends no list. |
 | Character list | S→C `CharacterList` | `{uint16 Version, uint16 0, int32 Count (at most 6)}`, then `{text Name, uint32 Class (PlayerClass), int32 Level, uint8 Tier, Face, Hair, Flags (1 in a village), uint32 WeaponCode, ArmorCode, OffHandCode, uint32 0, text ClanName (48 B; empty out of a clan)}`. |
 | Create, delete | C→S `CharacterCommand` (`0x45540F04`), S→C `CharacterResult` (`0x45540F05`) | Command `{uint16 Version, uint8 Action (1 create, 2 delete), uint8 0, int32 Class (PlayerClass), FaceIndex, text Name}`; result `{uint16 Version, uint8 Action, uint8 Ok, int32 Failure (CreateCharacterFailure), text Name}`. |
@@ -256,7 +271,7 @@ These bodies have no version header, except the combat event list's (see [Event 
 | `Skills` | `int64 Revision, int32 Count`, then `{uint Code, int32 Rank, int32 Uses}` | 20 + 12n |
 | `CombatEvents` | `uint16 Version (1), uint16 Count`, then compact entries (see [Event lists](#event-lists)) | 12 + 4 to 65 per entry |
 | `RemoveObjects` | `int32 Count`, then `uint64 EntityId` | 12 + 8n |
-| `GroundItems` | `uint16 Version (1), uint16 Flags, int32 Count`, then `{Guid Id, uint32 ItemCode, uint8 Flags (1 gold), uint8 0, uint16 0, int32 Amount, X, Y, Z, text Name (64 B)}` (1 to 64) | 16 + up to 106n |
+| `GroundItems` | `uint16 Version (1), uint16 Flags, int32 Count`, then `{Guid Id, uint32 ItemCode, uint8 Flags (1 gold, 2 equipment details, 4 rare), uint8 RequiredLevel, uint16 PackedSpec, int32 Amount, X, Y, Z, text Name (64 B)}` (1 to 64) | 16 + up to 106n |
 | `GroundItemsRemoved` | `uint16 Version (1), uint16 Flags, int32 Count`, then `Guid Id` | 16 + 16n |
 | `ItemDetails` | `uint16 Version (1), uint16 Flags, int64 Revision, int32 Part, Parts, Count`, then 236-byte entries (at most 24) | 32 + 236n |
 | `OwnerItemStatus` | `uint16 Version (1), uint16 Flags, int32 CarriedWeight, MaxWeight, CriticalChance, BlockChance, ShootingRange, AttackSpeed, PotionSpace, float LifeRegen, ManaRegen, StaminaRegen, MagicMastery, int16 Resistances[8]` | 72 |
@@ -783,3 +798,5 @@ when the received version has it.
 - [application.md](application.md): `WorldServer`, snapshots and transactions that produce the outbound messages.
 - [world.md](world.md): collision, fields, gates and warps used by movement authority.
 - [testing.md](testing.md): running the regression suite.
+Ground items carry equipment details in the former padding. PackedSpec carries job bits 0 through 7 in its low byte and job bits 16 through 23 in its high byte.
+Desktop voice uses reserved /voice messages on ChatSay and ChatKind.Voice on ChatLine. The listen command sets the four-channel receive mask. Each audio message carries a channel digit and a Base64-encoded 640-byte frame of 16 kHz mono signed little-endian PCM. The host verifies proximity, party, clan, or field membership before relaying and only sends to subscribed peers.

@@ -19,7 +19,7 @@ using PristonTale.Contracts.Characters;
 
 namespace PristonTale.Gameplay.Screens.CharacterSelect;
 
-public sealed class CharacterSelectScreen : GameScreen
+public sealed partial class CharacterSelectScreen : GameScreen
 {
     internal const string LoginStagePath = CharacterSelectStage.StagePath;
 
@@ -117,26 +117,41 @@ public sealed class CharacterSelectScreen : GameScreen
     private Vector2 UiCursor(in MouseState mouse) => new(mouse.X / UiScale, mouse.Y / UiScale);
 
     public override string StatusText => ClientText.Get("Status.CharacterSelect");
+    internal WebArrivalBackdrop Backdrop { get; init; }
 
     public override void Enter()
     {
-        _renderer = new PristonRenderer(Context.GraphicsDevice, Context.Content, Context.Log, Context.Presentation);
+        var stage = Backdrop?.Stage;
+        if (Backdrop is null)
+        {
+            _renderer = new PristonRenderer(Context.GraphicsDevice, Context.Content, Context.Log, Context.Presentation);
+            ConfigureLighting(_renderer);
+            stage = _reader.ReadStage(AssetPath(LoginStagePath));
+            _renderer.AddStage(stage, Array.Empty<PristonModel>());
+            InitEffects();
+        }
+        else
+        {
+            _renderer = Backdrop.Renderer;
+        }
 
-        ConfigureLighting(_renderer);
-
-        var stage = _reader.ReadStage(AssetPath(LoginStagePath));
-        _renderer.AddStage(stage, Array.Empty<PristonModel>());
-
-        _cameraCtl = new CharacterSelectCamera(Context.GraphicsDevice, (int)State.CharacterSelect, CameraDistanceScale);
+        _cameraCtl = new CharacterSelectCamera(Context.GraphicsDevice, (int)State.CharacterSelect, CameraDistanceScale, Backdrop?.Camera);
         _scene = new CharacterSelectScene(_renderer, _actorLoader, Context.AssetRoot, _cameraCtl, stage, Context.Log);
 
         _nameField = new TextInputField { MaxLength = MaxNameLength };
 
-        _assets = new CharSelectAssets(Context.GraphicsDevice, AssetPath);
-        _portrait = new CharacterSelectPortrait(Context.GraphicsDevice);
-        _view = new CharacterSelectView(Context.SpriteBatch, Context.Font, _assets, _cameraCtl, ButtonScale, UiScale);
-        InitEffects();
+        if (!_webOverlay)
+        {
+            _assets = new CharSelectAssets(Context.GraphicsDevice, AssetPath);
+            _portrait = new CharacterSelectPortrait(Context.GraphicsDevice);
+            _view = new CharacterSelectView(Context.SpriteBatch, Context.Font, _assets, _cameraCtl, ButtonScale, UiScale);
+        }
         _audio = LoginAudio.CharacterSelect(Context.Audio);
+        if (_webOverlay)
+        {
+            WebCharacterSelectOverlay.Clear();
+        }
+
         BeginLoadRoster();
     }
 
@@ -165,12 +180,20 @@ public sealed class CharacterSelectScreen : GameScreen
         var dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
         _audio.Update(dt);
 
-        _cameraCtl.Update(Context.GraphicsDevice, (int)_state, dt);
+        var cameraStep = Backdrop is not null && _busy == Busy.PreparingJobLineup ? State.JobSelect : _state;
+        _cameraCtl.Update(Context.GraphicsDevice, (int)cameraStep, dt);
 
         _scene.UpdateRun(dt);
 
-        _renderer.Update(gameTime);
-        _flames?.Update(dt);
+        if (Backdrop is not null)
+        {
+            Backdrop.UpdateScene(gameTime);
+        }
+        else
+        {
+            _renderer.Update(gameTime);
+            _flames?.Update(dt);
+        }
 
         var mouse = PointerInput?.Invoke() ?? Mouse.GetState();
         var keyboard = Keyboard.GetState();
@@ -181,7 +204,15 @@ public sealed class CharacterSelectScreen : GameScreen
         {
             PollBusy();
         }
-        else if (!Context.Presentation.AwaitingConfirmation)
+
+        if (_webOverlay)
+        {
+            UpdateWebRosterArrival(dt);
+            UpdateWebCreationEffects(dt);
+            UpdateWeb(mouse);
+            ReportWeb();
+        }
+        else if (_busy == Busy.None && !Context.Presentation.AwaitingConfirmation)
         {
             switch (_state)
             {
@@ -258,7 +289,7 @@ public sealed class CharacterSelectScreen : GameScreen
         {
             _pendingRoster = _rosterTask.Result;
             _rosterTask = null;
-            _rosterPreparationTask = _scene.PrepareRosterAsync(_pendingRoster, _backendCts.Token);
+            _rosterPreparationTask = PrepareRosterAsync(_pendingRoster, _backendCts.Token);
             _busy = Busy.PreparingRoster;
             return;
         }
@@ -268,6 +299,17 @@ public sealed class CharacterSelectScreen : GameScreen
         _errorMessage = ClientText.Get("CharSelect.LoadFailed");
         _busy = Busy.None;
         _state = State.CharacterSelect;
+    }
+
+    private async Task PrepareRosterAsync(IReadOnlyList<CharacterSummary> roster, CancellationToken cancellationToken)
+    {
+        if (Context.PrepareCharacterAssetsAsync is { } prepare)
+        {
+            var classes = roster.Select(character => character.Class).Where(Enum.IsDefined).Distinct().ToArray();
+            await prepare(classes, cancellationToken);
+        }
+
+        await _scene.PrepareRosterAsync(roster, cancellationToken);
     }
 
     private void PollRosterPreparation()
@@ -298,7 +340,24 @@ public sealed class CharacterSelectScreen : GameScreen
     {
         _scene.BuildRoster(roster);
         _hoveredIndex = -1;
-        _selectedIndex = -1;
+        // The page's list always shows a chosen character (the first) and its details.
+        _selectedIndex = _webOverlay && _scene.RosterCount > 0 ? 0 : -1;
+        _scene.SetRosterHighlight(-1, _selectedIndex);
+        BeginWebRosterArrival();
+        if (_webCreatedName is { } createdName)
+        {
+            _webCreatedName = null;
+            for (var index = 0; index < _scene.RosterCount; index++)
+            {
+                if (string.Equals(_scene.RosterSummary(index).Name, createdName, StringComparison.OrdinalIgnoreCase))
+                {
+                    _selectedIndex = index;
+                    _scene.SetRosterHighlight(-1, index);
+                    PlayWebCreatedArrival(index);
+                    break;
+                }
+            }
+        }
     }
 
     private void UpdateCharacterSelect(MouseState mouse)
@@ -401,7 +460,17 @@ public sealed class CharacterSelectScreen : GameScreen
         _errorMessage = string.Empty;
         _busy = Busy.Entering;
         ResetBackendCall();
-        _enterTask = Context.Backend.EnterWorldAsync(name, _backendCts.Token);
+        _enterTask = EnterWithAssetsAsync(name, _backendCts.Token);
+    }
+
+    private async Task<EnterWorldOutcome> EnterWithAssetsAsync(string name, CancellationToken cancellationToken)
+    {
+        if (Context.PrepareWorldAssetsAsync is { } prepare)
+        {
+            await prepare().WaitAsync(cancellationToken);
+        }
+
+        return await Context.Backend.EnterWorldAsync(name, cancellationToken);
     }
 
     private void PollEnterWorld()
@@ -477,6 +546,13 @@ public sealed class CharacterSelectScreen : GameScreen
     {
         _audio.Play(LoginCue.NewCharacter);
         ClearJobActors();
+        if (Backdrop is not null)
+        {
+            _webRosterArriving = false;
+            _webCreatedActor = -1;
+            SetWebRosterHidden(true);
+        }
+
         _state = State.RaceSelect;
         _errorMessage = string.Empty;
     }
@@ -525,8 +601,18 @@ public sealed class CharacterSelectScreen : GameScreen
         _chosenBrood = brood;
         _errorMessage = string.Empty;
         ResetBackendCall();
-        _jobPreparationTask = _scene.PrepareJobLineupAsync(brood, _backendCts.Token);
+        _jobPreparationTask = PrepareJobLineupAsync(brood, _backendCts.Token);
         _busy = Busy.PreparingJobLineup;
+    }
+
+    private async Task PrepareJobLineupAsync(CharacterBrood brood, CancellationToken cancellationToken)
+    {
+        if (Context.PrepareCharacterAssetsAsync is { } prepare)
+        {
+            await prepare(CharacterSelectScene.JobsForBrood(brood), cancellationToken);
+        }
+
+        await _scene.PrepareJobLineupAsync(brood, cancellationToken);
     }
 
     private void PollJobPreparation()
@@ -538,8 +624,14 @@ public sealed class CharacterSelectScreen : GameScreen
 
         if (_jobPreparationTask.IsCompletedSuccessfully)
         {
+            if (Backdrop is not null && !_cameraCtl.HasReached((int)State.JobSelect))
+            {
+                return;
+            }
+
             BuildJobLineup();
             _state = State.JobSelect;
+            BeginWebJobArrival();
         }
         else
         {
@@ -555,6 +647,7 @@ public sealed class CharacterSelectScreen : GameScreen
     {
         _scene.BuildJobLineup(_chosenBrood);
         _jobHovered = -1;
+        _lastClickIndex = -1;
         _jobSelected = -1;
         _faceIndex = 0;
     }
@@ -602,11 +695,22 @@ public sealed class CharacterSelectScreen : GameScreen
         _faceIndex = 0;
         _nameField.Clear();
         _nameField.Focused = true;
-        _assets.LoadFaceThumbs(_scene.JobClass(_jobSelected));
-        _scene.ApplyFace(_jobSelected, _faceIndex);
-        _scene.OpenFacePreview(_jobSelected, _faceIndex);
+        FinishWebJobArrival();
+        _assets?.LoadFaceThumbs(_scene.JobClass(_jobSelected));
+        if (!_webOverlay)
+        {
+            _scene.ApplyFace(_jobSelected, _faceIndex);
+            _scene.OpenFacePreview(_jobSelected, _faceIndex);
+        }
         _scene.StartForwardRun(_jobSelected);
         _scene.SetJobHighlight(-1, -1);
+        if (Backdrop is not null)
+        {
+            for (var index = 0; index < _scene.JobCount; index++)
+            {
+                _scene.SetJobHidden(index, index != _jobSelected);
+            }
+        }
 
         _state = State.FaceSelect;
         _errorMessage = string.Empty;
@@ -718,6 +822,10 @@ public sealed class CharacterSelectScreen : GameScreen
         {
             case State.RaceSelect:
                 ClearJobActors();
+                if (Backdrop is not null)
+                {
+                    SetWebRosterHidden(false);
+                }
                 _state = State.CharacterSelect;
                 break;
             case State.JobSelect:
@@ -726,11 +834,28 @@ public sealed class CharacterSelectScreen : GameScreen
                 break;
             case State.FaceSelect:
             case State.Name:
-                ReturnChosenJobToLineup();
                 _scene.CloseFacePreview();
-                _jobSelected = -1;
+                if (Backdrop is not null)
+                {
+                    _scene.ApplyFace(_jobSelected, 0);
+                }
+                ReturnChosenJobToLineup();
+                if (Backdrop is not null)
+                {
+                    for (var index = 0; index < _scene.JobCount; index++)
+                    {
+                        _scene.SetJobHidden(index, false);
+                    }
+                    _faceIndex = 0;
+                    _scene.SetJobHighlight(-1, _jobSelected);
+                }
+                else
+                {
+                    _jobSelected = -1;
+                }
+                _lastClickIndex = -1;
                 _nameField.Focused = false;
-                _assets.ClearFaceThumbs();
+                _assets?.ClearFaceThumbs();
                 _state = State.JobSelect;
                 break;
         }
@@ -769,6 +894,10 @@ public sealed class CharacterSelectScreen : GameScreen
         _createTask = null;
         if (ok)
         {
+            if (_webOverlay)
+            {
+                _webCreatedName = _nameField.Text.Trim();
+            }
             ClearJobActors();
             _state = State.CharacterSelect;
             BeginLoadRoster();
@@ -782,6 +911,7 @@ public sealed class CharacterSelectScreen : GameScreen
 
     private void ClearJobActors()
     {
+        FinishWebJobArrival();
         _scene.ClearJobLineup();
         _jobHovered = -1;
         _jobSelected = -1;
@@ -789,9 +919,18 @@ public sealed class CharacterSelectScreen : GameScreen
 
     public override void Draw()
     {
+        if (Backdrop is not null)
+        {
+            Backdrop.Draw();
+            return;
+        }
+
         var viewport = Context.GraphicsDevice.Viewport;
-        var viewModel = BuildViewModel();
-        viewModel.FacePortrait = RenderFacePortrait();
+        var viewModel = _webOverlay ? null : BuildViewModel();
+        if (viewModel is not null)
+        {
+            viewModel.FacePortrait = RenderFacePortrait();
+        }
 
         Context.GraphicsDevice.Clear(LoginClearColor);
         _renderer.Draw(_cameraCtl.Camera);
@@ -804,7 +943,11 @@ public sealed class CharacterSelectScreen : GameScreen
 
         _renderer.ComposeScene();
 
-        _view.Draw(viewport, viewModel);
+        // In the browser the page draws the 2D layer (CharacterSelectScreen.Web.cs).
+        if (viewModel is not null)
+        {
+            _view.Draw(viewport, viewModel);
+        }
     }
 
     private Texture2D RenderFacePortrait()
@@ -822,7 +965,7 @@ public sealed class CharacterSelectScreen : GameScreen
     private CharSelectViewModel BuildViewModel()
     {
         _viewModel.StateIndex = (int)_state;
-        _viewModel.ErrorMessage = _errorMessage;
+        _viewModel.ErrorMessage = _busy == Busy.Entering ? ClientText.Get("Status.EnteringWorld") : _errorMessage;
         _viewModel.ElapsedSeconds = _elapsedSeconds;
         _viewModel.RosterHasChars = _scene.RosterCount > 0;
         _viewModel.HasSelectedRoster = _selectedIndex >= 0;
@@ -876,12 +1019,24 @@ public sealed class CharacterSelectScreen : GameScreen
 
     public override void Dispose()
     {
+        if (_webOverlay)
+        {
+            CloseWeb();
+        }
+
         _backendCts?.Cancel();
         _backendCts?.Dispose();
         _audio?.Dispose();
         _vfxRenderer?.Dispose();
         _portrait?.Dispose();
         _assets?.Dispose();
-        _renderer?.Dispose();
+        if (Backdrop is not null)
+        {
+            Backdrop.Dispose();
+        }
+        else
+        {
+            _renderer?.Dispose();
+        }
     }
 }
