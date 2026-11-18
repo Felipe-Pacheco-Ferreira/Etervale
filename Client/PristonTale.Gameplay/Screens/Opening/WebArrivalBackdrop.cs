@@ -41,9 +41,18 @@ internal sealed class WebArrivalBackdrop : IDisposable
         Gradient = [Moonlight, Moonlight with { Hour = 24f }]
     };
 
+    private static readonly PristonDistanceFog CourtyardFog = PristonDistanceFog.Atmospheric with
+    {
+        StartDistance = 490f,
+        Density = 0.00115f,
+        MaxOpacity = 0.55f,
+        InScatter = 0f
+    };
+
     private static readonly Vector3[] Braziers = [new(-120f, 32f, 65f), new(120f, 32f, 65f)];
 
     private readonly GraphicsDevice _device;
+    private readonly ScreenContext _context;
     private readonly VfxSystem _vfx;
     private readonly VfxLibrary _vfxLibrary;
     private CompiledVfx _characterArrival;
@@ -59,6 +68,7 @@ internal sealed class WebArrivalBackdrop : IDisposable
 
     public WebArrivalBackdrop(ScreenContext context)
     {
+        _context = context;
         _device = context.GraphicsDevice;
         Stage = WebArrivalLandscape.Build(context.AssetRoot);
         var night = PristonSkyProfiles.Forest.Night;
@@ -66,18 +76,13 @@ internal sealed class WebArrivalBackdrop : IDisposable
         {
             Sky = context.Sky,
             SkyProfiles = new PristonSkyProfiles(night, night, night),
-            DistanceFog = PristonDistanceFog.Atmospheric with
-            {
-                StartDistance = 490f,
-                Density = 0.00115f,
-                MaxOpacity = 0.55f,
-                InScatter = 0f
-            },
-            ExposureCompensation = 0.2f,
             ActorFloorLight = false
         };
         try
         {
+            ApplySceneSettings(context.Presentation.Rendering);
+            // The renderer applies the global options first; keep the courtyard's authored atmospheric profile.
+            context.Presentation.RenderingChanged += ApplySceneSettings;
             Renderer.ConfigureDayNight(CourtyardLighting);
             Renderer.SetTimeOfDay(NightHour);
             Renderer.ConfigureFieldLighting(intensity: 0.5f, rangeScale: 1f, overrideLights: null, glowIntensity: 0.6f, glowScale: 0.85f);
@@ -112,12 +117,34 @@ internal sealed class WebArrivalBackdrop : IDisposable
     public PristonRenderer Renderer { get; }
     public PristonCamera Camera { get; }
     public bool Entering { get; private set; }
+    internal WebClassPreviewWarmup PreviewWarmup { get; private set; }
     public bool AtRoster => _enterSeconds >= EnterSeconds;
+
+    internal static WebArrivalBackdrop CreateAtRoster(ScreenContext context)
+    {
+        var backdrop = new WebArrivalBackdrop(context);
+        try
+        {
+            backdrop.BeginEntry();
+            backdrop._enterSeconds = EnterSeconds;
+            backdrop.SetPose(backdrop._roster);
+            return backdrop;
+        }
+        catch
+        {
+            backdrop.Dispose();
+            throw;
+        }
+    }
 
     public void BeginEntry()
     {
         Entering = true;
         _entryStart = _pose;
+        if (_context.CharacterAssetsReady is not null)
+        {
+            PreviewWarmup = new WebClassPreviewWarmup(Renderer, _context);
+        }
     }
 
     public void UpdateFlight(GameTime gameTime)
@@ -321,8 +348,15 @@ internal sealed class WebArrivalBackdrop : IDisposable
         Camera.SetScriptedView(_device, pose.Eye, pose.Target, Vector3.Up, pose.FieldOfView);
     }
 
+    private void ApplySceneSettings(ClientSettings settings)
+    {
+        Renderer.DistanceFog = settings.DistanceFog == DistanceFogMode.Off ? PristonDistanceFog.Disabled : CourtyardFog;
+        Renderer.ExposureCompensation = 0.2f + settings.ExposureCompensation;
+    }
+
     public void Dispose()
     {
+        _context.Presentation.RenderingChanged -= ApplySceneSettings;
         _vfxRenderer?.Dispose();
         Renderer.Dispose();
     }

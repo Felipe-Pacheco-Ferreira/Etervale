@@ -144,18 +144,18 @@ internal static class HudInteractionTests
         AssertDisjointInside(allocate.Append(HudStatusPanel.Close(origin)).ToArray(), window, "status buttons");
         Assert.True(allocate[0] == new Rectangle(566, 432, 18, 17), "strength arrow differs from PointButton");
 
-        var entries = Enum.GetValues<HudSystemEntry>().Select(HudSystemMenu.Entry).ToArray();
+        var entries = Enum.GetValues<HudSystemEntry>().Select(entry => HudSystemMenu.Button(entry, browser: false)).ToArray();
         AssertDisjointInside(entries, HudSystemMenu.Bounds, "system menu entries");
         Assert.True(!buttons.Any(HudSystemMenu.Bounds.Intersects), "system menu covers the menu buttons");
-        Assert.True(HudSystemMenu.Entry(HudSystemEntry.Help) == new Rectangle(698, 504, 96, 20) && HudSystemMenu.Entry(HudSystemEntry.Exit) == new Rectangle(698, 535, 96, 20)
-            && HudSystemMenu.Entry(HudSystemEntry.Settings).Bottom < 504, "the exit menu's rows left the original sheet, or settings is not above it");
+        Assert.True(HudSystemMenu.Button(HudSystemEntry.Help, browser: true) == new Rectangle(698, 505, 98, 20) && HudSystemMenu.Button(HudSystemEntry.Exit, browser: true) == new Rectangle(698, 536, 98, 20)
+            && HudSystemMenu.Button(HudSystemEntry.Settings, browser: true).Bottom < 505, "the exit menu's rows left the original sheet, or settings is not above it");
 
         var design = new Rectangle(0, 0, HudLayout.DesignWidth, HudLayout.DesignHeight);
         Assert.True(design.Contains(HudNpcPanel.Box) && HudNpcPanel.Box.Contains(HudNpcPanel.OkButton) && HudNpcPanel.Box.Contains(HudNpcPanel.Title),
             "NPC help box escaped 800x600");
         Assert.True(HudNpcPanel.Box == new Rectangle(50, 45, 352, 352), "NPC help box differs from QuestMessageBoxPosi2/Size2");
         Assert.True(design.Contains(HudSettingsPanel.Box) && HudSettingsPanel.Box.Contains(HudSettingsPanel.OkButton)
-            && HudSettingsPanel.Box.Contains(HudSettingsPanel.Row(15)), "settings rows escaped the help box");
+            && HudSettingsPanel.Box.Contains(HudSettingsPanel.CloseButton), "settings rows escaped the help box");
         AssertDisjointInside([HudMessageBox.Accept, HudMessageBox.Reject], HudMessageBox.Bounds, "message box buttons");
         HudMessageBox.Place(HudLayout.Create(1920, 1080));
         Assert.True(HudMessageBox.Bounds == new Rectangle(876, 478, HudMessageBox.VisibleWidth, HudMessageBox.Height) && HudMessageBox.Bounds.Contains(HudMessageBox.Accept)

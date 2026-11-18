@@ -8,14 +8,12 @@ namespace PristonTale.Gameplay.UI.Widgets;
 internal sealed partial class HudNews
 {
     private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromSeconds(10) };
-    private static readonly Rectangle Box = new(130, 88, 540, 390);
-    private static readonly Rectangle Close = new(624, 100, 32, 24);
-    private static readonly Rectangle Previous = new(150, 434, 120, 26);
-    private static readonly Rectangle Next = new(530, 434, 120, 26);
+    private static readonly Rectangle Box = new(90, 10, 620, 580);
+    private static readonly Rectangle Close = new(676, 22, 24, 22);
     private Task<NewsCard[]> _request;
     private bool _open;
     private int _newsOffset;
-    private const int NewsVisibleLines = 17;
+    private const int NewsVisibleLines = 28;
     private const int NewsLineHeight = 16;
     private sealed record NewsCard(string Title, string Date, string[] Lines)
     {
@@ -27,7 +25,7 @@ internal sealed partial class HudNews
     private readonly Uri[] _social = new Uri[3];
     private static readonly string[] SocialLabels = ["Discord", "Instagram", "X"];
 
-    private static Rectangle SocialBounds(int index) => new(408 + index * 68, 100, 64, 24);
+    private static Rectangle SocialBounds(int index) => new(466 + index * 68, 22, 64, 22);
 
     public void Open(PristonTale.Engine3D.Rendering.ClientSettings settings)
     {
@@ -70,9 +68,14 @@ internal sealed partial class HudNews
 
     public bool Scroll(Point pointer, int wheel)
     {
-        if (!Captures(pointer) || _tab != 0)
+        if (!Captures(pointer))
         {
             return false;
+        }
+
+        if (_tab != 0)
+        {
+            return ScrollTickets(wheel);
         }
 
         if (wheel != 0 && _request is { IsCompletedSuccessfully: true } && _request.Result is { } cards)
@@ -93,10 +96,10 @@ internal sealed partial class HudNews
 
         var portuguese = ClientText.Language == "pt-BR";
         painter.FramedBox(Box, new Color(155, 115, 50), new Color(39, 32, 21), new Color(16, 13, 9), 4);
-        painter.RoundedGradient(new Rectangle(132, 90, 536, 36), new Color(56, 45, 28), new Color(30, 24, 15), 3);
-        painter.Fill(new Rectangle(132, 125, 536, 1), new Color(112, 85, 40));
-        painter.Diamond(144, 108, 5, Color.Gold);
-        painter.Text(portuguese ? "Novidades & Suporte" : "News & Support", 155, 101, Color.Wheat, HudPainter.TextScale * 1.18f);
+        painter.RoundedGradient(new Rectangle(92, 12, 616, 44), new Color(56, 45, 28), new Color(30, 24, 15), 3);
+        painter.Fill(new Rectangle(92, 56, 616, 1), new Color(112, 85, 40));
+        painter.Diamond(106, 33, 5, Color.Gold);
+        painter.Text(portuguese ? "Novidades & Suporte" : "News & Support", 117, 25, Color.Wheat, HudPainter.TextScale * 1.18f);
         DrawSupportButton(painter, Close, "X");
         for (var index = 0; index < _social.Length; index++)
         {
@@ -115,14 +118,14 @@ internal sealed partial class HudNews
             var status = _request is { IsCompleted: false }
                 ? (portuguese ? "Carregando…" : "Loading…")
                 : (portuguese ? "Feed de notícias indisponível." : "News feed unavailable.");
-            painter.Text(status, 150, 175, Color.Wheat);
+            painter.Text(status, 102, 124, Color.Wheat);
             return;
         }
 
         var cards = _request.Result;
         if (cards.Length == 0)
         {
-            painter.Text(portuguese ? "Sem notícias." : "No news.", 150, 175, Color.Wheat);
+            painter.Text(portuguese ? "Sem notícias." : "No news.", 102, 124, Color.Wheat);
             return;
         }
 
@@ -131,9 +134,9 @@ internal sealed partial class HudNews
 
     private void DrawNewsFeed(HudPainter painter, NewsCard[] cards, bool portuguese)
     {
-        const int left = 145;
-        const int top = 171;
-        const int width = 498;
+        const int left = 102;
+        const int top = 120;
+        const int width = 590;
         var end = _newsOffset + NewsVisibleLines;
         var start = 0;
         foreach (var card in cards)
@@ -176,7 +179,7 @@ internal sealed partial class HudNews
         var total = cards.Sum(card => card.Height);
         if (total > NewsVisibleLines)
         {
-            var track = new Rectangle(650, top, 4, NewsVisibleLines * NewsLineHeight);
+            var track = new Rectangle(698, top, 4, NewsVisibleLines * NewsLineHeight);
             var thumb = Math.Max(20, track.Height * NewsVisibleLines / total);
             painter.RoundedFill(track, new Color(51, 39, 23));
             painter.RoundedFill(new Rectangle(track.X, track.Y + (track.Height - thumb) * _newsOffset / (total - NewsVisibleLines),

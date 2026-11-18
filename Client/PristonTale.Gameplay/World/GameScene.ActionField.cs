@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using PristonTale.Gameplay.UI;
 using Microsoft.Xna.Framework.Input;
 using PristonTale.Contracts.Motion;
 using PristonTale.Engine3D;
@@ -82,7 +83,8 @@ public sealed partial class GameScene
                 return;
             }
 
-            _camera.Update(gameTime, _graphicsDevice, _playerBody.Position, _playerForward, _fieldCollision, PointerCaptured, CameraInputEnabled,
+            var pointerCaptured = PointerCaptured || WebWorldHud.Enabled && !WebWorldHud.HasCanvasPointer;
+            _camera.Update(gameTime, _graphicsDevice, _playerBody.Position, _playerForward, _fieldCollision, pointerCaptured, CameraInputEnabled,
                 keysEnabled: !KeyboardCaptured, resolveKey: _cameraKeyResolver ??= ResolveCameraKey,
                 sideButtons: _presentation.Requested.CameraMouseButtons, mouse4: _presentation.Requested.CameraMouse4,
                 mouse5: _presentation.Requested.CameraMouse5, invertOrbit: _presentation.Requested.InvertCameraOrbit,

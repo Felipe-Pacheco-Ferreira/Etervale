@@ -36,8 +36,9 @@ public sealed class PristonActorLoader
         }
 
         var motionInfo = ResolveMotionInfo(assetRoot, info);
-        var motionPath = ResolveMotionPath(assetRoot, motionInfo.MotionFile);
+        var motionPath = ResolveMotionPath(assetRoot, motionInfo);
         var skeleton = _previewMotionsOnly && Path.GetExtension(motionPath).Equals(".smb", StringComparison.OrdinalIgnoreCase)
+            && !motionPath.EndsWith(PristonSmdReader.PreviewSkeletonSuffix, StringComparison.OrdinalIgnoreCase)
             ? _smdReader.ReadPreviewSkeleton(motionPath, motionInfo)
             : _smdReader.ReadModel(motionPath);
         var mesh = PristonPhysiqueRepair.Repair(_smdReader.ReadModel(model), skeleton);
@@ -113,16 +114,42 @@ public sealed class PristonActorLoader
     }
 
     // A motion file (.smb), or the motion file of the model info its name links to (an .in link names one).
-    private string ResolveMotionPath(string assetRoot, string sourcePath)
+    private string ResolveMotionPath(string assetRoot, PristonModelInfo info)
     {
+        var sourcePath = info.MotionFile;
         var direct = PristonModelPaths.Motion(assetRoot, RequirePath(sourcePath));
+        if (PreviewMotionPath(info, direct) is { } preview)
+            return preview;
+
         if (File.Exists(direct))
             return direct;
 
         if (LinkedInfo(assetRoot, sourcePath) is { } link && !string.IsNullOrWhiteSpace(link.MotionFile))
-            return ResolveCachePath(PristonModelPaths.Motion(assetRoot, link.MotionFile), link.MotionFile);
+        {
+            var linked = PristonModelPaths.Motion(assetRoot, link.MotionFile);
+            return PreviewMotionPath(info, linked) ?? ResolveCachePath(linked, link.MotionFile);
+        }
 
         return ResolveCachePath(direct, sourcePath);
+    }
+
+    private string PreviewMotionPath(PristonModelInfo info, string fullPath)
+    {
+        if (!_previewMotionsOnly || !Path.GetExtension(fullPath).Equals(".smb", StringComparison.OrdinalIgnoreCase))
+            return null;
+
+        // Each published companion is made with the corresponding m#Bip motion table. A different INX can describe
+        // different ranges of the same skeleton, so it still requires the original motion asset.
+        var name = Path.GetFileNameWithoutExtension(fullPath);
+        if (name.Length != 2 || name[0] is not ('m' or 'M') || name[1] is < '1' or > '8'
+            || !Path.GetFileNameWithoutExtension(info.Path).Equals(name + "Bip", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        var preview = PristonModelPaths.WithExtension(fullPath, PristonSmdReader.PreviewSkeletonSuffix);
+        var resolved = AssetFiles.Resolve(preview);
+        return File.Exists(resolved) ? resolved : null;
     }
 
     private PristonModelInfo ResolveMotionInfo(string assetRoot, PristonModelInfo visualInfo)

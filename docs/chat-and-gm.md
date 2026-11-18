@@ -22,6 +22,8 @@ composes, shows and limits what the player types.
 | `Shared/PristonTale.Application/Chat/ChatDirectory.cs` | Players in the world by entity, name and account; level, whisper refusal, notice state |
 | `Shared/PristonTale.Application/Chat/ChatLine.cs`, `IChatLink.cs` | `ChatKind`, the line a player receives, the session-side delivery port |
 | `Shared/PristonTale.Application/Chat/SocialRosters.cs` | `IPartyRoster` (the world's `PartyRoster` by default), `IClanRoster` and its empty default |
+| `Shared/PristonTale.Application/Chat/ExternalChat.cs` | Lines from outside the game (the Discord bot) on the trade channel, and how the bot recognises them |
+| `Shared/PristonTale.Application/GameMasters/RemoteGameMaster.cs` | A game master outside the world, the outcome of a remote command |
 | `Shared/PristonTale.Application/Chat/ChatCommandText.cs` | Word, quoted phrase and number parsing; case-sensitive prefix matching |
 | `Shared/PristonTale.Application/GameMasters/GameMasterLevel.cs` | Levels 0 to 4 |
 | `Shared/PristonTale.Application/GameMasters/GameMasterCommands.cs` | The command table, `HandleAsync`, the audit entry of every matched command |
@@ -65,6 +67,7 @@ Kinds: 0 server, 1 whisper, 2 system, 3 notice, 4 party, 5 clan, 6 trade, 9 assi
 | Party chat | The other members of the sender's party | `Name: text` in the party kind |
 | `/>text` (Moderator) | Everybody at once | `Notice> text` |
 | `/>>text` (Moderator) | Each player in the world, once, with the next heartbeat | `Notice> text`; players who enter later skip it |
+| A message in the Discord bot's public channel | Everybody, on the trade channel | `[Discord] author: text`, one line, the author cut to 24 characters and the text to 78 (`ExternalChat`) |
 
 - Lines starting with `/` (or `` ` `` and `/`) are commands: never spoken, answered only when a command matches.
 - Whisper answers: an empty whisper reports `name is currently online`; a missing player
@@ -143,6 +146,11 @@ Commands match by exact, case-sensitive prefix in table order. Levels:
 | Administrator | `/easy_castle` |
 | Administrator | `/init_premiumitem`, `/@get_perf`, `/@get`, `/@put_perf`, `/@put`, `/GiveMeExp!`, `/expup`, `/GiveMeMoney!`, `/reload_settings`, `/setting`, `/set_absorb` |
 
+- Remote: the commands marked `Remote` in the table (`/localtime`, `/get_bosstime`, `/>`, `/user_limit`, `/kick`,
+  `/shutdown`, `/userid`, `/username`, `/show_blackuser`, `/reset_blackuser`, `/free_blackuser`) use nothing of the
+  issuer's character, so the Discord bot runs them through `GameMasterCommands.HandleRemoteAsync` for a
+  `RemoteGameMaster` (no character, account 0, user id `discord:<member id>`); any other command answers
+  `NeedsWorld` and is audited as refused ([discord-bot.md](discord-bot.md#game-masters)).
 - Information: local time, boss minute, the issuer's force orb and premium timers, gold spent per sink, carried potions,
   connection packet counts, players and monsters, a player by entity id, account or name, damage range, session.
 - Players: `/kick` disconnects, `/kill` kills, `/near` goes to a player, `/call` brings one, `/where` reports a
@@ -180,6 +188,35 @@ Commands match by exact, case-sensitive prefix in table order. Levels:
   field: the monsters around one (the ones they call too) do not leave as idle, and no spawn point near one spawns
   (`FieldPreyView.AnyWithin`). A called monster leaves after the same idle time as a spawned one. Game masters have no
   special name colour.
+
+## Support tickets
+
+The game's News & Support window (`Client/PristonTale.Gameplay/UI/Widgets/HudNews.Tickets.cs`) talks to
+`TicketChat` (`Shared/PristonTale.Application/Chat/TicketChat.cs`) through chat commands answered by `Ticket> ...`
+server lines; the tickets live in `SupportTickets` (`Shared/PristonTale.Application/SupportTickets.cs`), the folder of
+the server's `SupportTickets:Path`, which the site and the Discord bot share ([discord-bot.md](discord-bot.md#support-tickets)).
+
+- A ticket is a conversation: `<account>/<id>.json` (subject, category, author "account (character)", first message),
+  one `<id>.<time>-<random>.msg` file per later message (player or staff), `<id>.media.<ext>` for its one attachment
+  and `<id>.closed` (who closed it). An answer of the earlier single-answer format (`<id>.reply`) reads as a staff
+  message. Its number (#1000 to #9999) comes from its id.
+- States: open (waiting for the staff), answered (the staff wrote last), closed by the staff, cancelled by its player.
+  Its player edits or cancels it only until the staff answers; after that only the staff closes it. A closed ticket
+  takes no message, edit or attachment until the staff reopens it.
+
+| Command | Answer |
+| --- | --- |
+| `/ticketstart [Category] subject`, `/ticketreply <id>`, `/ticketedit <id> [Category] subject`, then `/ticketpart <base64>` (48 characters each, 1500 in all) and `/ticketsave` within 15 s | `saved`, `replied` or `edited <id>`, or `error` |
+| `/ticketlist` | `list`, `item <id> <number> <Open, Answered, Closed or Cancelled> <category or -> <created> <updated> <messages> <editable> <subject>` per ticket (30 newest), `listend` |
+| `/ticketview <id>` | `view <id> <number> <state> <category or -> <created> <editable> <author>`, `subject <text>`, per message `msg <P or S> <time> <name>` and its lines as `text`/`more` (200 characters each), `viewend` |
+| `/ticketclose <id>` | `closed <id>` when its player may still cancel it, else `error` |
+| `/tickets`, `/novoticket subject\|message` | The plain list and one-line ticket of clients released before the conversation |
+
+The window: My tickets lists cards (category icon, number, category, subject, state, opened and updated times, message
+count) with Refresh and New ticket, refreshed every 15 s; a card opens the ticket: its header with Edit and Cancel ticket
+while editable, the conversation (the player's messages on the right, the staff's on the left, scrolled to the newest,
+refreshed every 10 s while the answer box is empty) and the answer box with Attach image or video (the site's
+`/suporte/anexo/<id>` page) and Send. New ticket is the form for a new ticket or an edit.
 
 ## How to
 

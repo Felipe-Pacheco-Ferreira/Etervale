@@ -7,7 +7,7 @@ namespace PristonTale.Application.Sessions;
 
 public sealed class PlayerSession
 {
-    // 0 = authenticated, 1 = loading, 2 = ready, 3 = playing, 4 = closing.
+    // 0 = authenticated, 1 = loading, 2 = ready, 3 = playing, 4 = closed, 5 = leaving for selection.
     private int _state;
 
     // The save sequence of the character's last capture (CharacterRecord.SaveSeq).
@@ -19,7 +19,27 @@ public sealed class PlayerSession
     internal void MarkClosed() => Interlocked.Exchange(ref _state, 4);
     public bool IsPlaying => Volatile.Read(ref _state) == 3;
     public bool TryBeginPlay() => Interlocked.CompareExchange(ref _state, 3, 2) == 2;
-    public void EndPlay() => Interlocked.CompareExchange(ref _state, 4, 3);
+    public void EndPlay(bool returnToSelection = false) => Interlocked.CompareExchange(ref _state, returnToSelection ? 5 : 4, 3);
+    public bool IsLeavingForSelection => Volatile.Read(ref _state) == 5;
+
+    // SaveGate protects the loaded state; the durable leave and character-claim release precede re-entry.
+    internal bool CompleteLeave()
+    {
+        if (!IsLeavingForSelection)
+        {
+            return false;
+        }
+        CharacterName = null;
+        Character = null;
+        Loaded = null;
+        Warehouse = null;
+        MobileShopOpen = false;
+        LeftDead = false;
+        InVillage = false;
+        FieldId = 0;
+        SpawnPosition = default;
+        return Interlocked.CompareExchange(ref _state, 0, 5) == 5;
+    }
 
     public required string SessionToken { get; init; }
     public required long AccountId { get; init; }

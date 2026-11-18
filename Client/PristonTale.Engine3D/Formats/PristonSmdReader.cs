@@ -9,7 +9,7 @@ using PristonTale.Assets;
 
 namespace PristonTale.Engine3D.Formats;
 
-public sealed class PristonSmdReader
+public sealed partial class PristonSmdReader
 {
     private const int FileHeaderSize = SmdLayout.FileHeaderSize;
     private const int ObjectInfoSize = 40;

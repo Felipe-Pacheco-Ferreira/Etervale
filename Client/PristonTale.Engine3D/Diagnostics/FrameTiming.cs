@@ -12,7 +12,13 @@ public readonly record struct FrameTimingSample(
     int FramesOver60HzBudget,
     double PresentP95Ms,
     double PresentP99Ms,
-    double PacingP95Ms = 0);
+    double PacingP95Ms = 0,
+    double UpdateP95Ms = 0,
+    double DrawP95Ms = 0,
+    double SceneBridgeP95Ms = 0,
+    double SceneBridgeCallsPerFrame = 0,
+    long SceneBridgeCalls = 0,
+    double SceneBridgeTotalMs = 0);
 
 public sealed class FrameTiming
 {
@@ -20,6 +26,10 @@ public sealed class FrameTiming
     private const int Capacity = 360;
     private readonly double[] _frames = new double[Capacity];
     private readonly double[] _work = new double[Capacity];
+    private readonly double[] _updates = new double[Capacity];
+    private readonly double[] _draws = new double[Capacity];
+    private readonly double[] _sceneBridge = new double[Capacity];
+    private readonly long[] _sceneBridgeCalls = new long[Capacity];
     private readonly double[] _presentation = new double[Capacity];
     private readonly double[] _pacing = new double[Capacity];
     private readonly long[] _allocations = new long[Capacity];
@@ -30,6 +40,21 @@ public sealed class FrameTiming
     private long _lastSample;
     private long _updateTicks;
     private long _updateBytes;
+    private long _pendingSceneBridgeTicks;
+    private long _pendingSceneBridgeCalls;
+    private long _totalSceneBridgeTicks;
+    private long _totalSceneBridgeCalls;
+
+    // Synchronous scene interop only. This is part of Update/Draw work, not additional frame time
+    // or asynchronous GPU execution; the native HUD adapter has its own interop outside this scope.
+    public void RecordSceneBridge(long elapsedTicks)
+    {
+        var ticks = Math.Max(0, elapsedTicks);
+        _pendingSceneBridgeTicks += ticks;
+        _pendingSceneBridgeCalls++;
+        _totalSceneBridgeTicks += ticks;
+        _totalSceneBridgeCalls++;
+    }
 
     public void RecordUpdate(long elapsedTicks, long allocatedBytes = 0)
     {
@@ -42,7 +67,11 @@ public sealed class FrameTiming
         if (_lastDraw != 0 && end > _lastDraw)
         {
             _frames[_next] = (end - _lastDraw) * 1000d / Stopwatch.Frequency;
-            _work[_next] = (_updateTicks + Math.Max(0, end - start)) * 1000d / Stopwatch.Frequency;
+            _updates[_next] = _updateTicks * 1000d / Stopwatch.Frequency;
+            _draws[_next] = Math.Max(0, end - start) * 1000d / Stopwatch.Frequency;
+            _work[_next] = _updates[_next] + _draws[_next];
+            _sceneBridge[_next] = _pendingSceneBridgeTicks * 1000d / Stopwatch.Frequency;
+            _sceneBridgeCalls[_next] = _pendingSceneBridgeCalls;
             _presentation[_next] = 0;
             _pacing[_next] = 0;
             _allocations[_next] = _updateBytes + Math.Max(0, allocatedBytes);
@@ -53,6 +82,8 @@ public sealed class FrameTiming
         _lastDraw = end;
         _updateTicks = 0;
         _updateBytes = 0;
+        _pendingSceneBridgeTicks = 0;
+        _pendingSceneBridgeCalls = 0;
     }
 
     public void RecordPresentation(long elapsedTicks, long allocatedBytes = 0)
@@ -79,10 +110,12 @@ public sealed class FrameTiming
         var total = 0d;
         var overBudget = 0;
         var allocatedBytes = 0L;
+        var sceneBridgeCalls = 0L;
         for (var index = 0; index < _count; index++)
         {
             total += _frames[index];
             allocatedBytes += _allocations[index];
+            sceneBridgeCalls += _sceneBridgeCalls[index];
             if (_frames[index] > 1000d / 60)
             {
                 overBudget++;
@@ -93,7 +126,9 @@ public sealed class FrameTiming
         var work = Percentiles(_work);
         var presentation = Percentiles(_presentation);
         sample = new FrameTimingSample(_count * 1000d / total, frames.P95, frames.P99, work.P95, work.P99,
-            (double)allocatedBytes / _count, overBudget, presentation.P95, presentation.P99, Percentiles(_pacing).P95);
+            (double)allocatedBytes / _count, overBudget, presentation.P95, presentation.P99, Percentiles(_pacing).P95,
+            Percentiles(_updates).P95, Percentiles(_draws).P95, Percentiles(_sceneBridge).P95,
+            (double)sceneBridgeCalls / _count, _totalSceneBridgeCalls, _totalSceneBridgeTicks * 1000d / Stopwatch.Frequency);
         return true;
     }
 

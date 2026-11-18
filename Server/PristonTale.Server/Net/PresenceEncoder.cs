@@ -91,6 +91,7 @@ internal sealed partial class PresenceEncoder : IEventHandleWriter
     private SharedPresenceWire? _wire;
     private Simulation.Progression.RestartOffer? _restartOffer;
     private PartyView? _party;
+    private Contracts.Social.PartyDirectoryEntry[]? _partyDirectory;
     // The weather last sent; null until the first snapshot sends it.
     private WeatherState? _weather;
     private PartyRequest? _partyRequest;
@@ -391,7 +392,8 @@ internal sealed partial class PresenceEncoder : IEventHandleWriter
     // The party's members whenever they change (none once the receiver leaves it), and each new request to join one.
     private void SendParty(in WorldSnapshot snapshot, IPacketSink connection)
     {
-        if (!ReferenceEquals(snapshot.Party, _party))
+        var partyChanged = !ReferenceEquals(snapshot.Party, _party);
+        if (partyChanged)
         {
             _party = snapshot.Party;
             var members = _party?.Members ?? [];
@@ -403,6 +405,15 @@ internal sealed partial class PresenceEncoder : IEventHandleWriter
             }
 
             connection.Send(_scratch.AsSpan(0, new PartyMembersPacket(wire).Write(_scratch)));
+        }
+
+        var directoryChanged = !ReferenceEquals(snapshot.PartyDirectory, _partyDirectory);
+        if (partyChanged || directoryChanged)
+        {
+            _partyDirectory = snapshot.PartyDirectory;
+            var leaderId = _party is { Members.Count: > 0 } ? _party.Members[0].EntityId : 0;
+            connection.Send(_scratch.AsSpan(0, new PartyDirectoryPacket(leaderId, _party?.IsOpen ?? false,
+                directoryChanged && _partyDirectory is not null, directoryChanged ? _partyDirectory ?? [] : []).Write(_scratch)));
         }
 
         if (snapshot.PartyRequest is { } request && !ReferenceEquals(request, _partyRequest))
@@ -486,6 +497,8 @@ internal sealed partial class PresenceEncoder : IEventHandleWriter
         SendPremium(snapshot.Owner, connection);
         SendCooldowns(snapshot, connection);
         SendWeather(snapshot.Weather, connection);
+        // Party commands and directory replies remain reliable when a slow reader's entity frame was reused.
+        SendParty(snapshot, connection);
     }
 
     private void SendWeather(WeatherState weather, IPacketSink connection)

@@ -21,7 +21,7 @@ public enum HudPartyPage
 // shown in tens past level 10 ("L4x"). Under them the delegate, disband, kick, leave and close buttons: the first three
 // are the leader's, and without a party only close works. A click picks a member for delegate and kick (neither acts
 // with nobody picked); a double click whispers to it.
-public sealed class HudPartyWindow
+public sealed partial class HudPartyWindow
 {
     public const int CloseButton = 4;
     private const int LifeWidth = 94;
@@ -79,6 +79,7 @@ public sealed class HudPartyWindow
     public void Show()
     {
         Page = HudPartyPage.Party;
+        ResetSocialSelection();
         _slide.Open = true;
     }
 
@@ -86,6 +87,7 @@ public sealed class HudPartyWindow
     {
         Page = HudPartyPage.Friends;
         Friends.Show(view);
+        ResetSocialSelection();
         _slide.Open = true;
     }
 
@@ -96,6 +98,7 @@ public sealed class HudPartyWindow
         if (!clan.HasClan && Page == HudPartyPage.Clan)
         {
             Page = HudPartyPage.Party;
+            ResetSocialSelection();
         }
     }
 
@@ -115,11 +118,14 @@ public sealed class HudPartyWindow
     {
         _slide.Open = false;
         Picked = 0;
+        CancelTyping();
+        _socialProfile = null;
     }
 
     public void Advance(double seconds) => _slide.Advance(seconds);
 
-    public bool Contains(HudLayout layout, Point pointer) => _slide.Visible && HudSidePanel.Bounds(CurrentOrigin(layout)).Contains(pointer);
+    public bool Contains(HudLayout layout, Point pointer) => _slide.Visible &&
+        (layout.Browser ? BrowserBounds(layout).Contains(pointer) : HudSidePanel.Bounds(CurrentOrigin(layout)).Contains(pointer));
 
     // A picked member who left is no longer picked.
     public void Refresh(PartyInfo party)
@@ -127,6 +133,10 @@ public sealed class HudPartyWindow
         if (Picked != 0 && !party.Contains(Picked))
         {
             Picked = 0;
+            if (Page == HudPartyPage.Party)
+            {
+                _socialPicked = "";
+            }
         }
     }
 
@@ -136,6 +146,11 @@ public sealed class HudPartyWindow
         if (!_slide.FullyOpen || !Contains(layout, pointer))
         {
             return false;
+        }
+
+        if (layout.Browser)
+        {
+            return ClickBrowser(layout, pointer, party, self, nowSeconds);
         }
 
         var origin = CurrentOrigin(layout);
@@ -207,6 +222,12 @@ public sealed class HudPartyWindow
     {
         if (!_slide.Visible)
         {
+            return;
+        }
+
+        if (layout.Browser)
+        {
+            DrawBrowser(painter, layout, party, self, pointer);
             return;
         }
 

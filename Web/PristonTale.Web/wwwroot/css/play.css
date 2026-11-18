@@ -199,6 +199,423 @@ a {
     background: rgba(255, 255, 255, 0.05);
 }
 
+/* The world HUD leaves the center and the native HUD accessible behind its controls. */
+.game:has(> .world-hud[data-state="active"]) {
+    --world-hud-top: max(7px, env(safe-area-inset-top));
+    --world-hud-right: max(env(safe-area-inset-right), clamp(12px, 7.6vw + 95px, 240px));
+    --world-controls-top: var(--world-hud-top);
+}
+
+.world-hud {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+}
+
+.world-hud:not([data-state="active"]),
+.game[data-world-loading="true"] > .world-hud {
+    display: none;
+}
+
+.world-hud-status {
+    position: absolute;
+    top: var(--world-hud-top);
+    left: max(8px, env(safe-area-inset-left));
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin: 0;
+    color: #f5dfaa;
+    font: 700 12px/1.25 var(--sans);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    text-shadow: 0 1px 3px #000, 0 0 4px #000, 0 0 8px #000;
+}
+
+.world-hud-metrics {
+    display: flex;
+    align-items: baseline;
+    gap: 3px;
+}
+
+.world-hud-metrics [data-role="world-ping"] {
+    color: #c2e7a7;
+}
+
+.world-hud-controls {
+    position: absolute;
+    top: var(--world-controls-top);
+    right: var(--world-hud-right);
+    display: grid;
+    gap: 8px;
+    justify-items: end;
+}
+
+.world-hud-control-row {
+    display: flex;
+    gap: 4px;
+}
+
+.world-hud-button,
+.world-hud-hunt,
+.world-hud-menu :is(button, summary) {
+    color: #f4e5c0;
+    background: linear-gradient(180deg, rgba(33, 28, 17, 0.95), rgba(14, 13, 9, 0.94));
+    border: 1px solid rgba(188, 157, 93, 0.72);
+    border-radius: 3px;
+    box-shadow: 0 2px 5px #0008;
+    pointer-events: auto;
+}
+
+.world-hud-button {
+    display: flex;
+    min-height: 30px;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 3px 9px;
+    font: 400 13px/1.1 Georgia, Palatino, serif;
+    white-space: nowrap;
+    cursor: pointer;
+    list-style: none;
+}
+
+.world-hud-button::-webkit-details-marker {
+    display: none;
+}
+
+.world-hud-button:hover,
+.world-hud-more[open] > summary,
+.world-hud-menu :is(button, summary):hover {
+    border-color: var(--gold);
+    background: linear-gradient(180deg, #3b2b13, #20190c);
+    color: var(--gold-light);
+}
+
+.world-hud-button[aria-pressed="true"] {
+    border-color: #8bd77d;
+    color: #b8f7ae;
+}
+
+.world-hud-button:disabled {
+    opacity: 0.68;
+    cursor: default;
+}
+
+.world-hud-button svg,
+.world-hud-menu svg {
+    width: 14px;
+    height: 14px;
+    flex: 0 0 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.35;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.world-hud-hunt {
+    display: flex;
+    min-height: 30px;
+    align-items: center;
+    padding-right: 5px;
+}
+
+.world-hud-hunt > .world-hud-button {
+    min-height: 28px;
+    padding-right: 5px;
+    background: none;
+    border: 0;
+    box-shadow: none;
+}
+
+.world-hud-hunt > .world-hud-run-icon {
+    display: grid;
+    width: 23px;
+    min-height: 21px;
+    padding: 0;
+    place-items: center;
+    background: #ead49b1f;
+    border: 1px solid #ead49b45;
+    border-radius: 3px;
+}
+
+.world-hud-hunt > .world-hud-run-icon[aria-pressed="true"] {
+    border-color: #8bd77d;
+}
+
+.world-hud-run-icon svg,
+.world-hunt-toggle svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+    stroke: none;
+}
+
+.world-hud-stop,
+:is(.world-hud-button, .world-hunt-toggle)[aria-pressed="true"] .world-hud-run {
+    display: none;
+}
+
+:is(.world-hud-button, .world-hunt-toggle)[aria-pressed="true"] .world-hud-stop {
+    display: block;
+}
+
+.world-hunt-panel {
+    position: fixed;
+    inset: clamp(30px, 13.2dvh, 120px) auto auto 50%;
+    width: min(328px, calc(100vw - 24px));
+    max-height: calc(100dvh - 44px);
+    margin: 0;
+    padding: 0;
+    overflow: auto;
+    color: #ead7b3;
+    background: linear-gradient(160deg, #251b0f, #120e08 56%, #090704);
+    border: 1px solid #9d7b40;
+    border-radius: 6px;
+    box-shadow: 0 0 0 2px #211707, 0 8px 22px #0009;
+    transform: translateX(-50%);
+    pointer-events: auto;
+}
+
+.world-hunt-panel[open] {
+    display: block;
+}
+
+.world-hunt-panel::backdrop {
+    background: transparent;
+}
+
+.world-hunt-head {
+    display: flex;
+    min-height: 36px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 0 11px;
+    background: linear-gradient(180deg, #352917, #2b2114);
+    border-bottom: 1px solid #59452a;
+}
+
+.world-hunt-head h2 {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin: 0;
+    color: #f1d38f;
+    font: 700 15px/1.2 Georgia, Palatino, serif;
+}
+
+.world-hunt-close {
+    display: grid;
+    width: 23px;
+    height: 23px;
+    padding: 0;
+    place-items: center;
+    color: #ead7b3;
+    font: 15px/1 var(--sans);
+    background: #20190d;
+    border: 1px solid #66512a;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.world-hunt-close:hover {
+    color: var(--gold-light);
+    border-color: var(--gold);
+}
+
+.world-hunt-body {
+    display: grid;
+    gap: 8px;
+    padding: 11px;
+}
+
+.world-hunt-controls {
+    display: flex;
+    min-height: 57px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px;
+    color: #f2dfb0;
+    font: 700 12px/1.2 Georgia, Palatino, serif;
+    background: linear-gradient(120deg, #18150f, #121619);
+    border: 1px solid #4b5e70;
+    border-radius: 4px;
+}
+
+.world-hunt-toggle {
+    display: flex;
+    min-height: 28px;
+    align-items: center;
+    gap: 3px;
+    padding: 3px 9px;
+    color: #e6f7ce;
+    font: 700 11px/1.2 Georgia, Palatino, serif;
+    letter-spacing: 0.035em;
+    text-transform: uppercase;
+    background: linear-gradient(180deg, #416d36, #1d341a);
+    border: 1px solid #9bc36d;
+    border-radius: 4px;
+    box-shadow: inset 0 0 7px #d9f5ad38;
+    cursor: pointer;
+}
+
+.world-hunt-toggle[aria-pressed="true"] {
+    color: #f5dfb7;
+    background: linear-gradient(180deg, #654c2a, #342512);
+    border-color: #b58d48;
+    box-shadow: inset 0 0 7px #edbe723c;
+}
+
+.world-hunt-toggle:hover {
+    filter: brightness(1.16);
+}
+
+.world-hunt-toggle:disabled {
+    opacity: 0.68;
+    cursor: default;
+}
+
+.world-hunt-note {
+    margin: 0;
+    padding: 7px 8px;
+    color: #ccb58a;
+    font: 11px/1.45 var(--sans);
+    background: #171009;
+    border: 1px solid #50391e;
+    border-radius: 4px;
+}
+
+.world-hud-more {
+    position: relative;
+}
+
+.world-hud-menu {
+    position: absolute;
+    top: calc(100% + 5px);
+    right: 0;
+    display: grid;
+    min-width: max-content;
+    max-height: max(72px, calc(100dvh - var(--world-controls-top) - 80px));
+    gap: 5px;
+    justify-items: end;
+    padding: 2px 2px 5px;
+    overflow: auto;
+    pointer-events: auto;
+    scrollbar-width: thin;
+}
+
+.world-hud-more:not([open]) .world-hud-menu,
+.world-hud-menu [hidden],
+.world-hud-secondary:not([open]) > div {
+    display: none;
+}
+
+.world-hud-menu :is(button, summary) {
+    display: flex;
+    min-height: 31px;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 9px;
+    font: 400 13px/1.1 Georgia, Palatino, serif;
+    text-align: left;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.world-hud-menu svg {
+    width: 13px;
+    height: 13px;
+    flex-basis: 13px;
+    color: var(--gold);
+}
+
+.world-hud-secondary {
+    display: grid;
+    justify-items: end;
+}
+
+.world-hud-secondary > summary::after {
+    content: "▾";
+    color: var(--gold);
+}
+
+.world-hud-secondary > div {
+    display: grid;
+    justify-items: end;
+    gap: 5px;
+    margin-top: 5px;
+}
+
+.game:has(> .world-hud[data-state="active"]) > .game-bar {
+    display: none;
+}
+
+.world-hud-utilities .game-bar {
+    position: static;
+    gap: 4px;
+    padding: 3px;
+    background: rgba(18, 15, 9, 0.9);
+    border-color: rgba(188, 157, 93, 0.55);
+    border-radius: 3px;
+    box-shadow: 0 2px 5px #0008;
+}
+
+.world-hud-utilities .game-language {
+    gap: 4px;
+    padding-left: 3px;
+}
+
+.world-hud-utilities .game-language-label {
+    display: none;
+}
+
+.world-hud-utilities .game-language .dot {
+    flex-basis: 16px;
+    height: 16px;
+    font-size: 14px;
+}
+
+.world-hud-utilities .game-language select {
+    min-width: 92px;
+    height: 25px;
+    padding: 0 4px;
+    font-size: 12px;
+}
+
+.world-hud-utilities .game-bar .icon-button {
+    width: 25px;
+    height: 25px;
+    min-height: 25px;
+    padding: 0;
+}
+
+.world-hud-utilities .game-bar .icon-button svg {
+    width: 14px;
+    height: 14px;
+}
+
+@media (max-width: 600px) {
+    .game:has(> .world-hud[data-state="active"]) {
+        --world-hud-right: max(8px, env(safe-area-inset-right));
+        --world-controls-top: calc(var(--world-hud-top) + 29px);
+    }
+
+    .world-hud-status {
+        display: grid;
+        align-items: start;
+        gap: 1px;
+        font-size: 11px;
+    }
+
+    .world-hud-status-divider {
+        display: none;
+    }
+}
+
 /* The panels: a dark plate with a gold edge and a dot in each corner. */
 .card {
     position: absolute;
@@ -415,10 +832,18 @@ a {
 
 .loading-emblem {
     display: block;
+    width: min(240px, 100%);
+    height: auto;
     margin-bottom: 11px;
-    border: 1px solid #61523d;
-    border-radius: 50%;
-    box-shadow: 0 4px 14px #070c15;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 14px #070c15);
+}
+
+@media (max-height: 420px) {
+    .loading-emblem {
+        width: 180px;
+        margin-bottom: 4px;
+    }
 }
 
 .game-loading[hidden],
@@ -451,6 +876,97 @@ a {
 
 .game-loading progress::-moz-progress-bar {
     background: linear-gradient(90deg, var(--gold-deep), var(--gold-light));
+}
+
+.game[data-world-loading="true"] > :is(.game-bar, .heroes) {
+    display: none;
+}
+
+.world-loading {
+    --world-loading-fill: linear-gradient(90deg, #e84a3a, #ca86c9 48%, #408cff);
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+}
+
+.world-loading[hidden] {
+    display: none;
+}
+
+.world-loading::before {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: clamp(148px, 22dvh, 225px);
+    background: linear-gradient(to bottom, transparent, rgba(10, 8, 11, 0.14) 35%, rgba(10, 8, 11, 0.86));
+    content: "";
+}
+
+.world-loading-content {
+    position: absolute;
+    bottom: max(18px, calc(env(safe-area-inset-bottom) + 8px));
+    left: 50%;
+    display: grid;
+    gap: 11px;
+    width: min(300px, calc(100% - 100px));
+    color: #fff1d6;
+    text-align: center;
+    text-shadow: 0 1px 3px #0e0a08;
+    transform: translateX(-50%);
+}
+
+.world-loading-name,
+.world-loading-status {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.world-loading-name {
+    color: #f3d27f;
+    font: 700 21px/24px Georgia, serif;
+    letter-spacing: 0.02em;
+}
+
+.world-loading-meter {
+    position: relative;
+}
+
+.world-loading-meter progress {
+    display: block;
+    width: 100%;
+    height: 8px;
+    appearance: none;
+    border: 1px solid #a8884a;
+    border-radius: 0;
+    background: rgba(12, 9, 8, 0.82);
+}
+
+.world-loading-meter progress::-webkit-progress-bar {
+    background: transparent;
+}
+
+.world-loading-meter progress::-webkit-progress-value {
+    background: var(--world-loading-fill);
+}
+
+.world-loading-meter progress::-moz-progress-bar {
+    background: var(--world-loading-fill);
+}
+
+.world-loading-percent {
+    position: absolute;
+    top: 50%;
+    left: calc(100% + 8px);
+    color: #f3d27f;
+    font: 700 13px/16px var(--sans);
+    font-variant-numeric: tabular-nums;
+    transform: translateY(-50%);
+}
+
+.world-loading-status {
+    font: 400 13px/16px var(--sans);
 }
 
 @media (max-width: 560px) {

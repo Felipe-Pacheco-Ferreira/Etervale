@@ -261,6 +261,7 @@ public readonly struct WorldSnapshot
     // carries the current ones, and the encoder sends what changed.
     public PartyView? Party { get; init; }
     public PartyRequest? PartyRequest { get; init; }
+    public Contracts.Social.PartyDirectoryEntry[]? PartyDirectory { get; init; }
 
     // The receiver's Bellatra board while it is in the arena (null elsewhere); a new one each time it changes.
     public BellatraView? Bellatra { get; init; }
@@ -304,6 +305,7 @@ public readonly struct WorldSnapshot
         Restart = Restart,
         Party = Party,
         PartyRequest = PartyRequest,
+        PartyDirectory = PartyDirectory,
         Trade = Trade,
         TradeRequest = TradeRequest,
         Bellatra = Bellatra,
@@ -324,6 +326,7 @@ public readonly struct WorldSnapshot
         Restart = Restart,
         Party = Party,
         PartyRequest = PartyRequest,
+        PartyDirectory = PartyDirectory,
         Trade = Trade,
         TradeRequest = TradeRequest,
         Bellatra = Bellatra,

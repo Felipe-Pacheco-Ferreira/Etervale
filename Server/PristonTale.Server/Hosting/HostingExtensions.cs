@@ -104,6 +104,8 @@ public static class HostingExtensions
         builder.Services.AddHostedService<AccountBlockService>();
         builder.Services.AddSingleton<WhisperActivity>();
         AddChat(builder);
+        builder.Services.AddSingleton<BotLinkService>();
+        builder.Services.AddHostedService(static services => services.GetRequiredService<BotLinkService>());
         builder.Services.AddSingleton(services =>
         {
             var gameMasters = services.GetRequiredService<GameMasterCommands>();

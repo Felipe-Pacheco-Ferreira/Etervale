@@ -38,6 +38,9 @@ the in-game Settings panel, and how a change reaches the display, the renderer a
 - Path: `client-settings.json` beside the client executable (`AppContext.BaseDirectory`); the game never stores
   settings in a per-user profile folder. `PristonTale --settings PATH` uses another file (`Client/PristonTale/Program.cs`).
   A missing file is created with every key at its default.
+- The browser client has no file: its page keeps the same document in `localStorage` and passes it through
+  `ClientSettingsStore.Serialize` and `Parse` (same JSON rules; `Parse` returns null for a document `Load` would reject)
+  ([web-client.md](web-client.md#entry-page)).
 - JSON: camelCase property names, case-sensitive, indented on save. Enums are written and read by name.
 - Load (`ClientSettingsStore.Load`, on the main thread before the window is created):
   - no file: defaults, and the defaults are queued for saving;
@@ -75,6 +78,8 @@ renderer through `PresentationSettings.ApplyRendering` and apply at once.
 | `maxFps` | int, `0` | 0 or 15-1000 | yes: 0, 30, 60, 90, 120, 144, 165, 240, 360 | Foreground frame limit; 0 unlimited. Paced by `PresentationController.Pace` (sleeps in 1-4 ms steps). |
 | `backgroundMaxFps` | int, `30` | 0 or 15-1000 | yes (same list) | Limit while the window is inactive: `min(maxFps, backgroundMaxFps)`, or `backgroundMaxFps` when `maxFps` is 0; 0 means "use `maxFps`". |
 | `uiScale` | float, `1` | 0.75-1.5 | | Validated and stored only; the in-game HUD always uses the largest integer scale that fits. |
+| `showMinimap` | bool, `true` | | yes (web) | Shared by the gear, the minimap button and its shortcut. A field that hides the map takes precedence. |
+| `alwaysShowRareGroundLabels` | bool, `false` | | yes (web) | Shows names of nearby rare drops that pass the loot filter. Labels remain clickable. |
 | `classicTargetHealthBar` | bool, `false` | | yes (Target HP) | `false`: the target frame always shows the HP bar with level and life percentage. `true`: the bar, without numbers, appears only after you attack a monster at full life. Either way the frame shows a live 3D portrait of the target's head, its name and, for monsters, the race icon. |
 | `classicNamePlates` | bool, `false` | | yes (Name plates) | `false`: the name boxes over monsters and NPCs (rounded, in the speech bubble's colours) hold smaller text, a monster's life bar shows once it was clicked or attacked, and NPCs get no hover outline. `true`: the same box, the HUD text size, the bar while the cursor is on the monster, and a green NPC outline. |
 | `levelGuide` | bool, `true` | | yes (the guide window's On/Off) | On reaching a level the game guide has a page for, a blinking notice offers its summary. |
@@ -86,6 +91,8 @@ renderer through `PresentationSettings.ApplyRendering` and apply at once.
 
 | Field | Type, default | Valid values (else default) | Panel | Effect |
 |---|---|---|---|---|
+| `renderScale` | float, `1` | 0.5-1 | web | Saved cap for the internal 3D scene resolution; the exact scale when dynamic resolution is disabled. The final output, HUD and input keep the display's resolution. |
+| `dynamicResolution` | bool, `true` | | web | Allows the browser to adapt the transient 3D resolution below `renderScale`. The effective scale is not saved and the chosen preset's effects remain selected. Quality presets preserve this independent choice. Desktop stores the field but does not adapt resolution. |
 | `quality` | `High` (default), `Low`, `Medium`, `Ultra`, `Custom` | defined enum | yes (Graphics quality) | Label of the preset the fields came from. The panel applies a preset with `WithQuality`; editing any preset field in the panel sets `Custom`. Loading a file never applies a preset. |
 | `antiAliasing` | `Taa` (default), `Off`, `Fxaa`, `Smaa`, `Msaa` | defined enum | yes | `Taa`: jittered projection, motion vectors (skinned actors from their previous pose), history resolve. `Msaa`: multisampled HDR scene, no depth pre-pass. `Fxaa`/`Smaa`: 1x filter on the 8-bit display image. |
 | `multiSampleCount` | int, `4` | 0, 2, 4, 8 | label only | Samples of the HDR scene with `antiAliasing` `Msaa` only; the renderer clamps to 2-4 (`PristonRenderer.ApplyQuality`). Also a Display field: a change goes through confirmation. |

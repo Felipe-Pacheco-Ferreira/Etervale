@@ -28,6 +28,7 @@ where to look. Setup, build and run commands are in the root [README.md](../READ
 | [application.md](application.md) | `Shared/PristonTale.Application`: use cases, sessions, `WorldServer`, tick, transactions, NPC services |
 | [server.md](server.md) | `Server/PristonTale.Server`: startup, hosted services, TCP edge, settings |
 | [website.md](website.md) | `Web/PristonTale.Web`: the public website, its pages, settings, security measures, running and deploying |
+| [discord-bot.md](discord-bot.md) | `Bot/PristonTale.DiscordBot`: the Discord bot, its commands, chat relays, announcements and tickets; the game server's bot link |
 | [protocol.md](protocol.md) | Wire protocol: TLS transport, login and world messages, Etervale opcodes, server capacity |
 | [persistence.md](persistence.md) | Repositories, migrations, schema, SQLite and PostgreSQL providers |
 | [world-import.md](world-import.md) | `tools/PristonTale.WorldImport`: authored data formats, parsers, catalog import, verify |
@@ -66,6 +67,7 @@ The MonoGame fork documents itself in [monogame/README.md](../monogame/README.md
 | Add a skill or hit effect | effects.md | skills.md |
 | Change a server setting or connection limit | server.md | protocol.md |
 | Change the website, its pages or its security | website.md | application.md, persistence.md |
+| Change the Discord bot or the game server's bot link | discord-bot.md | website.md, chat-and-gm.md, server.md |
 | Add a regression case | testing.md | the area doc |
 | Run or extend a tool | tools.md | |
 
@@ -76,6 +78,7 @@ The MonoGame fork documents itself in [monogame/README.md](../monogame/README.md
 | `Shared/` | Contracts, Geometry, Assets, Simulation, Protocol, Application (shared by server and client) |
 | `Server/` | Game server host |
 | `Web/` | Public website |
+| `Bot/` | Discord bot |
 | `Persistence/` | Storage abstractions, repositories, migrations, providers |
 | `Client/` | Engine3D, Effects, Client.Net, Gameplay, the client executable, the Android clients, the browser client |
 | `tests/` | Regression runner |

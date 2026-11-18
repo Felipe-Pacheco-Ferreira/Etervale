@@ -3,6 +3,7 @@ using PristonTale.Client.Net.Presence;
 using PristonTale.Gameplay.UI.Parties;
 using PristonTale.Gameplay.UI.Widgets;
 using PristonTale.Gameplay.Localization;
+using PristonTale.Contracts.Social;
 
 namespace PristonTale.Gameplay.UI;
 
@@ -34,6 +35,11 @@ public sealed partial class GameplayHud
             var formed = Party.Members.Count == 0 && party.Members.Count > 0;
             var released = Party.Members.Count > 0 && party.Members.Count == 0;
             Party = party;
+            if (party.Members.Count > 0)
+            {
+                _partyWindow.PartyOpen = party.IsOpen;
+                _partyWindow.CreatingParty = false;
+            }
             _partyWindow.Refresh(party);
             if (formed)
             {
@@ -44,6 +50,11 @@ public sealed partial class GameplayHud
             {
                 _partyWindow.Close();
             }
+        }
+
+        if (update.PartyDirectory is { } directory)
+        {
+            _partyWindow.ObserveDirectory(directory);
         }
 
         if (update.PartyRequest is { } request && !_warehouse.IsOpen)
@@ -72,10 +83,37 @@ public sealed partial class GameplayHud
     private void SetUpParty()
     {
         _sprites.Request(HudPartyArt.All);
+        _partyWindow.FieldName = new Simulation.World.WorldCatalog().FieldName;
         _partyWindow.Commanded = (command, member) => Parties?.CommandPartyAsync(command, member);
+        _partyWindow.CreatePartyRequested = () => _ = CreatePartyAsync();
+        _partyWindow.PartyOpenChanged = open => Parties?.CommandPartyAsync(open ? PartyCommand.Open : PartyCommand.Close, 0);
+        _partyWindow.SearchPartiesRequested = () => Parties?.CommandPartyAsync(PartyCommand.Search, 0);
+        _partyWindow.JoinPartyRequested = leader => Parties?.CommandPartyAsync(PartyCommand.Join, leader);
         _partyWindow.Whispered = _chat.Window.WhisperTo;
         _chat.InParty = InParty;
         Combat.InParty = InParty;
+    }
+
+    private async Task CreatePartyAsync()
+    {
+        if (Parties is null || _partyWindow.CreatingParty || Party.Members.Count > 0)
+        {
+            return;
+        }
+
+        _partyWindow.CreatingParty = true;
+        try
+        {
+            // Creation and the chosen admission policy are one authoritative command. Keep the pending state until
+            // its PartyInfo arrives, so repeated clicks cannot enqueue duplicate groups.
+            await Parties.CommandPartyAsync(PartyCommand.Create, _partyWindow.PartyOpen ? 1UL : 0UL);
+        }
+        catch (Exception ex)
+        {
+            _partyWindow.CreatingParty = false;
+            _context.Log.Error("The group creation request could not be sent", ex);
+            _notice.Show(ClientText.Format(Simulation.Parties.PartyMessages.CannotEnter));
+        }
     }
 
     private bool ShowsPlayerButtons => ButtonsPlayerId != 0 && TargetId == ButtonsPlayerId;

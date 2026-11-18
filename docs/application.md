@@ -111,11 +111,13 @@ everywhere: in the world, the views, the wire and the client.
 | 0 authenticated | `Create` | `TryBeginEntry` (to 1) |
 | 1 loading | `EnterWorldAsync` | `CompleteEntry(true)` to 2, `CompleteEntry(false)` back to 0 |
 | 2 ready | successful entry | `TryBeginPlay` (to 3), called by the edge before `JoinAsync` |
-| 3 playing (`IsPlaying`) | edge | `EndPlay` (to 4) after `LeaveAsync` |
-| 4 closing | `EndPlay` or `SessionRegistry.Remove` (`MarkClosed`) | terminal; a session enters the world once |
+| 3 playing (`IsPlaying`) | edge | `EndPlay` after `LeaveAsync`: to 5 for an explicit return to selection, otherwise 4 |
+| 4 closed | `EndPlay` on disconnect or `SessionRegistry.Remove` (`MarkClosed`) | terminal; a save cannot reopen it |
+| 5 leaving for selection | `EndPlay(true)` | `CompleteLeave` to 0 only after the leave capture is durably stored |
 
 Character ownership: `TryClaimCharacter(characterId, token)` admits one session per character
-(`EnterWorldFailure.AlreadyActive` otherwise). The claim is released when entry fails or the session is removed.
+(`EnterWorldFailure.AlreadyActive` otherwise). The claim is released when entry fails, the session is removed, or a
+successful explicit leave returns the session to character selection.
 `EnterWorldAsync` re-checks that the token still maps to the same session before publishing the loaded state.
 
 Spawn resolution on entry: saved X/Z when valid and not both zero, else the field's first start point, else its
@@ -131,8 +133,12 @@ capture that reaches it late never replaces a newer one.
 
 Lifecycle seen from the edge: `LoginAsync` -> `EnterWorldAsync` -> `TryBeginPlay` -> `WorldPlayerFactory.Create` ->
 `WorldServer.JoinAsync(field, player, outbox.Writer, session)` -> play commands -> `LeaveAsync` -> `EndPlay` ->
-`SaveLeftCharacterAsync` (the capture `LeaveAsync` took; it completes once stored, so the character stays claimed until
-then) -> `SessionRegistry.Remove`. While a durable operation holds
+`SaveLeftCharacterAsync` on disconnect -> `SessionRegistry.Remove`. An explicit `LeaveWorld` instead calls
+`SaveAndReturnToSelectionAsync`: under `SaveGate`, it waits for the leave capture to be stored, verifies that the token
+still identifies the same session, releases the old character claim, clears character and warehouse state, then
+compare-exchanges state 5 back to 0. A storage refusal retains the loaded character and claim for a later leave retry;
+disconnect can retry the capture but never reopens the closed session. The existing authenticated connection can select
+another owned character without logging in or redeeming a browser ticket again. While a durable operation holds
 the session's `SaveGate`, `LeaveAsync` takes no capture (it only records the placement): that operation commits after
 the leaving tick, possibly on another character too (a personal shop sale), so the save waits for the gate and captures
 the character the operation leaves (`SaveCharacterAsync`); a player that left dead (`PlayerSession.LeftDead`) is then
@@ -545,7 +551,7 @@ it), so a listing never changes between a purchase's prepare and commit.
 
 ## Parties
 
-Parties live in memory only, as the original keeps them (`WorldServer.Parties.cs`): two to six players, the leader first
+Parties live in memory only, as the original keeps them (`WorldServer.Parties.cs`): one to six players, the leader first
 (`Party`, read by the fields while they step, so a change replaces its member array). Every change runs on the command
 phase and answers `WorldNotice` lines that `PartyAppService` (or the session, for a player leaving) delivers through
 `ChatDirectory.Deliver`: replies to the actor in the server kind, notices to every member in the system kind, with the
@@ -563,6 +569,15 @@ original's texts (`PartyMessages`, [simulation.md](simulation.md)).
   the party to the next member first, and a party of two is released when one leaves. `LeaveAsync` (every way a
   connection ends) leaves the party the same way and returns the lines in `WorldLeave.Notices`; a request from a player
   who left answers nothing. A player who enters again has no party.
+- The browser's group finder uses the same tick-owned command path: `Create` registers a solo group, with initial open
+  policy in `MemberId` (0 closed, 1 open); `Open`/`Close` are leader-only. Created groups remain registered down to one
+  member and leave the directory when their last member leaves. `Search` returns up to 80 real server-local groups
+  (leader, field, average level, count, admission policy). `Join` rechecks membership, leader identity, capacity and level
+  rules: an open group admits immediately; a closed group sends the existing request to its leader. Stale or invalid
+  entries produce `CannotEnter`; the UI never invents a party or directory entry.
+- `PartyDirectory` carries own admission metadata and optional search results separately from the unchanged original
+  `PartyMembers` packet. Directory arrays and policy-bearing `PartyView` instances survive snapshot frame coalescing;
+  the encoder sends a new search response even when it is empty, and does not retransmit an unchanged result each tick.
 - `RefreshParties` rebuilds each party's `PartyView` (name, level, life, planar place) and its average level after a
   change and every 10 ticks; every snapshot carries the receiver's view and pending request, and the encoder sends what
   changed. `WorldServer.Parties` (`PartyRoster`) is the chat's `IPartyRoster`.
@@ -977,8 +992,8 @@ Add an NPC service or action:
   (`EnterField`, `CrossGate` or a restart).
 - `FieldInstance` mutates only during its own step or in the command phase; never call into a field from another
   field's step (they run in parallel).
-- `SessionRegistry.Remove` releases the character claim; a session that leaves the world is closing (state 4) and
-  cannot enter again.
+- `SessionRegistry.Remove` releases the character claim and permanently closes the session. Only an explicit leave
+  followed by a successful durable save can return a still-registered session to selection; never reset a closed token.
 - `SubscriberPresence` is not the production diff; the server's `PresenceEncoder` has its own. Keep both consistent
   when adding `EntityView` fields that need a full respawn.
 - `CharacterSummary` building throws on inconsistent persisted equipment so corruption is visible; do not swallow it.

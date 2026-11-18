@@ -95,6 +95,8 @@ public sealed partial class GameScene : ISkillSceneHost
     private void UpdateSkills(GameTime gameTime)
     {
         _skillFx?.Update((float)gameTime.ElapsedGameTime.TotalSeconds, _skillClockMs);
+        if (OperatingSystem.IsBrowser())
+            PlayInitialArrival(SelfEntityId);
         UpdateCostumeWings();
         UpdateHeldItems((float)gameTime.ElapsedGameTime.TotalSeconds);
         UpdateTerrain((float)gameTime.ElapsedGameTime.TotalSeconds);

@@ -14,7 +14,7 @@ using PristonTale.Contracts.Sessions;
 using PristonTale.Simulation.Characters;
 using PristonTale.Simulation.World;
 
-[Activity(Label = "Priston Avalon", MainLauncher = true, Exported = true, ScreenOrientation = ScreenOrientation.Landscape)]
+[Activity(Label = "Noxius Tale", MainLauncher = true, Exported = true, ScreenOrientation = ScreenOrientation.Landscape)]
 public sealed class VulkanLoginActivity : Activity
 {
     private readonly CancellationTokenSource lifetime = new();
@@ -65,11 +65,11 @@ public sealed class VulkanLoginActivity : Activity
             Android.Util.Log.Error("EtervaleVulkanProbe", exception.ToString());
             if (status is not null)
             {
-                status.Text = "Falha ao abrir o Priston Avalon.";
+                status.Text = "Falha ao abrir o Noxius Tale.";
             }
             else
             {
-                Toast.MakeText(this, "Falha ao abrir o Priston Avalon.", ToastLength.Long)?.Show();
+                Toast.MakeText(this, "Falha ao abrir o Noxius Tale.", ToastLength.Long)?.Show();
                 FinishAndRemoveTask();
             }
         }
@@ -77,7 +77,7 @@ public sealed class VulkanLoginActivity : Activity
 
     private void ShowLogin()
     {
-        CreatePanel("Etervale");
+        CreatePanel("Noxius Tale");
         var packagedAddress = PackagedAddress;
         EditText address = null;
         if (string.IsNullOrWhiteSpace(packagedAddress))

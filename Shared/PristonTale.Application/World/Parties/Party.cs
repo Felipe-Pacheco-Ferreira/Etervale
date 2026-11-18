@@ -2,7 +2,7 @@ using PristonTale.Contracts.Social;
 
 namespace PristonTale.Application.World;
 
-// One party: two to six players, the leader first. It changes on the tick's command phase only; fields read Members and
+// One party: one to six players, the leader first. It changes on the tick's command phase only; fields read Members and
 // AverageLevel while they step in parallel, and a change replaces the array instead of writing into it.
 public sealed class Party
 {
@@ -10,10 +10,19 @@ public sealed class Party
 
     internal Party(ulong leader, ulong member) => _members = [leader, member];
 
+    internal Party(ulong leader)
+    {
+        _members = [leader];
+        Registered = true;
+    }
+
     public ReadOnlySpan<ulong> Members => _members;
     public ulong LeaderId => _members[0];
     public int Count => _members.Length;
     public bool IsFull => _members.Length >= PartyLimits.MaxMembers;
+    public bool IsOpen { get; internal set; }
+    // Explicitly created groups remain registered when only the leader is left. Legacy invite parties keep their lifecycle.
+    internal bool Registered { get; }
 
     // Refreshed with View (WorldServer.RefreshParties).
     public int AverageLevel { get; internal set; }
@@ -33,9 +42,10 @@ public sealed class Party
 // A member as the party window, the minimap and the name boxes show it; the leader comes first.
 public readonly record struct PartyMemberView(ulong EntityId, string Name, int Level, int Life, int MaxLife, float X, float Z);
 
-public sealed class PartyView(PartyMemberView[] members)
+public sealed class PartyView(PartyMemberView[] members, bool isOpen = false)
 {
     public IReadOnlyList<PartyMemberView> Members => members;
+    public bool IsOpen => isOpen;
 
     public bool SameAs(ReadOnlySpan<PartyMemberView> other) => members.AsSpan().SequenceEqual(other);
 }

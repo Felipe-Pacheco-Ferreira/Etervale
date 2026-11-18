@@ -34,7 +34,8 @@ public sealed partial class GameScene : IPartyClient
             SendUpstream(send, what);
         }
 
-        return Task.CompletedTask;
+        // Callers that need to handle a send failure must be able to await the actual queued request.
+        return send ?? Task.CompletedTask;
     }
 
     private void UpdateReachedPlayer()

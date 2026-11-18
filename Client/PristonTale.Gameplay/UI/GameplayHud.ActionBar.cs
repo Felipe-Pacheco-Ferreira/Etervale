@@ -5,10 +5,34 @@ namespace PristonTale.Gameplay.UI;
 
 public sealed partial class GameplayHud
 {
-    private bool _actionBarVisible = true;
+    private bool _actionBarVisible = !WebWorldHud.Enabled;
 
-    private static Rectangle ActionSlot(HudLayout layout, int slot) =>
-        new((layout.Width - 8 * 45) / 2 + slot * 45, layout.Height - 120, 44, 44);
+    private static Rectangle ActionSlot(HudLayout layout, int slot)
+    {
+        const int step = 45;
+        var width = HudSkillBindings.ShortcutCount * step;
+        var x = (layout.Width - width) / 2;
+        var y = layout.Height - 120;
+        if (layout.Browser)
+        {
+            var besideGauges = layout.BottomBarOffset + 523;
+            if (!layout.SidePanelOpen && besideGauges + width <= HudMinimap.Box(layout).Left - 6)
+            {
+                x = besideGauges;
+            }
+            else if (layout.SidePanelOpen)
+            {
+                x = Math.Clamp(layout.BottomBarOffset + 310, 0, Math.Max(0, layout.Width - width));
+                y = layout.Height - 232;
+            }
+            else
+            {
+                y = layout.Height - 226;
+            }
+        }
+
+        return new Rectangle(x + slot * step, y, step - 1, 44);
+    }
 
     private bool ActionBarCaptures(HudLayout layout, Point pointer) =>
         _actionBarVisible && !_systemMenu && !_settingsOpen && !ModalOpen &&

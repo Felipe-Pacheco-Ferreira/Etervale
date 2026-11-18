@@ -12,15 +12,21 @@ internal sealed class PristonMaterialRuntimeFactory
         _textureLoader = textureLoader;
     }
 
-    public PristonMaterialRuntime Create(string assetDirectory, PristonMaterial material, bool softAlpha = false)
+    public PristonMaterialRuntime Create(string assetDirectory, PristonMaterial material, bool softAlpha = false) =>
+        Create(assetDirectory, material, softAlpha, loadTextures: true);
+
+    internal PristonMaterialRuntime Describe(PristonMaterial material, bool softAlpha = false) =>
+        Create(string.Empty, material, softAlpha, loadTextures: false);
+
+    private PristonMaterialRuntime Create(string assetDirectory, PristonMaterial material, bool softAlpha, bool loadTextures)
     {
         var (alphaTest, transparent) = Classify(material, softAlpha);
         var (windX, windZ) = WindAmplitudes(material.SurfaceFlags);
         // Multi-texture slots carry independent form states; a single-slot material takes the first authored one.
         var formState = material.RenderedStageCount > 1 ? material.StageFormState(0) : FirstTextureFormState(material);
-        var layers = LoadLayers(assetDirectory, material);
+        var layers = loadTextures ? LoadLayers(assetDirectory, material) : [];
         return new PristonMaterialRuntime(
-            LoadMaterialTextures(assetDirectory, material),
+            loadTextures ? LoadMaterialTextures(assetDirectory, material) : [],
             material.TwoSided,
             transparent,
             alphaTest,
@@ -71,7 +77,7 @@ internal sealed class PristonMaterialRuntimeFactory
     private const float WindSmall = 8f;
     private const float WindLarge = 28f;
 
-    private static (float x, float z) WindAmplitudes(PristonMaterialSurfaceFlags sf)
+    internal static (float x, float z) WindAmplitudes(PristonMaterialSurfaceFlags sf)
     {
         var x = (sf & PristonMaterialSurfaceFlags.MoveX2) != 0 ? WindLarge
               : (sf & PristonMaterialSurfaceFlags.MoveX1) != 0 ? WindSmall : 0f;
@@ -126,7 +132,7 @@ internal sealed class PristonMaterialRuntimeFactory
         return false;
     }
 
-    private static uint FirstTextureFormState(PristonMaterial material)
+    internal static uint FirstTextureFormState(PristonMaterial material)
     {
         for (var i = 0; i < material.TextureFormStates.Count; i++)
             if (material.TextureFormStates[i] != 0)

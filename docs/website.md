@@ -30,7 +30,7 @@ server's database and the account, calendar and ranking code of `Shared/PristonT
 | `Services/RegistrationGate.cs` | Registrations per address and window |
 | `Services/SiteText.cs` | Portuguese words for events and drops, number, date and time formats, the level medallion's stone |
 | `Pages/` | `Jogar` (the entry, `/`), `Index` (the portal, `/inicio`), `Noticias`, `Download`, `Rankings`, `Eventos`, `Entrar`, `Cadastro`, `Conta`, `Sair`, `Erro`, and `Shared/_Layout` |
-| `wwwroot/` | `css/site.css` (the portal), `css/play.css` (the entry page) and the images (`img/`, cut from the client's Priston Avalon art) |
+| `wwwroot/` | `css/site.css` (the portal), `css/play.css` (the entry page), `css/settings.css` (its Settings panel) and the approved Noxius Tale images (`img/`) |
 | `content/news.json` | The news posts |
 | `content/termos.txt` | The rules and terms of use the registration shows and asks to accept (`Services/TermsOfUse.cs`): one block per line, the title, the game's name, the notice starting with "LEITURA IMPORTANTE.", numbered section headings in capitals and the clauses |
 | `web-settings.json` | Settings beside the executable |
@@ -47,7 +47,7 @@ settings table as the server reads it), `IRankingRepository`, `IAccountRepositor
 | `/` | The game itself, filling the window (`Jogar`, no site layout). The page shows loading progress while the browser client starts, then plays the live opening flight with the login panel and a bar for language, site menu and full screen. "Em breve" while the client or its endpoint is missing ([web-client.md](web-client.md#entry-page)). | `Play:*` |
 | `/inicio` | The portal: hero art, server status, accounts and characters, experience rate, Android version, the latest news, the next events and the top five | Everything below |
 | /api/client/news | Latest 20 news posts as JSON for the game client | content/news.json |
-| `/api/worlds` | The worlds the entry page offers after the login: name, region, kind (`Normal`/`AntiKs`), `endpoint` (wss) and `status` (the edge's `https://host:port/status`) | `Play:Worlds` (or `Play:GameEndpoint` alone as the world "Avalon") |
+| `/api/worlds` | The worlds the entry page offers after the login: name, region, kind (`Normal`/`AntiKs`), `endpoint` (wss) and `status` (the edge's `https://host:port/status`) | `Play:Worlds` (or `Play:GameEndpoint` alone as the world "Noxius") |
 | `/api/play-session` | GET identifies the remembered browser account. Same-origin HTTPS POST verifies credentials and sets a separate encrypted, HTTP-only cookie for 14 days. DELETE forgets the account in this browser. | `BrowserSessionApi`, `AccountSession` |
 | `POST /api/play-session/ticket` | Exchanges a valid browser cookie for a single-use game login ticket that expires after 45 seconds. The website and accepting game world must share the account database. | `BrowserSessionApi`, `browser_login_tickets` |
 | `POST /api/conta` | The entry page's "Criar conta" (`Hosting/RegistrationApi.cs`): JSON from the site's own origin (else 403) with account, e-mail, password and its confirmation, optional referral code, accepted terms and the Turnstile token when configured; answers `{ ok, field, message }`. Counts against `FormPostsPerMinute` and `RegistrationsPerIp`; the account keeps its e-mail (lower case, one per account) and referral code (migration 44) | `AccountAppService.RegisterAsync`, `content/termos.txt` |
@@ -66,6 +66,17 @@ settings table as the server reads it), `IRankingRepository`, `IAccountRepositor
 
 On the entry page, "Esqueci o ID" and "Esqueci a senha" open dialogs over the login. The forms display an unavailable
 message on submission until email delivery is connected to the recovery flow.
+
+Public browser BMP, TGA, SMD, SMB and XNB files negotiate Brotli or gzip without changing their decoded bytes or URLs.
+An optional `browser-compressed-assets.json` in `Play:ClientPath` indexes precompressed `.br` and `.gz` sidecars.
+The site uses a sidecar only when the request's `v` equals its indexed raw SHA-256; responses keep the original MIME
+type, vary by `Accept-Encoding` and use representation-specific ETags. HEAD and conditional requests use the same
+representation. Range requests use the original file. Missing variants fall back to the normal static file pipeline,
+which keeps the original bytes, validators and range handling without dynamic re-encoding. No compressed variants are
+applied to account or support APIs. The index is read once when the site starts; publish the complete verified sidecar
+set and index before starting that site instance. Variant size is checked per request; decoded-byte and compressed-SHA
+integrity is verified by the offline generator and immutable staged-file inventory rather than hashing files on every request.
+When accepted encodings have equal quality, the smaller indexed representation is selected.
 
 Data shown and its sources:
 
@@ -92,7 +103,7 @@ from a build of the repository, else the executable's directory).
 
 | Key | Default | Meaning |
 | --- | --- | --- |
-| `Site:Name` | `Priston Avalon` | Name in titles, header and footer. |
+| `Site:Name` | `Noxius` | Name in titles and accessible site text; header and footer use the Noxius Tale wordmark. |
 | `Site:HttpsPort` | 443 (5443 in the file) | Port the HTTP endpoint redirects to. |
 | `Site:HstsDays` | 365 | `Strict-Transport-Security` max-age, with subdomains. Not sent to `localhost`. |
 | `Site:KeysPath` | `keys` | Directory of the data protection keys that encrypt the session and form cookies. |
@@ -107,7 +118,7 @@ from a build of the repository, else the executable's directory).
 | `Downloads:AndroidVersion` | empty (`0.57` in the file) | Shown on the pages and in the download's file name. |
 | `Play:ClientPath` | `play` | Folder of the published browser client, relative to the executable (created when missing). |
 | `Play:GameEndpoint` | empty | The game server's WebSocket edge, `wss://` only (`wss://host:port/game`; the page is HTTPS, where browsers refuse plain `ws`); empty keeps `/` on "em breve". It and each world's endpoint (with the same host and port over `https`, for `/status`) are the only origins the play page may connect to. |
-| `Play:Worlds` | `[]` | The worlds of "Escolha o mundo": `Name`, `Region` (default `Brasil`), `Kind` (`Normal` or `AntiKs`) and `Endpoint` (`wss://`, required); empty offers `GameEndpoint` as one world named "Avalon". |
+| `Play:Worlds` | `[]` | The worlds of "Escolha o mundo": `Name`, `Region` (default `Brasil`), `Kind` (`Normal` or `AntiKs`) and `Endpoint` (`wss://`, required); empty offers `GameEndpoint` as one world named "Noxius". |
 | `Security:LoginFailuresPerAccount`, `LoginFailuresPerIp`, `LoginFailureWindowSeconds` | 5, 20, 300 | `LoginThrottle` limits of the sign-in form. |
 | `Security:RegistrationsPerIp`, `RegistrationWindowMinutes` | 3, 60 | Registrations one address may attempt per window. |
 | `Security:RequestsPerMinute` | 120 | Requests per address and minute, any page (static files excluded). |
@@ -230,5 +241,5 @@ Moderators and higher can look up accounts below their level and see the charact
 
 The GM panel shows saved character details. Administrators can publish plain-text news and save the XP event percentage. The game server reads that value at its next settings reload.
 
-Set GameServer:PublicActivityPath and the game server's PublicActivity:Path to the same private JSON file. The server writes a snapshot every second. The GM overview discards snapshots older than 20 seconds. A local Discord bridge can read the file, deduplicate messages by StreamId and Sequence, and disable Discord mentions when relaying text. The stream contains trade chat and server notices.
-The website stores support tickets under Site:SupportTicketsPath, beside the executable by default. The game host can resolve the same storage through SupportTickets:Path.
+Set GameServer:PublicActivityPath and the game server's PublicActivity:Path to the same private JSON file. The server writes a snapshot every second. The GM overview discards snapshots older than 20 seconds. The public stream holds spoken (`local`), trade and standing notice lines; the game server's `PublicActivity:WhisperPath` holds whispers, party and clan lines. The Discord bot relays both files and uses the site's library (`SiteData`, `ClassTitles`, `SiteText`, `WebHosting.AddDatabase`) for its rankings and events ([discord-bot.md](discord-bot.md)).
+The website stores support tickets under Site:SupportTicketsPath, beside the executable by default; the game server (SupportTickets:Path) and the Discord bot (Tickets:Path) must use the same folder. /suporte shows each ticket's conversation; /conta/gm/atendimento answers and closes tickets ([chat-and-gm.md](chat-and-gm.md#support-tickets)).

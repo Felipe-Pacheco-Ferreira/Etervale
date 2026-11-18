@@ -21,6 +21,12 @@ public readonly record struct HudLayout(int Scale, int Width, int Height, int Vi
 
     public int BottomOffset => Height - DesignHeight;
     public int RightOffset => Width - DesignWidth;
+    public bool Browser { get; init; }
+    public bool SidePanelOpen { get; init; }
+
+    public int BottomBarOffset => Browser ? Math.Max(0, RightOffset / 2) : 0;
+    public Point BottomBarOrigin => new(BottomBarOffset, BottomOffset);
+    public Point ToBottomBarDesign(Point pointer) => pointer - BottomBarOrigin;
 
     public Rectangle Bottom(Rectangle design) => new(design.X, design.Y + BottomOffset, design.Width, design.Height);
     public Rectangle BottomRight(Rectangle design) => new(design.X + RightOffset, design.Y + BottomOffset, design.Width, design.Height);

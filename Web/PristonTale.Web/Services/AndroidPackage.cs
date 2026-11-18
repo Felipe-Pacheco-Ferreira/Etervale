@@ -46,8 +46,8 @@ public sealed class AndroidPackage(WebSettings settings)
         var hash = Convert.ToHexStringLower(SHA256.HashData(stream));
         var version = Version;
         var name = version.Length == 0 || !version.All(static c => char.IsAsciiLetterOrDigit(c) || c is '.' or '-')
-            ? "priston-avalon.apk"
-            : $"priston-avalon-{version}.apk";
+            ? "noxius.apk"
+            : $"noxius-{version}.apk";
         return new AndroidFile(info.FullName, name, version, info.Length, info.LastWriteTimeUtc, hash);
     }
 }

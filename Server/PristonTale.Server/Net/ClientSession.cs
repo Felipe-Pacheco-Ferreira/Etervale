@@ -24,6 +24,7 @@ using PristonTale.Contracts.Skills;
 using PristonTale.Contracts.Sessions;
 using PristonTale.Contracts.Units;
 using PristonTale.Persistence.Abstractions.WorldData;
+using PristonTale.Persistence.Abstractions.Characters;
 using PristonTale.Contracts.Texts;
 
 namespace PristonTale.Server.Net;
@@ -79,6 +80,7 @@ internal sealed partial class ClientSession : IMovementVerdictSink
     private WorldOutbox? _outbox;
     private PresenceEncoder? _encoder;
     private Task? _pump;
+    private CharacterSaveSnapshot? _pendingLeaveSave;
     private long _lastCorrectionMs;
     private readonly PacketRateLimiter _packetRate;
     private readonly TokenBucket _playerInfoRate;
@@ -349,7 +351,7 @@ internal sealed partial class ClientSession : IMovementVerdictSink
                     RefreshContacts();
                     break;
                 case EtervaleOpcodes.LeaveWorld:
-                    SendLarge(new LeaveWorldPacket(Saved: await ClosePlayAsync()).Write, LeaveWorldPacket.Size);
+                    SendLarge(new LeaveWorldPacket(Saved: await ClosePlayAsync(returnToSelection: true)).Write, LeaveWorldPacket.Size);
                     break;
                 default:
                     // A code without a handler is ignored, not answered.
@@ -920,7 +922,7 @@ internal sealed partial class ClientSession : IMovementVerdictSink
     }
 
     // Whether the character was stored; false when nothing was playing.
-    private async Task<bool> ClosePlayAsync()
+    private async Task<bool> ClosePlayAsync(bool returnToSelection = false)
     {
         var outbox = _outbox;
         var player = _player;
@@ -928,7 +930,7 @@ internal sealed partial class ClientSession : IMovementVerdictSink
         var pump = _pump;
         if (outbox is null || player is null || session is null)
         {
-            return false;
+            return session is { IsLeavingForSelection: true } && await SavePendingLeaveAsync(returnToSelection);
         }
 
         _outbox = null;
@@ -940,18 +942,9 @@ internal sealed partial class ClientSession : IMovementVerdictSink
         outbox.Writer.TryComplete();
         var leave = await _services.World.LeaveAsync(session.FieldId, session.EntityId, outbox.Writer);
         _services.Chat.Directory.Deliver(leave.Notices);
-        session.EndPlay();
-        var saved = false;
-        try
-        {
-            saved = leave.Save is { } left
-                ? await _services.Sessions.SaveLeftCharacterAsync(_token!, left, CancellationToken.None)
-                : await _services.Sessions.SaveCharacterAsync(_token!, CancellationToken.None);
-        }
-        catch (Exception ex)
-        {
-            _services.Logger.LogError(ex, "Could not save character on leave.");
-        }
+        _pendingLeaveSave = leave.Save;
+        session.EndPlay(returnToSelection);
+        var saved = await SavePendingLeaveAsync(returnToSelection);
 
         if (pump is not null)
         {
@@ -959,6 +952,28 @@ internal sealed partial class ClientSession : IMovementVerdictSink
         }
 
         return saved;
+    }
+
+    private async Task<bool> SavePendingLeaveAsync(bool returnToSelection)
+    {
+        try
+        {
+            var saved = returnToSelection
+                ? await _services.Sessions.SaveAndReturnToSelectionAsync(_token!, _pendingLeaveSave, CancellationToken.None)
+                : _pendingLeaveSave is { } left
+                ? await _services.Sessions.SaveLeftCharacterAsync(_token!, left, CancellationToken.None)
+                : await _services.Sessions.SaveCharacterAsync(_token!, CancellationToken.None);
+            if (saved)
+            {
+                _pendingLeaveSave = null;
+            }
+            return saved;
+        }
+        catch (Exception ex)
+        {
+            _services.Logger.LogError(ex, "Could not save character on leave.");
+            return false;
+        }
     }
 
     private void AdmitStoredOperation()

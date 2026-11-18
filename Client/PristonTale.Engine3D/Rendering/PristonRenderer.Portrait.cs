@@ -45,7 +45,7 @@ public sealed partial class PristonRenderer
     public bool TryGetActorPortraitAnchor(ActorHandle handle, string boneName, out PristonPortraitAnchor anchor)
     {
         anchor = default;
-        if (!TryResolveActor(handle, out var runtime) || runtime.Batches.Count == 0)
+        if (!TryResolveActor(handle, out var runtime) || runtime.Batches.Count == 0 && runtime.ExternalMeshes.Length == 0)
         {
             return false;
         }
@@ -72,7 +72,7 @@ public sealed partial class PristonRenderer
     public bool TryGetActorSaddle(ActorHandle handle, string boneName, float behind, float skinShare, out Vector3 saddle)
     {
         saddle = default;
-        if (!TryResolveActor(handle, out var runtime) || runtime.Batches.Count == 0)
+        if (!TryResolveActor(handle, out var runtime) || runtime.Batches.Count == 0 && runtime.ExternalMeshes.Length == 0)
         {
             return false;
         }
@@ -127,7 +127,7 @@ public sealed partial class PristonRenderer
     public bool TryGetActorReach(ActorHandle handle, out float reach)
     {
         reach = 0f;
-        if (!TryResolveActor(handle, out var runtime) || runtime.Batches.Count == 0)
+        if (!TryResolveActor(handle, out var runtime) || runtime.Batches.Count == 0 && runtime.ExternalMeshes.Length == 0)
         {
             return false;
         }
@@ -169,7 +169,7 @@ public sealed partial class PristonRenderer
     // The batches hold the animated world bounds; the anchor wants them in the actor's model space.
     private static BoundingBox ModelBounds(ActorRuntime runtime)
     {
-        var world = runtime.Batches[0].Bounds;
+        var world = runtime.Batches.Count > 0 ? runtime.Batches[0].Bounds : runtime.WorldBounds;
         for (var index = 1; index < runtime.Batches.Count; index++)
         {
             world = BoundingBox.CreateMerged(world, runtime.Batches[index].Bounds);
@@ -195,6 +195,11 @@ public sealed partial class PristonRenderer
     // Draws live actors into the bound target with a studio light and without their gameplay highlight or floor light.
     public void DrawActorPortrait(ReadOnlySpan<ActorHandle> handles, Matrix view, Matrix projection, Vector3 cameraPosition, in PristonPortraitLighting light)
     {
+        if (_externalRenderer is not null)
+        {
+            _externalRenderer.DrawPortrait(handles, view, projection, cameraPosition, light);
+            return;
+        }
         if (!CollectPortraitBatches(handles))
         {
             return;

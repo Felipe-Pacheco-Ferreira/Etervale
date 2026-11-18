@@ -22,9 +22,13 @@
 #include "MGP_web.cpp"
 #include "MG_Storage_web.cpp"
 
+#if defined(ETERVALE_THREE_RENDERER)
+#include "MGG_Three.cpp"
+#else
 #include "../webgpu/MGG_WebGPU.cpp"
 #include "../webgpu/MGG_WebGPU_Pipelines.cpp"
 #include "../webgpu/MGG_WebGPU_Resources.cpp"
+#endif
 
 /* Desktop capture is provided by SDL. Browser clients do not open native microphones. */
 extern "C" {

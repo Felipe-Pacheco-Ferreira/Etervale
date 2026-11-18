@@ -17,7 +17,7 @@ Everything the build needs is in the repository except SDL2 and FAudio, which ar
 | `src/` | MonoGame v3.8.6's `native/monogame` with the fork's changes applied: `common/`, `include/`, `sdl/`, `vulkan/` (with the stock effects compiled for Vulkan, `*.vk.mgfxo.h`, so no shader tool is needed), `faudio/` and `premake5.lua`. Only the Vulkan runtime (`desktopvk`) is built, so MonoGame's `opengl/`, `directx12/` and `xaudio/` are left out. The fork adds the browser build: `web/` (the canvas platform, silent audio, storage without a device, `mgruntime.cpp` that joins the sources into one translation unit, `BrowserRuntime.props`) and `webgpu/` (the WebGPU graphics backend: `MGG_WebGPU.cpp`, `_Resources.cpp`, `_Pipelines.cpp`, and the stock effects in `effects/` with their generated `*.wgpu.mgfxo.h`), described in changes 32 and 33; `include/mg_etervale.h` holds the interface version both backends return. |
 | `src/external/` | Vendored, with their licences: volk (`volk.h`, `volk.c`), VulkanMemoryAllocator (`vk_mem_alloc.h`), the Vulkan C headers, stb (`stb_image.h`, `stb_image_write.h`). Fetched by `build.sh` (git-ignored): `sdl2/sdl`, `faudio`. |
 | `externals.txt` | Every dependency pinned by commit (the commits of MonoGame v3.8.6's submodules), with its licence and whether it is vendored or fetched. |
-| `monogame-v3.8.6.patch` | The record of what `src/` changes against upstream (unified diff of `premake5.lua`, `vulkan/MGG_Vulkan.cpp`, `sdl/MGP_sdl.cpp`, `include/api_enums.h`, `faudio/MGA_faudio.cpp`, `common/mg_audio.cpp` and `common/MGM.cpp`; the files the fork adds, `web/`, `webgpu/` and `include/mg_etervale.h`, are its own), rewritten by `regenpatch.sh` after a change to `src/`. |
+| `monogame-v3.8.6.patch` | The record of what `src/` changes against upstream (unified diff of `premake5.lua`, `vulkan/MGG_Vulkan.cpp`, `sdl/MGP_sdl.cpp`, `include/api_enums.h`, `faudio/MGA_faudio.cpp`, `common/mg_audio.cpp` and `common/MGM.cpp`), rewritten by `regenpatch.sh` after changing one of those files. The fork-authored `web/`, `webgpu/` and `include/mg_etervale.h` remain separate source files with their issue documents; regeneration does not add them to the upstream patch. |
 | `bin/<rid>/` | Built libraries, **git-ignored: never committed**. `build.sh` writes the one of the host (Linux, macOS); `build-windows.ps1` writes `bin/win-x64/`. The client (`Client/MonoGameRuntime.targets`) copies the one for its platform next to its executable and fails to build without it. |
 | `build-windows.ps1` | Builds the runtime on Windows into `bin/win-x64/` (see Building). |
 | `build.sh` | Builds the runtime for this machine (Linux x64/arm64, macOS) into `bin/<rid>/`: fetches SDL2 and FAudio, applies `patches/`, builds them (again when their patches or configuration change), always relinks the runtime, and prints SDL2's audio backends. On Linux SDL2 has the ALSA, PulseAudio and PipeWire backends (loaded at run time); the build stops with the install command when their headers are missing. |
@@ -183,6 +183,14 @@ Since the C# half was forked too (`../issues/001-framework-from-source.md`), eac
     passes with a pipeline per compute shader and the compute stage's own constants, textures and samplers; storage
     buffers (`SetShaderBuffer`) in draws and dispatches, also as indirect arguments; a storage write submits the
     commands that use the buffer first.
+36. **WebGPU buffer destruction** (`webgpu/MGG_WebGPU_Resources.cpp`, `../issues/023-webgpu-buffer-destruction.md`):
+    destroying a buffer used by the current command encoder first submits those commands. Dynamic user-buffer growth
+    during a HUD frame therefore preserves the earlier draws.
+37. **Three.js browser presentation** (`web/MGG_Three.cpp`, `../issues/024-three-browser-renderer.md`): CPU resources
+    and ordered sprite/VFX batches feed the browser's Three.js renderer. The browser game and its HUD can therefore
+    use either WebGPU or WebGL 2 without creating a MonoGame WebGPU device. A worker adapter owns its transferred
+    canvas drawing size; the platform retains logical resize notifications. Other browser runtime users keep the
+    WebGPU backend; the desktop Vulkan path and the native ABI are unchanged.
 
 The runtime also prints the swapchain image count and present mode, an early submission when the uniform buffer is
 full, and a warning when two resources of one shader share a binding.

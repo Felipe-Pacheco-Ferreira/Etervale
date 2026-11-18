@@ -17,6 +17,9 @@ internal sealed record GmCommand(string Text, Func<GameMasterOptions, int> Level
     }
 
     public Func<GameMasterOptions, bool> Enabled { get; init; } = static _ => true;
+
+    // The command needs no character of the issuer in the world, so a game master outside it (the Discord bot) may run it.
+    public bool Remote { get; init; }
 }
 
 // A command being run: the line, a cursor over its words, and the replies sent back to the game master.
@@ -79,6 +82,7 @@ public sealed class GmCommandContext
 public sealed class GameMasterCommands
 {
     private const string Denied = "denied: level too low";
+    private const string NeedsWorld = "denied: needs a character in the world";
     private const int MostAuditResult = 1000;
     private readonly IGmAudit? _audit;
     private GameMasterOptions _options = GameMasterOptions.Default;
@@ -120,8 +124,8 @@ public sealed class GameMasterCommands
 
     internal static IReadOnlyList<GmCommand> Table { get; } =
     [
-        new("/localtime", GameMasterLevel.Guide, GmInformationCommands.LocalTime),
-        new("/get_bosstime", GameMasterLevel.Guide, GmInformationCommands.BossTime),
+        new("/localtime", GameMasterLevel.Guide, GmInformationCommands.LocalTime) { Remote = true },
+        new("/get_bosstime", GameMasterLevel.Guide, GmInformationCommands.BossTime) { Remote = true },
         new("/get_forceorb", GameMasterLevel.Guide, GmInformationCommands.ForceOrb),
         new("/get_primitem", GameMasterLevel.Guide, GmInformationCommands.PremiumItems),
         new("/get_currency", GameMasterLevel.Guide, GmInformationCommands.Currency),
@@ -134,21 +138,21 @@ public sealed class GameMasterCommands
         new("/@put", GameMasterLevel.Administrator, GmItemCommands.Gift),
         new("/AgingSetting", GameMasterLevel.Operator, GmItemCommands.Aged),
         new("/get_potion", GameMasterLevel.Guide, GmInformationCommands.Potions) { Enabled = static options => options.PotionMonitor },
-        new("/>", GameMasterLevel.Moderator, GmServerCommands.Notice),
+        new("/>", GameMasterLevel.Moderator, GmServerCommands.Notice) { Remote = true },
         new("/netlog", GameMasterLevel.Guide, GmInformationCommands.NetLog),
         new("//netlog", GameMasterLevel.Guide, GmInformationCommands.NetLog),
-        new("/user_limit", GameMasterLevel.Moderator, GmServerCommands.UserLimit),
-        new("/kick", GameMasterLevel.Moderator, GmPlayerCommands.Kick),
+        new("/user_limit", GameMasterLevel.Moderator, GmServerCommands.UserLimit) { Remote = true },
+        new("/kick", GameMasterLevel.Moderator, GmPlayerCommands.Kick) { Remote = true },
         new("/kill", GameMasterLevel.Moderator, GmPlayerCommands.Kill),
         new("/open_warehouse", GameMasterLevel.Moderator, GmAccountCommands.OpenWarehouse),
-        new("/shutdown", GameMasterLevel.Moderator, GmServerCommands.Shutdown),
+        new("/shutdown", GameMasterLevel.Moderator, GmServerCommands.Shutdown) { Remote = true },
         new("/weather", GameMasterLevel.Moderator, GmServerCommands.Weather),
         new("/reload_settings", GameMasterLevel.Administrator, GmServerCommands.ReloadSettings),
         new("/setting", GameMasterLevel.Administrator, GmServerCommands.Setting),
         new("/insert", GameMasterLevel.Moderator, GmAccountCommands.Insert),
         new("/usercode", GameMasterLevel.Guide, GmInformationCommands.UserByEntityId),
-        new("/userid", GameMasterLevel.Guide, GmInformationCommands.UserByAccount),
-        new("/username", GameMasterLevel.Guide, GmInformationCommands.UserByName),
+        new("/userid", GameMasterLevel.Guide, GmInformationCommands.UserByAccount) { Remote = true },
+        new("/username", GameMasterLevel.Guide, GmInformationCommands.UserByName) { Remote = true },
         new("/near", GameMasterLevel.Moderator, GmPlayerCommands.Near),
         new("/call", GameMasterLevel.Moderator, GmPlayerCommands.Call),
         new("/where", GameMasterLevel.Moderator, GmPlayerCommands.Where),
@@ -166,9 +170,9 @@ public sealed class GameMasterCommands
         new("/mymonster", GameMasterLevel.Guide, GmMonsterCommands.Pet),
         new("/event_monster", GameMasterLevel.Guide, GmMonsterCommands.EventMonster),
         new("/area_monster", GameMasterLevel.Guide, GmMonsterCommands.FieldMonsters),
-        new("/show_blackuser", GameMasterLevel.Guide, GmServerCommands.ShowBlocked),
-        new("/reset_blackuser", GameMasterLevel.Guide, GmServerCommands.ResetBlocked),
-        new("/free_blackuser", GameMasterLevel.Guide, GmServerCommands.FreeBlocked),
+        new("/show_blackuser", GameMasterLevel.Guide, GmServerCommands.ShowBlocked) { Remote = true },
+        new("/reset_blackuser", GameMasterLevel.Guide, GmServerCommands.ResetBlocked) { Remote = true },
+        new("/free_blackuser", GameMasterLevel.Guide, GmServerCommands.FreeBlocked) { Remote = true },
         new("/hide", GameMasterLevel.Guide, GmPlayerCommands.Hide),
         new("/show", GameMasterLevel.Guide, GmPlayerCommands.Show),
         new("/get_money", GameMasterLevel.Operator, GmInformationCommands.Gold),
@@ -190,8 +194,30 @@ public sealed class GameMasterCommands
     public static IReadOnlyList<(string Text, int Level)> Describe(GameMasterOptions options) =>
         Table.Select(command => (command.Text, command.Level(options))).ToArray();
 
+    // The commands a game master outside the world may run, in table order.
+    public static IReadOnlyList<string> RemoteCommands { get; } = Table.Where(static command => command.Remote).Select(static command => command.Text).ToArray();
+
     // Runs the game-master command the line starts with; false when no command matched.
-    public async Task<bool> HandleAsync(ChatMember issuer, string line)
+    public async Task<bool> HandleAsync(ChatMember issuer, string line) =>
+        (await RunAsync(issuer, line, remote: false)).Outcome != GmCommandOutcome.Unknown;
+
+    // Runs a command for a game master outside the world (the Discord bot). Only the commands marked Remote run; the
+    // replies come back in the result, and the attempt is audited under the remote issuer's name.
+    public Task<GmCommandResult> HandleRemoteAsync(RemoteGameMaster issuer, string line)
+    {
+        ArgumentNullException.ThrowIfNull(issuer);
+        var session = new Sessions.PlayerSession
+        {
+            SessionToken = "",
+            AccountId = 0,
+            UserId = issuer.UserId,
+            EntityId = 0,
+            GmLevel = issuer.Level
+        };
+        return RunAsync(new ChatMember(session, issuer.Name, DetachedChatLink.Instance, NowMs(), 0), line, remote: true);
+    }
+
+    private async Task<GmCommandResult> RunAsync(ChatMember issuer, string line, bool remote)
     {
         foreach (var command in Table)
         {
@@ -203,6 +229,12 @@ public sealed class GameMasterCommands
 
             var required = command.Level(Options);
             var context = new GmCommandContext(this, issuer, line, length);
+            if (remote && !command.Remote)
+            {
+                Audit(issuer, line, required, false, NeedsWorld);
+                return new GmCommandResult(GmCommandOutcome.NeedsWorld, []);
+            }
+
             var accepted = issuer.GmLevel >= required;
             if (accepted)
             {
@@ -228,20 +260,20 @@ public sealed class GameMasterCommands
             }
 
             Audit(issuer, line, required, accepted, accepted ? string.Join(" | ", context.Replies) : Denied);
-            return true;
+            return new GmCommandResult(accepted ? GmCommandOutcome.Done : GmCommandOutcome.Denied, context.Replies.ToArray());
         }
 
-        if (Options.DebugServer && issuer.GmLevel >= GameMasterLevel.Guide && line.Length > 1 && line[0] == '/')
+        if (!remote && Options.DebugServer && issuer.GmLevel >= GameMasterLevel.Guide && line.Length > 1 && line[0] == '/')
         {
             var context = new GmCommandContext(this, issuer, line, 1);
             if (await GmItemCommands.DebugDrop(context))
             {
                 Audit(issuer, line, GameMasterLevel.Guide, true, "dropped");
-                return true;
+                return new GmCommandResult(GmCommandOutcome.Done, context.Replies.ToArray());
             }
         }
 
-        return false;
+        return new GmCommandResult(GmCommandOutcome.Unknown, []);
     }
 
     private static int TestOrAdministrator(GameMasterOptions options) =>

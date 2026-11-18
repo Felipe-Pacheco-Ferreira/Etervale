@@ -67,6 +67,10 @@ public sealed class OpeningScreen : GameScreen
                 Context.RequestScreen(new CharacterSelectScreen(Context) { Backdrop = _webBackdrop });
                 _webBackdrop = null;
             }
+            else
+            {
+                _webBackdrop.PreviewWarmup?.Update(gameTime.TotalGameTime.TotalSeconds);
+            }
 
             return;
         }

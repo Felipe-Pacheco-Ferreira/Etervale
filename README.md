@@ -162,6 +162,20 @@ dotnet run --project Web/PristonTale.Web -c Release --no-build -- --Database:Sql
 It listens on `https://localhost:5443` (and redirects `http://localhost:5080`). Settings, security measures and
 deployment: [docs/website.md](docs/website.md).
 
+### Discord bot
+
+The Discord bot runs on the game server's machine and reads the same database, the site's APIs and the server's bot
+link. Copy `discord-bot-settings.example.json` beside the built executable to `discord-bot-settings.json`, fill in the
+token and ids there (never in the repository), check its answers without Discord, then run it:
+
+```bash
+dotnet build Bot/PristonTale.DiscordBot -c Release -m:1 -warnaserror
+dotnet run --project Bot/PristonTale.DiscordBot -c Release --no-build -- --check status
+dotnet run --project Bot/PristonTale.DiscordBot -c Release --no-build
+```
+
+Discord setup, every setting and the game server's `BotLink:*`: [docs/discord-bot.md](docs/discord-bot.md).
+
 ### Web client
 
 The browser client runs inside the website's "Jogar na Web" page. Enable the game server's WebSocket edge, publish the
@@ -169,6 +183,8 @@ client into the site's `play` folder and give the site the edge's address:
 
 ```bash
 dotnet run --project Server/PristonTale.Server -c Release --no-build -- --Network:WebSocket:Enabled=true --Network:WebSocket:AllowedOrigins:0=https://localhost:5443
+pnpm --dir Client/PristonTale.Browser install --frozen-lockfile --ignore-scripts
+pnpm --dir Client/PristonTale.Browser build:worker
 pwsh Client/PristonTale.Browser/publish.ps1 -Target Web/PristonTale.Web/bin/Release/net10.0/play
 dotnet run --project Web/PristonTale.Web -c Release --no-build -- --Database:SqlitePath=<copy-of-the-database.db> --Play:GameEndpoint=wss://localhost:10010/game
 ```

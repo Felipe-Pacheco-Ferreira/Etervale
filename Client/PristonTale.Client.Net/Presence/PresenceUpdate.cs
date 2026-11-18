@@ -49,6 +49,7 @@ public sealed record PresenceUpdate(
     // The local player's party when it changed (no member once it has none), and a player's request to group.
     public PartyInfo? Party { get; init; }
     public PartyRequestInfo? PartyRequest { get; init; }
+    public IReadOnlyList<PartyDirectoryEntry>? PartyDirectory { get; init; }
 
     // The local player's clan (ClanInfo.None when it has none), an invitation to one and a request's result.
     public ClanInfo? Clan { get; init; }
@@ -97,7 +98,7 @@ public sealed record TradeInfo(ulong PartnerId, string PartnerName, PristonTale.
 public sealed record TradeRequestInfo(ulong FromId, string FromName);
 
 // The local player's party, the leader first; Position is the member's planar place (x, z) in world units.
-public sealed record PartyInfo(IReadOnlyList<PartyMemberInfo> Members)
+public sealed record PartyInfo(IReadOnlyList<PartyMemberInfo> Members, bool IsOpen = false)
 {
     public static readonly PartyInfo None = new([]);
 

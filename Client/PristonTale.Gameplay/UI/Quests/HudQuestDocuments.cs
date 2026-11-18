@@ -15,7 +15,7 @@ public sealed partial class HudQuestDocuments(string assetRoot, IClientLog log)
 
     private static readonly Encoding Latin = CreateEncoding();
     private readonly HudTextFiles _files = new(assetRoot, Latin, log, "Quest");
-    private readonly Dictionary<(string Language, string Path, int Width, string Subject), string[]> _wrapped = new();
+    private readonly Dictionary<(string Language, string Path, int Width, string Subject, float Scale), string[]> _wrapped = new();
 
     // The mark a dialog puts where the quest's subject is named.
     public const string SubjectMark = "$$%s";
@@ -27,12 +27,12 @@ public sealed partial class HudQuestDocuments(string assetRoot, IClientLog log)
     public static string BoardPath(string description) => $"{BoardFolder}/{description.Replace('\\', '/')}";
 
     // The raw lines of a file, or null while it loads.
-    public string[] Lines(string relativePath) => _files.Lines(relativePath);
+    public string[] Lines(string relativePath) => AvalonFallback(relativePath) ?? _files.Lines(relativePath);
 
     // The lines of a file wrapped to a width in design pixels, its "$$%s" naming the subject, or null while it loads.
-    public string[] Wrapped(string relativePath, SpriteFont font, int width, string subject = "")
+    public string[] Wrapped(string relativePath, SpriteFont font, int width, string subject = "", float scale = HudPainter.TextScale)
     {
-        if (_wrapped.TryGetValue((Localization.ClientText.Language, relativePath, width, subject), out var wrapped))
+        if (_wrapped.TryGetValue((Localization.ClientText.Language, relativePath, width, subject, scale), out var wrapped))
         {
             return wrapped;
         }
@@ -53,20 +53,20 @@ public sealed partial class HudQuestDocuments(string assetRoot, IClientLog log)
             }
 
             // A paragraph that fits keeps its own spacing (the columns of a stat table).
-            if (font.MeasureString(paragraph).X * HudPainter.TextScale <= width)
+            if (font.MeasureString(paragraph).X * scale <= width)
             {
                 result.Add(paragraph);
                 continue;
             }
 
-            foreach (var line in HudTextLayout.Wrap(font, paragraph, width, HudPainter.TextScale))
+            foreach (var line in HudTextLayout.Wrap(font, paragraph, width, scale))
             {
-                BreakLongLine(font, line, width, result);
+                BreakLongLine(font, line, width, result, scale);
             }
         }
 
         wrapped = result.ToArray();
-        _wrapped[(Localization.ClientText.Language, relativePath, width, subject)] = wrapped;
+        _wrapped[(Localization.ClientText.Language, relativePath, width, subject, scale)] = wrapped;
         return wrapped;
     }
 
@@ -128,13 +128,13 @@ public sealed partial class HudQuestDocuments(string assetRoot, IClientLog log)
     private static partial System.Text.RegularExpressions.Regex Columns();
 
     // A word wider than the line (a rule of marks) is cut to the width.
-    private static void BreakLongLine(SpriteFont font, string line, int width, List<string> result)
+    private static void BreakLongLine(SpriteFont font, string line, int width, List<string> result, float scale)
     {
         var start = 0;
         while (start < line.Length)
         {
             var length = line.Length - start;
-            while (length > 1 && font.MeasureString(line.Substring(start, length)).X * HudPainter.TextScale > width)
+            while (length > 1 && font.MeasureString(line.Substring(start, length)).X * scale > width)
             {
                 length--;
             }

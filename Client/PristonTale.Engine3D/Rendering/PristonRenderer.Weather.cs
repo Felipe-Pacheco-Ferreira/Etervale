@@ -61,7 +61,8 @@ public sealed partial class PristonRenderer
     private int SkyProfileNow => WeatherSkyProfile(SkyProfiles.Select(TimeOfDay));
 
     private int WeatherSkyProfile(int profile) =>
-        !PhysicalSkyShown && Weather.Cloud >= OvercastSkyCover && (Sky is null || RainSkyProfile < Sky.ProfileCount) ? RainSkyProfile : profile;
+        (_externalRenderer is not null || !PhysicalSkyShown) && Weather.Cloud >= OvercastSkyCover
+            && (Sky is null || RainSkyProfile < Sky.ProfileCount) ? RainSkyProfile : profile;
 
     // The clouds' and the flash's light: the sun and sky illuminance and the horizontal illuminance lit, the one the
     // exposure meters (without the flash and above the lit one by the weather's darkening) and the lamps' factor.

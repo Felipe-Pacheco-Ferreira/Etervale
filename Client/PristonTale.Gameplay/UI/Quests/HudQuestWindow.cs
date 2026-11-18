@@ -10,14 +10,16 @@ namespace PristonTale.Gameplay.UI.Quests;
 public enum HudQuestPage
 {
     Running,
-    Finished
+    Finished,
+    Daily,
+    Monthly
 }
 
 // The quest page of the original party window: 256x256 at (539, 155) of the 800x600 frame (right and bottom anchored),
 // sliding in from the right edge. Five quest titles per page at 30 px steps with the running-quest mark; below them the
 // page arrows, the running/finished tabs and close. A clicked title opens its description on the panel to the left
 // (eight lines of 20 px, wrapped to 160 px) with its own arrows and close.
-public sealed class HudQuestWindow
+public sealed partial class HudQuestWindow
 {
     public const int RowsPerPage = 5;
     public const int DescriptionLines = 8;
@@ -81,6 +83,10 @@ public sealed class HudQuestWindow
         }
 
         var origin = CurrentOrigin(layout);
+        if (layout.Browser)
+        {
+            return BrowserBounds(layout).Contains(pointer);
+        }
         return HudSidePanel.Bounds(origin).Contains(pointer) || DescriptionOpen && DescriptionBounds(origin).Contains(pointer);
     }
 
@@ -93,6 +99,10 @@ public sealed class HudQuestWindow
         if (!_slide.FullyOpen || !Contains(layout, pointer))
         {
             return false;
+        }
+        if (layout.Browser)
+        {
+            return ClickBrowser(layout, pointer, view);
         }
 
         var origin = CurrentOrigin(layout);
@@ -182,6 +192,11 @@ public sealed class HudQuestWindow
     {
         if (!_slide.Visible)
         {
+            return;
+        }
+        if (layout.Browser)
+        {
+            DrawBrowser(painter, layout, font, view, documents, pointer);
             return;
         }
 

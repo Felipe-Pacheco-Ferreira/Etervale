@@ -114,7 +114,6 @@ public sealed partial class GameplayHud : IDisposable
     private bool _systemMenu;
     private bool _settingsOpen;
     private bool _npcOpen;
-    private bool _mapVisible = true;
     private bool _ready;
     private int _inventoryCompletions;
     private int _progressionCompletions;
@@ -137,6 +136,11 @@ public sealed partial class GameplayHud : IDisposable
         Func<QuestCommand, Task<QuestOutcome>> requestQuest = null)
     {
         _context = context;
+        if (OperatingSystem.IsBrowser())
+        {
+            _chat.Window.Reveal();
+        }
+
         _news.Send = command => _chat.Send?.Invoke(command, false);
         _chat.GlobalBonusLine = ReceiveGlobalBonuses;
         _chat.TicketLine = _news.ReceiveTicket;
@@ -246,7 +250,7 @@ public sealed partial class GameplayHud : IDisposable
 
     // The input line has the keyboard: game keys must not act on typed letters.
     internal bool BlocksPushToTalk => _settingsOpen || KeyboardCaptured || _news.TicketTyping || _countBox.IsOpen || _personalShop.SignOpen || _clanWindow.Typing;
-    public bool KeyboardCaptured => _chat.KeyboardCaptured;
+    public bool KeyboardCaptured => _chat.KeyboardCaptured || _partyWindow.KeyboardCaptured;
 
     // Where a speaker's bubble hangs on screen, from the scene; null when the speaker is not drawn.
     public Func<ulong, HudOverheadPoint?> Overhead { get; set; } = static _ => null;
@@ -380,6 +384,24 @@ public sealed partial class GameplayHud : IDisposable
 
     internal void HandleEscape()
     {
+        if (_partyWindow.KeyboardCaptured)
+        {
+            _partyWindow.CancelTyping();
+            return;
+        }
+
+        if (WebWorldHud.Enabled && _partyWindow.Open)
+        {
+            _partyWindow.Close();
+            return;
+        }
+
+        if (WebWorldHud.Enabled && _questWindow.Open)
+        {
+            _questWindow.Close();
+            return;
+        }
+
         if (_settingsOpen && _settings.EditingLootNames)
         {
             _settings.CancelLootNames();
@@ -548,7 +570,7 @@ public sealed partial class GameplayHud : IDisposable
         _mail.RefreshInbox(_chat);
         _news.UpdateTickets();
         RefreshGlobalBonuses();
-        var design = new Point(pointer.X, pointer.Y - layout.BottomOffset);
+        var design = layout.ToBottomBarDesign(pointer);
         UpdateTeleportPrefetch(pointer);
         if (_news.Scroll(pointer, mouse.ScrollWheelValue - _previousMouse.ScrollWheelValue))
         {
@@ -565,6 +587,13 @@ public sealed partial class GameplayHud : IDisposable
         else if (_clanWindow.Contains(pointer))
         {
             _clanWindow.Scroll(mouse.ScrollWheelValue - _previousMouse.ScrollWheelValue);
+        }
+        else if (_partyWindow.Scroll(layout, pointer, mouse.ScrollWheelValue - _previousMouse.ScrollWheelValue))
+        {
+        }
+        else if (WebWorldHud.Enabled && _questWindow.Contains(layout, pointer))
+        {
+            _questWindow.Scroll(layout, pointer, mouse.ScrollWheelValue - _previousMouse.ScrollWheelValue);
         }
         else if (_partyWindow.Page == HudPartyPage.Clan && _partyWindow.Contains(layout, pointer))
         {
@@ -620,7 +649,7 @@ public sealed partial class GameplayHud : IDisposable
         var clickTaken = clicked && (_news.Captures(pointer) || _mail.Captures(pointer) || Captures(layout, pointer, design));
         var typedText = _context.TypedText.Drain();
         // A count box or the shop's sign box takes the keyboard: neither the chat nor a game key sees what is typed there.
-        var boxTyping = _news.TicketTyping || _countBox.IsOpen || _personalShop.SignOpen || _clanWindow.Typing;
+        var boxTyping = _news.TicketTyping || _countBox.IsOpen || _personalShop.SignOpen || _clanWindow.Typing || _partyWindow.KeyboardCaptured;
         if (_news.TicketTyping)
         {
             _news.TypeTicket(typedText, Pressed(keyboard, Keys.Back));
@@ -640,6 +669,10 @@ public sealed partial class GameplayHud : IDisposable
         {
             _typingKeyboard = keyboard;
             _clanWindow.Type(typedText, _typedKey ??= key => Pressed(_typingKeyboard, key), _canDraw ??= _painter.CanDraw);
+        }
+        else if (_partyWindow.KeyboardCaptured)
+        {
+            _partyWindow.Type(typedText, Pressed(keyboard, Keys.Back), Pressed(keyboard, Keys.Enter));
         }
         else if (_crystalDismiss.Confirming && !_chat.Window.Focused && Pressed(keyboard, Keys.Enter))
         {
@@ -755,7 +788,13 @@ public sealed partial class GameplayHud : IDisposable
     // master) or a modal: a click into the world neither walks nor acts, and a walk in progress stops.
     public bool HoldsPlayer => ModalOpen || ServiceWindowOpen(blockingOnly: false) || _skillMaster != 0 || _personalShop.Selling;
 
-    private bool MinimapShown => _mapVisible && !World.MapHidden;
+    private bool MapVisible
+    {
+        get => _context.Presentation.Requested.ShowMinimap;
+        set => _context.Presentation.Requested = _context.Presentation.Requested with { ShowMinimap = value };
+    }
+
+    private bool MinimapShown => MapVisible && !World.MapHidden;
 
     // Renders the target frame's 3D portrait into its own target. Call before the world and HUD draw of the frame: binding
     // another target discards the back buffer.
@@ -842,11 +881,11 @@ public sealed partial class GameplayHud : IDisposable
 
         _painter.Flush();
         var left = _bindings.LeftSkillId == HudSkillBindings.BasicAttackId;
-        _bar.Draw(_painter, layout, _state, new HudBarView(World.TimeOfDay, World.Running, _mapVisible, left, RightAttackEnabled,
+        _bar.Draw(_painter, layout, _state, new HudBarView(World.TimeOfDay, World.Running, MapVisible, left, RightAttackEnabled,
             _hoveredButton, pressed && _hoveredButton is not null, _hoveredToggle));
-        _inventoryPanel.DrawBelt(_painter, HudInventoryLayout.Origin(layout), _state, _inventory, _icons);
+        _inventoryPanel.DrawBelt(_painter, layout.BottomBarOrigin, _state, _inventory, _icons);
         DrawActionBar(layout);
-        _skillHud.DrawSockets(_painter, layout.BottomOffset, _bindings.LeftSkillId, _bindings.RightSkillId, Cooldowns, SkillClockMs);
+        _skillHud.DrawSockets(_painter, layout.BottomBarOrigin, _bindings.LeftSkillId, _bindings.RightSkillId, Cooldowns, SkillClockMs);
         if (Statuses is not null && SelfId != 0)
         {
             _skillHud.DrawBuffs(_painter, _premiumKeeps.With(Statuses.For(SelfId), PremiumTimers, SkillClockMs), SkillClockMs);
@@ -1019,7 +1058,11 @@ public sealed partial class GameplayHud : IDisposable
         DrawBellatraShow();
     }
 
-    private HudLayout Layout() => HudLayout.Of(_context.GraphicsDevice.Viewport);
+    private HudLayout Layout() => HudLayout.Of(_context.GraphicsDevice.Viewport) with
+    {
+        Browser = OperatingSystem.IsBrowser(),
+        SidePanelOpen = SideWindowOpen
+    };
 
     private static Point PanelOrigin(HudLayout layout, HudSlide slide) => HudInventoryLayout.Origin(layout, slide.Offset);
 

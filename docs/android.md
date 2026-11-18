@@ -458,7 +458,7 @@ For large local APKs, "adb install --no-streaming --no-incremental <apk>" uses a
 On Windows, if the server can load the certificate and bind the port but closes TLS handshakes in a
 restricted shell, run it from a regular PowerShell session and verify the presented certificate fingerprint.
 Android starts extracting the asset archive on a background thread at launch and reuses the cache on later launches.
-Priston Avalon artwork and an animated spinner cover asset preparation and the SDL surface until the first game frame. The SDL overlay is attached after the activity has installed its surface. Once the first frame is rendered, the splash stays dismissed for the lifetime of the app process.
+Noxius Tale artwork and an animated spinner cover asset preparation and the SDL surface until the first game frame. The SDL overlay is attached after the activity has installed its surface. Once the first frame is rendered, the splash stays dismissed for the lifetime of the app process.
 A packaged endpoint opens the shared desktop opening cinematic and login panel once the archive is ready.
 Touch reveals the panel. Tapping either credential field opens or reopens the Android keyboard for that field. Tapping the game surface outside the fields dismisses it without clearing the input. The panel scales for
 landscape touch targets. Builds without a packaged endpoint use the native Android form to collect an address.
@@ -481,7 +481,7 @@ Vulkan 0.25 device validation: the animated opening rendered at approximately 0.
 
 The Vulkan HUD opens an in-world navigation menu and a side inventory with Bag, Equipped, Belt and Quest tabs backed by the owner's live inventory snapshot. The quest tracker and journal open the latest active step and display the server's hunt counter and timer only for that step.
 
-Vulkan 0.26 uses the Priston Avalon launcher name and original gold shield icon, with launcher artwork supplied at five Android densities. The in-game menu shows the installed APK version.
+The Android launcher is named Noxius Tale, with launcher artwork supplied at five Android densities. The in-game menu shows the installed APK version.
 
 Vulkan 0.27 uses an adaptive launcher icon so Android applies the launcher shape. Density-specific fallback icons use transparent, rounded corners.
 

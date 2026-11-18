@@ -13,12 +13,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>@Settings.Site.Name</title>
-    <meta name="description" content="Priston Avalon, MMORPG de fantasia. Jogue direto no navegador, sem instalar nada.">
+    <meta name="description" content="Noxius, MMORPG de fantasia. Jogue direto no navegador, sem instalar nada.">
     <meta name="theme-color" content="#0a0c11">
     <meta name="color-scheme" content="dark">
-    <link rel="icon" type="image/png" sizes="32x32" href="~/img/favicon-32.png">
-    <link rel="apple-touch-icon" href="~/img/icon-192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="~/img/favicon-32.png" asp-append-version="true">
+    <link rel="apple-touch-icon" href="~/img/icon-192.png" asp-append-version="true">
     <link rel="stylesheet" href="~/css/play.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/settings.css" asp-append-version="true">
 </head>
 <body class="stage">
     @* The game draws into #canvas (the MonoGame runtime's window), which fills the window; the page's panels sit over it.
@@ -26,7 +27,7 @@
     <div class="game" id="jogo" data-endpoint="@Client.Endpoint" data-state="loading">
         <canvas id="canvas" class="game-canvas" tabindex="0" aria-label="@Settings.Site.Name"></canvas>
 
-        <div class="game-bar">
+        <div class="game-bar" data-role="game-tools">
             <label class="game-language">
                 <span class="dot" aria-hidden="true"></span>
                 <span class="game-language-label" data-text="language">Idioma</span>
@@ -35,20 +36,23 @@
                     <option value="en">English</option>
                 </select>
             </label>
-            <details class="game-menu">
-                <summary class="icon-button" aria-label="Menu do site" title="Menu do site">
+            @if (Client.IsAvailable)
+            {
+                <button type="button" class="icon-button" data-role="settings-open" aria-label="Configurações" title="Configurações">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2-1.6-2-3.4-2.4 1a7.4 7.4 0 0 0-1.7-1L15 3.5h-4l-.4 2.5a7.4 7.4 0 0 0-1.7 1l-2.4-1-2 3.4 2 1.6a7.6 7.6 0 0 0 0 2l-2 1.6 2 3.4 2.4-1a7.4 7.4 0 0 0 1.7 1l.4 2.5h4l.4-2.5a7.4 7.4 0 0 0 1.7-1l2.4 1 2-3.4zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg>
-                </summary>
-                <nav class="game-menu-list" aria-label="Site">
-                    <a href="/inicio">Início do site</a>
-                    <a href="/noticias">Notícias</a>
-                    <a href="/rankings">Rankings</a>
-                    <a href="/eventos">Eventos</a>
-                    <a href="/download">Download</a>
-                    <a href="/conta">Minha conta</a>
-                    <a href="/suporte">Suporte</a>
-                </nav>
-            </details>
+                </button>
+            }
+            else
+            {
+                <details class="game-menu">
+                    <summary class="icon-button" aria-label="Menu do site" title="Menu do site">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.4 13a7.6 7.6 0 0 0 0-2l2-1.6-2-3.4-2.4 1a7.4 7.4 0 0 0-1.7-1L15 3.5h-4l-.4 2.5a7.4 7.4 0 0 0-1.7 1l-2.4-1-2 3.4 2 1.6a7.6 7.6 0 0 0 0 2l-2 1.6 2 3.4 2.4-1a7.4 7.4 0 0 0 1.7 1l.4 2.5h4l.4-2.5a7.4 7.4 0 0 0 1.7-1l2.4 1 2-3.4zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg>
+                    </summary>
+                    <nav class="game-menu-list" aria-label="Site">
+                        <partial name="_PlaySiteLinks" />
+                    </nav>
+                </details>
+            }
             @if (Client.IsAvailable)
             {
                 <button type="button" class="icon-button opening-sound" data-role="opening-sound" aria-pressed="false"
@@ -253,6 +257,42 @@
                 <script src="@Turnstile.ScriptAddress" async defer></script>
             }
 
+            @* The gear's Settings panel: settings.js fills each tab's cards from the game's settings (BrowserHost.Settings)
+               and saves them in the page's storage. *@
+            <dialog class="card card-framed card-settings" data-role="settings" aria-labelledby="settings-title">
+                <header class="settings-head">
+                    <h2 class="settings-title" id="settings-title"><span class="settings-diamond" aria-hidden="true"></span><span data-settings-text="title">Configurações</span></h2>
+                    <button type="button" class="settings-close" data-role="settings-close" aria-label="Fechar">×</button>
+                </header>
+                <div class="settings-tabs" role="tablist">
+                    <button type="button" role="tab" data-tab="video" aria-selected="true">
+                        <span class="settings-tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/></svg></span>
+                        <span data-settings-text="video">Vídeo</span>
+                    </button>
+                    <button type="button" role="tab" data-tab="audio" aria-selected="false">
+                        <span class="settings-tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16 9a4 4 0 0 1 0 6m2-8a7 7 0 0 1 0 10"/></svg></span>
+                        <span data-settings-text="audio">Áudio</span>
+                    </button>
+                    <button type="button" role="tab" data-tab="keys" aria-selected="false">
+                        <span class="settings-tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="1.5"/><path d="M6 10h1M9.5 10h1M13 10h1M16.5 10h1M7.5 14h9"/></svg></span>
+                        <span data-settings-text="keys">Teclas</span>
+                    </button>
+                    <button type="button" role="tab" data-tab="other" aria-selected="false">
+                        <span class="settings-tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg></span>
+                        <span data-settings-text="other">Outros</span>
+                    </button>
+                </div>
+                <div class="settings-body" data-role="settings-body" role="tabpanel"></div>
+                <nav class="settings-site" data-role="settings-site" aria-label="Site" hidden>
+                    <partial name="_PlaySiteLinks" />
+                </nav>
+                <footer class="settings-foot">
+                    <p class="settings-note" data-role="settings-note" aria-live="polite"></p>
+                    <button type="button" class="settings-cancel" data-role="settings-cancel" data-settings-text="cancel">Cancelar</button>
+                    <button type="button" class="settings-save" data-role="settings-save" data-settings-text="save">Salvar</button>
+                </footer>
+            </dialog>
+
             @* The character screen over the 3D stage (CharacterSelectScreen.Web.cs reports its state; main.js draws it):
                the list ("Seus heróis") and the creation's steps (tribe, class, appearance and name). The stage between
                the panels still takes clicks. *@
@@ -271,8 +311,131 @@
                 <footer class="heroes-actions" data-role="heroes-actions"></footer>
             </section>
 
+            <div class="world-hud" data-role="world-hud" data-state="inactive">
+                <p class="world-hud-status">
+                    <strong data-role="world-realm">Noxius</strong>
+                    <span class="world-hud-status-divider" aria-hidden="true">·</span>
+                    <span class="world-hud-metrics">
+                        <span data-role="world-fps">— FPS</span>
+                        <span aria-hidden="true">·</span>
+                        <span data-role="world-ping">— ms</span>
+                    </span>
+                </p>
+                <nav class="world-hud-controls" aria-label="Atalhos do jogo">
+                    <button type="button" class="world-hud-button" data-world-action="news">
+                        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2h8v12H4a2 2 0 0 1 0-4h8M5.5 5.5h4M5.5 8h3"/></svg>
+                        <span data-world-label="news">Novidades &amp; Suporte</span>
+                    </button>
+                    <div class="world-hud-control-row">
+                        <div class="world-hud-hunt">
+                            <button type="button" class="world-hud-button" data-world-action="auto-hunt-panel"
+                                    aria-haspopup="dialog" aria-controls="world-hunt-panel">
+                                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 14 4v4.5c0 2.8-2.4 4.7-6 6-3.6-1.3-6-3.2-6-6V4zM5.5 7l1 1m4-1-1 1M6 11h4"/></svg>
+                                <span data-world-label="auto-hunt-panel">Auto-caça</span>
+                            </button>
+                            <button type="button" class="world-hud-button world-hud-run-icon" data-role="world-hunt-quick-toggle"
+                                    data-world-action="auto-hunt" aria-pressed="false" aria-label="Alternar auto-caça">
+                                <svg viewBox="0 0 16 16" aria-hidden="true"><path class="world-hud-run" d="m6 4 6 4-6 4z"/><path class="world-hud-stop" d="M5 5h6v6H5z"/></svg>
+                            </button>
+                        </div>
+                        <details class="world-hud-more" data-role="world-more">
+                            <summary class="world-hud-button">
+                                <span data-world-label="more">Mais</span>
+                                <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg>
+                            </summary>
+                            <div class="world-hud-menu">
+                                <button type="button" data-world-action="calendar">
+                                    <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="3" width="12" height="11" rx="1"/><path d="M2 6h12M5 1.5v3M11 1.5v3M5 9h2m2 0h2m-6 2h2"/></svg>
+                                    <span data-world-label="calendar">Calendário</span>
+                                </button>
+                                <button type="button" data-world-action="auction" data-world-optional hidden>
+                                    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m3 5 3-3 5 5-3 3zM8 8l-5 5m6 1h5"/></svg>
+                                    <span data-world-label="auction">Leilão</span>
+                                </button>
+                                <button type="button" data-world-action="security">
+                                    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2 13 4v4c0 3-2 4.5-5 6-3-1.5-5-3-5-6V4zm-2 6 1.4 1.5L10 6.8"/></svg>
+                                    <span data-world-label="security">Segurança</span>
+                                </button>
+                                <button type="button" data-world-action="drops">
+                                    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m8 1.5 5.5 5.7L8 14.5 2.5 7.2zm0 0v13m-5.5-7.3h11"/></svg>
+                                    <span data-world-label="drops">Últimos drops</span>
+                                </button>
+                                <button type="button" data-world-action="coin-history" data-world-optional hidden>
+                                    <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="5.5"/><path d="M8 4.5v4l2.5 1.5"/></svg>
+                                    <span data-world-label="coin-history">Histórico de Coins</span>
+                                </button>
+                                <button type="button" data-world-action="events">
+                                    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m8 1 1.5 4.5L14 7l-4.5 1.5L8 13 6.5 8.5 2 7l4.5-1.5zm4 9v4m-2-2h4"/></svg>
+                                    <span data-world-label="events">Eventos</span>
+                                </button>
+                                <button type="button" data-world-action="eragon" data-world-optional hidden>
+                                    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m2 7 6-5 6 5M4 6v8h8V6M7 14v-4h2v4"/></svg>
+                                    <span data-world-label="eragon">Lar do Eragon</span>
+                                </button>
+                                <button type="button" data-world-action="ranking">
+                                    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 2h6v3a3 3 0 0 1-6 0zM5 3H2v1c0 2 1.4 3 3 3m6-4h3v1c0 2-1.4 3-3 3M8 8v4m-3 1h6"/></svg>
+                                    <span data-world-label="ranking">Ranking</span>
+                                </button>
+                                <button type="button" data-world-action="rewards">
+                                    <svg viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="4" width="12" height="9" rx="1"/><path d="m2 5 6 4 6-4"/></svg>
+                                    <span data-world-label="rewards">Distribuidor</span>
+                                </button>
+                                <button type="button" data-world-action="item-shop" data-world-optional hidden>
+                                    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6h8l1 8H3zm2 0V4a2 2 0 0 1 4 0v2"/></svg>
+                                    <span data-world-label="item-shop">Loja de Itens</span>
+                                </button>
+                                <button type="button" data-world-action="community-buffs">
+                                    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m8 2 1.6 3.4L13 7l-3.4 1.6L8 12 6.4 8.6 3 7l3.4-1.6zm5 8v4m-2-2h4"/></svg>
+                                    <span data-world-label="community-buffs">Buffs da Comunidade</span>
+                                </button>
+                                <details class="world-hud-secondary">
+                                    <summary><span data-world-label="interface">Interface</span></summary>
+                                    <div>
+                                        <button type="button" data-world-action="inventory" data-world-label="inventory">Inventário</button>
+                                        <button type="button" data-world-action="skills" data-world-label="skills">Habilidades</button>
+                                        <button type="button" data-world-action="quests" data-world-label="quests">Missões</button>
+                                        <button type="button" data-world-action="party" data-world-label="party">Grupo</button>
+                                        <button type="button" data-world-action="settings" data-world-label="settings">Configurações</button>
+                                        <button type="button" data-world-action="lobby" data-world-label="lobby">Seleção de personagem</button>
+                                        <div class="world-hud-utilities" data-role="world-utility-slot"></div>
+                                    </div>
+                                </details>
+                            </div>
+                        </details>
+                    </div>
+                </nav>
+                <dialog class="world-hunt-panel" id="world-hunt-panel" data-role="world-hunt-panel" aria-labelledby="world-hunt-title">
+                    <header class="world-hunt-head">
+                        <h2 id="world-hunt-title"><span class="settings-diamond" aria-hidden="true"></span><span data-world-label="auto-hunt-panel">Auto-caça</span></h2>
+                        <button type="button" class="world-hunt-close" data-world-action="close-hunt" aria-label="Fechar auto-caça">×</button>
+                    </header>
+                    <div class="world-hunt-body">
+                        <div class="world-hunt-controls">
+                            <strong data-role="world-hunt-status" role="status">Desligada</strong>
+                            <button type="button" class="world-hunt-toggle" data-role="world-hunt-toggle" data-world-action="auto-hunt" aria-pressed="false">
+                                <svg viewBox="0 0 16 16" aria-hidden="true"><path class="world-hud-run" d="m6 4 6 4-6 4z"/><path class="world-hud-stop" d="M5 5h6v6H5z"/></svg>
+                                <span class="world-hud-run" data-world-label="start-hunt">Iniciar</span>
+                                <span class="world-hud-stop" data-world-label="pause-hunt">Pausar</span>
+                            </button>
+                        </div>
+                        <p class="world-hunt-note" data-world-label="hunt-requirement">Disponível fora da cidade, durante uma missão de caça ativa.</p>
+                    </div>
+                </dialog>
+            </div>
+
+            <section class="world-loading" data-role="world-loading" aria-label="Carregamento do mapa" hidden>
+                <div class="world-loading-content">
+                    <p class="world-loading-name" data-role="world-loading-name"></p>
+                    <div class="world-loading-meter">
+                        <progress data-role="world-loading-progress" value="0" max="100" aria-label="Carregamento do mapa"></progress>
+                        <span class="world-loading-percent" data-role="world-loading-percent" aria-hidden="true">0%</span>
+                    </div>
+                    <p class="world-loading-status" data-role="world-loading-status" role="status">Carregando...</p>
+                </div>
+            </section>
+
             <div class="game-loading" data-role="loading" role="status" aria-live="polite">
-                <img class="loading-emblem" src="~/img/emblem-256.png" alt="" width="80" height="80">
+                <img class="loading-emblem" src="~/img/noxius-logo-512.png" srcset="/img/noxius-logo-1024.png 2x" alt="Noxius" width="240" height="160">
                 <progress data-role="progress" max="100" aria-label="Carregamento do jogo"></progress>
                 <span data-role="status">Carregando o jogo…</span>
             </div>

@@ -163,19 +163,41 @@ public sealed class HudFriendsPage
         }
     }
 
-    private int Count => View switch
+    internal int Count => View switch
     {
         HudFriendsView.Recent => _recent.Count,
         HudFriendsView.Friends => _friends.Count,
         _ => _ignored.Count
     };
 
-    private string NameAt(int index) => View switch
+    internal string NameAt(int index) => View switch
     {
         HudFriendsView.Recent => _recent[index],
         HudFriendsView.Friends => _friends[index].Name,
         _ => _ignored[index].Name
     };
+
+    internal bool? OnlineAt(int index) => View switch
+    {
+        HudFriendsView.Friends => _friends[index].Online,
+        HudFriendsView.Ignored => _ignored[index].Online,
+        _ => null
+    };
+
+    internal bool? OnlineOf(string name)
+    {
+        foreach (var contact in _friends.Concat(_ignored))
+        {
+            if (string.Equals(contact.Name, name, StringComparison.OrdinalIgnoreCase))
+            {
+                return contact.Online;
+            }
+        }
+
+        return null;
+    }
+
+    internal void RemoveRecent(string name) => _recent.RemoveAll(listed => string.Equals(listed, name, StringComparison.OrdinalIgnoreCase));
 
     // The recent list has no page arrows.
     private bool Shown(int index) => index != 3 || View != HudFriendsView.Recent;

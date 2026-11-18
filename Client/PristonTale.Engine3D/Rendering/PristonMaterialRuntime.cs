@@ -103,7 +103,8 @@ internal sealed class PristonMaterialRuntime
     public bool AlphaTest { get; }
     public uint BlendType { get; }
     public float Transparency { get; }
-    public float AlphaCutoff => 60f / 255f;
+    internal const float DefaultAlphaCutoff = PristonTextureLoader.AlphaCutoffByte / 255f;
+    public float AlphaCutoff => DefaultAlphaCutoff;
 
     // Global transparency at/below which a surface counts as visually solid (writes depth /
     // casts a shadow), as the original game decided depth writes.

@@ -321,6 +321,11 @@ void MGG_Buffer_Destroy(MGG_GraphicsDevice* device, MGG_Buffer* buffer)
 {
 	if (buffer->buffer != nullptr)
 	{
+		if (buffer->usedSubmission == device->submission)
+		{
+			MGWGPU_Flush(device);
+		}
+
 		MGWGPU_ForgetBindGroups(device);
 		wgpuBufferDestroy(buffer->buffer);
 		wgpuBufferRelease(buffer->buffer);

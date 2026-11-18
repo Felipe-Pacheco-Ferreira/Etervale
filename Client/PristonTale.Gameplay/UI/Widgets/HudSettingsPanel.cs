@@ -236,9 +236,9 @@ internal sealed partial class HudSettingsPanel
         (keyboard.IsKeyDown(Keys.LeftShift) || keyboard.IsKeyDown(Keys.RightShift) ? ShiftMask : 0) |
         (keyboard.IsKeyDown(Keys.LeftAlt) || keyboard.IsKeyDown(Keys.RightAlt) ? AltMask : 0);
 
-    private static string BindingLabel(int binding) =>
+    private static string BindingLabel(int binding, string keyLabel = null) =>
         ((binding & ShiftMask) != 0 ? "Shift + " : "") +
-        ((binding & AltMask) != 0 ? "Alt + " : "") + ((Keys)(binding & KeyMask)).ToString();
+        ((binding & AltMask) != 0 ? "Alt + " : "") + (keyLabel ?? ((Keys)(binding & KeyMask)).ToString());
 
     internal static Keys KeyOf(ClientSettings settings, int index) => (Keys)(BindingOf(settings, index) & KeyMask);
 
@@ -277,24 +277,95 @@ internal sealed partial class HudSettingsPanel
             }
 
             var current = _draft ?? _settings.Requested;
-            var bindings = Enumerable.Range(0, Shortcuts.Length).Select(index => BindingOf(current, index)).ToArray();
-            var binding = (int)key | (SupportsModifiers(_binding) ? Modifiers(keyboard) : 0);
-            var duplicate = Array.IndexOf(bindings, binding);
-            if (duplicate >= 0 && !SupportsModifiers(duplicate) && (bindings[_binding] & ~KeyMask) != 0)
+            if (Rebind(current, _binding, key, Modifiers(keyboard)) is { } rebound)
             {
-                return;
+                _draft = rebound;
+                _binding = -1;
             }
 
-            if (duplicate >= 0)
-            {
-                bindings[duplicate] = bindings[_binding];
-            }
-
-            bindings[_binding] = binding;
-            _draft = current with { ShortcutKeys = bindings };
-            _binding = -1;
             return;
         }
+    }
+
+    private enum ShortcutGroup { Windows, Interface, Character, Voice, Skills, Potions, Camera }
+
+    // Push-to-talk is shown as unavailable on the page; the browser has no voice chat.
+    internal static int PageShortcutCount => VoiceShortcut;
+
+    internal static IReadOnlyList<(int Slot, string Group)> PageShortcutRows { get; } = ShortcutRows
+        .Where(static slot => slot >= 0)
+        .Select(static slot => (Slot: slot, Group: GroupOfShortcut(slot)))
+        .OrderBy(static row => row.Group)
+        .Select(static row => (row.Slot, row.Group.ToString().ToLowerInvariant()))
+        .ToArray();
+
+    private static ShortcutGroup GroupOfShortcut(int slot) => slot switch
+    {
+        MinimapShortcut or GroundLabelsShortcut => ShortcutGroup.Interface,
+        6 or 8 or 9 => ShortcutGroup.Character,
+        VoiceShortcut => ShortcutGroup.Voice,
+        (>= FirstSkillShortcut and < MinimapShortcut) or (>= FirstActionBarShortcut and < VoiceShortcut) => ShortcutGroup.Skills,
+        >= 10 and < FirstSkillShortcut => ShortcutGroup.Potions,
+        >= FirstCameraShortcut and < FirstActionBarShortcut => ShortcutGroup.Camera,
+        _ => ShortcutGroup.Windows
+    };
+
+    internal static string ShortcutName(int index, bool portuguese) => portuguese ? Shortcuts[index].Portuguese : Shortcuts[index].English;
+
+    internal static string PageShortcutLabel(ClientSettings settings, int index) => PageBindingLabel(BindingOf(settings, index));
+
+    internal static string PageShortcutDefaultLabel(int index) => PageBindingLabel((int)Shortcuts[index].Key);
+
+    private static string PageBindingLabel(int binding)
+    {
+        var key = (Keys)(binding & KeyMask);
+        var label = key switch
+        {
+            >= Keys.D0 and <= Keys.D9 => ((char)('0' + (key - Keys.D0))).ToString(),
+            Keys.OemMinus => "-",
+            Keys.OemOpenBrackets => "[",
+            Keys.OemCloseBrackets => "]",
+            Keys.OemSemicolon => ";",
+            Keys.Left => "←",
+            Keys.Right => "→",
+            Keys.Up => "↑",
+            Keys.Down => "↓",
+            Keys.PageUp => "Page Up",
+            Keys.PageDown => "Page Down",
+            _ => key.ToString()
+        };
+        return BindingLabel(binding, label);
+    }
+
+    internal static ClientSettings ResetShortcut(ClientSettings settings, int slot) =>
+        slot >= 0 && slot < Shortcuts.Length ? Rebind(settings, slot, Shortcuts[slot].Key, 0) : null;
+
+    internal static ClientSettings Rebind(ClientSettings current, int slot, Keys key, bool shift, bool alt) =>
+        Rebind(current, slot, key, (shift ? ShiftMask : 0) | (alt ? AltMask : 0));
+
+    // Null when the key cannot take the shortcut; a key another shortcut holds swaps with this one's.
+    private static ClientSettings Rebind(ClientSettings current, int slot, Keys key, int modifiers)
+    {
+        if (slot < 0 || slot >= Shortcuts.Length || !ValidKey(key))
+        {
+            return null;
+        }
+
+        var bindings = Enumerable.Range(0, Shortcuts.Length).Select(index => BindingOf(current, index)).ToArray();
+        var binding = (int)key | (SupportsModifiers(slot) ? modifiers : 0);
+        var duplicate = Array.IndexOf(bindings, binding);
+        if (duplicate >= 0 && !SupportsModifiers(duplicate) && (bindings[slot] & ~KeyMask) != 0)
+        {
+            return null;
+        }
+
+        if (duplicate >= 0)
+        {
+            bindings[duplicate] = bindings[slot];
+        }
+
+        bindings[slot] = binding;
+        return current with { ShortcutKeys = bindings };
     }
 
     public void Click(Point pointer, bool backwards)
@@ -337,22 +408,11 @@ internal sealed partial class HudSettingsPanel
                     }
                     if (backwards)
                     {
-                        var bindings = Enumerable.Range(0, Shortcuts.Length).Select(index => BindingOf(current, index)).ToArray();
-                        var defaultKey = (int)Shortcuts[slot].Key;
-                        var occupied = Array.IndexOf(bindings, defaultKey);
-                        if (occupied >= 0 && (SupportsModifiers(occupied) || (bindings[slot] & ~KeyMask) == 0))
+                        if (ResetShortcut(current, slot) is { } reset)
                         {
-                            bindings[occupied] = bindings[slot];
+                            _draft = reset;
+                            _binding = -1;
                         }
-
-                        if (occupied >= 0 && !SupportsModifiers(occupied) && (bindings[slot] & ~KeyMask) != 0)
-                        {
-                            return;
-                        }
-
-                        bindings[slot] = defaultKey;
-                        _draft = current with { ShortcutKeys = bindings };
-                        _binding = -1;
                     }
                     else
                     {

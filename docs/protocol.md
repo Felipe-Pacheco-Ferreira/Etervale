@@ -120,11 +120,15 @@ Bodies start with `uint16 Version = 1`; text is UTF-8 with a `uint16` byte lengt
 | Entry | S→C `WorldEntry` (`0x45540E01`) | `{uint16 Version, uint8 Status (0 entered, else EnterWorldFailure), uint8 0, uint64 EntityId, int32 Field, int32 X, Z (x256)}`. The owner's stats, inventory and skills follow on the presence stream. |
 | Join | C→S `JoinWorld` (`0x45540E02`), S→C `WorldJoined` (`0x45540E03`) | `JoinWorld` = `{uint16 Version, uint16 0, uint64 EntityId}`, which must be the id from `WorldEntry`; `WorldJoined` = `{uint16 Version, uint8 GameMasterLevel, uint8 0, uint64 EntityId, int64 ServerTimeMs, int64 GameClockMs}`; the level only enables client-side game master controls; `GameClockMs` is the server's game clock (`WorldClock`), which the client's sky follows from then on on its local clock. |
 | Heartbeat | `Heartbeat` (`0x45540F06`) every 4 s | `{uint16 Version, uint16 0, uint32 Counter, int64 TimeMs}`; echoed with the server's time. The server closes connections silent for 60 s. |
-| Leave | `LeaveWorld` (`0x45540160`) | `{uint16 Version, uint8 Saved, uint8 0}`: the client sends Saved 0; the server answers with Saved 1 after it stored the character. |
+| Leave | `LeaveWorld` (`0x45540160`) | `{uint16 Version, uint8 Saved, uint8 0}`: the client sends Saved 0; the server answers with Saved 1 after storing the character and returning the authenticated connection to selection. |
 
 Successful creation and deletion send a fresh `CharacterList` before the result. Storage failures answer the pending
 request (`LoginResult` busy, a `CharacterResult` with `Rejected`, or a `WorldEntry` with `Rejected`) instead of
 closing.
+
+After a successful leave, `EnterWorld` and `JoinWorld` may run again on the same connection, with account ownership
+validated on every entry. A refused save retains the old character claim and blocks re-entry until a leave retry
+succeeds. This does not allow a second login on that connection or another redemption of its browser ticket.
 
 ## In-world messages
 
@@ -230,6 +234,7 @@ Every message code has the high word `0x4554` ("ET"); every message keeps the `{
 | `0x45540605` / `0x45540606` | `PersonalShopListing` / `PersonalShopDetails` | S→C | A seller's shop as the viewer sees it and its copies' values, sent before the result of a view or a purchase while the shop is open. |
 | `0x45540700` .. `0x45540702` | `PartyInvite`, `PartyAnswer`, `PartyCommand` | C→S | Ask a player to group, answer a request, a party window button (see below). |
 | `0x45540703` / `0x45540704` | `PartyRequest` / `PartyMembers` | S→C | A player asks the receiver to group; the receiver's party when it changed. |
+| `0x45540705` | `PartyDirectory` | S→C | Own admission policy and optional authoritative server-local group search results (up to 80). |
 | `0x45540800` .. `0x45540804` | `TradeRequest`, `TradeAnswer`, `TradeOffer`, `TradeLock`, `TradeCancel` | C→S | Ask a player to trade, answer a request, the side's whole offer, lock it, close the trade (see below). |
 | `0x45540805` .. `0x45540807` | `TradeAsked`, `TradeState`, `TradeDetails` | S→C | A player asks the receiver to trade; the trade window when it changed, after its partner items' values. |
 | `0x45541000` / `0x45541001` | `ContactChange` / `ContactRefresh` | C→S | Put a name on the friends or ignored list or take it off; send the lists again. |
@@ -516,9 +521,10 @@ bytes). Requests are not answered: `PartyMembers` and chat lines show what chang
 | --- | --- |
 | `PartyInvite` | `uint64 TargetId` |
 | `PartyAnswer` | `uint64 FromId` (the request's), `uint8 Accept` (0 or 1; anything else is refused) |
-| `PartyCommand` | `uint8 Command` (`PartyCommand`: 0 delegate, 1 disband, 2 kick, 3 leave), `uint64 MemberId` (0 for disband and leave) |
+| `PartyCommand` | `uint8 Command` (`PartyCommand`: 0 delegate, 1 disband, 2 kick, 3 leave, 4 create, 5 open, 6 close, 7 search, 8 join), `uint64 MemberId` (target leader for join; initial admission policy for create: 0 closed, 1 open; 0 for disband/leave/open/close/search) |
 | `PartyRequest` | `uint64 FromId, text FromName, text Recommended` (the player a member recommends to its leader; empty for a request to join) |
 | `PartyMembers` | `uint8 Count` (0..6; 0 once the receiver has no party), members `{uint64 EntityId, text Name, int32 Level, int32 Life, int32 MaxLife, float X, float Z}`, the leader first |
+| `PartyDirectory` | `uint64 OwnLeaderId` (0 without a group), `uint8 OwnOpen`, `uint8 HasDirectory` (both flags 0/1), `uint16 Count` (0..80, must be 0 unless HasDirectory), entries `{uint64 LeaderId, text LeaderName, int32 FieldId, int32 AverageLevel, int32 MemberCount (1..6), uint8 IsOpen (0/1)}`. Empty search results replace prior results; policy-only updates preserve them. |
 
 ### Trades
 

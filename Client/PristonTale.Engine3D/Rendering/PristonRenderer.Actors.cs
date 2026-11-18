@@ -107,6 +107,7 @@ public sealed partial class PristonRenderer
         }
 
         var clamped = Vector3.Clamp(colorAdd, Vector3.Zero, Vector3.One);
+        runtime.ExternalColorAdd = clamped;
         foreach (var batch in runtime.Batches)
         {
             batch.ActorColorAdd = clamped;
@@ -122,23 +123,30 @@ public sealed partial class PristonRenderer
         }
 
         var outline = strength > 0f ? new Vector4(Vector3.Clamp(color, Vector3.Zero, Vector3.One), MathF.Min(strength, 1f)) : Vector4.Zero;
+        runtime.ExternalOutline = outline;
         foreach (var batch in runtime.Batches)
         {
             batch.Outline = outline;
         }
     }
 
-    public bool TryGetActorBounds(ReadOnlySpan<ActorHandle> handles, out BoundingBox bounds)
+    public bool TryGetActorBounds(ReadOnlySpan<ActorHandle> handles, out BoundingBox bounds, bool visibleOnly = false)
     {
         var hasBounds = false;
         bounds = default;
         for (var handleIndex = 0; handleIndex < handles.Length; handleIndex++)
         {
-            if (!TryResolveActor(handles[handleIndex], out var runtime))
+            if (!TryResolveActor(handles[handleIndex], out var runtime)
+                || visibleOnly && (runtime.Hidden || runtime.Shade?.Hidden == true || !runtime.Instance.VisibleInMainPass))
             {
                 continue;
             }
 
+            if (_externalRenderer is not null && runtime.HasWorldBounds)
+            {
+                bounds = hasBounds ? BoundingBox.CreateMerged(bounds, runtime.WorldBounds) : runtime.WorldBounds;
+                hasBounds = true;
+            }
             for (var batchIndex = 0; batchIndex < runtime.Batches.Count; batchIndex++)
             {
                 var batchBounds = runtime.Batches[batchIndex].Bounds;
@@ -157,6 +165,14 @@ public sealed partial class PristonRenderer
         Vector3 cameraPosition,
         Vector3 focusPoint)
     {
+        if (_externalRenderer is not null)
+        {
+            var externalLighting = BuildFrameLighting(focusPoint);
+            var light = new PristonPortraitLighting(externalLighting.Sun.Direction, externalLighting.Sun.DiffuseColor,
+                externalLighting.AmbientColor, externalLighting.GroundAmbientColor, Vector3.Zero, Vector3.Zero, 0f, _exposure.DisplayScale);
+            _externalRenderer.DrawPortrait(handles, view, projection, cameraPosition, light);
+            return;
+        }
         if (!CollectPortraitBatches(handles))
         {
             return;
@@ -303,13 +319,17 @@ public sealed partial class PristonRenderer
         }
 
         _batchListsDirty = true;
-        return new ActorHandle(slot, generation);
+        var handle = new ActorHandle(slot, generation);
+        _externalRenderer?.CreateActor(handle, runtime.ExternalMeshes, runtime.Palette.Count);
+        return handle;
     }
 
     public void RemoveActor(ActorHandle handle)
     {
         if (!TryResolveActor(handle, out var runtime))
             return;
+        _externalRenderer?.RemoveActor(handle);
+        ReleaseExternalActor(runtime);
         ReleaseActorGpuResource(runtime);
         runtime.Alive = false;
         _freeActorSlots.Push(handle.Slot);
@@ -318,10 +338,13 @@ public sealed partial class PristonRenderer
 
     public void ClearActors()
     {
-        foreach (var actor in _actors)
+        for (var slot = 0; slot < _actors.Count; slot++)
         {
+            var actor = _actors[slot];
             if (actor.Alive)
             {
+                _externalRenderer?.RemoveActor(new ActorHandle(slot, actor.Generation));
+                ReleaseExternalActor(actor);
                 ReleaseActorGpuResource(actor);
             }
         }

@@ -48,6 +48,7 @@ internal sealed class PresenceDecoder : IEventHandleReader
     private long _tick;
     private double? _clockMs;
     private IReadOnlyList<ItemDetailEntry> _tradeDetails = [];
+    private PartyInfo _party = PartyInfo.None;
     // The states of a presence message are written into a list the decoder lends to its update; the consumer gives it
     // back once applied (Recycle), and only the update it was lent to can. Once MaxLent loans are outstanding (a consumer
     // that never gives them back) the decoder forgets them. The pool has its own lock, so the game thread's Recycle never
@@ -143,6 +144,7 @@ internal sealed class PresenceDecoder : IEventHandleReader
             EtervaleOpcodes.CloseRequest => OnCloseRequest(packet),
             EtervaleOpcodes.PartyMembers => OnPartyMembers(PartyMembersPacket.Read(packet)),
             EtervaleOpcodes.PartyRequest => OnPartyRequest(PartyRequestPacket.Read(packet)),
+            EtervaleOpcodes.PartyDirectory => OnPartyDirectory(PartyDirectoryPacket.Read(packet)),
             EtervaleOpcodes.ClanState => new PresenceUpdate(_tick, [], [], [], [], FieldId) { Clan = Clan(ClanStatePacket.Read(packet)) },
             EtervaleOpcodes.CastleState => new PresenceUpdate(_tick, [], [], [], [], FieldId) { Castle = Castle(CastleStatePacket.Read(packet)) },
             EtervaleOpcodes.CastleOwnerState => new PresenceUpdate(_tick, [], [], [], [], FieldId) { CastleOwner = CastleOwner(CastleOwnerStatePacket.Read(packet)) },
@@ -250,7 +252,24 @@ internal sealed class PresenceDecoder : IEventHandleReader
             members[index] = new PartyMemberInfo(member.EntityId, member.Name, member.Level, member.Life, member.MaxLife, new Vector2(member.X, member.Z));
         }
 
-        return new PresenceUpdate(_tick, [], [], [], [], FieldId) { Party = new PartyInfo(members) };
+        var sameLeader = members.Length > 0 && _party.Members.Count > 0 && members[0].EntityId == _party.Members[0].EntityId;
+        _party = new PartyInfo(members, sameLeader && _party.IsOpen);
+        return new PresenceUpdate(_tick, [], [], [], [], FieldId) { Party = _party };
+    }
+
+    private PresenceUpdate OnPartyDirectory(PartyDirectoryPacket packet)
+    {
+        if (packet.OwnLeaderId == 0 && _party.Members.Count == 0
+            || _party.Members.Count > 0 && _party.Members[0].EntityId == packet.OwnLeaderId)
+        {
+            _party = _party with { IsOpen = packet.OwnOpen };
+        }
+
+        return new PresenceUpdate(_tick, [], [], [], [], FieldId)
+        {
+            Party = _party,
+            PartyDirectory = packet.HasDirectory ? packet.Entries : null
+        };
     }
 
     private static ClanInfo Clan(ClanStatePacket packet) => !packet.HasClan ? ClanInfo.None

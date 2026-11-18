@@ -31,7 +31,8 @@ benchmarks, and the asset/GPU probes that read game data or create a Vulkan devi
 | `*Probe.cs`, `*Probe.<Topic>.cs` | Opt-in probes (see Probes); never part of the default suite |
 | `*Benchmark.cs`, `RenderBenchmarkProbe.cs` | Opt-in benchmarks; `DomainTests.BenchmarkAsync` is the `--benchmark` tick benchmark |
 
-The csproj references Gameplay, Server, Protocol, GltfExport and WorldImport, so the runner sees every layer.
+The csproj references Gameplay, Server, Web, the Discord bot, Protocol, GltfExport and WorldImport, so the runner sees every
+layer.
 Default case files by area (all `tests/PristonTale.Tests/<Name>.cs`):
 
 | Area | Files | Covers |
@@ -71,6 +72,7 @@ Default case files by area (all `tests/PristonTale.Tests/<Name>.cs`):
 | Contacts | `ContactTests` (with `ChatFixture` and SQLite) | The lists' rules, the server's answers with presence, ignored whispers, storage, wire; the friends page |
 | Parties | `PartyTests` (with `ChatFixture`), `PartyHudTests` | Requests, answers and recommendations, the leader's commands, leaving the world, shared experience and gold, rules, wire; the party window, request box and player buttons |
 | Chat, game masters | `ChatRoutingTests`, `GameMasterCommandTests` (with `ChatFixture`), `ChatClientTests`, `GameMasterStorageTests` | Spoken range, whispers, channels, notices, shutdown; every command and the level table; window, input, flood and bubbles; `gm_level`, audit and character moves on SQLite |
+| Discord bot | `DiscordBotTests` (with `ChatFixture`) | Remote game-master commands and their audit, Discord lines on the trade channel, the bot link (key, chat, commands, level cap, settings), the activity cursor, world, event and news watches, texts and packing, `/gm` actions, role levels, ticket ids, the bot's settings and command line |
 | Client | `RemotePlaybackTests`, `AttackInputTests`, `FrameTimingTests`, `ClientSettingsTests`, `FieldAudioTests`, `ClientLogTests` | Playback, input, settings, the client log |
 | HUD and screens | `HudInteractionTests`, `CharacterHeadTests`, `CharacterSelectTests` | 800x600 layout, hit tests |
 | Rendering | `RenderTests`, `RenderFidelityTests`, `PhotorealTests`, `MaterialAdapterTests`, `ShadowProjectionTests`, `SkyTests` | CPU-side renderer |
@@ -105,7 +107,7 @@ git diff --check
   timeout fails the case and stops the run, since the case is still running and would share the process with the cases
   after it.
 - Production assemblies expose internals to the runner through `InternalsVisibleTo` (Application, Geometry, Protocol,
-  Client.Net, Engine3D, Gameplay, Server, GltfExport).
+  Client.Net, Engine3D, Gameplay, Server, Web, the Discord bot, GltfExport).
 
 ### What default cases may touch
 

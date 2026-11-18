@@ -168,7 +168,10 @@ public sealed class SessionAppService
     public Task<bool> SaveLeftCharacterAsync(string sessionToken, CharacterSaveSnapshot left, CancellationToken ct = default) =>
         SaveAsync(sessionToken, left, ct);
 
-    private async Task<bool> SaveAsync(string sessionToken, CharacterSaveSnapshot? left, CancellationToken ct)
+    public Task<bool> SaveAndReturnToSelectionAsync(string sessionToken, CharacterSaveSnapshot? left, CancellationToken ct = default) =>
+        SaveAsync(sessionToken, left, ct, returnToSelection: true);
+
+    private async Task<bool> SaveAsync(string sessionToken, CharacterSaveSnapshot? left, CancellationToken ct, bool returnToSelection = false)
     {
         if (!_sessions.TryGet(sessionToken, out var session))
         {
@@ -191,7 +194,14 @@ public sealed class SessionAppService
                 return false;
             }
 
-            return await _saves.SaveAsync(session, snapshot);
+            var saved = await _saves.SaveAsync(session, snapshot);
+            if (saved && returnToSelection && session.IsLeavingForSelection
+                && _sessions.TryGet(sessionToken, out var current) && ReferenceEquals(current, session))
+            {
+                _sessions.ReleaseCharacter(session.Loaded.Id, sessionToken);
+                session.CompleteLeave();
+            }
+            return saved;
         }
         finally
         {

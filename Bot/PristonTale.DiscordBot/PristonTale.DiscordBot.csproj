@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AssemblyName>PristonTale.DiscordBot</AssemblyName>
+    <RootNamespace>PristonTale.DiscordBot</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Discord.Net.WebSocket" Version="3.20.2" />
+  </ItemGroup>
+
+  <!-- The site's library: its reads of rankings and the event calendar, class titles and Portuguese texts. -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\Web\PristonTale.Web\PristonTale.Web.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="PristonTale.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="discord-bot-settings.example.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

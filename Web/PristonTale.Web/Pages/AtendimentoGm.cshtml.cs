@@ -37,7 +37,19 @@ public sealed class AtendimentoGmModel(IAccountRepository accounts, SupportTicke
             return BadRequest();
         }
 
-        return await tickets.ReplyAsync(accountId, ticketId, resposta.Trim(), ct)
+        return await tickets.ReplyAsync(accountId, ticketId, User.Identity!.Name!, resposta.Trim(), ct)
+            ? RedirectToPage()
+            : new StatusCodeResult(StatusCodes.Status409Conflict);
+    }
+
+    public async Task<IActionResult> OnPostFecharAsync(long accountId, Guid ticketId, CancellationToken ct)
+    {
+        if (!await CanReplyAsync(ct))
+        {
+            return Forbid();
+        }
+
+        return await tickets.CloseAsync(accountId, ticketId, User.Identity!.Name!, ct)
             ? RedirectToPage()
             : new StatusCodeResult(StatusCodes.Status409Conflict);
     }

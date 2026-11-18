@@ -38,7 +38,7 @@ public sealed class VfxContent : IVfxResources, IDisposable
         _log = log;
         Builtins = new VfxBuiltinTextures(device);
         Library = new VfxLibrary(this, textures.White, Builtins);
-        _preparation = Task.Run(Prepare);
+        _preparation = Task.Run(PrepareAsync);
     }
 
     public VfxLibrary Library { get; }
@@ -153,7 +153,7 @@ public sealed class VfxContent : IVfxResources, IDisposable
         return model;
     }
 
-    private Prepared Prepare()
+    private async Task<Prepared> PrepareAsync()
     {
         var catalog = VfxCatalog.Load(_assetRoot);
         var textures = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -195,7 +195,7 @@ public sealed class VfxContent : IVfxResources, IDisposable
             }
         }
 
-        Task.WaitAll(decoding.ToArray());
+        await Task.WhenAll(decoding).ConfigureAwait(false);
         return new Prepared(catalog, models, animations);
     }
 

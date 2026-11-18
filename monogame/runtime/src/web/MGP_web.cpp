@@ -78,7 +78,15 @@ static void MGP_Web_FitCanvas(MGP_Window* window, mgbool notify)
 		return;
 	}
 
-	emscripten_set_canvas_element_size(MG_WEB_CANVAS, width, height);
+	const auto workerOwnsDrawingBuffer = EM_ASM_INT({
+		const graphics = Module.noxiusThreeGraphics;
+		return graphics && graphics.workerRendering === true ? 1 : 0;
+	});
+	// A transferred canvas is resized by its renderer; the game still receives logical window dimensions.
+	if (!workerOwnsDrawingBuffer)
+	{
+		emscripten_set_canvas_element_size(MG_WEB_CANVAS, width, height);
+	}
 	window->width = width;
 	window->height = height;
 	if (notify)

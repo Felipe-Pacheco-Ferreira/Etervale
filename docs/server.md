@@ -17,7 +17,7 @@ layouts live in [protocol.md](protocol.md).
 
 | Path | Responsibility |
 | --- | --- |
-| [Program.cs](../Server/PristonTale.Server/Program.cs) | Generic host: `Host.CreateApplicationBuilder(args)`, `AddPristonServer()`, `Run()`. No HTTP endpoints besides the optional WebSocket edge. |
+| [Program.cs](../Server/PristonTale.Server/Program.cs) | Generic host: `Host.CreateApplicationBuilder(args)`, `AddPristonServer()`, `Run()`. No HTTP endpoints besides the optional WebSocket edge and bot link. |
 | [Hosting/HostingExtensions.cs](../Server/PristonTale.Server/Hosting/HostingExtensions.cs) | `AddPristonServer`: every DI registration, provider selection, `WorldServerOptions`, `DefaultGamePort` (10009, the default of `Network:Port`). |
 | `Hosting/DatabaseMigrationService.cs` | Hosted service: `IDatabaseMigrator.MigrateAsync` on start. |
 | `Hosting/GameLogService.cs` | Hosted service: the item transfer writer, the currency sinks every `Logs:CurrencyMinutes`, the server's start and stop, the daily prune. |
@@ -31,6 +31,7 @@ layouts live in [protocol.md](protocol.md).
 | `World/QuestUpkeepService.cs` | `BackgroundService` reading `WorldServer.QuestUpkeepRequests` and running `QuestAppService.RunUpkeepAsync`, at most 8 players at a time ([quests.md](quests.md)). |
 | [Net/GameTcpServer.cs](../Server/PristonTale.Server/Net/GameTcpServer.cs) | Listener, connection and handshake caps (in all and per address), TLS handshake, one `ClientSession` per connection (`RunSessionAsync`, shared by both edges), housekeeping (idle/login timeouts, bandwidth log). |
 | `Net/GameTcpServer.WebSocket.cs`, `Net/WebSocketEdgeSettings.cs` | The optional WebSocket edge for browser clients: its own Kestrel listener, origin check, the same caps and sessions ([WebSocket edge](#websocket-edge)). |
+| `Net/BotLinkService.cs`, `Net/BotLinkSettings.cs` | The optional loopback link of the Discord bot: trade-channel lines from Discord and remote game-master commands ([discord-bot.md](discord-bot.md#game-servers-bot-link)). |
 | `Net/ServerCertificate.cs` | Loads the TLS certificate, or creates and stores a self-signed one. |
 | [Net/ClientSession.cs](../Server/PristonTale.Server/Net/ClientSession.cs) | Per-connection state machine: packet dispatch to application services and replies. |
 | `Net/ClientSession.Chat.cs` | The session's `IChatLink`: chat lines, forced warps, close requests and kicks from game masters. |
@@ -68,6 +69,9 @@ registration order. An exception from any `StartAsync` stops the host before the
 | 11 | `QuestUpkeepService` | Applies the quest work the tick queues (quest drops, quest weapon growth and expiry) and queues the character for storage. | Never; a failed upkeep is logged and retried on the field's next check. |
 | 12 | `StarterGiftService` | Gives the starter gifts the tick finds due ([application.md](application.md#starter-gifts)). | Never; a failed gift is logged and offered again after the interval. |
 | 13 | `BellatraService` | Pays the Bellatra prizes the tick owes ([application.md](application.md#bellatra)). | Never; a failed prize is logged and the player told. |
+
+With `BotLink:Enabled`, `BotLinkService` starts after the world tick and binds `BotLink:Url`; a port in use stops the
+host.
 
 Shutdown runs the services in reverse: the game server closes every connection and awaits their leave saves while the
 tick still runs, and the character store stops last. Once the host is stopping, the first write storage refuses sends
@@ -157,6 +161,10 @@ that limit; negative values stop startup. The game settings live in the database
 | `Network:WebSocket:AllowedOrigins` | `[]` | `WebSocketEdgeSettings` | Page origins allowed to open the socket, as browsers send them (`https://site.example`, `https://localhost:5443`: no path, user or default port); a request from another origin answers 403. Requests without an `Origin` header (not browsers) are admitted. |
 | `Network:WebSocket:KnownProxies` | `[]` | `WebSocketEdgeSettings` | Reverse proxies whose `X-Forwarded-For` is believed, so limits count the player's address; loopback always is. |
 | `Network:WebSocket:CertificatePath`, `CertificatePassword` | none | `WebSocketEdgeSettings` | PKCS#12 certificate of the `https` listener; relative paths resolve like `Network:Certificate:Path`. Browsers need one they trust: the self-signed game certificate does not do. |
+| `BotLink:Enabled` | `false` | `BotLinkSettings` | Opens the Discord bot's link ([discord-bot.md](discord-bot.md#game-servers-bot-link)); nothing below is read while it is off. |
+| `BotLink:Url` | `http://127.0.0.1:10011` | `BotLinkSettings` | Kestrel listen URL; `http://` on a loopback address only. |
+| `BotLink:Key` | none | `BotLinkSettings` | The bot's bearer key, at least 32 characters; keep it in the settings file beside the executable. |
+| `BotLink:MaxGmLevel` | 2 | `BotLinkSettings` | Highest game-master level a bot request acts with (0 to 4). |
 | `Server:ReportSeconds` | 30 | `ReportInterval` | Period of the tick, TCP and character save report lines; at least 1. |
 | `Network:PacketLimit` | 251 | `NetworkLimits` | Packets per window before the connection closes (`DescribeEntity` excluded). |
 | `Network:PacketWindowSeconds` | 5 | `NetworkLimits` | Fixed window of the packet limit. |
@@ -239,6 +247,12 @@ experience, item event and aging values.
    from the registry, the per-address slot is released and the connection is disposed.
 6. On shutdown every connection is closed with `server stopping` and awaited.
 
+An explicit `LeaveWorld` leaves and saves without closing the authenticated connection. After the durable save, the
+server releases the character claim and returns the session to selection; a later `EnterWorld` checks account ownership
+again. The pending leave capture is retained when storage refuses it, allowing another leave request or disconnect to
+retry. The old outbox pump finishes before the leave acknowledgement, so a subsequent play channel cannot receive its
+previous character's queued presence. Login remains one-shot per connection and browser tickets remain single-use.
+
 ### WebSocket edge
 
 Off unless `Network:WebSocket:Enabled`. `GameTcpServer` then starts a Kestrel listener of its own after the TLS
@@ -297,7 +311,7 @@ required per opcode; both envelopes reach the same switch.
 | `DismissCrystalPets` | inline | `WorldServer.DismissCrystalPetsAsync` | None; the pets' end arrives as presence. |
 | `EventCalendarRequest` | `SendEventCalendar` (`ClientSession.Calendar.cs`) | `EventCalendarQuery.For` (world and castle, the session's language) | `EventCalendar` with the request's operation id ([application.md](application.md#event-calendar)). |
 | `RewardEventsRequest` | `RewardEventsAsync` (`ClientSession.Rewards.cs`) | `RewardEventAppService.ClaimAsync` (a claim), then `ViewAsync` | `RewardEventsResult` for a claim, then `RewardEvents` (the window, item names in the session's language, `RewardWireMapping`); the encoder also sends `RewardEvents` whenever a snapshot carries a new window ([application.md](application.md#events-and-rewards)). |
-| `LeaveWorld` | inline | `ClosePlayAsync` (leave, save) | `LeaveWorld` with `Saved` true when the character was stored. |
+| `LeaveWorld` | inline | `ClosePlayAsync(true)` (leave, save, return to selection) | `LeaveWorld` with `Saved` true when the character was stored; the same authenticated connection can select again. |
 | a code without a handler | ignored | none | none |
 
 Error handling inside `HandleAsync`:

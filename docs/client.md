@@ -462,7 +462,8 @@ come from the window's text input (`Game1` to `GameClient.TypeCharacter` to `Scr
 
 - Layout: the HUD is authored in 800x600 logical units. `HudLayout.Create` picks the largest integer scale that fits;
   bottom-anchored elements move down by `BottomOffset`, right-anchored ones right by `RightOffset`. Convert the mouse
-  with `HudLayout.ToLogical`.
+  with `HudLayout.ToLogical`. The browser centers the original bottom HUD using `BottomBarOrigin`, with the chat
+  immediately to its left. Browser-only Social and Quests windows use their own paired drawing and input bounds.
 - `HudPainter` draws original sprites at the integer scale with point sampling and queues text into a linear-filtered
   pass; call `Flush` before drawing a layer that must cover earlier text.
 - Draw order (`GameplayHud.Draw`): drop names, name plates, speech bubbles, minimap, target frame, chat window (shrunk while a side window is

@@ -35,7 +35,11 @@ try {
   }
 
   const device = await adapter.requestDevice();
-  device.addEventListener('uncapturederror', (event) => console.error(`WebGPU: ${event.error.message}`));
+  const validationErrors = new Set();
+  device.addEventListener('uncapturederror', (event) => {
+    validationErrors.add(event.error.message);
+    console.error(`WebGPU: ${event.error.message}`);
+  });
   const runtime = await dotnet.withModuleConfig({ preinitializedWebGPUDevice: device }).create();
   const exports = await runtime.getAssemblyExports(runtime.getConfig().mainAssemblyName);
   const repro = exports.WebGpuRepro;
@@ -46,7 +50,10 @@ try {
     repro.Frame();
     frames++;
     if (frames % ReportEveryFrames === 0) {
-      report.textContent = [repro.Report(), ...sampleCanvas(repro.SpriteSamples())].join('\n');
+      const validation = validationErrors.size === 0
+        ? 'ok   buffer-growth draws have no WebGPU validation errors'
+        : `FAIL WebGPU validation errors: ${[...validationErrors].join(' | ')}`;
+      report.textContent = [repro.Report(), validation, ...sampleCanvas(repro.SpriteSamples())].join('\n');
     }
 
     requestAnimationFrame(frame);

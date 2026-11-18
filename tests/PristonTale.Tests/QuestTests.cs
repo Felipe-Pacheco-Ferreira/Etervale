@@ -22,6 +22,7 @@ internal static class QuestTests
         yield return ("quest grants respect the carried-weight limit and leave the quest unchanged when refused", WeightAsync);
         yield return ("beginner quests run in order with deliveries, hunts, tribe finishers and class rewards", ElementaryAsync);
         yield return ("Avalon adventurer journey validates the guide, belt, hunt and crystal", AdventurerJourneyAsync);
+        yield return ("quest tribe classification gives all four original Tempskron classes the Ricarten guide", QuestTribesAsync);
         yield return ("the journey's hunting area is centred on its hunt points and holds each with its margin", HuntAreaAsync);
         yield return ("the first Tempskron rank-up needs the home master, level and skills and gathers one trophy of each", TrophiesAsync);
         yield return ("the first Morion rank-up follows the name branch, brews at the aging master and promotes after delivery", PotionAsync);
@@ -51,6 +52,31 @@ internal static class QuestTests
             }
         }
 
+        return Task.CompletedTask;
+    }
+
+    private static Task QuestTribesAsync()
+    {
+        foreach (var playerClass in Enum.GetValues<PlayerClass>())
+        {
+            var player = Character(playerClass, "QuestClass", 1);
+            var tempskron = playerClass is PlayerClass.Fighter or PlayerClass.Mechanician or PlayerClass.Archer or PlayerClass.Pikeman or PlayerClass.MartialArtist;
+            Assert.True(QuestClasses.IsTempskron(player) == tempskron, $"wrong quest side for {playerClass}");
+            Assert.True(QuestClasses.HomeField(player) == (tempskron ? FieldCodes.Ricarten : FieldCodes.Pillai), $"wrong quest home for {playerClass}");
+            Assert.True(QuestClasses.RanksUpByTrophies(player) == (tempskron || playerClass == PlayerClass.Assassin), $"rank-up branch changed for {playerClass}");
+            var journal = QuestView.Capture(player);
+            var description = tempskron ? AdventurerJourneyRoute.MeetSkadiDescription : AdventurerJourneyRoute.MeetJinDescription;
+            Assert.True(journal.Progress.Single().Description == description, $"wrong journey guide in {playerClass}'s journal");
+            var route = AdventurerJourneyRoute.For(playerClass);
+            Assert.True(route.Guide == (tempskron ? AdventurerJourneyRoute.Tempskron : AdventurerJourneyRoute.Morion).Guide,
+                $"the {playerClass} route disagrees with the authoritative journal guide");
+        }
+
+        var pikeman = Character(PlayerClass.Pikeman, "PikemanGuide", 1);
+        Assert.True(Talk(pikeman, new QuestNpc(Name: "Adventurer Jin"), FieldCodes.Pillai).Prompt is null,
+            "the Pikeman received the Morion guide's quest");
+        Assert.True(Talk(pikeman, new QuestNpc(Name: "Adventurer Skadi"), FieldCodes.Ricarten).Prompt is
+            { Code: QuestCode.AdventurerJourney, Document: "avalon_journey_start" }, "Skadi did not offer the Pikeman's journey");
         return Task.CompletedTask;
     }
 

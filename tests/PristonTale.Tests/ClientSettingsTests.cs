@@ -1,6 +1,7 @@
 using PristonTale.Engine3D.Diagnostics;
 using PristonTale.Engine3D.IO;
 using PristonTale.Engine3D.Rendering;
+using PristonTale.Gameplay.UI.Widgets;
 
 namespace PristonTale.Tests;
 
@@ -16,6 +17,83 @@ internal static class ClientSettingsTests
         yield return ("settings write failures are observable without faulting gameplay", WriteFailureAsync);
         yield return ("frame pacing has no catch-up bursts and separates foreground limits", PacingAsync);
         yield return ("a texture named with another extension is found in the subfolder its name points to", TextureExtensionAsync);
+        yield return ("the browser's settings document round-trips and rejects what the file would", BrowserDocumentAsync);
+        yield return ("render scale round-trips and invalid or older settings use the full resolution", RenderScaleAsync);
+        yield return ("dynamic resolution round-trips, preserves the user's render cap and notifies rendering independently of presets", DynamicResolutionAsync);
+        yield return ("the browser panel's shortcut rebinding swaps a taken key and refuses an invalid one", BrowserShortcutAsync);
+    }
+
+    private static Task BrowserDocumentAsync()
+    {
+        var settings = new ClientSettings { Language = ClientSettings.BrazilianPortugueseLanguage }.WithQuality(GraphicsQuality.Medium);
+        var parsed = ClientSettingsStore.Parse(ClientSettingsStore.Serialize(settings), NullClientLog.Instance);
+        Assert.True(parsed is not null && parsed.Quality == GraphicsQuality.Medium && parsed.AntiAliasing == settings.AntiAliasing
+            && parsed.Language == settings.Language, "the serialized settings document did not read back");
+        Assert.True(ClientSettingsStore.Parse("{\"version\":1,\"maxFPS\":60}", NullClientLog.Instance) is null, "an unknown property was accepted");
+        Assert.True(ClientSettingsStore.Parse("{\"version\":2}", NullClientLog.Instance) is null, "another version was accepted");
+        Assert.True(ClientSettingsStore.Parse("not json", NullClientLog.Instance) is null, "a malformed document was accepted");
+        Assert.True(ClientSettingsStore.Parse("{\"version\":1,\"shadowMapSize\":9000}", NullClientLog.Instance)?.ShadowMapSize == new ClientSettings().ShadowMapSize,
+            "an invalid value was not replaced by its default");
+        return Task.CompletedTask;
+    }
+
+    private static Task RenderScaleAsync()
+    {
+        var settings = new ClientSettings { RenderScale = 0.75f };
+        var parsed = ClientSettingsStore.Parse(ClientSettingsStore.Serialize(settings), NullClientLog.Instance);
+        Assert.True(parsed?.RenderScale == settings.RenderScale, "the saved scene scale did not survive loading");
+        Assert.True(!settings.HasSameRendering(new ClientSettings()), "changing the scene scale did not invalidate rendering");
+        Assert.True(ClientSettingsStore.Parse("{\"version\":1}", NullClientLog.Instance)?.RenderScale == 1f, "older documents lost native resolution");
+        Assert.True(ClientSettingsStore.Parse("{\"version\":1,\"renderScale\":0.25}", NullClientLog.Instance)?.RenderScale == 1f,
+            "an unsupported scene scale was accepted");
+        return Task.CompletedTask;
+    }
+
+    private static Task DynamicResolutionAsync()
+    {
+        var settings = new ClientSettings { DynamicResolution = false, RenderScale = 0.75f, MaxFps = 60 };
+        var parsed = ClientSettingsStore.Parse(ClientSettingsStore.Serialize(settings), NullClientLog.Instance);
+        Assert.True(parsed is { DynamicResolution: false, RenderScale: 0.75f, MaxFps: 60 },
+            "the user's dynamic-resolution choice or saved render cap was not preserved");
+        Assert.True(ClientSettingsStore.Parse("{\"version\":1,\"renderScale\":0.75}", NullClientLog.Instance)
+            is { DynamicResolution: true, RenderScale: 0.75f }, "older settings did not inherit enabled dynamic resolution");
+        Assert.True(ClientSettingsStore.Parse("{\"version\":1,\"dynamicResolution\":\"false\"}", NullClientLog.Instance) is null,
+            "a string was accepted for the typed dynamic-resolution switch");
+        var adaptive = settings with { DynamicResolution = true };
+        Assert.True(!settings.HasSameRendering(adaptive) && !adaptive.HasSameRendering(settings),
+            "a dynamic-resolution-only change did not invalidate rendering");
+        Assert.True(settings.HasSameDisplay(adaptive), "dynamic resolution recreated the display instead of the scene targets");
+        var presentation = new PresentationSettings();
+        presentation.ApplyRendering(settings);
+        var notifications = 0;
+        presentation.RenderingChanged += _ => notifications++;
+        presentation.ApplyRendering(adaptive);
+        presentation.ApplyRendering(adaptive with { });
+        Assert.True(notifications == 1 && presentation.Rendering is { DynamicResolution: true, RenderScale: 0.75f },
+            "the running renderer did not receive exactly one dynamic-resolution change with its unchanged saved cap");
+        foreach (var enabled in new[] { false, true })
+        {
+            foreach (var quality in Enum.GetValues<GraphicsQuality>())
+            {
+                var preset = (settings with { DynamicResolution = enabled }).WithQuality(quality).Validate(NullClientLog.Instance);
+                Assert.True(preset.DynamicResolution == enabled && preset.RenderScale == settings.RenderScale,
+                    "a quality preset replaced the independent adaptive choice or the saved render cap");
+            }
+        }
+        return Task.CompletedTask;
+    }
+
+    private static Task BrowserShortcutAsync()
+    {
+        var defaults = new ClientSettings();
+        var inventory = HudSettingsPanel.PageShortcutLabel(defaults, 0);
+        var character = HudSettingsPanel.PageShortcutLabel(defaults, 1);
+        var swapped = HudSettingsPanel.Rebind(defaults, 0, Microsoft.Xna.Framework.Input.Keys.C, shift: false, alt: false);
+        Assert.True(swapped is not null && HudSettingsPanel.PageShortcutLabel(swapped, 0) == character && HudSettingsPanel.PageShortcutLabel(swapped, 1) == inventory,
+            "a key another shortcut held did not swap");
+        Assert.True(HudSettingsPanel.Rebind(defaults, 0, Microsoft.Xna.Framework.Input.Keys.I, shift: false, alt: false) is null, "a key shortcuts cannot take was accepted");
+        Assert.True(HudSettingsPanel.PageShortcutCount == HudSettingsPanel.VoiceShortcut, "the page's list does not stop before push-to-talk");
+        return Task.CompletedTask;
     }
 
     private static Task ValidationAsync()
@@ -128,7 +206,12 @@ internal static class ClientSettingsTests
         {
             var store = new ClientSettingsStore(path, NullClientLog.Instance);
             Assert.True(store.Load() == new ClientSettings(), "missing file did not create defaults");
-            var latest = new ClientSettings();
+            var latest = new ClientSettings
+            {
+                ShortcutKeys = [112, 113],
+                GameServers = ["world.example.test:11009"],
+                AlwaysShowGroundNames = ["Cristal", "Poção"]
+            };
             for (var index = 30; index <= 500; index++)
             {
                 latest = latest with { MaxFps = index, WindowMode = WindowMode.Borderless };
@@ -141,7 +224,10 @@ internal static class ClientSettingsTests
             await store.CompleteAsync();
             Assert.True(store.LastError.Length == 0 && !store.QueueSave(new ClientSettings()), "shutdown did not finish or close persistence");
             var reopened = new ClientSettingsStore(path, NullClientLog.Instance);
-            Assert.True(reopened.Load() == latest, "latest settings were lost on close/reopen");
+            // A deserialized array has a new identity, which record equality compares rather than its contents.
+            // Compare the whole persisted document, including nonempty collection values.
+            Assert.True(ClientSettingsStore.Serialize(reopened.Load()) == ClientSettingsStore.Serialize(latest),
+                "latest settings were lost on close/reopen");
             await reopened.CompleteAsync();
             Assert.True(Directory.GetFiles(directory).Length == 1, "temporary files leaked");
         }

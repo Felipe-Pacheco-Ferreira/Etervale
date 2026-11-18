@@ -121,3 +121,7 @@ monogame/pipeline/tools/
 monogame/runtime/work/
 monogame/runtime/bin/
 monogame/pipeline/bin/
+
+# The Discord bot's own settings (token, keys) and state stay on the machine that runs it.
+Bot/PristonTale.DiscordBot/discord-bot-settings.json
+Bot/PristonTale.DiscordBot/discord-bot-state.json

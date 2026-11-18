@@ -9,6 +9,8 @@ using PristonTale.Gameplay.UI.Widgets;
 using PristonTale.Simulation.Quests;
 using PristonTale.Contracts.Texts;
 using PristonTale.Gameplay.Localization;
+using PristonTale.Contracts.Characters;
+using PristonTale.Simulation.Events;
 
 namespace PristonTale.Tests;
 
@@ -19,6 +21,8 @@ internal static class QuestHudTests
     {
         yield return ("the quest HUD follows dialogs with proceed, confirmation, reward lists and the redistribution offer", ControllerAsync);
         yield return ("quest texts decode from Windows-1252 and the quest window keeps the original layout", LayoutAsync);
+        yield return ("browser quest tabs select real daily rewards and preserve journal actions", BrowserWindowAsync);
+        yield return ("Avalon journey documents have localized fallbacks and preserve supplied files", AvalonDocumentsAsync);
     }
 
     private static async Task ControllerAsync()
@@ -154,5 +158,110 @@ internal static class QuestHudTests
         Assert.True(HudQuestDialog.Box == HudNpcPanel.Box && HudQuestDialog.ChoiceButton(0, 8).Width == HudNpcPanel.ButtonWidth,
             "the quest dialog does not share the help box");
         return Task.CompletedTask;
+    }
+
+    private static Task BrowserWindowAsync()
+    {
+        var layout = HudLayout.Create(1280, 720) with { Browser = true };
+        var box = HudQuestWindow.BrowserBounds(layout);
+        Assert.True(box == new Rectangle(406, 73, 468, 496), "browser quest frame differs from the reference dimensions");
+        var window = new HudQuestWindow { CanNavigate = true };
+        var refreshed = 0;
+        var claimed = -1;
+        var navigated = 0;
+        var guideToggled = 0;
+        window.DailyOpened = () => refreshed++;
+        window.ClaimDaily = index => claimed = index;
+        window.NavigateRequested = () => navigated++;
+        window.ToggleGuide = () => guideToggled++;
+        var daily = new RewardTrackInfo(RewardTrack.Daily, 20, 3600,
+        [
+            new RewardEntryInfo(RewardGoal.MonsterKills, RewardEntryState.Next, 4, 300, 10_000, []),
+            new RewardEntryInfo(RewardGoal.Sheltoms, RewardEntryState.Ready, 10, 10, 0, []),
+            new RewardEntryInfo(RewardGoal.Potions, RewardEntryState.Claimed, 30, 30, 0, [])
+        ]);
+        window.SetDailyRewards(daily, 20, pending: false, "");
+        var view = new QuestView(1, QuestCode.AdventurerJourney, 2, "Hopy", 1, 3, QuestTimerKind.None, 0,
+            [new QuestBoardEntry("Jornada", "Avalon/SkadiHunt.msg")], [new QuestBoardEntry("Concluída", "Avalon/Finished.msg")]);
+        window.Toggle();
+        window.Advance(2);
+        Assert.True(window.Contains(layout, box.Center), "browser quest panel does not capture its interior");
+        window.Click(layout, HudQuestWindow.BrowserSwitch(box, 2).Center, view);
+        Assert.True(!window.TrackingEnabled, "the tracker switch did not disable tracking");
+        window.Click(layout, HudQuestWindow.BrowserTrack(box).Center, view);
+        Assert.True(window.TrackingEnabled, "the tracking button did not restore tracking");
+        window.Click(layout, HudQuestWindow.BrowserGo(box).Center, view);
+        Assert.True(navigated == 1, "the real quest destination callback was not invoked");
+        window.Click(layout, HudQuestWindow.BrowserTab(box, 1).Center, view);
+        Assert.True(window.Page == HudQuestPage.Daily && refreshed == 1, "the daily tab did not request current server state");
+        window.Click(layout, HudQuestWindow.BrowserClaim(box).Center, view);
+        Assert.True(claimed == -1, "an unfinished daily reward was claimed");
+        window.Click(layout, HudQuestWindow.BrowserRow(box, 1, HudQuestPage.Daily).Center, view);
+        window.Click(layout, HudQuestWindow.BrowserClaim(box).Center, view);
+        Assert.True(claimed == 1, "the selected daily reward index was not sent");
+        claimed = -1;
+        window.SetDailyRewards(daily, 20, pending: true, "");
+        window.Click(layout, HudQuestWindow.BrowserClaim(box).Center, view);
+        Assert.True(claimed == -1, "a repeated claim was allowed while pending");
+        window.Click(layout, HudQuestWindow.BrowserTab(box, 2).Center, view);
+        Assert.True(window.Page == HudQuestPage.Monthly, "the monthly tab did not switch to its empty state");
+        window.Click(layout, HudQuestWindow.BrowserTab(box, 3).Center, view);
+        window.Click(layout, HudQuestWindow.BrowserSwitch(box, 0).Center, view);
+        Assert.True(guideToggled == 0, "completed quests triggered the active quest guide");
+        window.Click(layout, HudQuestWindow.BrowserRow(box, 0, HudQuestPage.Finished).Center, view);
+        Assert.True(window.Page == HudQuestPage.Finished && window.DescriptionOpen, "the completed quest did not open its real document");
+        window.Click(layout, HudQuestWindow.BrowserClose(box).Center, view);
+        Assert.True(!window.Open, "browser quest close did not close");
+        Assert.True(GameplayHud.TryJourneyDestination(view, PlayerClass.Pikeman, out var hunt)
+            && hunt == AdventurerJourneyRoute.Tempskron.HuntPoints[0], "unfinished hunt points to the wrong location");
+        Assert.True(GameplayHud.TryJourneyDestination(view with { Kills = 3 }, PlayerClass.Pikeman, out var guide)
+            && guide == AdventurerJourneyRoute.Tempskron.Guide, "finished hunt does not return to its guide");
+        Assert.True(!GameplayHud.TryJourneyDestination(view with { Code = QuestCode.Level30 }, PlayerClass.Pikeman, out _),
+            "a quest with no known route was treated as navigable");
+        return Task.CompletedTask;
+    }
+
+    private static async Task AvalonDocumentsAsync()
+    {
+        var language = ClientText.Language;
+        var directory = Directory.CreateTempSubdirectory("avalon-quest-documents-");
+        try
+        {
+            var documents = new HudQuestDocuments(directory.FullName, ConsoleClientLog.Instance);
+            foreach (var selected in new[] { "pt-BR", "en-US" })
+            {
+                ClientText.Use(selected);
+                foreach (var board in new[] { "MeetSkadi", "MeetJin", "Preparation", "SkadiHunt", "JinHunt", "Finished" })
+                {
+                    Assert.True(documents.Lines(HudQuestDocuments.BoardPath($"Avalon/{board}.msg")) is { Length: > 1 },
+                        $"missing {selected} Avalon board text {board}");
+                }
+                foreach (var dialog in new[] { "start", "bag", "hunt_skadi", "hunt_jin", "collect", "finish" })
+                {
+                    Assert.True(documents.Lines(HudQuestDocuments.DialogPath("avalon_journey_" + dialog)) is { Length: > 1 },
+                        $"missing {selected} Avalon dialog text {dialog}");
+                }
+            }
+            ClientText.Use("pt-BR");
+            Assert.True(documents.Lines(HudQuestDocuments.BoardPath("Avalon/SkadiHunt.msg"))[0].Contains("3 Hopys", StringComparison.Ordinal),
+                "the documented hunt differs from the actual Journey rules");
+            var relative = HudQuestDocuments.BoardPath("Avalon/MeetSkadi.msg");
+            var path = Path.Combine(directory.FullName, relative);
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            await File.WriteAllTextAsync(path, "Authored quest content.", Encoding.ASCII);
+            var supplied = new HudQuestDocuments(directory.FullName, ConsoleClientLog.Instance);
+            string[]? lines = null;
+            for (var retry = 0; retry < 100 && lines is null; retry++)
+            {
+                lines = supplied.Lines(relative);
+                await Task.Delay(1);
+            }
+            Assert.True(lines is ["Authored quest content."], "the fallback replaced an existing authored document");
+        }
+        finally
+        {
+            ClientText.Use(language);
+            directory.Delete(recursive: true);
+        }
     }
 }

@@ -616,6 +616,7 @@ public sealed partial class GameScene : IDisposable, IHudPortraitScene
 
     public void Dispose()
     {
+        WeatherDiagnostic?.LeaveWorld();
         _fieldStreamer?.Dispose();
         TearDownRemotePresence();
         _equipmentPresentation?.Stop();

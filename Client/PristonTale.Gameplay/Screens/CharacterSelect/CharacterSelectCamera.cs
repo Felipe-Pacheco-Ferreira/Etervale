@@ -10,12 +10,16 @@ namespace PristonTale.Gameplay.Screens.CharacterSelect;
 internal sealed class CharacterSelectCamera
 {
     private const float WebLineupTargetX = 10f;
+    private const float LoadingCameraSeconds = 0.8f;
+    private static readonly Vector3 LoadingCameraEye = new(0f, 360f, 810f);
+    private static readonly Vector3 LoadingCameraTarget = new(0f, 38f, 35f);
     private readonly PristonCamera _camera;
     private readonly bool _usesWebBackdrop;
     private float _distance;
     private readonly float _distanceScale;
     private int _currentState;
     private float _swaySeconds;
+    private float _loadingCamera;
 
     public CharacterSelectCamera(GraphicsDevice graphicsDevice, int initialState, float distanceScale = 1f, PristonCamera sharedCamera = null)
     {
@@ -45,12 +49,14 @@ internal sealed class CharacterSelectCamera
         _distance >= CharacterSelectStage.RailDistance(CharacterSelectStage.TribeStep)
         && _distance <= CharacterSelectStage.RailDistance(CharacterSelectStage.ClassStep);
 
-    public void Update(GraphicsDevice graphicsDevice, int targetState, float dt)
+    public void Update(GraphicsDevice graphicsDevice, int targetState, float dt, bool loadingWorld = false)
     {
         (_distance, _currentState) = _usesWebBackdrop
             ? DollyWeb(_distance, _currentState, targetState, dt)
             : CharacterSelectStage.Dolly(_distance, _currentState, targetState, dt);
         _swaySeconds += dt;
+        var loadingStep = (loadingWorld && _usesWebBackdrop ? dt : -dt) / LoadingCameraSeconds;
+        _loadingCamera = Math.Clamp(_loadingCamera + loadingStep, 0f, 1f);
         Apply(graphicsDevice, CharacterSelectStage.Sway(_swaySeconds));
     }
 
@@ -70,7 +76,16 @@ internal sealed class CharacterSelectCamera
     private void Apply(GraphicsDevice graphicsDevice, float sway)
     {
         var (eye, target) = Pose(_distance * _distanceScale, sway, _usesWebBackdrop);
-        _camera.SetScriptedView(graphicsDevice, eye, target, Vector3.Up, CharacterSelectStage.CameraFieldOfView);
+        var fieldOfView = CharacterSelectStage.CameraFieldOfView;
+        if (_loadingCamera > 0f)
+        {
+            var blend = MathHelper.SmoothStep(0f, 1f, _loadingCamera);
+            eye = Vector3.Lerp(eye, LoadingCameraEye, blend);
+            target = Vector3.Lerp(target, LoadingCameraTarget, blend);
+            fieldOfView = MathHelper.Lerp(fieldOfView, MathHelper.ToRadians(49f), blend);
+        }
+
+        _camera.SetScriptedView(graphicsDevice, eye, target, Vector3.Up, fieldOfView);
     }
 
     internal static (Vector3 Eye, Vector3 Target) Pose(float distance, float sway, bool webBackdrop = false)

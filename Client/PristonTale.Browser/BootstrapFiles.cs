@@ -1,5 +1,7 @@
+using PristonTale.Assets;
 using PristonTale.Contracts.Characters;
 using PristonTale.Engine3D.Rendering;
+using PristonTale.Gameplay.UI;
 
 namespace PristonTale.Browser;
 
@@ -23,7 +25,7 @@ internal static class BootstrapFiles
         "assets/image/flame"
     ];
 
-    private static readonly HashSet<string> SceneTextures = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly HashSet<string> SceneAssets = new(StringComparer.OrdinalIgnoreCase)
     {
         "assets/Field/forest/badak_panja_2.bmp",
         "assets/Field/forest/stairtop.bmp",
@@ -34,6 +36,9 @@ internal static class BootstrapFiles
         "assets/Field/forest/bark01.bmp",
         "assets/Field/forest/t_nwall-04.bmp",
         "assets/Field/forest/avalon-banner-emblem.png",
+        "assets/Effect/Vfx/Common/Progression.vfx.json",
+        "assets/Effect/ObjAnimationData/GameStart/GameStart1.smd",
+        "assets/Effect/ObjAnimationData/GameStart/tt.bmp",
     };
 
     private static readonly HashSet<string> RosterEffects = new(StringComparer.OrdinalIgnoreCase)
@@ -118,7 +123,7 @@ internal static class BootstrapFiles
     {
         _characterWarmup?.Cancel();
         using var http = new HttpClient { BaseAddress = _clientAddress };
-        await FetchPathsAsync(http, _deferredPaths);
+        await FetchPathsAsync(http, _deferredPaths, WebWorldLoading.DownloadProgress);
     }
 
     public static async Task PrefetchCharacterAssetsAsync()
@@ -133,14 +138,12 @@ internal static class BootstrapFiles
         try
         {
             var catalog = await CharacterPathsAsync(warmup.Token);
-            // Shared animation files unblock the largest portion of both lineups, then the rest can follow.
-            var entries = catalog.Values.SelectMany(static files => files)
-                .GroupBy(static entry => entry, StringComparer.Ordinal)
-                .OrderByDescending(static group => IsAnimation(group.Key))
-                .ThenByDescending(static group => group.Count())
-                .Select(static group => group.Key);
+            // Download complete model dependencies in turns, so the scene can start preparing each finished class.
+            var entries = CharacterSelectArt.PreviewOrder
+                .Where(catalog.ContainsKey)
+                .SelectMany(job => catalog[job].OrderByDescending(IsAnimation));
             await FetchPathsAsync(entries, (entry, token) => FetchCharacterFileAsync(entry, true, token),
-                parallel: 2, cancellationToken: warmup.Token);
+                parallel: BackgroundFetches, cancellationToken: warmup.Token);
         }
         catch (OperationCanceledException) when (warmup.IsCancellationRequested)
         {
@@ -173,6 +176,24 @@ internal static class BootstrapFiles
         var largeFilesFirst = entries.OrderByDescending(IsAnimation);
         await FetchPathsAsync(largeFilesFirst, (entry, token) => FetchCharacterFileAsync(entry, false, token),
             parallel: BackgroundFetches, cancellationToken: cancellationToken);
+    }
+
+    public static bool AreCharacterAssetsReady(PlayerClass playerClass)
+    {
+        if (_characterPaths is not { IsCompletedSuccessfully: true } catalog || !catalog.Result.TryGetValue(playerClass, out var entries))
+        {
+            return false;
+        }
+
+        foreach (var entry in entries)
+        {
+            if (!CharacterDownloads.TryGetValue(entry, out var download) || !download.IsCompletedSuccessfully)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static bool IsAnimation(string entry) => EntryPath(entry).EndsWith(".smb", StringComparison.OrdinalIgnoreCase);
@@ -241,12 +262,19 @@ internal static class BootstrapFiles
     }
 
     private static bool IsScene(string path, string[] skyFolders) =>
-        SceneTextures.Contains(path)
+        SceneAssets.Contains(path)
         || ScenePrefixes.Any(prefix => path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
         || skyFolders.Any(prefix => path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
 
     private static bool IsRosterAsset(string path) =>
-        path.StartsWith(CharacterFolder, StringComparison.OrdinalIgnoreCase) || RosterEffects.Contains(path);
+        path.StartsWith(CharacterFolder, StringComparison.OrdinalIgnoreCase) && !IsFullCharacterMotion(path)
+        || RosterEffects.Contains(path);
+
+    private static bool IsFullCharacterMotion(string path) =>
+        path.Length == CharacterFolder.Length + 6
+        && path[CharacterFolder.Length] is 'm' or 'M'
+        && path[CharacterFolder.Length + 1] is >= '1' and <= '8'
+        && path.EndsWith(".smb", StringComparison.OrdinalIgnoreCase);
 
     // Requests kept in flight at once: a slow file holds one of them, not a whole batch. Before the game starts nothing
     // else runs, so many; behind the running opening, few.

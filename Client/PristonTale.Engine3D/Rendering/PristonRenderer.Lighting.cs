@@ -16,6 +16,9 @@ namespace PristonTale.Engine3D.Rendering;
 // Frame lighting: glow tuning, emitter colours and the lights chosen for the frame.
 public sealed partial class PristonRenderer
 {
+    private bool DirectionalShadowsEnabled(in PristonLighting lighting) =>
+        ShadowsEnabled && lighting.Sun.DiffuseColor != Vector3.Zero && !Underground;
+
     private static PristonPointLight[] ApplyGlowTuning(PristonPointLight[] lights, float intensity, float scale)
     {
         var tuned = new PristonPointLight[lights.Length];

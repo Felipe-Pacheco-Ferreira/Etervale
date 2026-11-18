@@ -25,6 +25,7 @@
 
     <ItemGroup>
         <InternalsVisibleTo Include="PristonTale.Tests" />
+        <InternalsVisibleTo Include="PristonTale.Browser" />
         <InternalsVisibleTo Include="ptdump" />
         <InternalsVisibleTo Include="ptgltf" />
     </ItemGroup>

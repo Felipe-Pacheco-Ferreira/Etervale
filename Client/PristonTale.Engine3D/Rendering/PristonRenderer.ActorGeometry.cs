@@ -18,6 +18,10 @@ public sealed partial class PristonRenderer
 {
     private ActorRuntime BuildActor(PristonActorInstance instance)
     {
+        if (_externalRenderer is not null)
+        {
+            return BuildExternalActor(instance);
+        }
         var actor = instance.Actor;
         var runtime = new ActorRuntime(instance);
         if (actor.Gltf is { } gltf)
@@ -96,6 +100,23 @@ public sealed partial class PristonRenderer
             ReleaseActorGpuResource(runtime);
             throw;
         }
+    }
+
+    // Keep the uploaded mesh and materials until this renderer is disposed, without adding an animated actor.
+    public void PreloadActorGraphics(PristonActor actor)
+    {
+        if (_externalRenderer is not null)
+        {
+            ExternalActorResources(actor, pin: true);
+            return;
+        }
+        if (actor.Gltf is not null || _actorGpuResources.ContainsKey(actor)
+            || !PreparedActorGeometries.TryGetValue(actor, out var prepared))
+        {
+            return;
+        }
+
+        AcquireActorGpuResource(actor, Path.GetDirectoryName(actor.Mesh.Path) ?? ".", prepared);
     }
 
     private ActorGpuResource AcquireActorGpuResource(
@@ -478,11 +499,14 @@ public sealed partial class PristonRenderer
             ApplyWorldBounds(runtime.ShadowBatches, worldBounds);
             runtime.WorldBounds = worldBounds;
             runtime.HasWorldBounds = true;
-            var centre = (worldBounds.Min + worldBounds.Max) * 0.5f;
-            var floorLight = FloorLightAt(new Vector3(centre.X, worldBounds.Min.Y, centre.Z));
-            foreach (var batch in runtime.Batches)
+            if (runtime.Batches.Count > 0)
             {
-                batch.FloorLight = floorLight;
+                var centre = (worldBounds.Min + worldBounds.Max) * 0.5f;
+                var floorLight = FloorLightAt(new Vector3(centre.X, worldBounds.Min.Y, centre.Z));
+                foreach (var batch in runtime.Batches)
+                {
+                    batch.FloorLight = floorLight;
+                }
             }
         }
 

@@ -21,6 +21,10 @@ public sealed partial class PristonRenderer
         IReadOnlyList<PristonModel> models,
         CancellationToken cancellationToken = default)
     {
+        if (_externalRenderer is not null)
+        {
+            return PrepareExternalStageAsync(stage, models, cancellationToken);
+        }
         var pending = new List<Task>
         {
             _textureLoader.PrepareTexturesAsync(Path.GetDirectoryName(stage.Path) ?? ".", PristonMaterialUsage.ForStage(stage))
@@ -43,9 +47,11 @@ public sealed partial class PristonRenderer
             return Task.CompletedTask;
         }
 
-        var textures = _textureLoader.PrepareTexturesAsync(
-            Path.GetDirectoryName(actor.Mesh.Path) ?? ".",
-            PristonMaterialUsage.ForActor(actor));
+        var directory = Path.GetDirectoryName(actor.Mesh.Path) ?? ".";
+        var materials = PristonMaterialUsage.ForActor(actor);
+        var textures = _externalRenderer is not null
+            ? _externalRenderer.PrepareMaterialsAsync(directory, materials)
+            : _textureLoader.PrepareTexturesAsync(directory, materials);
         var geometry = PreparedActorGeometries.TryGetValue(actor, out _)
             ? Task.CompletedTask
             : Task.Run(() =>
@@ -55,13 +61,23 @@ public sealed partial class PristonRenderer
         return Task.WhenAll(textures, geometry);
     }
 
-    public void RequirePreparedTextures() => _textureLoader.RequirePreparedTextures = true;
+    public void RequirePreparedTextures()
+    {
+        if (_textureLoader is not null)
+        {
+            _textureLoader.RequirePreparedTextures = true;
+        }
+    }
 
     public RenderStageHandle AddStage(PristonStage stage, IEnumerable<PristonModel> models) =>
         AddStage(stage, models.Select(static m => new PristonSceneryInstance(m, Matrix.Identity)));
 
     public RenderStageHandle AddStage(PristonStage stage, IEnumerable<PristonSceneryInstance> models)
     {
+        if (_externalRenderer is not null)
+        {
+            return AddExternalStage(stage, models);
+        }
         var stageDir = Path.GetDirectoryName(stage.Path) ?? ".";
 
         PristonPointLight[] stageLights, glowLights;
@@ -124,6 +140,11 @@ public sealed partial class PristonRenderer
 
     public IEnumerator<RenderStageHandle> AddStageIncrementally(PristonStage stage, IReadOnlyList<PristonModel> models)
     {
+        if (_externalRenderer is not null)
+        {
+            yield return AddExternalStage(stage, models.Select(static model => new PristonSceneryInstance(model, Matrix.Identity)));
+            yield break;
+        }
         var (stageLights, glowLights) = _overrideLights is null ? BuildStageLights(stage, _log) : (_overrideLights, _overrideLights);
         glowLights = ApplyGlowTuning(glowLights, _glowIntensity, _glowScale);
         var handle = new RenderStageHandle(
@@ -479,6 +500,7 @@ public sealed partial class PristonRenderer
     {
         if (handle is null || !_stages.Remove(handle))
             return;
+        RemoveExternalStage(handle);
         handle.DisposeGpu();
         RebuildRenderBatches();
     }
@@ -486,7 +508,10 @@ public sealed partial class PristonRenderer
     private void RemoveAllStages()
     {
         foreach (var stage in _stages)
+        {
+            RemoveExternalStage(stage);
             stage.DisposeGpu();
+        }
         _stages.Clear();
     }
 

@@ -2,6 +2,7 @@ using Microsoft.Xna.Framework;
 using PristonTale.Engine3D.Formats;
 using PristonTale.Gameplay.UI.Rendering;
 using PristonTale.Simulation.World;
+using PristonTale.Simulation.World.Fields;
 using PristonTale.Contracts.Social;
 using PristonTale.Contracts.Units;
 using PristonTale.Engine3D;
@@ -40,7 +41,8 @@ public sealed class HudMinimap
     private string _neighbourMap;
     private float _viewSize = InitialViewSize;
 
-    public static Rectangle Box(HudLayout layout) => layout.BottomRight(new Rectangle(656, 426, 128, 128));
+    public static Rectangle Box(HudLayout layout) =>
+        layout.BottomRight(layout.Browser ? new Rectangle(662, 434, 128, 128) : new Rectangle(656, 426, 128, 128));
 
     // 16 (dungeon) or 24 (other fields) cells of 64 world units from the centre to the box edge.
     public static float ViewSize(bool underground) => (underground ? 16 : 24) * 64f;
@@ -209,10 +211,18 @@ public sealed class HudMinimap
         if (_field is not null)
         {
             var title = new Rectangle(box.X, box.Y - 16, 128, 16);
-            painter.Stretch(_fieldTitle, title);
-            if (hovered)
+            if (layout.Browser && string.Equals(_field, RicartenField.Definition.Id, StringComparison.OrdinalIgnoreCase))
             {
-                painter.Highlight(_fieldTitle, title, HoverHighlight >> 2);
+                painter.FramedBox(title, new Color(166, 142, 88), new Color(64, 51, 31), new Color(13, 12, 9), 2);
+                painter.TextCentered(RicartenField.Definition.Name, title.Left + 3, title.Right - 3, title.Y + 3, 11f / HudPainter.BakePixels);
+            }
+            else
+            {
+                painter.Stretch(_fieldTitle, title);
+                if (hovered)
+                {
+                    painter.Highlight(_fieldTitle, title, HoverHighlight >> 2);
+                }
             }
         }
     }

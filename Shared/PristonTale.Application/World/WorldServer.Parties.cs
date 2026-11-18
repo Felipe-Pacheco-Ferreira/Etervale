@@ -182,6 +182,64 @@ public sealed partial class WorldServer
 
     private void Command(WorldPlayer player, PartyCommand command, ulong memberId)
     {
+        // Directory requests and creation also work before the requester belongs to a party.
+        switch (command)
+        {
+            case PartyCommand.Create:
+                if (player.Party is null)
+                {
+                    var created = new Party(player.EntityId) { IsOpen = memberId == 1 };
+                    _parties.Add(created);
+                    player.Party = created;
+                    PartyChanged(created);
+                }
+
+                return;
+            case PartyCommand.Search:
+                player.PartyDirectory = _parties
+                    .Where(group => _connections.ContainsKey(group.LeaderId))
+                    .OrderBy(group => _connections[group.LeaderId].Player.Character.Name, StringComparer.OrdinalIgnoreCase)
+                    .ThenBy(group => group.LeaderId)
+                    .Take(PartyLimits.MaxDirectoryEntries)
+                    .Select(group =>
+                    {
+                        var leader = _connections[group.LeaderId];
+                        return new PartyDirectoryEntry(group.LeaderId, leader.Player.Character.Name, leader.FieldId,
+                            group.AverageLevel, group.Count, group.IsOpen);
+                    }).ToArray();
+                // Give repeated empty searches their own response identity as well.
+                if (player.PartyDirectory.Length == 0)
+                {
+                    player.PartyDirectory = new PartyDirectoryEntry[0];
+                }
+
+                return;
+            case PartyCommand.Join:
+                if (player.Party is not null || !_connections.TryGetValue(memberId, out var target)
+                    || target.Player.Party is not { } targetParty || targetParty.LeaderId != memberId)
+                {
+                    Reply(player, PartyMessages.CannotEnter);
+                }
+                else if (!PartyRules.LevelsMatch(player.Level, targetParty.AverageLevel))
+                {
+                    Reply(player, PartyMessages.LevelGap);
+                }
+                else if (targetParty.IsFull)
+                {
+                    Reply(player, PartyMessages.CannotEnter);
+                }
+                else if (targetParty.IsOpen)
+                {
+                    Join(targetParty, player);
+                }
+                else
+                {
+                    Invite(player, target.Player);
+                }
+
+                return;
+        }
+
         if (player.Party is not { } party)
         {
             return;
@@ -190,6 +248,11 @@ public sealed partial class WorldServer
         var leads = party.LeaderId == player.EntityId;
         switch (command)
         {
+            case PartyCommand.Open when leads:
+            case PartyCommand.Close when leads:
+                party.IsOpen = command == PartyCommand.Open;
+                PartyChanged(party);
+                break;
             case PartyCommand.Delegate when leads && memberId != player.EntityId && party.Contains(memberId)
                 && _connections.TryGetValue(memberId, out var heir):
                 HandOver(party, heir.Player);
@@ -219,7 +282,7 @@ public sealed partial class WorldServer
         }
     }
 
-    // A leader who leaves hands the party to the next member first; a party of two is released.
+    // A leader who leaves hands the party to the next member first. Explicitly created groups may keep one member.
     private void LeaveParty(WorldPlayer player)
     {
         if (player.Party is not { } party)
@@ -240,7 +303,7 @@ public sealed partial class WorldServer
         }
 
         Tell(party, PartyMessages.Left(player.Character.Name));
-        if (party.Count <= 2)
+        if (party.Count <= (party.Registered ? 1 : 2))
         {
             Release(party);
             return;
@@ -321,9 +384,9 @@ public sealed partial class WorldServer
         }
 
         party.AverageLevel = PartyRules.AverageLevel(levels[..count]);
-        if (party.View is null || !party.View.SameAs(_partyScratch.AsSpan(0, count)))
+        if (party.View is null || party.View.IsOpen != party.IsOpen || !party.View.SameAs(_partyScratch.AsSpan(0, count)))
         {
-            party.View = new PartyView(_partyScratch.AsSpan(0, count).ToArray());
+            party.View = new PartyView(_partyScratch.AsSpan(0, count).ToArray(), party.IsOpen);
         }
     }
 }

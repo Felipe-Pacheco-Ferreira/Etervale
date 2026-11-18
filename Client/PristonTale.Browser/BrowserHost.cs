@@ -1,5 +1,7 @@
 using System.Runtime.InteropServices.JavaScript;
+using Microsoft.Xna.Framework;
 using PristonTale.Gameplay.UI;
+using PristonTale.Engine3D.Rendering;
 
 namespace PristonTale.Browser;
 
@@ -27,9 +29,12 @@ public static partial class BrowserHost
         }
 
         StartedMs = System.Diagnostics.Stopwatch.GetTimestamp() * 1000d / System.Diagnostics.Stopwatch.Frequency;
+        WebCharacterSelectOverlay.ProfileStageInput = false;
         DesktopCommunityLinks.BrowserOpen = ShowCommunityLink;
         WebLoginOverlay.Report = static (state, message) => ReportLogin(state.ToString().ToLowerInvariant(), message);
         WebCharacterSelectOverlay.Report = ReportCharacters;
+        WebWorldLoading.Report = ReportWorldLoading;
+        PristonRenderer.ExternalSceneRendererFactory = static () => new BrowserExternalSceneRenderer();
         _game = new BrowserGame(endpoint, language, origin);
         _game.Run();
     }
@@ -59,7 +64,28 @@ public static partial class BrowserHost
     {
         if (Enum.TryParse<WebCharacterCommandKind>(kind, out var command))
         {
+            if (WebCharacterSelectOverlay.ProfileStageInput)
+            {
+                Console.WriteLine($"[StagePick] host command={command} index={index}");
+            }
             WebCharacterSelectOverlay.Send(command, index, text);
+        }
+    }
+
+    [JSExport]
+    public static void PickOnStage(string screen, double x, double y, double clickSeconds)
+    {
+        if (WebCharacterSelectOverlay.ProfileStageInput && screen is "roster" or "class")
+        {
+            Console.WriteLine(FormattableString.Invariant($"[StagePick] host pick stage={screen} x={x:F5} y={y:F5} eventMs={clickSeconds * 1000:F3}"));
+        }
+        if (x is >= 0d and <= 1d && y is >= 0d and <= 1d && double.IsFinite(clickSeconds) && clickSeconds >= 0d)
+        {
+            if (screen is "roster" or "class")
+            {
+                var stage = screen == "roster" ? WebCharacterStage.Roster : WebCharacterStage.Class;
+                WebCharacterSelectOverlay.PickOnStage(stage, new Vector2((float)x, (float)y), clickSeconds);
+            }
         }
     }
 
@@ -69,6 +95,12 @@ public static partial class BrowserHost
     [JSImport("reportLoginProgress", "avalon-page")]
     internal static partial void ReportLoginProgress(int done, int total);
 
+    [JSImport("reportWorldLoading", "avalon-page")]
+    private static partial void ReportWorldLoading(string phase, int percent, string mapName);
+
+    [JSImport("openWorldSettings", "avalon-page")]
+    private static partial void OpenWorldSettings();
+
     [JSImport("reportLogin", "avalon-page")]
     private static partial void ReportLogin(string state, string message);
 
@@ -77,4 +109,23 @@ public static partial class BrowserHost
 
     [JSExport]
     public static void Frame() => _game?.Tick();
+
+    [JSExport]
+    public static void EnableWorldHud()
+    {
+        WebWorldHud.Enabled = true;
+        WebWorldHud.OpenSettings = OpenWorldSettings;
+    }
+
+    [JSExport]
+    public static void SetWorldCanvasPointer(bool overCanvas) => WebWorldHud.HasCanvasPointer = overCanvas;
+
+    [JSExport]
+    public static string WorldActions() => WebWorldHud.Current?.WorldActions() ?? string.Empty;
+
+    [JSExport]
+    public static bool RunWorldAction(string action) => WebWorldHud.Current?.RunWorldAction(action) ?? false;
+
+    [JSExport]
+    public static bool WorldAutoHuntActive() => WebWorldHud.Current?.AutoHuntEnabled ?? false;
 }

@@ -841,6 +841,7 @@ public sealed partial class WorldServer
                     Restart = connection.Player.IsDead ? DeathPenalty.Offer(connection.Player.Character, field.State) : null,
                     Party = connection.Player.Party?.View,
                     PartyRequest = connection.Player.PartyRequest,
+                    PartyDirectory = connection.Player.PartyDirectory,
                     Trade = connection.Player.Trade?.ViewFor(entityId),
                     TradeRequest = connection.Player.TradeRequest,
                     Bellatra = BellatraViewOf(connection),

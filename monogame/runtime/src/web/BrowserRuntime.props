@@ -7,7 +7,9 @@
   <PropertyGroup>
     <WasmBuildNative>true</WasmBuildNative>
     <EtervaleRuntimeSource>$(MSBuildThisFileDirectory)../</EtervaleRuntimeSource>
-    <EmccExtraLDFlags>$(EmccExtraLDFlags) -sUSE_WEBGPU=1 -std=c++17 -I"$(EtervaleRuntimeSource)include" -I"$(EtervaleRuntimeSource)external/stb"</EmccExtraLDFlags>
+    <EmccExtraLDFlags>$(EmccExtraLDFlags) -std=c++17 -I"$(EtervaleRuntimeSource)include" -I"$(EtervaleRuntimeSource)external/stb"</EmccExtraLDFlags>
+    <EmccExtraLDFlags Condition="'$(EtervaleThreeRenderer)' == 'true'">$(EmccExtraLDFlags) -DETERVALE_THREE_RENDERER=1</EmccExtraLDFlags>
+    <EmccExtraLDFlags Condition="'$(EtervaleThreeRenderer)' != 'true'">$(EmccExtraLDFlags) -sUSE_WEBGPU=1</EmccExtraLDFlags>
   </PropertyGroup>
   <ItemGroup>
     <NativeFileReference Include="$(MSBuildThisFileDirectory)mgruntime.cpp" />

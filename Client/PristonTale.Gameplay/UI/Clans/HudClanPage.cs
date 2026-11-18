@@ -32,6 +32,7 @@ public sealed class HudClanPage
     private double _lastClickSeconds;
 
     public bool HasClan => _clan.HasClan;
+    internal ClanInfo Info => _clan;
 
     // A member double-clicked (its name), the chat button and the close button, for the HUD.
     public Action<string> Whispered { get; set; }

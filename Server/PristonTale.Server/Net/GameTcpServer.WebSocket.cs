@@ -103,7 +103,7 @@ public sealed partial class GameTcpServer
         }
     }
 
-    private static void Listen(Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions options, Uri url,
+    internal static void Listen(Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions options, Uri url,
         Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions> configure)
     {
         if (url.IsLoopback && !IPAddress.TryParse(url.Host, out _))

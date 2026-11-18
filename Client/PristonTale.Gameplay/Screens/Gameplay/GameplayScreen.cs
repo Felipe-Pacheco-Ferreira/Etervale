@@ -11,13 +11,14 @@ using PristonTale.Gameplay.World.Remote;
 
 namespace PristonTale.Gameplay.Screens.Gameplay;
 
-public sealed class GameplayScreen : GameScreen
+public sealed partial class GameplayScreen : GameScreen
 {
     private readonly EnteredCharacter _entered;
     private GameScene _scene;
     private GameplayHud _hud;
     private readonly List<GroundLabel> _groundLabels = [];
     private KeyboardState _lastKeyboard;
+    private bool _worldLoadUpdated;
     private bool _showRenderStats = true;
     private volatile PristonTale.Client.Net.WorldCatalog.WorldRenderCatalog _pendingHudCatalog;
 
@@ -28,7 +29,11 @@ public sealed class GameplayScreen : GameScreen
 
     public override void Enter()
     {
-        _scene = new GameScene(Context.GraphicsDevice, Context.Content, Context.Log, Context.Sky, Context.Effects, Context.Presentation, Context.Audio);
+        WebWorldLoading.InitializingScene();
+        _scene = new GameScene(Context.GraphicsDevice, Context.Content, Context.Log, Context.Sky, Context.Effects, Context.Presentation, Context.Audio)
+        {
+            WeatherDiagnostic = Context.WeatherDiagnostic
+        };
         _scene.LoadEntered(Context.AssetRoot, _entered);
         _hud = new GameplayHud(
             Context,
@@ -48,6 +53,9 @@ public sealed class GameplayScreen : GameScreen
         _scene.PresenceObserved += _hud.ObserveQuests;
         _scene.PresenceObserved += ObserveHuntTargets;
         _hud.QuestFanfare += _scene.PlayQuestFanfare;
+        _hud.QuestDestinationRequested += NavigateToQuest;
+        _hud.QuestNavigationCanceled += CancelQuestNavigation;
+        _scene.PresenceObserved += ObserveQuestNavigation;
         _hud.SiegeEnded += _scene.PlaySiegeEnd;
         _hud.SiegeClosed += _scene.RestoreFieldMusic;
         _hud.CraftResult += _scene.PlayCraftResult;
@@ -103,6 +111,8 @@ public sealed class GameplayScreen : GameScreen
         _scene.BeginRemotePresence(Context.Backend.OpenPlayChannel(), _entered);
 
         _ = FetchWorldCatalogAsync();
+        WebWorldHud.Attach(_hud);
+        WebWorldLoading.ScenePrepared();
     }
 
     private async Task FetchWorldCatalogAsync()
@@ -243,6 +253,7 @@ public sealed class GameplayScreen : GameScreen
             !_hud.BlocksPushToTalk && Keyboard.GetState().IsKeyDown(HudSettingsPanel.KeyOf(settings, HudSettingsPanel.VoiceShortcut)),
             _scene.SendChatAsync);
         UpdateAutoHunt();
+        UpdateQuestNavigation(gameTime);
         _scene.Update(gameTime);
         _hud.TargetId = _scene.SelectedTargetId;
         _hud.HelperPet = _scene.SelfHelperPet();
@@ -250,6 +261,10 @@ public sealed class GameplayScreen : GameScreen
         _hud.TracedId = _scene.TracedTargetId;
         _hud.ButtonsPlayerId = _scene.ReachedPlayerId;
         _lastKeyboard = Keyboard.GetState();
+        if (WebWorldLoading.Active)
+        {
+            _worldLoadUpdated = true;
+        }
     }
 
     public override void Draw()
@@ -263,6 +278,11 @@ public sealed class GameplayScreen : GameScreen
             _scene.DrawCombatText(Context.SpriteBatch, Context.Font);
         }
         _hud.Draw();
+        if (_worldLoadUpdated)
+        {
+            _worldLoadUpdated = false;
+            WebWorldLoading.Complete();
+        }
     }
 
     private void UpdateMotionKeys()
@@ -343,7 +363,9 @@ public sealed class GameplayScreen : GameScreen
 
     public override void Dispose()
     {
+        WebWorldHud.Detach(_hud);
         _voice.Dispose();
+        CancelQuestNavigation();
         if (_scene is not null && _hud is not null)
         {
             _scene.PresenceObserved -= _hud.Combat.Observe;
@@ -358,6 +380,9 @@ public sealed class GameplayScreen : GameScreen
             _hud.LobbyRequested -= ReturnToLobby;
             _hud.Restart.ExitRequested -= RequestExit;
             _hud.QuestFanfare -= _scene.PlayQuestFanfare;
+            _hud.QuestDestinationRequested -= NavigateToQuest;
+            _hud.QuestNavigationCanceled -= CancelQuestNavigation;
+            _scene.PresenceObserved -= ObserveQuestNavigation;
             _hud.SiegeEnded -= _scene.PlaySiegeEnd;
             _hud.SiegeClosed -= _scene.RestoreFieldMusic;
             _hud.CraftResult -= _scene.PlayCraftResult;

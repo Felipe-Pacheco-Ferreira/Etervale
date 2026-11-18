@@ -20,7 +20,7 @@ using System.Numerics;
 
 namespace PristonTale.Mobile;
 
-[Activity(Label = "Etervale", MainLauncher = true, Exported = true, ScreenOrientation = ScreenOrientation.SensorLandscape)]
+[Activity(Label = "Noxius Tale", MainLauncher = true, Exported = true, ScreenOrientation = ScreenOrientation.SensorLandscape)]
 public sealed class MainActivity : Activity
 {
     // How long the world takes to appear out of the curtain once it is drawn.
@@ -40,7 +40,7 @@ public sealed class MainActivity : Activity
         var form = new LinearLayout(this) { Orientation = Orientation.Vertical };
         var padding = (int)(24 * (Resources?.DisplayMetrics?.Density ?? 1f));
         form.SetPadding(padding, padding, padding, padding);
-        form.AddView(new TextView(this) { Text = $"Etervale {PackageManager?.GetPackageInfo(PackageName!, 0)?.VersionName}", TextSize = 28 });
+        form.AddView(new TextView(this) { Text = $"Noxius Tale {PackageManager?.GetPackageInfo(PackageName!, 0)?.VersionName}", TextSize = 28 });
         var address = AddField(form, "Endereço do servidor (IP:porta?cert=SHA-256)", InputTypes.ClassText | InputTypes.TextVariationUri);
         var account = AddField(form, "Conta", InputTypes.ClassText);
         var password = AddField(form, "Senha", InputTypes.ClassText | InputTypes.TextVariationPassword);

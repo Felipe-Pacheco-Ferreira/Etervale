@@ -48,6 +48,8 @@ public sealed class GameClient : IDisposable
 
     public Func<Task> PrepareWorldAssetsAsync { get; init; }
     public Func<IReadOnlyList<PlayerClass>, CancellationToken, Task> PrepareCharacterAssetsAsync { get; init; }
+    public Func<PlayerClass, bool> CharacterAssetsReady { get; init; }
+    public PristonTale.Gameplay.Weather.ClientWeatherDiagnostic WeatherDiagnostic { get; } = new();
 
     public string StatusText
     {
@@ -104,7 +106,9 @@ public sealed class GameClient : IDisposable
             ServerAddress = _serverAddress,
             SelectServer = SelectServer,
             PrepareWorldAssetsAsync = PrepareWorldAssetsAsync,
-            PrepareCharacterAssetsAsync = PrepareCharacterAssetsAsync
+            PrepareCharacterAssetsAsync = PrepareCharacterAssetsAsync,
+            CharacterAssetsReady = CharacterAssetsReady,
+            WeatherDiagnostic = WeatherDiagnostic
         };
         if (!browser)
         {
@@ -266,6 +270,7 @@ public sealed class GameClient : IDisposable
 
     public void Dispose()
     {
+        WeatherDiagnostic.SetFullRain(false);
         _ = BeginShutdown();
         _uiAtlas?.Dispose();
         _cursor?.Dispose();

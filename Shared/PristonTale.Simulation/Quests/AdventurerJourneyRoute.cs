@@ -1,5 +1,4 @@
 using PristonTale.Contracts.Characters;
-using PristonTale.Simulation.Characters;
 using PristonTale.Simulation.Items;
 using PristonTale.Simulation.World;
 
@@ -52,8 +51,7 @@ public static class AdventurerJourneyRoute
             new RoutePoint(FieldCodes.ForeverFall1, 3999, 68502), new RoutePoint(FieldCodes.ForeverFall1, 1406, 67011)
         ]);
 
-    public static TribeRoute For(PlayerClass playerClass) =>
-        ClassProfiles.Of(playerClass).Brood == CharacterBrood.Tempskron ? Tempskron : Morion;
+    public static TribeRoute For(PlayerClass playerClass) => For(QuestClasses.IsTempskron(playerClass));
 
     public static TribeRoute For(bool tempskron) => tempskron ? Tempskron : Morion;
 }

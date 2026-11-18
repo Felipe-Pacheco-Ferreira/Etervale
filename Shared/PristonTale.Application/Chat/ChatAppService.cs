@@ -30,14 +30,18 @@ public sealed class ChatAppService
     public WorldServer World { get; }
     public GameMasterCommands GameMasters { get; }
     public Func<long> NowMs { get; init; } = static () => Environment.TickCount64;
-    private sealed record TicketDraft(string Subject, long Expires)
-    {
-        public System.Text.StringBuilder Body { get; } = new();
-    }
-
-    private readonly System.Runtime.CompilerServices.ConditionalWeakTable<ChatMember, TicketDraft> _ticketDrafts = new();
 
     public Support.SupportTickets? Tickets { get; init; }
+
+    // Made on the first ticket command, once Tickets and NowMs are set.
+    private TicketChat? _ticketChat;
+
+    private async Task<bool> HandleTicketAsync(ChatMember member, string text)
+    {
+        await LazyInitializer.EnsureInitialized(ref _ticketChat, () => new TicketChat(Tickets, NowMs)).HandleAsync(member, text);
+        return true;
+    }
+
     public Func<long, Task<IReadOnlyList<string>>>? ReadDistributorAsync { get; init; }
     public Func<long, Task<IReadOnlyList<string>>>? ReadMailAsync { get; init; }
     public Func<long, long, int, Task<IReadOnlyList<string>>>? OpenMailAsync { get; init; }
@@ -294,118 +298,6 @@ public sealed class ChatAppService
         }
     }
 
-    private async Task<bool> HandleTicketsAsync(ChatMember member, string text)
-    {
-        void Send(string value) => member.Link.Deliver(ChatLine.Reply("Ticket> " + value));
-
-        if (Tickets is null)
-        {
-            Send("error");
-            return true;
-        }
-
-        try
-        {
-            if (text.StartsWith("/ticketstart ", StringComparison.OrdinalIgnoreCase))
-            {
-                var subject = text[13..].Trim();
-                _ticketDrafts.Remove(member);
-                if (subject.Length is < 1 or > 100)
-                {
-                    Send("error");
-                    return true;
-                }
-
-                _ticketDrafts.Add(member, new TicketDraft(subject, NowMs() + 15000));
-                return true;
-            }
-
-            if (text.StartsWith("/ticketpart ", StringComparison.OrdinalIgnoreCase) || text == "/ticketsave")
-            {
-                if (!_ticketDrafts.TryGetValue(member, out var draft) || draft.Expires < NowMs())
-                {
-                    _ticketDrafts.Remove(member);
-                    Send("error");
-                    return true;
-                }
-
-                if (text == "/ticketsave")
-                {
-                    _ticketDrafts.Remove(member);
-                    if (string.IsNullOrWhiteSpace(draft.Body.ToString()))
-                    {
-                        Send("error");
-                        return true;
-                    }
-
-                    var ticketId = await Tickets.CreateAsync(member.AccountId, draft.Subject, draft.Body.ToString().Trim(), CancellationToken.None);
-                    Send($"saved {ticketId:N}");
-                    return true;
-                }
-
-                var part = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(text[12..]));
-                if (draft.Body.Length + part.Length > 1500)
-                {
-                    _ticketDrafts.Remove(member);
-                    Send("error");
-                    return true;
-                }
-
-                draft.Body.Append(ChatCommandText.Clean(part));
-                return true;
-            }
-
-            if (text.StartsWith("/novoticket ", StringComparison.OrdinalIgnoreCase))
-            {
-                var fields = text[12..].Split('|', 2);
-                if (fields.Length != 2 || fields[0].Trim().Length is < 1 or > 100 || string.IsNullOrWhiteSpace(fields[1]))
-                {
-                    Send("error");
-                    return true;
-                }
-
-                await Tickets.CreateAsync(member.AccountId, fields[0].Trim(), fields[1].Trim(), CancellationToken.None);
-                Send("saved");
-                return true;
-            }
-
-            Send("begin");
-            foreach (var ticket in (await Tickets.ListAsync(member.AccountId, CancellationToken.None)).Take(10))
-            {
-                Send("line " + ticket.Subject);
-                WriteLines(ticket.Message);
-                if (ticket.Reply is { } reply)
-                {
-                    Send("line Resposta do GM:");
-                    WriteLines(reply);
-                }
-                else
-                {
-                    Send("line Aguardando atendimento");
-                }
-                Send("line ");
-            }
-            Send("end");
-        }
-        catch (Exception error) when (error is IOException or UnauthorizedAccessException or System.Text.Json.JsonException or FormatException)
-        {
-            Send("error");
-        }
-
-        return true;
-
-        void WriteLines(string value)
-        {
-            foreach (var line in value.Replace("\r", "").Split('\n'))
-            {
-                for (var offset = 0; offset < line.Length; offset += 48)
-                {
-                    Send("line " + line.Substring(offset, Math.Min(48, line.Length - offset)));
-                }
-            }
-        }
-    }
-
     private Task<bool> PlayerCommandAsync(ChatMember member, string text)
     {
         if (text.Equals("/bonusglobais", StringComparison.OrdinalIgnoreCase))
@@ -420,13 +312,9 @@ public sealed class ChatAppService
             return Task.FromResult(true);
         }
 
-        if (text.Equals("/tickets", StringComparison.OrdinalIgnoreCase) ||
-            text == "/ticketsave" ||
-            text.StartsWith("/ticketstart ", StringComparison.OrdinalIgnoreCase) ||
-            text.StartsWith("/ticketpart ", StringComparison.OrdinalIgnoreCase) ||
-            text.StartsWith("/novoticket ", StringComparison.OrdinalIgnoreCase))
+        if (TicketChat.Handles(text))
         {
-            return HandleTicketsAsync(member, text);
+            return HandleTicketAsync(member, text);
         }
 
         const string claim = "/resgatarcorreio ";

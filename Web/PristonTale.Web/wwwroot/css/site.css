@@ -1,4 +1,4 @@
-/* Priston Avalon: the game HUD's design language on the web (docs/hud-design.md): dark polished plates framed in gold,
+/* Noxius: the game HUD's design language on the web (docs/hud-design.md): dark polished plates framed in gold,
    lit from above; serif gold titles; glowing gauges and medallions. */
 
 :root {
@@ -160,6 +160,7 @@ code {
 
 .brand {
     display: flex;
+    flex-shrink: 0;
     align-items: center;
     gap: 10px;
     text-decoration: none;
@@ -173,9 +174,12 @@ code {
 }
 
 .brand img {
-    border-radius: 50%;
-    border: 1px solid var(--edge);
-    box-shadow: 0 0 12px rgba(80, 200, 190, 0.25);
+    display: block;
+    width: 168px;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.65));
 }
 
 .nav-wide {
@@ -1377,7 +1381,11 @@ p.plate.empty {
 }
 
 .footer-brand img {
-    border-radius: 50%;
+    display: block;
+    width: 150px;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
 }
 
 .footer nav {
@@ -1431,8 +1439,13 @@ p.plate.empty {
         font-size: 15px;
     }
 
-    .brand span {
-        display: none;
+    .topbar-inner {
+        gap: 10px;
+        padding: 8px 12px;
+    }
+
+    .brand img {
+        width: 132px;
     }
 
     .hero-art {
@@ -1478,6 +1491,25 @@ p.plate.empty {
 
     .ranking-players td.muted, .ranking-players thead th:nth-child(4) {
         display: none;
+    }
+}
+
+@media (max-width: 420px) {
+    .topbar .status {
+        width: 36px;
+        height: 36px;
+        flex-shrink: 0;
+        justify-content: center;
+        padding: 0;
+    }
+
+    .topbar .status > span:last-child {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
     }
 }
 
@@ -1558,7 +1590,7 @@ p.plate.empty {
     border-radius: 0;
 }
 
-/* The original banner already carries the Avalon wordmark. */
+/* The approved banner already carries the Noxius Tale wordmark. */
 .hero-body h1 {
     position: absolute;
     width: 1px;
@@ -1752,7 +1784,7 @@ p.plate.empty {
     font-weight: 600;
 }
 
-/* Avalon home motion */
+/* Noxius home motion */
 @media (prefers-reduced-motion: no-preference) {
     .hero::before {
         content: "";

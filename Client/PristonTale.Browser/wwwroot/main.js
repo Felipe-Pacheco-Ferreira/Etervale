@@ -5,13 +5,24 @@
 // what is typed goes to BrowserHost.SubmitLogin, and the game reports each step back through reportLogin.
 
 import { createHeroes } from "./heroes.js";
+import { createSettings } from "./settings.js";
+import { createWorldHud } from "./world-hud.js";
+import { createPackedImports } from "./three-bridge.js";
+import { createWorkerGraphics, createWorkerPackedImports } from "./three-worker.js";
+import { createAdaptiveResolution } from './adaptive-resolution.js';
 
 const root = document.getElementById("jogo");
-const canvas = root.querySelector('canvas');
+let canvas = root.querySelector('canvas');
 const part = role => root.querySelector(`[data-role="${role}"]`);
 const loading = part('loading');
 const progress = part('progress');
 const statusLine = part('status');
+const worldLoading = part('world-loading');
+const worldLoadingName = part('world-loading-name');
+const worldLoadingProgress = part('world-loading-progress');
+const worldLoadingPercent = part('world-loading-percent');
+const worldLoadingStatus = part('world-loading-status');
+const settingsPanel = part('settings');
 const card = part('login');
 const form = part('login-form');
 const account = part('account');
@@ -52,6 +63,9 @@ const texts = {
     'pt-BR': {
         loadingClient: 'Carregando o jogo…',
         loadingFiles: 'Carregando o cenário…',
+        loadingMap: 'Preparando o mapa',
+        mapProgress: 'Carregamento do mapa',
+        loadingWorld: 'Carregando...',
         openingMusic: 'Música da abertura',
         noWebGpu: 'Este navegador não tem WebGPU. Use um Chrome, Edge ou Safari recente.',
         failed: error => `O jogo não carregou: ${error}`,
@@ -71,7 +85,7 @@ const texts = {
             password: { label: 'ID ou e-mail', placeholder: 'Sua ID ou e-mail', submit: 'Enviar código',
                 info: 'Digite sua ID ou o e-mail da conta. Enviaremos um código de 6 dígitos para o e-mail cadastrado.' }
         },
-        community: 'Abrir página do Avalon',
+        community: 'Abrir página do Noxius',
         accountLine: name => `Conta ${name}`,
         worldsFailed: 'Não foi possível carregar a lista de mundos.',
         checking: 'Verificando…',
@@ -88,6 +102,9 @@ const texts = {
     en: {
         loadingClient: 'Loading the game…',
         loadingFiles: 'Loading the scene…',
+        loadingMap: 'Preparing the map',
+        mapProgress: 'Map loading',
+        loadingWorld: 'Loading...',
         openingMusic: 'Opening music',
         noWebGpu: 'This browser has no WebGPU. Use a recent Chrome, Edge or Safari.',
         failed: error => `The game did not load: ${error}`,
@@ -107,7 +124,7 @@ const texts = {
             password: { label: 'ID or email', placeholder: 'Your ID or email', submit: 'Send code',
                 info: 'Enter your ID or account email. We’ll send a 6-digit code to your registered email.' }
         },
-        community: 'Open Avalon page',
+        community: 'Open Noxius page',
         accountLine: name => `Account ${name}`,
         worldsFailed: 'The world list did not load.',
         checking: 'Checking…',
@@ -144,19 +161,22 @@ function applyLanguage() {
 
 if (language) {
     language.value = selectedLanguage;
-    language.addEventListener('change', () => {
-        store(storageKeys.language, language.value);
-        // The game takes its language when it starts; once it runs, a new language needs a fresh start.
-        if (started) {
-            location.reload();
-            return;
-        }
-
-        selectedLanguage = language.value;
-        applyLanguage();
-    });
+    language.addEventListener('change', () => setLanguage(language.value));
 }
 applyLanguage();
+
+function setLanguage(value) {
+    if (!(value in texts) || value === selectedLanguage) return;
+    store(storageKeys.language, value);
+    // The game's text resources take their language during Start.
+    if (started) {
+        location.reload();
+        return;
+    }
+    if (language) language.value = value;
+    selectedLanguage = value;
+    applyLanguage();
+}
 
 const recovery = part('recovery');
 if (recovery) {
@@ -201,9 +221,189 @@ fullscreen?.addEventListener('click', async () => {
     }
 });
 
+function showLoading(line, tone = 'busy', percent = null) {
+    if (!loading) return;
+    loading.hidden = false;
+    loading.dataset.tone = tone;
+    statusLine.textContent = line;
+    if (percent === null) progress.removeAttribute('value');
+    else progress.value = percent;
+    progress.hidden = tone === 'error';
+}
+
+const mapLoadProfiling = new URLSearchParams(location.search).get('profile') === '1';
+let mapLoadProfile = null;
+let publicAssetCache = null;
+
+function recordMapResources(profile, entries) {
+    for (const entry of entries) {
+        if (entry.entryType !== 'resource' || entry.startTime < profile.started) continue;
+        const network = profile.network;
+        network.requests++;
+        network.transferBytes += entry.transferSize || 0;
+        network.encodedBytes += entry.encodedBodySize || 0;
+        network.decodedBytes += entry.decodedBodySize || 0;
+        if (entry.transferSize === 0 && entry.decodedBodySize > 0) network.cachedResponses++;
+        if (!entry.transferSize && !entry.encodedBodySize && !entry.decodedBodySize) network.unknownSizeResponses++;
+    }
+}
+
+function profileWorldLoading(phase, percent, mapName) {
+    if (!mapLoadProfiling) return;
+    if (phase === 'loading' && percent === 0 && !mapLoadProfile) {
+        const profile = mapLoadProfile = { started: performance.now(), map: '', milestones: { 0: 0 }, observer: null,
+            cacheStart: publicAssetCache?.snapshot(),
+            network: { observed: false, requests: 0, transferBytes: 0, encodedBytes: 0, decodedBytes: 0,
+                cachedResponses: 0, unknownSizeResponses: 0 } };
+        if (typeof PerformanceObserver === 'function') {
+            try {
+                profile.observer = new PerformanceObserver(list => recordMapResources(profile, list.getEntries()));
+                profile.observer.observe({ type: 'resource', buffered: false });
+                profile.network.observed = true;
+            } catch {
+                profile.observer?.disconnect();
+                profile.observer = null;
+            }
+        }
+    }
+    const profile = mapLoadProfile;
+    if (!profile) return;
+    if (mapName) profile.map = mapName;
+    const elapsed = Math.round(Math.max(0, performance.now() - profile.started) * 10) / 10;
+    if (phase === 'loading') {
+        if ((percent === 80 || percent === 85 || percent === 90 || percent === 95 || percent === 99)
+            && profile.milestones[percent] === undefined) profile.milestones[percent] = elapsed;
+        return;
+    }
+    if (phase === 'ready') profile.milestones[100] = elapsed;
+    if (profile.observer) {
+        recordMapResources(profile, profile.observer.takeRecords());
+        profile.observer.disconnect();
+    }
+    console.info('[MapLoadProfile] ' + JSON.stringify({ map: profile.map, outcome: phase === 'ready' ? 'ready' : 'cancelled',
+        milestones: profile.milestones, totalMs: elapsed, network: profile.network,
+        assetCache: publicAssetCache?.snapshot(profile.cacheStart) ?? null }));
+    mapLoadProfile = null;
+}
+
+let worldLoadingEpoch = 0;
+let pendingWorldReady = null;
+let adaptiveWorldReady = false;
+let adaptiveWorldLoading = false;
+
+function reportWorldLoading(phase, percent, mapName) {
+    if ((phase === 'loading' && percent === 0) || (phase !== 'loading' && phase !== 'ready')) {
+        worldLoadingEpoch++;
+        pendingWorldReady = null;
+    }
+    if (phase === 'ready' && activeGraphics?.workerRendering) {
+        pendingWorldReady ??= { epoch: worldLoadingEpoch, percent, mapName, waiting: false };
+        return;
+    }
+    commitWorldLoading(phase, percent, mapName);
+}
+
+function fenceWorldReady(graphics, onError) {
+    const pending = pendingWorldReady;
+    if (!pending || pending.waiting) return;
+    pending.waiting = true;
+    graphics.waitForSubmittedFrame().then(() => {
+        if (pendingWorldReady !== pending || pending.epoch !== worldLoadingEpoch || activeGraphics !== graphics) return;
+        pendingWorldReady = null;
+        commitWorldLoading('ready', pending.percent, pending.mapName);
+    }, error => {
+        if (pendingWorldReady === pending && pending.epoch === worldLoadingEpoch) onError(error);
+    });
+}
+
+function commitWorldLoading(phase, percent, mapName) {
+    adaptiveWorldReady = phase === 'ready';
+    adaptiveWorldLoading = phase === 'loading';
+    profileWorldLoading(phase, percent, mapName);
+    if (!worldLoading) return;
+    if (phase !== 'loading') {
+        if (phase === 'ready') {
+            worldLoadingProgress.value = percent;
+            worldLoadingPercent.textContent = percent + '%';
+            worldHud.show();
+        } else {
+            worldHud.hide();
+        }
+        worldLoading.hidden = true;
+        delete root.dataset.worldLoading;
+        return;
+    }
+
+    const value = Math.round(Math.max(0, Math.min(100, percent)));
+    const map = mapName || text.loadingMap;
+    if (worldLoadingName.textContent !== map) worldLoadingName.textContent = map;
+    worldLoadingProgress.value = value;
+    worldLoadingPercent.textContent = value + '%';
+    if (worldLoading.hidden) {
+        worldHud.hide();
+        worldLoading.setAttribute('aria-label', text.mapProgress);
+        worldLoadingProgress.setAttribute('aria-label', text.mapProgress);
+        worldLoadingStatus.textContent = text.loadingWorld;
+        root.dataset.worldLoading = 'true';
+        worldLoading.hidden = false;
+    }
+}
+
+function showMessage(line, tone = 'info') {
+    message.textContent = line;
+    message.dataset.tone = tone;
+}
+
+// The login: the form appears when the game reports its login screen (after the camera's descent); the account and
+// password then lead to the world list, and choosing a world logs in on its game server. A choice made before the files
+// up to the character list are in (FetchRemainingAsync) waits and goes in once they are.
+let host = null;
+let activeGraphics = null;
+let gameReady = false;
+let filesReady = false;
+let filesRequest = null;
+let loginPainted = false;
+let charactersPrefetched = false;
+let credentials = null;
+let accountName = "";
+
+// The character screen's panels (heroes.js): its commands go to the game after the current frame returns.
+const heroes = createHeroes(root, new URL('./', import.meta.url).href,
+    (kind, index = 0, value = '') => setTimeout(() => host?.CharacterCommand(kind, index, value)),
+    () => selectedLanguage, () => accountName);
+// The gear's Settings panel (settings.js).
+const settings = createSettings(root, () => host, () => selectedLanguage, setLanguage, () => worldHud.updateQuality());
+const worldHud = createWorldHud(root, () => host, () => selectedLanguage, () => settings.qualityLabel,
+    () => activeGraphics?.workerRendering ? activeGraphics.workerStats.completedFrames : activeGraphics?.stats.frames ?? null);
+const adaptiveResolution = createAdaptiveResolution();
+let adaptiveChangePending = false;
+let nextAdaptiveLabelTime = 0;
+
+function updateAdaptiveResolution(graphics, time, frames, onError) {
+    const sceneReady = frames >= 4 && loading.hidden && !adaptiveWorldLoading && !pendingWorldReady;
+    const revision = settings.appliedRevision * 2 + Number(adaptiveWorldReady);
+    const eligible = document.visibilityState === 'visible' && !settingsPanel?.open;
+    if (!adaptiveChangePending && adaptiveResolution.update(time, frames, settings.dynamicResolutionEnabled,
+        settings.renderScale, settings.maxFps, canvas.width, canvas.height, sceneReady, eligible, revision)) {
+        adaptiveChangePending = true;
+        Promise.resolve(graphics.setDynamicResolutionScale(adaptiveResolution.scale, adaptiveResolution.shadowHz)).then(() => {
+            adaptiveChangePending = false;
+            nextAdaptiveLabelTime = 0;
+        }, onError);
+    }
+    if (adaptiveChangePending || time < nextAdaptiveLabelTime) return;
+    nextAdaptiveLabelTime = time + 500;
+    const effective = graphics.getCapabilities().effective;
+    if (!effective) return;
+    const scale = effective.renderScale;
+    settings.setDynamicResolutionState({ enabled: settings.dynamicResolutionEnabled && sceneReady,
+        scale, width: effective.renderWidth ?? Math.max(1, Math.round(canvas.width * scale)),
+        height: effective.renderHeight ?? Math.max(1, Math.round(canvas.height * scale)),
+        shadowUpdateRate: effective.dynamicShadowUpdateRate ?? 0 });
+}
+
 if (openingMusic && openingSound) {
     openingSound.hidden = false;
-    openingMusic.volume = 0.6;
     openingMusic.src = new URL('./assets/StartImage/Opening/Intro.wav', import.meta.url).href;
     openingMusic.addEventListener('playing', () => openingSound.setAttribute('aria-pressed', 'true'));
     openingMusic.addEventListener('pause', () => openingSound.setAttribute('aria-pressed', 'false'));
@@ -222,40 +422,8 @@ if (openingMusic && openingSound) {
             openingMusic.pause();
         }
     });
-    void playOpeningMusic();
+    if (settings.openingMusicEnabled) void playOpeningMusic();
 }
-
-function showLoading(line, tone = 'busy', percent = null) {
-    if (!loading) return;
-    loading.hidden = false;
-    loading.dataset.tone = tone;
-    statusLine.textContent = line;
-    if (percent === null) progress.removeAttribute('value');
-    else progress.value = percent;
-    progress.hidden = tone === 'error';
-}
-
-function showMessage(line, tone = 'info') {
-    message.textContent = line;
-    message.dataset.tone = tone;
-}
-
-// The login: the form appears when the game reports its login screen (after the camera's descent); the account and
-// password then lead to the world list, and choosing a world logs in on its game server. A choice made before the files
-// up to the character list are in (FetchRemainingAsync) waits and goes in once they are.
-let host = null;
-let gameReady = false;
-let filesReady = false;
-let filesRequest = null;
-let loginPainted = false;
-let charactersPrefetched = false;
-let credentials = null;
-let accountName = "";
-
-// The character screen's panels (heroes.js): its commands go to the game after the current frame returns.
-const heroes = createHeroes(root, new URL('./', import.meta.url).href,
-    (kind, index = 0, value = '') => setTimeout(() => host?.CharacterCommand(kind, index, value)),
-    () => selectedLanguage, () => accountName);
 let pending = null;
 
 const worldsCard = part('worlds');
@@ -643,6 +811,7 @@ async function measureWorld(world, button, detail) {
         const response = await fetch(world.status, { cache: 'no-store', mode: 'cors' });
         const load = await response.json();
         const ping = Math.round(performance.now() - started);
+        world.ping = ping;
         button.dataset.online = 'true';
         detail.textContent = text.worldDetail(ping, load.players, load.capacity);
     } catch {
@@ -654,6 +823,7 @@ async function measureWorld(world, button, detail) {
 
 function chooseWorld(world) {
     if (!credentials || pending) return;
+    worldHud.selectWorld(world);
     for (const other of worldList.querySelectorAll('button')) other.disabled = true;
     pending = { selected: credentials, endpoint: world.endpoint };
     showWorldsMessage('');
@@ -662,6 +832,8 @@ function chooseWorld(world) {
 
 function reportLogin(state, line) {
     if (state === 'form') {
+        adaptiveWorldReady = false;
+        worldHud.hide();
         const first = !gameReady;
         gameReady = true;
         if (sendPending()) return;
@@ -681,22 +853,286 @@ function reportLogin(state, line) {
     }
 }
 
-function enableTouchTaps() {
+async function installPublicAssetCache(clientAddress, environment = globalThis, fill = false) {
+    const counts = { requests: 0, hits: 0, hitHeaderBytes: 0, hitsWithoutLength: 0, misses: 0,
+        puts: 0, readErrors: 0, writeErrors: 0, quotaErrors: 0, busyWriteSkips: 0, initializationErrors: 0 };
+    const state = { enabled: false, mode: fill ? 'diagnostic-fill' : 'read-only', readsDisabled: false, writesDisabled: !fill, pendingPuts: 0 };
+    const controller = { snapshot(previous) {
+        const result = { ...state };
+        for (const key of Object.keys(counts)) result[key] = counts[key] - (previous?.[key] ?? 0);
+        return result;
+    } };
+    try {
+        const storage = environment.caches;
+        if (!storage || typeof environment.fetch !== 'function') return controller;
+        const cacheName = 'noxius-public-assets-v1';
+        if (!fill && !await storage.has(cacheName)) return controller;
+        const original = environment.fetch.bind(environment);
+        const base = new environment.URL(clientAddress);
+        const manifestUrl = new environment.URL('bootstrap.txt', base).href;
+        const [manifest, cache] = await Promise.all([
+            original(manifestUrl, { cache: 'no-cache', credentials: 'same-origin' }),
+            storage.open(cacheName)
+        ]);
+        if (manifest.status !== 200 || manifest.type !== 'basic' || manifest.redirected || manifest.url !== manifestUrl) return controller;
+        const allowed = new Map();
+        for (const line of (await manifest.text()).split(/\r?\n/)) {
+            const columns = line.split('\t');
+            if (columns.length !== 2 || !/^[a-f0-9]{64}$/i.test(columns[1])) continue;
+            const relative = columns[0];
+            if (!/^(assets|Content)\//.test(relative) || /[\\%?#]/.test(relative)
+                || relative.split('/').some(part => !part || part === '.' || part === '..')) continue;
+            const url = new environment.URL(relative.split('/').map(encodeURIComponent).join('/'), base);
+            const hash = columns[1].toUpperCase();
+            if (allowed.has(url.pathname) && allowed.get(url.pathname) !== hash) throw new Error('Conflicting public asset versions.');
+            allowed.set(url.pathname, hash);
+        }
+        if (!allowed.size) return controller;
+        function publicRequest(input, options) {
+            try {
+                const method = options?.method ?? input?.method ?? 'GET';
+                const body = options?.body ?? input?.body;
+                const signal = options?.signal ?? input?.signal;
+                const integrity = options?.integrity ?? input?.integrity;
+                if (String(method).toUpperCase() !== 'GET' || body != null || signal?.aborted || integrity) return null;
+                const headers = new environment.Headers(options?.headers ?? input?.headers);
+                for (const name of ['authorization', 'proxy-authorization', 'cookie', 'range', 'if-range', 'if-none-match', 'if-modified-since', 'if-match', 'if-unmodified-since']) {
+                    if (headers.has(name)) return null;
+                }
+                const url = new environment.URL(input?.url ?? input, base);
+                if (url.origin !== base.origin || url.hash || url.searchParams.size !== 1 || url.searchParams.getAll('v').length !== 1) return null;
+                const hash = url.searchParams.get('v');
+                if (!/^[a-f0-9]{64}$/i.test(hash ?? '') || allowed.get(url.pathname) !== hash.toUpperCase()) return null;
+                const policy = options?.cache ?? input?.cache;
+                return { url: url.href, signal, lookup: policy !== 'no-store' && policy !== 'reload' && policy !== 'no-cache', store: policy !== 'no-store' };
+            } catch {
+                return null;
+            }
+        }
+        function publicResponse(response, url) {
+            return response?.status === 200 && response.type === 'basic' && !response.redirected && response.url === url
+                && !response.headers.has('content-range') && !(response.headers.get('vary') ?? '').split(',').some(value => value.trim() === '*')
+                && !/(?:^|,)\s*(?:private|no-store|no-cache)(?:\s|,|=|$)/i.test(response.headers.get('cache-control') ?? '');
+        }
+        function writeFailure(error) {
+            counts.writeErrors++;
+            if (error?.name === 'QuotaExceededError') counts.quotaErrors++;
+            state.writesDisabled = true;
+        }
+        function abortableHit(response, signal) {
+            if (!signal || !response.body) return response;
+            const reader = response.body.getReader();
+            let terminal = false;
+            let controller;
+            const release = () => { try { reader.releaseLock(); } catch {} };
+            const cleanup = () => signal.removeEventListener('abort', abort);
+            const abort = () => {
+                if (terminal) return;
+                terminal = true;
+                cleanup();
+                const reason = signal.reason ?? new environment.DOMException('Asset request cancelled', 'AbortError');
+                controller.error(reason);
+                Promise.resolve(reader.cancel(reason)).catch(() => {}).finally(release);
+            };
+            const stream = new environment.ReadableStream({
+                start(value) {
+                    controller = value;
+                    signal.addEventListener('abort', abort, { once: true });
+                    if (signal.aborted) abort();
+                },
+                async pull(value) {
+                    if (terminal) return;
+                    try {
+                        const chunk = await reader.read();
+                        if (terminal) return;
+                        if (chunk.done) {
+                            terminal = true;
+                            cleanup();
+                            value.close();
+                            release();
+                        } else value.enqueue(chunk.value);
+                    } catch (error) {
+                        if (!terminal) {
+                            terminal = true;
+                            cleanup();
+                            value.error(error);
+                        }
+                        release();
+                    }
+                },
+                cancel(reason) {
+                    if (terminal) return;
+                    terminal = true;
+                    cleanup();
+                    return Promise.resolve(reader.cancel(reason)).finally(release);
+                }
+            });
+            function metadata(result) {
+                Object.defineProperties(result, { url: { value: response.url }, type: { value: response.type }, redirected: { value: response.redirected } });
+                const clone = result.clone.bind(result);
+                result.clone = () => metadata(clone());
+                return result;
+            }
+            return metadata(new environment.Response(stream, { status: response.status, statusText: response.statusText, headers: response.headers }));
+        }
+        environment.fetch = async function publicAssetFetch(input, options) {
+            const request = publicRequest(input, options);
+            if (!request) return original(input, options);
+            counts.requests++;
+            if (request.lookup && !state.readsDisabled) {
+                try {
+                    const cached = await cache.match(request.url, { ignoreSearch: false, ignoreVary: false });
+                    if (request.signal?.aborted) return original(input, options);
+                    if (publicResponse(cached, request.url)) {
+                        counts.hits++;
+                        const header = cached.headers.get('content-length');
+                        const bytes = header === null ? NaN : Number(header);
+                        if (Number.isFinite(bytes) && bytes >= 0) counts.hitHeaderBytes += bytes;
+                        else counts.hitsWithoutLength++;
+                        return abortableHit(cached, request.signal);
+                    }
+                } catch {
+                    counts.readErrors++;
+                    state.readsDisabled = true;
+                    state.writesDisabled = true;
+                }
+            }
+            counts.misses++;
+            const response = await original(input, options);
+            if (request.store && !state.writesDisabled && publicResponse(response, request.url)) {
+                // Bound background tees; cache storage never gates the loader's response or readiness.
+                if (state.pendingPuts >= 16) counts.busyWriteSkips++;
+                else {
+                    try {
+                        const copy = response.clone();
+                        state.pendingPuts++;
+                        Promise.resolve().then(() => cache.put(request.url, copy)).then(() => counts.puts++, writeFailure)
+                            .finally(() => state.pendingPuts--);
+                    } catch (error) {
+                        writeFailure(error);
+                    }
+                }
+            }
+            return response;
+        };
+        state.enabled = true;
+    } catch {
+        counts.initializationErrors++;
+    }
+    return controller;
+}
+
+function startPublicAssetCache(clientAddress, environment = globalThis) {
+    const diagnostics = new URLSearchParams(environment.location.search);
+    if (diagnostics.get('profile') !== '1' || diagnostics.get('asset-cache') !== '1') return null;
+    return installPublicAssetCache(clientAddress, environment, diagnostics.get('asset-cache-fill') === '1');
+}
+
+function configureWeatherDiagnostic(host, search = location.search) {
+    const query = new URLSearchParams(search);
+    const enabled = query.get('profile') === '1' && query.get('qa-weather') === 'rain-full';
+    const accepted = host.SetDiagnosticFullRain(enabled);
+    if (enabled && !accepted) throw new Error('Client weather diagnostics require frame profiling.');
+    if (enabled) console.info('[WeatherDiagnostic] Full rain requested for this client; FrameProfile reports actual application and drawing.');
+    return enabled;
+}
+
+function enableCanvasPicking(profile = false) {
+    const heroesPanel = root.querySelector('[data-role="heroes"]');
     let start;
-    canvas.addEventListener('pointerdown', event => {
-        if (event.pointerType !== 'touch' || !event.isPrimary) return;
-        event.preventDefault();
-        start = { id: event.pointerId, x: event.clientX, y: event.clientY };
-        canvas.setPointerCapture(event.pointerId);
+    let suppressMouseClick = false;
+    let previousPickMs;
+
+    function trace(action, event, reason, x, y) {
+        if (!profile) return;
+        console.info('[StageInput] ' + JSON.stringify({ action, type: event?.type, detail: event?.detail,
+            eventMs: event?.timeStamp, deltaMs: previousPickMs === undefined ? null : event?.timeStamp - previousPickMs,
+            screen: heroesPanel.dataset.screen, visible: !heroesPanel.hidden, pointerType: event?.pointerType,
+            button: event?.button, pointerId: event?.pointerId, primary: event?.isPrimary, trusted: event?.isTrusted,
+            clientX: event?.clientX, clientY: event?.clientY, dragged: start?.dragged ?? false,
+            suppressed: suppressMouseClick, reason, x, y }));
+    }
+
+    function resetStagePick(reason, event) {
+        trace('reset', event, reason);
+        const screen = heroesPanel.dataset.screen;
+        if (!heroesPanel.hidden && (screen === 'roster' || screen === 'class')) {
+            host.CharacterCommand('ResetStagePick', -1, '');
+        }
+    }
+
+    function pickStage(event) {
+        const screen = heroesPanel.dataset.screen;
+        if (heroesPanel.hidden || screen !== 'class' && screen !== 'roster') {
+            trace('ignored', event, 'screen');
+            return false;
+        }
+        const rect = canvas.getBoundingClientRect();
+        if (rect.width <= 0 || rect.height <= 0) {
+            trace('ignored', event, 'canvas-size');
+            return false;
+        }
+        const x = (event.clientX - rect.left) / rect.width;
+        const y = (event.clientY - rect.top) / rect.height;
+        trace('submitted', event, 'pick', x, y);
+        previousPickMs = event.timeStamp;
+        host.PickOnStage(screen, x, y, event.timeStamp / 1000);
+        return true;
+    }
+
+    canvas.addEventListener('click', event => {
+        trace('click', event, 'received');
+        if (event.button !== 0 || event.pointerType === 'touch') {
+            trace('ignored', event, 'button-or-touch');
+            return;
+        }
+        if (suppressMouseClick) {
+            trace('ignored', event, 'suppressed');
+            suppressMouseClick = false;
+            return;
+        }
+        pickStage(event);
     });
-    canvas.addEventListener('pointercancel', () => { start = undefined; });
-    canvas.addEventListener('pointerup', event => {
-        if (start?.id !== event.pointerId) return;
-        const distance = Math.hypot(event.clientX - start.x, event.clientY - start.y);
+    if (profile) canvas.addEventListener('dblclick', event => trace('dblclick', event, 'browser-recognized'));
+    canvas.addEventListener('pointerdown', event => {
+        trace('pointerdown', event, 'received');
+        if (!event.isPrimary || event.button !== 0) {
+            if (start) start.dragged = true;
+            resetStagePick('non-primary', event);
+            return;
+        }
+        suppressMouseClick = false;
+        start = { id: event.pointerId, x: event.clientX, y: event.clientY, dragged: false };
+        if (event.pointerType === 'touch') {
+            event.preventDefault();
+            canvas.setPointerCapture(event.pointerId);
+        }
+    });
+    window.addEventListener('pointermove', event => {
+        if (start?.id === event.pointerId && Math.hypot(event.clientX - start.x, event.clientY - start.y) > 12) {
+            start.dragged = true;
+        }
+    });
+    canvas.addEventListener('pointercancel', event => {
+        trace('pointercancel', event, 'received');
         start = undefined;
-        if (distance > 12) return;
+        suppressMouseClick = true;
+        resetStagePick('cancel', event);
+    });
+    canvas.addEventListener('pointerup', event => {
+        trace('pointerup', event, 'received');
+        if (start?.id !== event.pointerId) return;
+        const dragged = start.dragged || Math.hypot(event.clientX - start.x, event.clientY - start.y) > 12;
+        start = undefined;
+        if (dragged) {
+            suppressMouseClick = true;
+            resetStagePick('drag', event);
+            return;
+        }
+        if (event.pointerType !== 'touch') return;
 
         canvas.focus({ preventScroll: true });
+        if (pickStage(event)) return;
         const position = { clientX: event.clientX, clientY: event.clientY, button: 0, bubbles: true };
         canvas.dispatchEvent(new MouseEvent('mousedown', { ...position, buttons: 1 }));
         requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -705,37 +1141,204 @@ function enableTouchTaps() {
     });
 }
 
-// Device creation is asynchronous in the browser, so it happens here, before the runtime starts; Emscripten hands the
-// device to the MonoGame runtime (preinitializedWebGPUDevice).
-async function createDevice() {
-    const adapter = navigator.gpu ? await navigator.gpu.requestAdapter() : null;
-    if (!adapter) {
-        return null;
-    }
+async function createMainGraphics(targetCanvas, options) {
+    const { createThreeGraphics } = await import('./three-scene.js');
+    return createThreeGraphics(targetCanvas, options);
+}
 
-    const requiredFeatures = adapter.features.has("float32-filterable") ? ["float32-filterable"] : [];
-    const device = await adapter.requestDevice({ requiredFeatures });
-    const errors = new Set();
-    device.addEventListener("uncapturederror", ({ error }) => {
-        if (errors.size < 40) errors.add(error.message);
-        canvas.dataset.webgpuErrors = JSON.stringify([...errors]);
-    });
-    device.addEventListener('uncapturederror', event => console.error(`WebGPU: ${event.error.message}`));
-    return device;
+async function createWorkerDevice(options) {
+    const { loadWorkerSmaaLookups } = await import('./three-worker-assets.js');
+    const lookups = await loadWorkerSmaaLookups();
+    try {
+        return await createWorkerGraphics(canvas, { ...options, workerInit: lookups.workerInit,
+            workerInitTransferList: lookups.transferList });
+    } catch (error) {
+        lookups.release();
+        throw error;
+    }
+}
+
+// Three owns rendering, including the native UI batches. The C# runtime keeps CPU resources and game state.
+async function createDevice() {
+    const diagnostics = new URLSearchParams(location.search);
+    const options = { forceWebGL: diagnostics.get('renderer') === 'webgl2', profile: diagnostics.has('profile'),
+        textureArrays: diagnostics.get('texture-arrays') !== '0',
+        cutoutArrays: diagnostics.get('profile') === '1' && diagnostics.get('cutout-arrays') === '1',
+        internalPost: diagnostics.get('internal-post') === '0' ? false
+            : diagnostics.get('profile') === '1' && diagnostics.get('internal-post') === '1' ? true : 'auto',
+        fusedSharpen: diagnostics.get('fused-sharpen') === '0' ? false
+            : diagnostics.get('profile') === '1' && diagnostics.get('fused-sharpen') === '1' ? true : 'auto',
+        zeroPointLights: diagnostics.get('zero-point-lights') === '0' ? false
+            : diagnostics.get('profile') === '1' && diagnostics.get('zero-point-lights') === '1' ? true : 'auto',
+        stageSkinCulling: diagnostics.get('stage-culling') !== '0',
+        renderBundles: diagnostics.get('profile') === '1' && diagnostics.get('render-bundles') === '1',
+        staticArrayObservers: diagnostics.get('profile') === '1' && diagnostics.get('observer-cache') === '1',
+        frameSlots: diagnostics.get('frame-slots') === '3' ? 3 : 4,
+        gpuTiming: diagnostics.get('profile') === '1' && diagnostics.get('gpu-timing') === '1' };
+    if (diagnostics.get('render-worker') !== '0' && typeof Worker === 'function'
+        && typeof canvas.transferControlToOffscreen === 'function') {
+        try {
+            return await createWorkerDevice(options);
+        } catch (error) {
+            const replacement = document.createElement('canvas');
+            for (const attribute of canvas.attributes) {
+                if (!attribute.name.startsWith('data-renderer') && !attribute.name.startsWith('data-webgpu')) {
+                    replacement.setAttribute(attribute.name, attribute.value);
+                }
+            }
+            canvas.replaceWith(replacement);
+            canvas = replacement;
+            worldHud.setCanvas(canvas);
+            console.warn('A renderização paralela ficou indisponível. Usando o renderizador da página:', error.message ?? String(error));
+        }
+    }
+    return createMainGraphics(canvas, options);
+}
+
+function enableTextureArrayBenchmark(graphics, resetProfiles, diagnostics = false) {
+    if (!diagnostics) return;
+    const initial = graphics.getProfile();
+    if (!graphics.textureArraysRequested && !initial?.renderBundles?.requested
+        && !initial?.staticArrayObservers?.requested && !initial?.gpu?.requested && !initial?.zeroPointLights?.requested
+        && !initial?.internalPost?.requested) return;
+    const panel = document.createElement('section');
+    panel.setAttribute('aria-label', 'Teste de desempenho');
+    Object.assign(panel.style, { position: 'absolute', top: '12px', left: '50%', transform: 'translateX(-50%)',
+        zIndex: '1000', padding: '10px 12px', border: '1px solid #a58b4e', borderRadius: '6px',
+        background: 'rgba(15,19,25,.94)', color: '#ece3cc', font: '12px sans-serif', textAlign: 'center' });
+    const title = document.createElement('strong');
+    title.textContent = 'Teste de desempenho';
+    title.style.display = 'block';
+    title.style.marginBottom = '7px';
+    panel.append(title);
+    const controls = [];
+    function addToggle(kind, labels, supported, enabled, apply, describe) {
+        const row = document.createElement('div');
+        row.style.marginTop = '7px';
+        const plain = document.createElement('button');
+        const grouped = document.createElement('button');
+        plain.type = grouped.type = 'button';
+        plain.textContent = labels[0];
+        grouped.textContent = labels[1];
+        for (const button of [plain, grouped]) {
+            Object.assign(button.style, { padding: '6px 9px', margin: '0 3px', border: '1px solid #a58b4e',
+                borderRadius: '3px', color: '#ece3cc', cursor: 'pointer', font: 'inherit' });
+            button.addEventListener('keydown', event => event.stopPropagation());
+        }
+        const status = document.createElement('div');
+        status.setAttribute('role', 'status');
+        status.style.marginTop = '5px';
+        const refresh = census => {
+            const active = enabled(census);
+            plain.setAttribute('aria-pressed', String(!active));
+            grouped.setAttribute('aria-pressed', String(active));
+            plain.style.background = active ? '#1c232c' : '#725b2e';
+            grouped.style.background = active ? '#725b2e' : '#1c232c';
+            grouped.disabled = !supported(census);
+            status.textContent = describe(active, census);
+        };
+        const select = async active => {
+            try {
+                const applied = apply(active);
+                if (applied && typeof applied.then === 'function') await applied;
+                if (graphics.workerRendering) await graphics.requestProfile();
+                const profile = resetProfiles();
+                for (const control of controls) control.refresh(profile?.[control.kind]);
+                console.info('[' + (kind === 'renderBundles' ? 'RenderBundleBenchmark'
+                    : kind === 'zeroPointLights' ? 'ZeroPointLightsBenchmark'
+                    : kind === 'internalPost' ? 'InternalPostBenchmark' : 'TextureArrayBenchmark') + '] ' + JSON.stringify(profile?.[kind]));
+            } catch (error) {
+                status.textContent = 'Falha ao alternar: ' + error.message;
+            }
+        };
+        plain.addEventListener('click', () => select(false));
+        grouped.addEventListener('click', () => select(true));
+        row.append(plain, grouped, status);
+        panel.append(row);
+        controls.push({ kind, refresh });
+        refresh(initial?.[kind]);
+    }
+    if (graphics.textureArraysRequested) addToggle('textureArrays', ['Sem agrupamento', 'Com agrupamento'],
+        () => graphics.textureArrayLayers >= 2, () => graphics.textureArraysEnabled, active => graphics.setTextureArraysEnabled(active),
+        (active, census) => (active ? 'Agrupamento ligado' : 'Agrupamento desligado')
+            + (census ? ` · ${census.outputObjects}/${census.baselineObjects} objetos` : ''));
+    if (initial?.renderBundles?.requested) addToggle('renderBundles', ['Sem pacotes', 'Com pacotes'],
+        census => !!census?.supported, census => !!census?.enabled, active => graphics.setRenderBundlesEnabled(active),
+        (active, census) => (active ? 'Pacotes ligados' : 'Pacotes desligados') + (census ? ` · ${census.chunks} blocos` : ''));
+    if (initial?.staticArrayObservers?.requested) addToggle('staticArrayObservers', ['Materiais originais', 'Materiais otimizados'],
+        census => !!census?.requested, census => !!census?.enabled, active => graphics.setStaticArrayObserversEnabled(active),
+        (active, census) => (active ? 'Atualização seletiva ligada' : 'Atualização seletiva desligada')
+            + (census ? ` · ${census.branded} materiais` : ''));
+    if (initial?.zeroPointLights?.requested) addToggle('zeroPointLights', ['Luzes originais', 'Luzes otimizadas'],
+        census => !!census?.requested, census => !!census?.enabled, active => graphics.setZeroPointLightsEnabled(active),
+        active => active ? 'Descarte de contribuição zero ligado' : 'Descarte de contribuição zero desligado');
+    if (initial?.internalPost?.requested) addToggle('internalPost', ['Pós original', 'Pós interno'],
+        census => !!census?.requested, census => !!census?.enabled, active => graphics.setInternalPostEnabled(active),
+        (active, census) => (active ? 'Pós interno ligado' : 'Pós original')
+            + (census?.width ? ` · ${census.width}×${census.height}` : ''));
+    if (initial?.gpu?.requested) {
+        const row = document.createElement('div');
+        row.style.marginTop = '7px';
+        const status = document.createElement('div');
+        status.setAttribute('role', 'status');
+        const choices = [['off', 'GPU desligada'], ['sampled', 'GPU por amostra'], ['continuous', 'GPU contínua']];
+        const buttons = [];
+        const refresh = census => {
+            for (const [mode, button] of buttons) {
+                const active = census?.mode === mode;
+                button.setAttribute('aria-pressed', String(active));
+                button.style.background = active ? '#725b2e' : '#1c232c';
+                button.disabled = mode !== 'off' && !census?.supported;
+            }
+            status.textContent = 'Temporização GPU: ' + (census?.mode === 'continuous' ? 'todos os quadros'
+                : census?.mode === 'sampled' ? '1 a cada 10 quadros' : 'desligada');
+        };
+        for (const [mode, label] of choices) {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.textContent = label;
+            Object.assign(button.style, { padding: '6px 9px', margin: '0 3px', border: '1px solid #a58b4e',
+                borderRadius: '3px', color: '#ece3cc', cursor: 'pointer', font: 'inherit' });
+            button.addEventListener('keydown', event => event.stopPropagation());
+            button.addEventListener('click', async () => {
+                try {
+                    await graphics.setGpuTimingMode(mode);
+                    const profile = resetProfiles();
+                    for (const control of controls) control.refresh(profile?.[control.kind]);
+                    console.info('[GpuTimingBenchmark] ' + JSON.stringify(profile?.gpu));
+                } catch (error) {
+                    status.textContent = 'Falha na temporização: ' + error.message;
+                }
+            });
+            row.append(button);
+            buttons.push([mode, button]);
+        }
+        row.append(status);
+        panel.append(row);
+        controls.push({ kind: 'gpu', refresh });
+        refresh(initial.gpu);
+    }
+    root.append(panel);
 }
 
 showLoading(text.loadingClient);
 try {
-    const device = await createDevice();
-    if (!device) {
+    const graphics = await createDevice();
+    activeGraphics = graphics;
+    if (!graphics) {
         showLoading(text.noWebGpu, 'error');
         showMessage(text.noWebGpu, 'error');
     } else {
+        const clientAddress = new URL('./', import.meta.url);
+        const cacheReady = startPublicAssetCache(clientAddress.href);
         const { dotnet } = await import("./_framework/dotnet.js");
         const runtime = await dotnet
-            .withModuleConfig({ preinitializedWebGPUDevice: device })
+            .withModuleConfig({ noxiusThreeGraphics: graphics })
             .withConfig({ loadAllSatelliteResources: true, maxParallelDownloads: 4 })
             .create();
+        runtime.setModuleImports('noxius-three-scene', graphics.workerRendering ? createWorkerPackedImports(graphics) : createPackedImports(graphics));
+        if (graphics.adapterInfo) settings.setAdapterInfo(graphics.adapterInfo);
+        settings.setRendererCapabilities(graphics.getCapabilities());
         runtime.setModuleImports('avalon-page', {
             reportLoginProgress(done, total) {
                 const percent = total ? Math.floor(100 * done / total) : 100;
@@ -743,7 +1346,17 @@ try {
                 if (root.dataset.state === 'loading') progress.value = percent;
             },
             reportLogin,
-            reportCharacters: state => heroes.report(state),
+            reportCharacters(state) {
+                heroes.report(state);
+                if (!part('heroes').hidden) {
+                    adaptiveWorldReady = false;
+                    worldHud.hide();
+                }
+            },
+            reportWorldLoading,
+            openWorldSettings() {
+                queueMicrotask(() => part('settings-open')?.click());
+            },
             showCommunityLink(address) {
                 let link = root.querySelector('[data-community-link]');
                 if (!link) {
@@ -761,51 +1374,130 @@ try {
         });
         const exports = await runtime.getAssemblyExports(runtime.getConfig().mainAssemblyName);
         host = exports.PristonTale.Browser.BrowserHost;
+        settings.start(host);
+        worldHud.enable(host);
         // Read-only diagnostic for the live opening's position.
         window.avalonOpeningSeconds = () => host.OpeningSeconds();
         // How long each part of the start takes, logged once the scene is up (the console's "[Partida]" line).
         const phases = { runtime: Math.round(performance.now()) };
         showLoading(text.loadingFiles);
-        await host.PrepareAsync(new URL('./', import.meta.url).href);
+        publicAssetCache = await cacheReady;
+        await host.PrepareAsync(clientAddress.href);
         phases.files = Math.round(performance.now());
         // The right button belongs to the game.
         canvas.addEventListener('contextmenu', event => event.preventDefault());
         started = true;
         host.Start(root.dataset.endpoint, selectedLanguage, location.origin);
+        const profileFrames = new URLSearchParams(location.search).has('profile');
+        if (profileFrames) host.EnableFrameProfiling();
+        configureWeatherDiagnostic(host);
         phases.start = Math.round(performance.now());
-        enableTouchTaps();
+        enableCanvasPicking(profileFrames);
         // The files up to the character list wait until the opening has run smoothly for a moment: fetched and written
         // on the game's thread, they would otherwise stall its first seconds.
         const remainingDelayMs = 1000;
         let drawn = 0;
-        const frame = () => {
-            try {
-                host.Frame();
-                drawn++;
-                if (drawn === 4) {
-                    loading.hidden = true;
-                    setTimeout(() => {
-                        revealLogin();
-                        requestAnimationFrame(() => requestAnimationFrame(() => {
-                            loginPainted = true;
-                            prefetchCharacters();
-                        }));
-                    }, loginDelayMs);
-                    setTimeout(fetchRemaining, remainingDelayMs);
-                    phases.scene = Math.round(performance.now());
-                    console.info(`[Partida] runtime ${phases.runtime} ms; arquivos da cena +${phases.files - phases.runtime} ms; `
-                        + `início do jogo +${phases.start - phases.files} ms; primeiros quadros +${phases.scene - phases.start} ms; total ${phases.scene} ms`);
-                    root.dataset.state = 'running';
+        let lastLimit = 0;
+        let nextFrameTime = 0;
+        let nextProfileTime = 0;
+        let openingShown = false;
+        let frameScheduled = false;
+        let waitingForSlot = false;
+        let profilePending = false;
+        let frameStopped = false;
+        enableTextureArrayBenchmark(graphics, () => {
+            host.EnableFrameProfiling();
+            const profile = graphics.getProfile();
+            nextProfileTime = performance.now() + 5000;
+            return profile;
+        }, profileFrames);
+        const stopFrames = error => {
+            if (frameStopped) return;
+            frameStopped = true;
+            console.error('Falha durante o jogo:', error);
+            reportWorldLoading('cancelled');
+            root.dataset.state = 'failed';
+            showLoading(text.stopped(error), 'error');
+        };
+        const requestFrame = () => {
+            if (frameStopped || frameScheduled) return;
+            frameScheduled = true;
+            requestAnimationFrame(frame);
+        };
+        const showOpening = () => {
+            if (openingShown || drawn < 4) return;
+            openingShown = true;
+            loading.hidden = true;
+            setTimeout(() => {
+                revealLogin();
+                requestAnimationFrame(() => requestAnimationFrame(() => {
+                    loginPainted = true;
+                    prefetchCharacters();
+                }));
+            }, loginDelayMs);
+            setTimeout(fetchRemaining, remainingDelayMs);
+            phases.scene = Math.round(performance.now());
+            console.info(`[Partida] runtime ${phases.runtime} ms; arquivos da cena +${phases.files - phases.runtime} ms; `
+                + `início do jogo +${phases.start - phases.files} ms; primeiros quadros +${phases.scene - phases.start} ms; total ${phases.scene} ms`);
+            root.dataset.state = 'running';
+        };
+        const frame = time => {
+            frameScheduled = false;
+            if (frameStopped) return;
+            if (graphics.workerRendering) drawn = graphics.workerStats.completedFrames;
+            showOpening();
+            const limit = drawn >= 4 ? settings.maxFps : 0;
+            if (lastLimit !== limit) {
+                lastLimit = limit;
+                nextFrameTime = time;
+            }
+            if (limit > 0) {
+                if (time + 0.75 < nextFrameTime) {
+                    requestFrame();
+                    return;
                 }
-                requestAnimationFrame(frame);
+                nextFrameTime = Math.max(nextFrameTime + 1000 / limit, time);
+            }
+            try {
+                if (graphics.workerRendering && !graphics.canAdvanceFrame) {
+                    if (!waitingForSlot) {
+                        waitingForSlot = true;
+                        graphics.waitForFrameSlot().then(() => {
+                            waitingForSlot = false;
+                            requestFrame();
+                        }, stopFrames);
+                    }
+                    return;
+                }
+                host.Frame();
+                if (graphics.workerRendering) fenceWorldReady(graphics, stopFrames);
+                worldHud.frame(time);
+                if (profileFrames && !profilePending && time >= nextProfileTime) {
+                    nextProfileTime = time + 5000;
+                    console.info('[FrameProfile] ' + host.FrameProfile());
+                    if (graphics.workerRendering) {
+                        profilePending = true;
+                        graphics.requestProfile().then(profile => {
+                            profilePending = false;
+                            if (frameStopped) return;
+                            settings.setRendererCapabilities(graphics.getCapabilities());
+                            console.info('[ThreeProfile] ' + JSON.stringify(profile));
+                        }, stopFrames);
+                    } else console.info('[ThreeProfile] ' + JSON.stringify(graphics.getProfile()));
+                    if (publicAssetCache) console.info('[AssetCacheProfile] ' + JSON.stringify(publicAssetCache.snapshot()));
+                }
+                if (graphics.workerRendering) drawn = graphics.workerStats.completedFrames;
+                else drawn = graphics.stats.frames;
+                updateAdaptiveResolution(graphics, time, drawn, stopFrames);
+                showOpening();
+                requestFrame();
             } catch (error) {
-                console.error('Falha durante o jogo:', error);
-                root.dataset.state = 'failed';
-                showLoading(text.stopped(error), 'error');
+                stopFrames(error);
             }
         };
-        requestAnimationFrame(frame);
+        requestFrame();
     }
 } catch (error) {
+    reportWorldLoading('cancelled');
     showLoading(text.failed(error), 'error');
 }

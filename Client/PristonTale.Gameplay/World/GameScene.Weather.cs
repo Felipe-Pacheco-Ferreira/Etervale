@@ -24,6 +24,7 @@ public sealed partial class GameScene
     private readonly Fireflies _fireflies = new(Random.Shared);
 
     public WeatherState ServerWeather { get; private set; }
+    public ClientWeatherDiagnostic WeatherDiagnostic { get; init; }
 
     private bool WeatherShown => (_presentation?.Requested.WeatherEnabled ?? true) && (_currentField is null || WeatherSchedule.Rains(_currentField));
 
@@ -38,7 +39,8 @@ public sealed partial class GameScene
         if (!_weatherSeen)
         {
             _weatherSeen = true;
-            _weather.Snap(weather, WeatherShown);
+            var shown = WeatherShown;
+            _weather.Snap(WeatherDiagnostic?.Resolve(weather, shown) ?? weather, shown);
         }
     }
 
@@ -66,7 +68,9 @@ public sealed partial class GameScene
 
     private void UpdateWeather(float seconds)
     {
-        _weather.Update(ServerWeather, WeatherShown, seconds);
+        var shown = WeatherShown;
+        _weather.Update(WeatherDiagnostic?.Resolve(ServerWeather, shown) ?? ServerWeather, shown, seconds);
+        WeatherDiagnostic?.ObservePresentation(_weather.Rain);
         if (_renderer is not null)
         {
             _renderer.Weather = _weather.View;
@@ -105,6 +109,7 @@ public sealed partial class GameScene
         if (_rain is not null && _camera is not null)
         {
             _rain.Draw(_camera.View, _camera.Projection, _camera.Position, _weather.View, _renderer.RainRadiance);
+            WeatherDiagnostic?.ObserveDraw(_weather.Rain);
         }
     }
 }

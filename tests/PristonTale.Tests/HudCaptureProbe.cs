@@ -443,7 +443,7 @@ internal sealed class HudCaptureProbe : Game
 
             if (scenario.Settings)
             {
-                Click(state, layout, layout.Bottom(HudSystemMenu.Entry(HudSystemEntry.Settings)).Center);
+                Click(state, layout, layout.Bottom(HudSystemMenu.Button(HudSystemEntry.Settings, browser: false)).Center);
             }
 
             if (scenario.Clan)
@@ -686,7 +686,7 @@ internal sealed class HudCaptureProbe : Game
         }
 
         Click(state, layout, layout.Bottom(HudBar.MenuButton(HudMenuButton.System)).Center);
-        Click(state, layout, layout.Bottom(HudSystemMenu.Entry(HudSystemEntry.Help)).Center);
+        Click(state, layout, layout.Bottom(HudSystemMenu.Button(HudSystemEntry.Help, browser: false)).Center);
         if (scenario.Help != ProbeHelp.Window)
         {
             Click(state, layout, HudHelpWindow.GuideLink.Center);
@@ -737,7 +737,7 @@ internal sealed class HudCaptureProbe : Game
             Hover.Item => HudInventoryLayout.Cell(origin, 3, 2, 3).Center,
             Hover.SkillNode => HudSkillsPanel.ClassRow(origin, 0).Center,
             Hover.SkillBasic => HudSkillTreeLayout.BasicAttack(origin).Center,
-            Hover.SettingsRow => HudSettingsPanel.Row(4).Center,
+            Hover.SettingsRow => HudSettingsPanel.CloseButton.Center,
             Hover.AllocateArrow => HudStatusPanel.AllocateButton(origin, 0).Center,
             Hover.ShopItem => HudStoreLayout.Cell(HudStoreLayout.Origin(0), 0, 2, 3).Center,
             Hover.WarehouseItem => HudStoreLayout.Cell(HudStoreLayout.Origin(0), 2, 2, 3).Center,

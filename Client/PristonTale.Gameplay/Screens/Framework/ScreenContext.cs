@@ -55,6 +55,7 @@ public sealed class ScreenContext
     public bool IsWindowActive { get; internal set; } = true;
     public PristonTale.Engine3D.Rendering.PresentationSettings Presentation { get; }
     public PristonTale.Gameplay.UI.Rendering.HudAtlas UiAtlas { get; }
+    public PristonTale.Gameplay.Weather.ClientWeatherDiagnostic WeatherDiagnostic { get; init; }
 
     public IClientLog Log { get; }
 
@@ -62,6 +63,7 @@ public sealed class ScreenContext
     internal Action<string> SelectServer { get; init; }
     internal Func<Task> PrepareWorldAssetsAsync { get; init; }
     internal Func<IReadOnlyList<PlayerClass>, CancellationToken, Task> PrepareCharacterAssetsAsync { get; init; }
+    internal Func<PlayerClass, bool> CharacterAssetsReady { get; init; }
 
     public IGameBackend Backend { get; private set; }
 

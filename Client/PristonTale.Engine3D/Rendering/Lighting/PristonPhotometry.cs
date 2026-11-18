@@ -15,6 +15,8 @@ internal static class PristonPhotometry
     public const float IncidentCalibration = 250f;
     public const float MinEv100 = -4f;
     public const float MaxEv100 = 17f;
+    // The reference radius used by the surface shader's inverse-square lamp attenuation.
+    public const float LampReferenceDistance = 150f;
 
     // Clear-sky solar illuminance at normal incidence above the atmosphere's attenuation, lux.
     public const float SolarIlluminance = 120000f;

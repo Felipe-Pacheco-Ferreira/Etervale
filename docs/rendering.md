@@ -29,6 +29,7 @@ sources are in [shaders.md](shaders.md); option fields in [client-settings.md](c
 | `Equipment/EquipmentVisualTables.cs` | Generated item, body and equipment-bone tables (client.md); descriptors name weapons through it. |
 | `Formats/PristonPhysiqueRepair.cs` | Moves a stray Physique vertex (bound four or more joints from the bone its edge neighbours follow, and twice as near that bone) to their bone, keeping its bind position, so it no longer pulls a spike out of a bending joint. |
 | `Formats/PristonCameraPath.cs` | Cinematic camera paths (`.cam`) of the opening. |
+| `Rendering/IExternalSceneRenderer.cs`, `PristonRenderer.External.cs` | External scene strategy: immutable geometry/material registration, shared actor resources, C# poses and camera/light frames. |
 | `Formats/PristonFormats.cs` | Format records (`PristonStage`, `PristonModel`, `PristonMaterial`, `PristonStageLight`, motions) and `PristonFormatConstants`. |
 | `Formats/BinaryUtil.cs`, `PristonAssetCache.cs` | Bounds-checked `BinaryCursor`; case-insensitive cache of parsed stages and models. |
 | `IO/ClientSettingsStore.cs` | `client-settings.json` persistence ([client-settings.md](client-settings.md)). |
@@ -61,6 +62,132 @@ runtime `mgruntime`, SM 6 effect processor); see [monogame/README.md](../monogam
 effects and `StructuredBuffer` (light culling, exposure, SH), `GpuTimestampPool` (profiler), resolve of multisampled
 float targets. Display limits of the platform (primary monitor only, desktop refresh rate) are handled in
 `Client/PristonTale/Display/DisplayController.cs`. Fork changes go into `monogame/` with its own issue notes, not here.
+
+## External scene renderer
+
+`PristonRenderer.ExternalSceneRendererFactory` optionally supplies one `IExternalSceneRenderer` per renderer;
+an explicit constructor argument overrides the factory. With no strategy, the native renderer runs unchanged.
+An external strategy bypasses native 3D shader, shadow and scene-target creation. The same C# actor timelines,
+compact bone palettes, attachment transforms, bounds, appearance and floor lighting remain authoritative.
+Palette updates sample floor light only when native batches consume it; external actor frames sample the same
+authoritative foot position when publishing their appearance state.
+
+Static terrain and scenery, actor meshes and animated scenery are registered once as indexed channels and original
+material metadata. Actor meshes are shared across instances and released after their last owner, or retained until
+renderer disposal when explicitly preloaded. Bone palettes contain three affine rows per bone in world space;
+the consumer must not multiply an actor world matrix or inverse bind transform again. Each frame supplies the
+camera, current lighting and weather fog. `ComposeScene()` calls the external strategy's explicit `Compose()` boundary
+after world effects and before the HUD; consumers do not infer that boundary from the shader of a native draw.
+Live portraits use the caller's currently bound target.
+
+The authored sky library retains prepared CPU meshes when the external factory is active. It exports the same
+layers, colour tints and open-dome caps, with cached profile mesh IDs. Sky updates carry the previous profile's
+crossfade opacity, camera-relative height and lightning brightness. External actor geometry currently supports
+the original model format; glTF actors explicitly refuse this path rather than producing an incorrect skin.
+
+Creation callbacks may retain immutable geometry arrays. Frame lists and palette spans are reused and are valid
+only during their callback: a browser strategy must copy them into reusable frame storage before returning. The
+headless `ExternalSceneRendererTests` exercise geometry, poses, resource ownership, quality changes, portraits and
+zero allocations for warmed facade draw callbacks. Browser backend validation and captures remain separate checks.
+
+The browser supplies the Three strategy in `Client/PristonTale.Browser/BrowserExternalSceneRenderer*.cs`. Its JavaScript
+modules keep persistent indexed BufferGeometry, skinned meshes and textures; borrowed byte spans are copied into
+grow-only staging buffers. Scene cameras use the shared reversed depth projection, converted to conventional Three
+depth and then to the chosen backend's clip range. Native SpriteBatch and effect draws share the same Three renderer,
+with native blend, depth, sampler, viewport and scissor state. Ordered target commands preserve offscreen portraits
+before the HUD samples them. The original Vulkan renderer stays active for desktop and Android.
+Native combined MVP matrices feed an explicit four-component vertex node; they never pass through an affine world
+transform that discards clip W. Perspective interpolation and native depth ordering therefore share the same
+projection contract as orthographic UI batches.
+Native Sprite, Unlit and VFX batches draw both triangle windings in one pass, matching CullNone and retaining their
+index order. Their fragments have no front/back-dependent shading; transparent batches do not need separate face passes.
+Authored sky layers use a separate background scene, drawn into the same target before either world material queue;
+live portrait passes omit it. Their unlit MRT output supplies neutral normal/roughness for the reflection target.
+Native Unlit/VFX batches also supply an explicit auxiliary output when that attachment is bound. The complete
+catalogued blend tuples select cached zero or white-RGB/zero-alpha outputs that leave signed normals and roughness
+unchanged. Other blends, including opaque replacement, are refused for this target before submission because they
+have no destination-independent neutral value. Single colour targets and the HUD after composition retain their
+normal blend support.
+
+The browser keeps Three's output colour space fixed to linear and writes display encoding explicitly at composition.
+Native `Color` textures, premultiplied font coverage, Sprite vertex colours and clears retain their UNORM numbers;
+`ColorSRgb` textures retain sampler decoding. The native format flag travels with each texture and render target.
+Unlit decodes its packed vertex colour as its HLSL does; VFX vertex colours and HDR effects stay linear. Main post
+composition writes encoded display values before Sprite blending. Portraits use a cached linear target, then encode
+straight radiance and restore premultiplication while composing into the caller's original target.
+
+`wwwroot/three-batching.js` batches immutable world-baked stage triangles at registration time by equivalent material,
+attribute layout and 1024-unit X/Z chunk. Every vertex channel and triangle winding is retained; triangles crossing a
+chunk boundary keep their complete extent in the merged bounds. A connected material/chunk component is batched only
+when it strictly reduces draw objects; otherwise its original meshes and bounds are retained. Skinned meshes, sky, blending, wind, animated textures
+and nonzero UV forms keep their individual resources. A stage owns only the merged geometries and disposes them before
+its source meshes; source materials and geometry remain under their existing resource lifetime. Replacing or removing
+an active source rebuilds its affected stages before disposing that source. No batching work runs per frame.
+
+`wwwroot/three-texture-arrays.js` can further batch compatible, strictly opaque static resources after that baseline.
+It accepts only immutable negative-ID RGBA8 scene textures with fully opaque pixels, equal dimensions, encoding,
+sampling and material policy. Skinning, sky, cutouts, texture layers, wind and UV animation retain the baseline path.
+Copied array pages preserve the original mip and sampler policy; a per-vertex `textureLayer` selects each triangle's
+unchanged diffuse image. Pages include all generated mips in their 16 MiB budget, contain at most 128 layers (or the
+backend's lower limit), and share a 64 MiB renderer-wide limit supplied by the driver. The same connected-component
+guard strictly reduces the input baseline objects using 4096-unit chunks. Only newly merged geometry, materials and
+array pages belong to the helper; input resources and fallback geometry keep their existing owners.
+
+The browser's optional `wwwroot/three-bundles.js` command cache wraps opaque and cutout stage meshes in spatial
+`BundleGroup` chunks. Chunk bounds include authored wind, and the drawing pipeline tests each chunk against the
+current pass camera, retaining shadow casters outside the main view. Skinned actors, transparent materials and
+dynamic bindings remain outside those chunks. Registration keeps all original drawable resources under the stage's
+flat ownership list; toggles flatten the same meshes without disposing geometry or materials. Static group versions
+change when resource bindings or light/shadow layouts change. WebGL2 uses ordinary groups without command caching.
+
+Distance-fog uniforms share Three's render group with the camera and light constants instead of being duplicated
+in every object buffer. Shared bindings are cached per render context, keeping main-view and portrait values isolated.
+
+Actor bodies and outline shells share a conservative world-space sphere from the C# bounds, padded for authored wind,
+distortion and the outline. Three tests it independently against each view and shadow camera; invalid bounds disable
+culling. Static stage materials omit actor-only highlight and distortion nodes while retaining their authored wind.
+
+The browser page enables bounds for rigidly skinned scenery independently of profiling; `?stage-culling=0`
+retains the original uncullable path. The `stageSkinCulling` renderer option also bounds this scenery through
+`wwwroot/three-stage-bounds.js`. It caches one bind box per referenced bone, transforms their centres and absolute
+extents only when a WORLD palette is published, and pads the union sphere for post-skin wind and world-coordinate
+float precision. Every stage owner shares the cached sphere; rebuilds retain the latest valid pose, while removal
+detaches owners. Missing or invalid bind/pose data leaves culling disabled. Actors and authored sky are excluded.
+The profile's `stageCulling` counts bounds inside/outside the last main and shadow frusta, not measured GPU draws.
+This culling leaves visibility, materials and shadow cadence unchanged.
+
+The browser page requests `zeroPointLights: 'auto'`: `wwwroot/three-zero-lighting.js` runs automatically only when
+the initialized renderer's actual backend is WebGPU. WebGL2 retains ordinary lighting; `?zero-point-lights=0`
+disables the strategy on either backend, and `?profile=1&zero-point-lights=1` explicitly enables the diagnostic override
+on either backend. Generic renderer callers that omit the option retain ordinary lighting. The accepted option
+values are `false`, `true` and `'auto'`, preserved through Worker initialization without boolean coercion.
+Its public `Lighting`/`LightsNode` strategy skips default direct PBR evaluation only when all components of an
+ordinary unshadowed point light's attenuated radiance are exactly zero. Directional, ambient, shadowed, Physical,
+unowned and customized lighting-model paths retain the ordinary implementation. Factory-owned default Standard
+materials are branded explicitly. A shared render-group uniform switches between original and optimized evaluation
+without changing lights, ranges, intensities, material versions or pipeline keys. The profile panel exposes both
+states, and the worker acknowledges ordered controls between application frames. Automatic use does not enable
+profiling, timestamps, diagnostic UI or per-frame diagnostic allocations. `profile.lighting` reports visible point-light
+pools and the latest world count separately, since a studio
+portrait can temporarily use another light context. Shader-build branch counters are not active-light or GPU-draw counts.
+
+Browser material parity includes authored colour decoding, layers and UV animation, sky profile transitions,
+actor floor lighting, signed light tints, fades, overlays, outlines and distortion. Directional shadows use one map whose
+resolution follows the requested setting. The native and external paths share the same per-frame eligibility rule:
+the user enables shadows, directional illumination is nonzero, and the scene is above ground. The authored moon
+continues casting shadows at night; the frame flag does not replace the saved user preference.
+`three-shadow-refresh.js` schedules public shadow update requests independently of actor animation. A zero rate
+requests every frame; fixed rates carry deadlines across irregular frame intervals. Skipped updates retain the last
+shadow map and its matching matrix. Configuration and resource owners invalidate explicitly; clock rollback,
+re-enabling shadows, target jumps over 64 units and abrupt sun-direction changes refresh immediately. Its counters
+measure refresh requests rather than GPU pass time. A lower selected rate changes shadow motion cadence, not map size.
+Its explicit Compose callback applies Three's HDR/post pipeline after
+linear world effects and before the native HUD: render scale, GTAO, reflections, bloom, FXAA/SMAA/MSAA, exposure
+compensation, tone mapping and sharpening. Unsupported temporal AA, histogram exposure, custom LUTs, contact shadows
+and volumetric shafts are declared through browser capabilities. Native cascades and lamp shadow atlases remain
+separate features. Renderer options must be verified against this strategy before being exposed as supported.
+Run the JavaScript resource/bridge and post regressions in `Client/PristonTale.Browser/tests/*.test.mjs` with Node;
+GPU readback checks and full-screen captures are required separately on WebGPU and WebGL2.
 
 ## Threading and lifecycle
 
@@ -382,6 +509,14 @@ they took the domes.
   and ground), 0.3 s each: a faint spreading ring and four fine droplets thrown up and out on a camera-facing quad. A
   lighter rain lands fewer (the rain's share to the power 1.5), smaller (half the size at the lightest) and fainter
   (35 % the opacity) splashes (`SplashesPerSecond`, `SplashSize`, `SplashOpacity`).
+
+The Three browser adapter forwards the rain's four-component vertex channels, matrix and constant blocks through
+`drawRainMemory`. `three-rain.js` evaluates the same wrapping, camera-relative streak, roof discard, ring and spray
+equations on the GPU. Native `Single` textures retain their Float32 bits in a red linear texture, including negative
+heights and the no-surface sentinel; the occlusion shader uses integer texel loads rather than filtered sampling.
+Rain commands share native blend, depth, viewport and scissor handling and remain in the linear HDR scene before
+composition. Their radiance is already pre-exposed, so the adapter applies no extra exposure or display conversion.
+GPU buffers grow only when needed, and changing rain counts reuse cached whole-heap views until WASM memory grows.
 
 ## Shadows
 

@@ -62,6 +62,7 @@ internal sealed class CharacterSelectScene
 
     private enum JobMovePhase { None, TurnToHeading, Running, TurnToCamera }
 
+    private readonly PristonRenderer _renderer;
     private readonly IActorScene _actorScene;
     private readonly PlayerActorComposer _playerComposer;
     private readonly CharacterClassRegistry _classRegistry = new();
@@ -101,10 +102,12 @@ internal sealed class CharacterSelectScene
         string assetRoot,
         CharacterSelectCamera camera,
         PristonStage stage,
-        IClientLog log)
+        IClientLog log,
+        PlayerActorComposer playerComposer = null)
     {
+        _renderer = renderer;
         _actorScene = new RendererActorScene(renderer);
-        _playerComposer = new PlayerActorComposer(_actorScene, actorLoader);
+        _playerComposer = playerComposer ?? new PlayerActorComposer(_actorScene, actorLoader);
         _assetRoot = assetRoot;
         _camera = camera;
         _log = log;
@@ -378,14 +381,21 @@ internal sealed class CharacterSelectScene
 
             var yaw = remaining < 0f ? MathHelper.Pi : 0f;
             job.LineupYaw = ApproachAngle(job.LineupYaw, yaw, turn);
-            var moving = remaining != 0f && MathF.Abs(MathHelper.WrapAngle(yaw - job.LineupYaw)) <= JobYawSettleEpsilon;
-            if (moving)
+            var motion = MotionCode.Stand;
+            if (remaining != 0f && MathF.Abs(MathHelper.WrapAngle(yaw - job.LineupYaw)) <= JobYawSettleEpsilon)
             {
-                job.LineupAdvance = Math.Clamp(target, job.LineupAdvance - step, job.LineupAdvance + step);
+                (job.LineupAdvance, motion) = AdvanceWebLineupStep(job.LineupAdvance, target, step);
             }
 
-            PlaceJobActor(job, JobStageSlot(index), moving ? MotionCode.Walk : MotionCode.Stand, job.LineupYaw);
+            PlaceJobActor(job, JobStageSlot(index), motion, job.LineupYaw);
         }
+    }
+
+    internal static (float Offset, MotionCode Motion) AdvanceWebLineupStep(float offset, float target, float step)
+    {
+        var next = Math.Clamp(target, offset - step, offset + step);
+        // The settled actor is skipped on the next frame, so apply its idle pose on the last step.
+        return (next, next == target ? MotionCode.Stand : MotionCode.Walk);
     }
 
     public void UpdateRun(float dt)
@@ -543,7 +553,35 @@ internal sealed class CharacterSelectScene
     public int PickRoster(Vector2 cursor, Viewport viewport, float scale = 1f) =>
         PickCharacter(cursor, viewport, _placed.Count, index => _placed[index].Slot, scale);
     public int PickJob(Vector2 cursor, Viewport viewport, float scale = 1f) =>
-        PickCharacter(cursor, viewport, _jobActors.Count, _camera.UsesWebBackdrop ? JobStageSlot : JobSlot, scale);
+        PickCharacter(cursor, viewport, _jobActors.Count, JobSlot, scale);
+
+    internal int PickWebJob(Vector2 cursor, Viewport viewport)
+    {
+        if (!CursorPicking.TryCreateRay(viewport, _camera.Projection, _camera.View, _camera.Position, cursor.ToPoint(), out var ray))
+        {
+            return -1;
+        }
+
+        var bestIndex = -1;
+        var bestDistance = float.PositiveInfinity;
+        Span<ActorHandle> handles = stackalloc ActorHandle[PlayerActorHandles.Most];
+        for (var index = 0; index < _jobActors.Count; index++)
+        {
+            var count = _jobActors[index].Handles.CopyTo(handles);
+            if (!_renderer.TryGetActorBounds(handles[..count], out var bounds, visibleOnly: true))
+            {
+                continue;
+            }
+
+            if (ray.Intersects(bounds) is { } distance && distance < bestDistance)
+            {
+                bestIndex = index;
+                bestDistance = distance;
+            }
+        }
+
+        return bestIndex;
+    }
 
     public void SetRosterHighlight(int hoveredIndex, int selectedIndex)
     {
@@ -680,9 +718,11 @@ internal sealed class CharacterSelectScene
         return true;
     }
 
-    private CharacterVisualSet JobVisuals(PlayerClass playerClass)
+    private CharacterVisualSet JobVisuals(PlayerClass playerClass) => JobVisuals(_classRegistry, playerClass);
+
+    internal static CharacterVisualSet JobVisuals(CharacterClassRegistry classes, PlayerClass playerClass)
     {
-        var definition = _classRegistry.Get(playerClass).Definition;
+        var definition = classes.Get(playerClass).Definition;
         return definition.DefaultVisuals with
         {
             InVillage = true,

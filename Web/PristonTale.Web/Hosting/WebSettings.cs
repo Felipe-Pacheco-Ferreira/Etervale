@@ -4,7 +4,7 @@ namespace PristonTale.Web.Hosting;
 
 public sealed record SiteSettings
 {
-    public string Name { get; init; } = "Priston Avalon";
+    public string Name { get; init; } = "Noxius";
 
     // The public HTTPS port the HTTP endpoint redirects to.
     public int HttpsPort { get; init; } = 443;
@@ -75,7 +75,7 @@ public sealed record PlaySettings
 
 public sealed record WorldSettings
 {
-    public string Name { get; init; } = "Avalon";
+    public string Name { get; init; } = "Noxius";
 
     public string Region { get; init; } = "Brasil";
 

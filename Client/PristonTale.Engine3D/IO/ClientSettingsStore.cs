@@ -69,6 +69,24 @@ public sealed class ClientSettingsStore
         }
     }
 
+    // The file's document, for a client that keeps it somewhere else (the browser client keeps it in the page's storage).
+    public static string Serialize(ClientSettings settings) => JsonSerializer.Serialize(settings, JsonOptions);
+
+    // Null when the document is not one the file could hold (malformed, unknown property, another version).
+    public static ClientSettings Parse(string json, IClientLog log)
+    {
+        try
+        {
+            var settings = JsonSerializer.Deserialize<ClientSettings>(json, JsonOptions);
+            return settings is { Version: ClientSettings.CurrentVersion } ? settings.Validate(log) : null;
+        }
+        catch (JsonException exception)
+        {
+            log.Warn($"[Settings] Ignoring a settings document: {exception.Message}");
+            return null;
+        }
+    }
+
     public bool QueueSave(ClientSettings settings)
     {
         return !_readOnly && _pending.Writer.TryWrite(settings);

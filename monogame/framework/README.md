@@ -55,6 +55,9 @@ Every change is marked `Etervale fork` in the source and has a document in `../i
   device creates its swapchain.
 
 **The fork's additions:**
+- `Graphics/DxtDecoder.cs` (issue 024): a device-free public facade over the existing `DxtUtil` decoder for DXT1,
+  DXT3 and DXT5. Browser scene textures use the returned RGBA pixels without creating a MonoGame graphics device;
+  dimensions, format and compressed byte count are validated before decoding.
 - `Platform/Native/Graphics.Interop.Etervale.cs`: the P/Invokes of the runtime fork's own exports, and the interface
   version check that runs before anything else (`MGG.EnsureRuntimeVersion`, issue 002).
 - `GraphicsDevice.BeginFrameCapture`/`TryPopFrame`/`EndFrameCapture`, `PresentedFrame` (`Graphics/GraphicsDevice.FrameCapture.cs`,

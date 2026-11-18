@@ -132,6 +132,16 @@ public sealed class PlayerActorComposer(IActorScene scene, PristonActorLoader ac
         return preparation;
     }
 
+    internal void PreloadPreparedGraphics(string assetRoot, CharacterVisualSet visuals, int faceIndex)
+    {
+        if (_prepared.TryGetValue((assetRoot, visuals, faceIndex), out var preparation) && preparation.IsCompletedSuccessfully)
+        {
+            var parts = preparation.Result;
+            _scene.PreloadActorGraphics(parts.Body);
+            _scene.PreloadActorGraphics(parts.Head);
+        }
+    }
+
     // The off-hand part is the off-hand item, or the weapon's second copy of a class that holds it twice.
     private static (string Body, string Head, string Weapon, string OffHand) PartPaths(string root, CharacterVisualSet visuals, int face) => (
         Path.Combine(root, visuals.Body.InxExtensionPath),

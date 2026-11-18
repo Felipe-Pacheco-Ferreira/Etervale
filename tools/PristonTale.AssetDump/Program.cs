@@ -10,6 +10,20 @@ using PristonTale.Contracts.Units;
 // The output is read by scripts: a comma decimal separator would be ambiguous inside "(x, y, z)".
 CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
 
+if (args.Length == 3 && args[0] == "--export-preview-skeletons")
+{
+    try
+    {
+        ExportPreviewSkeletons(args[1], args[2]);
+        return 0;
+    }
+    catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or ArgumentException or InvalidDataException)
+    {
+        Console.Error.WriteLine($"error exporting character preview skeletons: {exception.Message}");
+        return 1;
+    }
+}
+
 if (args.Length == 4 && args[0] == "--export-field-textures")
 {
     try
@@ -46,6 +60,7 @@ if (args.Length == 0 || args[0] is "-h" or "--help")
     Console.WriteLine(
         "ptdump <asset-path> [--materials] [--lights] [--objects] [--normals] [--motions] [--matbounds] [--physique] [--full]\n" +
         "ptdump --export-field-textures <asset-root> <field-id> <output-directory>\n" +
+        "ptdump --export-preview-skeletons <asset-root> <output-directory>\n" +
         "  Inspects a PristonTale .smd (stage or model), .smb (model) or .inx (index).\n" +
         "  A .bmp/.tga path decodes the texture and prints content stats (size/alpha/grayscale%).");
     return args.Length == 0 ? 1 : 0;
@@ -97,6 +112,20 @@ catch (Exception ex)
 }
 
 // ---- detection ----------------------------------------------------------------------------
+
+static void ExportPreviewSkeletons(string assetRoot, string outputDirectory)
+{
+    var reader = new PristonInxReader();
+    Directory.CreateDirectory(outputDirectory);
+    for (var rig = 1; rig <= 8; rig++)
+    {
+        var motions = reader.Read(AssetFiles.Combine(assetRoot, $"char/tmABCD/M{rig}Bip.inx"));
+        var source = AssetFiles.Combine(assetRoot, $"char/tmABCD/m{rig}.smb");
+        var output = Path.Combine(outputDirectory, $"m{rig}{PristonSmdReader.PreviewSkeletonSuffix}");
+        using var destination = File.Create(output);
+        PristonSmdReader.ExportPreviewSkeleton(source, motions, destination);
+    }
+}
 
 // The SMD header opens with a 24-byte name string (PristonSmdReader.ReadHeader). We only need
 // the leading bytes to tell a stage from a model; the reader itself validates the full prefix.

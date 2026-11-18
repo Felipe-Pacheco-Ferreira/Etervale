@@ -122,7 +122,7 @@ public sealed class LoginPanel
         var tint = InputEnabled ? Color.White : new Color(155, 155, 155);
         _canvas.Begin(layout.Scale);
         _canvas.Image("LoginPanel", layout.Panel);
-        _canvas.Text(OperatingSystem.IsBrowser() ? "PRISTON AVALON" : "ETERVALE", layout.Title, pixels: 30f, centered: true);
+        _canvas.Text(OperatingSystem.IsBrowser() ? "NOXIUS TALE" : "ETERVALE", layout.Title, pixels: 30f, centered: true);
         _canvas.Text(ClientText.Get("Login.Subtitle"), layout.Subtitle, HudCanvas.Muted, 17f, centered: true);
         DrawField(ClientText.Get("Login.Account"), Account, layout.Account, tint);
         DrawField(ClientText.Get("Login.Password"), Password, layout.Password, tint);

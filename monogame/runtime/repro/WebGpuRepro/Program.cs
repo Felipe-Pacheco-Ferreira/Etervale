@@ -41,7 +41,8 @@ internal static partial class WebGpuRepro
             Check("the runtime reports the WebGPU backend", PlatformInfo.GraphicsBackend == GraphicsBackend.WebGPU),
             Check("the browser asks for the asynchronous run behaviour", _runReturned),
             Check("the back buffer has the canvas's drawing size", game.BackBufferMatchesCanvas),
-            Check("Draw ran on animation frames", game.Frames >= 2));
+            Check("Draw ran on animation frames", game.Frames >= 2),
+            Check("index and vertex buffers grew after earlier draws in the frame", game.BufferGrowthDrawn));
     }
 
     // Where the page samples the canvas and the colour it must find, one "x,y,r,g,b,name" line per sample: the centre of
@@ -80,6 +81,15 @@ internal static partial class WebGpuRepro
         // The count dispatch's groups of 64 threads (CS_Count).
         private const int CheckGroups = 4;
         private const int CheckGroupSize = 64;
+        private const int GrowthSpriteCount = 1024;
+        private static readonly VertexPositionColorTexture[] GrowthQuad =
+        [
+            new(new Vector3(-4f, -4f, 0f), Color.White, Vector2.Zero),
+            new(new Vector3(-3f, -4f, 0f), Color.White, Vector2.Zero),
+            new(new Vector3(-4f, -3f, 0f), Color.White, Vector2.Zero),
+            new(new Vector3(-3f, -3f, 0f), Color.White, Vector2.Zero)
+        ];
+        private static readonly short[] GrowthIndices = CreateGrowthIndices();
         // The check's quad in clip space: from -0.9 to -0.6 on both axes, the lower left of the canvas.
         private const float CheckLow = -0.9f;
         private const float CheckHigh = -0.6f;
@@ -118,6 +128,7 @@ internal static partial class WebGpuRepro
         }
 
         public int Frames { get; private set; }
+        public bool BufferGrowthDrawn { get; private set; }
 
         // A square in the middle of the back buffer, half its height.
         public Rectangle SpriteBounds
@@ -158,6 +169,11 @@ internal static partial class WebGpuRepro
                 _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
                 _spriteBatch.Draw(_quadrants, SpriteBounds, Color.White);
                 _spriteBatch.End();
+                if (!BufferGrowthDrawn)
+                {
+                    DrawBufferGrowth();
+                    BufferGrowthDrawn = true;
+                }
             }
 
             // The dispatches split the frame's render pass; the quad drawn after them loads what the sprite drew.
@@ -174,6 +190,35 @@ internal static partial class WebGpuRepro
 
             Frames++;
             base.Draw(gameTime);
+        }
+
+        private static short[] CreateGrowthIndices()
+        {
+            // Above the framework's initial 6000 indices, with just four vertices so only the index buffer grows.
+            var indices = new short[6006];
+            for (var offset = 0; offset < indices.Length; offset += 6)
+            {
+                indices[offset] = 0;
+                indices[offset + 1] = 1;
+                indices[offset + 2] = 2;
+                indices[offset + 3] = 1;
+                indices[offset + 4] = 3;
+                indices[offset + 5] = 2;
+            }
+            return indices;
+        }
+
+        private void DrawBufferGrowth()
+        {
+            GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, GrowthQuad, 0, GrowthQuad.Length,
+                GrowthIndices, 0, GrowthIndices.Length / 3);
+            // This batch then replaces the vertex buffer still used by the index-growth draw.
+            _spriteBatch!.Begin(samplerState: SamplerState.PointClamp);
+            for (var sprite = 0; sprite < GrowthSpriteCount; sprite++)
+            {
+                _spriteBatch.Draw(_quadrants!, new Rectangle(-4, -4, 1, 1), Color.White);
+            }
+            _spriteBatch.End();
         }
 
         private void Run(EffectTechnique technique, int groups)

@@ -63,6 +63,8 @@ public sealed record ClientSettings
     public int MaxFps { get; init; }
     public int BackgroundMaxFps { get; init; } = 30;
     public float UiScale { get; init; } = 1f;
+    public float RenderScale { get; init; } = 1f;
+    public bool DynamicResolution { get; init; } = true;
     public int[] ShortcutKeys { get; init; } = [];
     public string[] GameServers { get; init; } = [];
     public bool VoiceEnabled { get; init; }
@@ -108,6 +110,7 @@ public sealed record ClientSettings
     public int CameraMouseButtons { get; init; }
     public bool HideQuestTracker { get; init; }
     public bool HideOnlineCount { get; init; }
+    public bool ShowMinimap { get; init; } = true;
     public int MultiSampleCount { get; init; } = 4;
     public int ShadowMapSize { get; init; } = 4096;
     // Cube faces of the lamp shadows (the nearest LampShadowCount lamps, 0, 2 or 4), in pixels.
@@ -130,6 +133,7 @@ public sealed record ClientSettings
     public bool HideUnfocusedNames { get; init; }
     public bool HideDamageNumbers { get; init; }
     public bool AlwaysShowGroundLabels { get; init; }
+    public bool AlwaysShowRareGroundLabels { get; init; }
     public bool ClassicNamePlates { get; init; }
     // The level guide's notice on reaching a level it has a guide for (its On/Off switch in the guide window).
     public bool LevelGuide { get; init; } = true;
@@ -181,6 +185,7 @@ public sealed record ClientSettings
             MaxFps = IsValidFps(MaxFps) ? MaxFps : defaults.MaxFps,
             BackgroundMaxFps = IsValidFps(BackgroundMaxFps) ? BackgroundMaxFps : defaults.BackgroundMaxFps,
             UiScale = float.IsFinite(UiScale) && UiScale is >= 0.75f and <= 1.5f ? UiScale : defaults.UiScale,
+            RenderScale = float.IsFinite(RenderScale) && RenderScale is >= 0.5f and <= 1f ? RenderScale : defaults.RenderScale,
             MusicVolumePercent = Math.Clamp(MusicVolumePercent, 0, 100),
             SoundVolumePercent = Math.Clamp(SoundVolumePercent, 0, 100),
             MultiSampleCount = MultiSampleCount is 0 or 2 or MostMultiSamples ? MultiSampleCount : defaults.MultiSampleCount,
@@ -311,7 +316,9 @@ public sealed record ClientSettings
     // The options PristonRenderer reads (PresentationSettings.ApplyRendering).
     public bool HasSameRendering(ClientSettings other)
     {
-        return ShadowMapSize == other.ShadowMapSize
+        return RenderScale == other.RenderScale
+            && DynamicResolution == other.DynamicResolution
+            && ShadowMapSize == other.ShadowMapSize
             && LampShadowTileSize == other.LampShadowTileSize
             && ShadowUpdateRate == other.ShadowUpdateRate
             && ShadowsEnabled == other.ShadowsEnabled

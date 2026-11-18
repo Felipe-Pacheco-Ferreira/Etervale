@@ -1,8 +1,10 @@
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using PristonTale.Engine3D.Formats;
 using PristonTale.Engine3D.Physics;
 using PristonTale.Engine3D.Rendering;
+using PristonTale.Contracts.Characters;
 using PristonTale.Gameplay.World;
 using PristonTale.Simulation.World;
 using PristonTale.Simulation.World.Fields;
@@ -15,6 +17,7 @@ internal static class CameraTests
     {
         yield return ("camera movement stops at physical obstacles across resident fields", ResidentCollisionAsync);
         yield return ("camera respects ground clearance at low pitch and initial placement", ClearanceAsync);
+        yield return ("camera frames Ricarten carpet and both lamps on the browser arrival", BrowserRicartenArrivalAsync);
         yield return ("high camera ignores portal and pole occlusion", OcclusionAsync);
         yield return ("camera left behind a wall the target crossed re-anchors on its arm", StrandedAsync);
         yield return ("wide windows cap the horizontal field of view instead of stretching the edges", FieldOfViewAsync);
@@ -28,6 +31,43 @@ internal static class CameraTests
     {
         return new PristonCamera(Vector3.Zero, Vector3.Forward,
             new PristonCameraSettings { DefaultDistance = 100, DefaultPitch = 0 });
+    }
+
+    private static Task BrowserRicartenArrivalAsync()
+    {
+        var field = RicartenField.Definition;
+        var arrival = field.Arrival;
+        var entered = new EnteredCharacter(PlayerClass.Pikeman, "Test", 1, 0, field.FieldCode, arrival.X, arrival.Z);
+        var browser = GameScene.ToEntryCameraSettings(field, entered, browser: true);
+        var desktop = GameScene.ToEntryCameraSettings(field, entered, browser: false);
+        var returning = GameScene.ToEntryCameraSettings(field, entered with { SpawnX = entered.SpawnX + 40f }, browser: true);
+        var pillai = PillaiField.Definition;
+        var otherField = GameScene.ToEntryCameraSettings(pillai, entered with
+        {
+            FieldCode = pillai.FieldCode,
+            SpawnX = pillai.Arrival.X,
+            SpawnZ = pillai.Arrival.Z,
+        }, browser: true);
+        Assert.True(returning == desktop, "a different saved position changed the default Ricarten camera");
+        Assert.Near(field.Camera.FieldOfViewDegrees, desktop.FieldOfViewDegrees);
+        Assert.Near(pillai.Camera.FieldOfViewDegrees, otherField.FieldOfViewDegrees);
+
+        var camera = new PristonCamera(new Vector3(arrival.X, 331.41f, -arrival.Z), Vector3.Forward, browser);
+        var viewport = new Viewport(0, 0, 1280, 720);
+        var projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(browser.FieldOfViewDegrees),
+            viewport.AspectRatio, browser.NearPlane, browser.FarPlane);
+        Vector3 Project(Vector3 landmark) => viewport.Project(landmark, projection, camera.View, Matrix.Identity);
+
+        var carpetLeft = Project(new Vector3(2552.93f, 329.39f, 18575.09f));
+        var carpetRight = Project(new Vector3(2646.74f, 329.43f, 18575.09f));
+        var lampLeft = Project(new Vector3(2457.27f, 433.6f, 18574.65f));
+        var lampRight = Project(new Vector3(2750.69f, 433.6f, 18574.65f));
+        Assert.Near(221f, carpetRight.X - carpetLeft.X, 10f);
+        Assert.Near(434f, carpetLeft.Y, 10f);
+        Assert.Near(270f, lampLeft.X, 15f);
+        Assert.Near(1066f, lampRight.X, 15f);
+        Assert.Near(201f, lampLeft.Y, 15f);
+        return Task.CompletedTask;
     }
 
     private static Task ResidentCollisionAsync()

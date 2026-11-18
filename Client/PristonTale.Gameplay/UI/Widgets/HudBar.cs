@@ -125,49 +125,50 @@ public sealed class HudBar
 
     public void Draw(HudPainter painter, HudLayout layout, OwnerState state, HudBarView view)
     {
+        var x = layout.BottomBarOffset;
         var y = layout.BottomOffset;
-        painter.Sprite(HudArt.Menu1, 288, 472 + y);
-        painter.Sprite(HudArt.Menu2, 544, 536 + y);
+        painter.Sprite(HudArt.Menu1, 288 + x, 472 + y);
+        painter.Sprite(HudArt.Menu2, 544 + x, 536 + y);
         DrawGrow(painter, layout);
-        painter.Sprite(HudArt.PotionBack, 495, 565 + y);
+        painter.Sprite(HudArt.PotionBack, 495 + x, 565 + y);
         if (state is not null)
         {
             var life = Length(LifeLength, state.Life, state.MaxLife);
             var mana = Length(ManaLength, state.Mana, state.MaxMana);
             var stamina = Length(StaminaLength, state.Stamina, state.MaxStamina);
-            painter.Sprite(HudArt.Life, 319, 500 + y + LifeLength - life, GaugeSource(16, LifeLength, life));
-            painter.Sprite(HudArt.Mana, 465, 500 + y + ManaLength - mana, GaugeSource(16, ManaLength, mana));
-            painter.Sprite(HudArt.Stamina, 303, 518 + y + StaminaLength - stamina, GaugeSource(8, StaminaLength, stamina));
+            painter.Sprite(HudArt.Life, 319 + x, 500 + y + LifeLength - life, GaugeSource(16, LifeLength, life));
+            painter.Sprite(HudArt.Mana, 465 + x, 500 + y + ManaLength - mana, GaugeSource(16, ManaLength, mana));
+            painter.Sprite(HudArt.Stamina, 303 + x, 518 + y + StaminaLength - stamina, GaugeSource(8, StaminaLength, stamina));
 
             // The experience fills Menu-1's narrow slot right of the mana, under its "NL." (next level) label, from the bottom
             // up as the other gauges.
             var experience = (int)(ExperienceLength * ExperienceFraction(state));
-            painter.Sprite(HudArt.Experience, 485, 508 + y + ExperienceLength - experience, GaugeSource(6, ExperienceLength, experience));
+            painter.Sprite(HudArt.Experience, 485 + x, 508 + y + ExperienceLength - experience, GaugeSource(6, ExperienceLength, experience));
         }
 
         var (day, time) = TimeGauge(view.TimeOfDay);
         if (day)
         {
-            painter.Sprite(HudArt.Sun, 363, 589 + y);
-            painter.Sprite(HudArt.Time, 375, 593 + y, new Rectangle(0, 0, time, 5));
+            painter.Sprite(HudArt.Sun, 363 + x, 589 + y);
+            painter.Sprite(HudArt.Time, 375 + x, 593 + y, new Rectangle(0, 0, time, 5));
         }
         else
         {
-            painter.Sprite(HudArt.Moon, 426, 589 + y);
-            painter.Sprite(HudArt.Time, 375 + TimeLength - time, 593 + y, new Rectangle(TimeLength - time, 0, time, 5));
+            painter.Sprite(HudArt.Moon, 426 + x, 589 + y);
+            painter.Sprite(HudArt.Time, 375 + x + TimeLength - time, 593 + y, new Rectangle(TimeLength - time, 0, time, 5));
         }
 
-        DrawSocket(painter, Socket(false), y, view.LeftSkill);
-        DrawSocket(painter, Socket(true), y, view.RightSkill);
+        DrawSocket(painter, Socket(false), layout.BottomBarOrigin, view.LeftSkill);
+        DrawSocket(painter, Socket(true), layout.BottomBarOrigin, view.RightSkill);
 
         if (!view.Running)
         {
-            painter.Sprite(HudArt.Walk, 575, 565 + y);
+            painter.Sprite(HudArt.Walk, 575 + x, 565 + y);
         }
 
         if (view.MapVisible)
         {
-            painter.Sprite(HudArt.MapOn, 575 + 48, 565 + y);
+            painter.Sprite(HudArt.MapOn, 575 + 48 + x, 565 + y);
         }
 
         DrawButtons(painter, layout, view);
@@ -189,7 +190,7 @@ public sealed class HudBar
             _experience = ExperienceText(state);
         }
 
-        var design = new Point(pointer.X, pointer.Y - layout.BottomOffset);
+        var design = layout.ToBottomBarDesign(pointer);
         var (text, position) = LifeHover.Contains(design) ? (_life, new Point(343, 500))
             : ManaHover.Contains(design) ? (_mana, new Point(490, 498))
             : StaminaHover.Contains(design) ? (_stamina, new Point(320, 513))
@@ -201,31 +202,32 @@ public sealed class HudBar
         }
 
         // As in the original, the item-info centre tile is stretched behind the text as a readability backdrop.
-        var x = Math.Min(position.X, layout.Width - painter.Measure(text) - 6);
+        var x = Math.Min(position.X + layout.BottomBarOffset, layout.Width - painter.Measure(text) - 6);
         painter.Stretch(HudArt.InfoBox[4], new Rectangle(x - 5, position.Y - 1 + layout.BottomOffset, painter.Measure(text) + 10, 15));
         painter.Text(text, x, position.Y + layout.BottomOffset);
     }
 
-    private static void DrawSocket(HudPainter painter, Rectangle socket, int y, bool basicAttack)
+    private static void DrawSocket(HudPainter painter, Rectangle socket, Point origin, bool basicAttack)
     {
         // The original draws the skill box background (BOX4040.bmp) in an empty socket, but this asset version ships it as a solid
         // RGB(30,30,30) block and moves the socket background into Menu-1, so an empty socket shows the frame instead.
         if (basicAttack)
         {
-            painter.Sprite(HudArt.SkillNormal, socket.X, socket.Y + y);
+            painter.Sprite(HudArt.SkillNormal, socket.X + origin.X, socket.Y + origin.Y);
         }
     }
 
     private static void DrawGrow(HudPainter painter, HudLayout layout)
     {
-        if (layout.Width <= HudLayout.DesignWidth)
+        var rightEdge = HudLayout.DesignWidth + layout.BottomBarOffset;
+        if (layout.Width <= rightEdge)
         {
             return;
         }
 
         var top = layout.Height - 64;
-        painter.Sprite(HudArt.GrowLeft, 800, top);
-        var x = 866;
+        painter.Sprite(HudArt.GrowLeft, rightEdge, top);
+        var x = rightEdge + 66;
         while (x + 40 < layout.Width)
         {
             painter.Sprite(HudArt.GrowMiddle, x, top);
@@ -237,17 +239,18 @@ public sealed class HudBar
 
     private static void DrawButtons(HudPainter painter, HudLayout layout, HudBarView view)
     {
+        var x = layout.BottomBarOffset;
         var y = layout.BottomOffset;
         switch (view.HoveredToggle)
         {
             case HudToggle.Walk:
-                painter.Sprite(view.Running ? HudArt.RunInfo : HudArt.WalkInfo, 575 + 12 - 38, 536 + y);
+                painter.Sprite(view.Running ? HudArt.RunInfo : HudArt.WalkInfo, 575 + 12 - 38 + x, 536 + y);
                 break;
             case HudToggle.Camera:
-                painter.Sprite(HudArt.CameraHandInfo, 575 + 24 + 12 - 38, 536 + y);
+                painter.Sprite(HudArt.CameraHandInfo, 575 + 24 + 12 - 38 + x, 536 + y);
                 break;
             case HudToggle.Map:
-                painter.Sprite(view.MapVisible ? HudArt.MapOffInfo : HudArt.MapOnInfo, 575 + 48 + 12 - 38, 536 + y);
+                painter.Sprite(view.MapVisible ? HudArt.MapOffInfo : HudArt.MapOnInfo, 575 + 48 + 12 - 38 + x, 536 + y);
                 break;
         }
 
@@ -257,15 +260,16 @@ public sealed class HudBar
         }
 
         var bounds = MenuButton(button);
+        bounds.Offset(layout.BottomBarOrigin);
         var index = (int)button;
         if (view.ButtonDown)
         {
-            painter.Sprite(HudArt.MenuButtonsDown[index], bounds.X, bounds.Y + y);
+            painter.Sprite(HudArt.MenuButtonsDown[index], bounds.X, bounds.Y);
             return;
         }
 
-        painter.Sprite(HudArt.MenuButtons[index], bounds.X, bounds.Y + y);
-        painter.Sprite(HudArt.MenuInfo[index], 648 - (77 - 23 - 1) + index * 25, 533 + y);
+        painter.Sprite(HudArt.MenuButtons[index], bounds.X, bounds.Y);
+        painter.Sprite(HudArt.MenuInfo[index], 648 - (77 - 23 - 1) + index * 25 + x, 533 + y);
     }
 }
 

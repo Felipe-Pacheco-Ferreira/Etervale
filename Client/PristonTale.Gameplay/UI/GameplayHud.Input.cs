@@ -57,6 +57,19 @@ public sealed partial class GameplayHud
         _news.Open(_context.Presentation.Requested);
     }
 
+    private void OpenSettingsPanel()
+    {
+        _systemMenu = false;
+        if (WebWorldHud.OpenSettings is { } openWebSettings)
+        {
+            openWebSettings();
+            return;
+        }
+
+        _settings.Open();
+        _settingsOpen = true;
+    }
+
     private void UpdateKeys(KeyboardState keyboard)
     {
         if (keyboard.IsKeyDown(Keys.LeftControl) || keyboard.IsKeyDown(Keys.RightControl))
@@ -125,15 +138,13 @@ public sealed partial class GameplayHud
 
         if (_settings.ShortcutPressed(keyboard, _previousKeyboard, 7))
         {
-            _settings.Open();
-            _settingsOpen = true;
-            _systemMenu = false;
+            OpenSettingsPanel();
             return;
         }
 
         if (_settings.ShortcutPressed(keyboard, _previousKeyboard, HudSettingsPanel.MinimapShortcut))
         {
-            _mapVisible = !_mapVisible;
+            MapVisible = !MapVisible;
         }
 
         if (_settings.ShortcutPressed(keyboard, _previousKeyboard, HudSettingsPanel.NewsShortcut))
@@ -237,6 +248,12 @@ public sealed partial class GameplayHud
             return;
         }
 
+        if (layout.Browser && _partyWindow.Contains(layout, pointer))
+        {
+            _partyWindow.Click(layout, pointer, Party, SelfId, _clock.Elapsed.TotalSeconds);
+            return;
+        }
+
         if (_chat.Window.Click(layout, pointer, SideWindowOpen))
         {
             return;
@@ -282,7 +299,7 @@ public sealed partial class GameplayHud
 
         if (_systemMenu)
         {
-            var entry = HudSystemMenu.At(design);
+            var entry = HudSystemMenu.At(design, layout.Browser);
             if (entry is HudSystemEntry.Characters or HudSystemEntry.Servers)
             {
                 _systemMenu = false;
@@ -291,9 +308,7 @@ public sealed partial class GameplayHud
             }
             if (entry == HudSystemEntry.Settings)
             {
-                _settings.Open();
-                _settingsOpen = true;
-                _systemMenu = false;
+                OpenSettingsPanel();
                 return;
             }
 
@@ -335,7 +350,7 @@ public sealed partial class GameplayHud
 
         if (_hoveredToggle == HudToggle.Map)
         {
-            _mapVisible = !_mapVisible;
+            MapVisible = !MapVisible;
             return;
         }
 
@@ -523,7 +538,7 @@ public sealed partial class GameplayHud
         }
 
         return _restart.Open && HudRestartPanel.Box(layout).Contains(pointer)
-            || _systemMenu && HudSystemMenu.Bounds.Contains(design)
+            || _systemMenu && HudSystemMenu.Captures(design, layout.Browser)
             || _settingsOpen && HudSettingsPanel.Box.Contains(pointer)
             || _npcOpen && HudNpcPanel.Box.Contains(pointer)
             || _skills.TrainingPending && HudMessageBox.Bounds.Contains(pointer);

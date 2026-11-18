@@ -22,6 +22,7 @@ public sealed partial class CharacterSelectScreen
     private readonly ArrayBufferWriter<byte> _webBuffer = new();
     private CharacterClassRegistry _webClasses;
     private int _webReported;
+    private WebStageClickTracker _webStageClicks;
 
     private const float WebArrivalStagger = 0.17f;
     private const float WebArrivalLead = 0.11f;
@@ -272,6 +273,11 @@ public sealed partial class CharacterSelectScreen
             {
                 RunWebCommand(command);
             }
+            else if (WebCharacterSelectOverlay.ProfileStageInput)
+            {
+                Context.Log.Info(FormattableString.Invariant($"[StagePick] discard command={command.Kind} eventMs={command.ClickSeconds * 1000:F3} ")
+                    + $"state={_state} busy={_busy} awaitingConfirmation={Context.Presentation.AwaitingConfirmation}");
+            }
         }
 
         if (_busy == Busy.None && !Context.Presentation.AwaitingConfirmation)
@@ -282,6 +288,13 @@ public sealed partial class CharacterSelectScreen
 
     private void RunWebCommand(WebCharacterCommand command)
     {
+        if (command.Kind != WebCharacterCommandKind.PickOnStage)
+        {
+            ResetWebStagePick("command", command.Kind);
+        }
+
+        var stateBefore = _state;
+
         switch (command.Kind)
         {
             case WebCharacterCommandKind.Select when _state == State.CharacterSelect && command.Index >= 0 && command.Index < _scene.RosterCount:
@@ -301,6 +314,9 @@ public sealed partial class CharacterSelectScreen
                 break;
             case WebCharacterCommandKind.Tribe when _state == State.RaceSelect:
                 ChooseBrood(command.Index == 1 ? CharacterBrood.Morion : CharacterBrood.Tempskron);
+                break;
+            case WebCharacterCommandKind.PickOnStage:
+                PickWebStage(command.Stage, command.StagePosition, command.ClickSeconds);
                 break;
             case WebCharacterCommandKind.Class when _state == State.JobSelect && command.Index >= 0 && command.Index < _scene.JobCount:
                 SelectWebJob(command.Index);
@@ -347,6 +363,20 @@ public sealed partial class CharacterSelectScreen
                 Context.RequestScreen(new OpeningScreen(Context));
                 break;
         }
+        if (WebCharacterSelectOverlay.ProfileStageInput && command.Kind != WebCharacterCommandKind.PickOnStage)
+        {
+            Context.Log.Info($"[StagePick] command={command.Kind} state={stateBefore}->{_state} busy={_busy} tribe={_chosenBrood} selectedClass={_jobSelected}");
+        }
+    }
+
+    private void ResetWebStagePick(string reason, WebCharacterCommandKind command = WebCharacterCommandKind.PickOnStage)
+    {
+        if (WebCharacterSelectOverlay.ProfileStageInput)
+        {
+            var previous = _webStageClicks.Snapshot;
+            Context.Log.Info($"[StagePick] reset reason={reason} command={command} state={_state} busy={_busy} pending={previous.Pending} priorIndex={previous.Index}");
+        }
+        _webStageClicks.Reset();
     }
 
     private void SubmitWebCharacter(string name)
@@ -371,7 +401,52 @@ public sealed partial class CharacterSelectScreen
         _audio.Play(LoginCue.PickCharacter);
     }
 
-    // A click on the stage: a character of the list (a second click enters the world) or a class of the lineup.
+    private void PickWebStage(WebCharacterStage stage, Vector2 position, double clickSeconds)
+    {
+        var roster = stage == WebCharacterStage.Roster;
+        if (roster ? _state != State.CharacterSelect : _state != State.JobSelect)
+        {
+            ResetWebStagePick("phase-mismatch");
+            return;
+        }
+        var stateBefore = _state;
+        var viewport = Context.GraphicsDevice.Viewport;
+        var cursor = new Vector2(viewport.X + position.X * viewport.Width, viewport.Y + position.Y * viewport.Height);
+        var hit = roster ? _scene.PickRoster(cursor, viewport, PickScale) : _scene.PickWebJob(cursor, viewport);
+        var selectedBefore = roster ? _selectedIndex : _jobSelected;
+        var previous = WebCharacterSelectOverlay.ProfileStageInput ? _webStageClicks.Snapshot : default;
+        var confirm = _webStageClicks.Pick(hit, selectedBefore, clickSeconds, stage);
+        if (hit >= 0)
+        {
+            if (roster)
+            {
+                _selectedIndex = hit;
+                _audio.Play(LoginCue.PickCharacter);
+                _scene.SetRosterHighlight(-1, _selectedIndex);
+                if (confirm)
+                {
+                    BeginEnterWorld();
+                }
+            }
+            else
+            {
+                SelectWebJob(hit);
+                if (confirm)
+                {
+                    OnCreateOk();
+                }
+            }
+        }
+        if (WebCharacterSelectOverlay.ProfileStageInput)
+        {
+            var deltaMs = previous.Pending ? (clickSeconds - previous.Seconds) * 1000 : double.NaN;
+            Context.Log.Info(FormattableString.Invariant($"[StagePick] pick stage={stage} eventMs={clickSeconds * 1000:F3} hit={hit} selectedBefore={selectedBefore} confirm={confirm} ")
+                + FormattableString.Invariant($"pending={previous.Pending} priorIndex={previous.Index} priorStage={previous.Stage} deltaMs={deltaMs:F3} maxMs={CharacterSelectStage.DoublePressSeconds * 1000:F3} ")
+                + FormattableString.Invariant($"x={position.X:F5} y={position.Y:F5} viewport={viewport.Width}x{viewport.Height} state={stateBefore}->{_state} busy={_busy} tribe={_chosenBrood} selectedClass={_jobSelected}"));
+        }
+    }
+
+    // The page queues stage clicks with their event times. The polled pointer handles hover and preview dragging.
     private void PickOnStage(MouseState mouse)
     {
         var cursor = new Vector2(mouse.X, mouse.Y);
@@ -380,36 +455,11 @@ public sealed partial class CharacterSelectScreen
         {
             _hoveredIndex = _scene.PickRoster(cursor, viewport, PickScale);
             _scene.SetRosterHighlight(_hoveredIndex, _selectedIndex);
-            if (Clicked(mouse) && _hoveredIndex >= 0)
-            {
-                var again = _hoveredIndex == _selectedIndex && _lastClickIndex == _hoveredIndex
-                    && _elapsedSeconds - _lastClickSeconds < CharacterSelectStage.DoublePressSeconds;
-                _selectedIndex = _hoveredIndex;
-                _audio.Play(LoginCue.PickCharacter);
-                _lastClickSeconds = _elapsedSeconds;
-                _lastClickIndex = _hoveredIndex;
-                if (again)
-                {
-                    BeginEnterWorld();
-                }
-            }
         }
         else if (_state == State.JobSelect)
         {
-            _jobHovered = _scene.PickJob(cursor, viewport, PickScale);
+            _jobHovered = _scene.PickWebJob(cursor, viewport);
             _scene.SetJobHighlight(_jobHovered, _jobSelected);
-            if (Clicked(mouse) && _jobHovered >= 0)
-            {
-                var again = _jobSelected == _jobHovered && _lastClickIndex == _jobHovered
-                    && _elapsedSeconds - _lastClickSeconds < CharacterSelectStage.DoublePressSeconds;
-                SelectWebJob(_jobHovered);
-                _lastClickIndex = _jobHovered;
-                _lastClickSeconds = _elapsedSeconds;
-                if (again)
-                {
-                    EnterFaceSelect();
-                }
-            }
         }
         else if ((_state is State.FaceSelect or State.Name) && mouse.LeftButton == ButtonState.Pressed
             && _lastMouse.LeftButton == ButtonState.Pressed)

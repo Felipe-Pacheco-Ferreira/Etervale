@@ -1,0 +1,62 @@
+
+    // A game master's line in a ticket's thread becomes a staff message of the ticket.
+    private async Task<bool> AnswerFromThreadAsync(SocketMessage message, CancellationToken ct)
+    {
+        if (_tickets is null || message.Channel is not IThreadChannel thread || message.Author.IsBot || message.Author.IsWebhook
+            || message is not SocketUserMessage || string.IsNullOrWhiteSpace(message.Content))
+        {
+            return false;
+        }
+
+        await _ticketGate.WaitAsync(ct);
+        try
+        {
+            var entry = _state.Tickets.FirstOrDefault(pair => pair.Value.ThreadId == thread.Id);
+            if (entry.Value is not { } post)
+            {
+                return false;
+            }
+
+            var level = LevelOf(message.Author);
+            if (level < settings.Tickets.MinGmLevel)
+            {
+                await message.AddReactionAsync(new Emoji("⛔"));
+                return true;
+            }
+
+            var text = message.CleanContent.Trim();
+            if (await _tickets.AddMessageAsync(post.AccountId, entry.Key, TicketAuthor.Staff, DisplayName(message.Author), text, ct) is not { } stored)
+            {
+                await message.AddReactionAsync(new Emoji("⚠️"));
+                return true;
+            }
+
+            post.Posted.Add(TicketMessageKey(stored));
+            await SaveStateAsync(state => state.Tickets[entry.Key] = post, ct);
+            await message.AddReactionAsync(new Emoji("✅"));
+            await AuditTicketAsync(message.Author, level, "discord: ticket reply " + entry.Key.ToString("N"), text, ct);
+            return true;
+        }
+        finally
+        {
+            _ticketGate.Release();
+        }
+    }
+
+    private Task AuditTicketAsync(IUser user, int level, string command, string result, CancellationToken ct) =>
+        gameMasters.AppendAuditAsync(new GmAuditEntry(0, AuditUser(user), DisplayName(user), level, command, settings.Tickets.MinGmLevel, true,
+            result.Length > AuditResultLimit ? result[..AuditResultLimit] : result), ct);
+
+    private static string TicketId(string kind, long accountId, Guid id) =>
+        string.Join(':', kind, accountId.ToString(CultureInfo.InvariantCulture), id.ToString("N"));
+
+    // The account and ticket of a button id made by TicketId, or null for another component.
+    internal static (long AccountId, Guid Id)? ParseTicket(string customId, string kind)
+    {
+        var parts = customId.Split(':');
+        return parts.Length == 3 && parts[0] == kind && long.TryParse(parts[1], NumberStyles.None, CultureInfo.InvariantCulture, out var account)
+            && Guid.TryParseExact(parts[2], "N", out var id)
+            ? (account, id)
+            : null;
+    }
+}

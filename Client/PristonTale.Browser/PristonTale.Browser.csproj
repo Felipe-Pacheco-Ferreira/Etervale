@@ -14,6 +14,7 @@
          cannot follow, so trimming could drop members they need. -->
     <PublishTrimmed>false</PublishTrimmed>
     <MonoGamePlatform>Web</MonoGamePlatform>
+    <EtervaleThreeRenderer>true</EtervaleThreeRenderer>
     <!-- The game's assets/ folder, beside the repository's root as for the desktop client; the publish copies the files the
          login needs from it (EtervaleBootstrapFiles). -->
     <EtervaleAssets>$(MSBuildThisFileDirectory)../../assets/</EtervaleAssets>
@@ -40,6 +41,14 @@
   <Target Name="EtervaleBootstrapFiles" AfterTargets="Publish">
     <Error Condition="!Exists('$(EtervaleAssets)StartImage/Opening/Intro.wav')"
            Text="The game data's assets/ folder is missing at $(EtervaleAssets) (README.md, Requirements)." />
+    <PropertyGroup>
+      <_EtervalePreviewMotionDirectory>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', 'preview-motions'))</_EtervalePreviewMotionDirectory>
+      <_EtervalePreviewToolArtifacts>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(BaseIntermediateOutputPath)', 'preview-motion-tool'))</_EtervalePreviewToolArtifacts>
+      <_EtervaleDotNetHost Condition="'$(DOTNET_HOST_PATH)' != ''">$(DOTNET_HOST_PATH)</_EtervaleDotNetHost>
+      <_EtervaleDotNetHost Condition="'$(_EtervaleDotNetHost)' == ''">dotnet</_EtervaleDotNetHost>
+    </PropertyGroup>
+    <Exec Command="&quot;$(_EtervaleDotNetHost)&quot; run --project &quot;$(MSBuildThisFileDirectory)../../tools/PristonTale.AssetDump/PristonTale.AssetDump.csproj&quot; --configuration $(Configuration) --artifacts-path &quot;$(_EtervalePreviewToolArtifacts)&quot; -- --export-preview-skeletons &quot;$(EtervaleAssets)&quot; &quot;$(_EtervalePreviewMotionDirectory)&quot;"
+          EnvironmentVariables="NuGetAudit=$(NuGetAudit);RestoreIgnoreFailedSources=$(RestoreIgnoreFailedSources)" />
     <ItemGroup>
       <_EtervaleBootstrap Include="$(PublishDir)Content/**/*.xnb" Root="$(PublishDir)" />
       <_EtervaleBootstrap Include="$(EtervaleAssets)sky/**/*;$(EtervaleAssets)Effect/Sky/**/*;$(EtervaleAssets)image/Sinimage/Cursor/**/*"
@@ -48,11 +57,14 @@
                          Root="$(EtervaleAssets)../" />
       <_EtervaleBootstrap Include="$(EtervaleAssets)Effect/Particle/warp_magicsquare01a.tga;$(EtervaleAssets)Effect/Particle/flare.tga"
                          Root="$(EtervaleAssets)../" />
+      <_EtervaleBootstrap Include="$(EtervaleAssets)Effect/Vfx/Common/Progression.vfx.json;$(EtervaleAssets)Effect/ObjAnimationData/GameStart/GameStart1.smd;$(EtervaleAssets)Effect/ObjAnimationData/GameStart/tt.bmp"
+                         Root="$(EtervaleAssets)../" />
       <_EtervaleBootstrap Include="$(EtervaleAssets)cSelect/**/*;$(EtervaleAssets)StartImage/login/CharSelect/**/*;$(EtervaleAssets)StartImage/login/Moryon/**/*;$(EtervaleAssets)StartImage/login/UserCharacterInfo.tga;$(EtervaleAssets)StartImage/login/T??0?-*.tga;$(EtervaleAssets)StartImage/login/CharacterInfo.tga;$(EtervaleAssets)image/flame*.bmp" Root="$(EtervaleAssets)../" />
       <_EtervaleBootstrap Include="$(EtervaleAssets)char/tmABCD/C001.inx;$(EtervaleAssets)char/tmABCD/C002.inx;$(EtervaleAssets)char/tmABCD/TmbC01*;$(EtervaleAssets)char/tmABCD/M4Bip.inx;$(EtervaleAssets)char/tmABCD/m4.smb;$(EtervaleAssets)char/tmABCD/tmh-c01*.inx;$(EtervaleAssets)char/tmABCD/tmh-c01*.smd;$(EtervaleAssets)char/tmABCD/tmh-c01*.bmp;$(EtervaleAssets)char/tmABCD/TmhC01-1.bmp;$(EtervaleAssets)char/tmABCD/TmhC01-2.bmp;$(EtervaleAssets)char/tmABCD/TmbC03.bmp;$(EtervaleAssets)Field/Ricarten/**/*" Root="$(EtervaleAssets)../" />
       <_EtervaleBootstrap Include="$(EtervaleAssets)char/npc/MN-012/**/*;$(EtervaleAssets)char/npc/Hunter/**/*;$(EtervaleAssets)char/npc/TN-008/**/*;$(EtervaleAssets)char/npc/Skadi/**/*;$(EtervaleAssets)char/npc/TN-011/**/*;$(EtervaleAssets)char/npc/TN-003/**/*;$(EtervaleAssets)char/npc/TN-007/**/*;$(EtervaleAssets)char/npc/Derik/**/*;$(EtervaleAssets)char/npc/tN-014/**/*;$(EtervaleAssets)char/npc/T_Messenger/**/*;$(EtervaleAssets)char/npc/Nadia/**/*;$(EtervaleAssets)char/npc/TN-016/**/*" Exclude="$(EtervaleAssets)char/npc/**/*.in;$(EtervaleAssets)char/npc/**/*.ini" Root="$(EtervaleAssets)../" />
       <_EtervaleBootstrap Include="$(EtervaleAssets)image/Sinimage/Inter/**/*.bmp;$(EtervaleAssets)image/Sinimage/Inter/**/*.tga;$(EtervaleAssets)image/Sinimage/Inter/**/*.png;$(EtervaleAssets)image/Sinimage/Inter/**/*.jpg;$(EtervaleAssets)image/Sinimage/skill/**/*.bmp;$(EtervaleAssets)image/Sinimage/skill/**/*.tga;$(EtervaleAssets)image/Sinimage/skill/**/*.png;$(EtervaleAssets)image/Sinimage/skill/**/*.jpg;$(EtervaleAssets)image/Sinimage/Inven/**/*.bmp;$(EtervaleAssets)image/Sinimage/Inven/**/*.tga;$(EtervaleAssets)image/Sinimage/Inven/**/*.png;$(EtervaleAssets)image/Sinimage/Inven/**/*.jpg;$(EtervaleAssets)image/Sinimage/Status/**/*.bmp;$(EtervaleAssets)image/Sinimage/Status/**/*.tga;$(EtervaleAssets)image/Sinimage/Status/**/*.png;$(EtervaleAssets)image/Sinimage/Status/**/*.jpg;$(EtervaleAssets)image/Sinimage/MessageBox/**/*.bmp;$(EtervaleAssets)image/Sinimage/MessageBox/**/*.tga;$(EtervaleAssets)image/Sinimage/MessageBox/**/*.png;$(EtervaleAssets)image/Sinimage/MessageBox/**/*.jpg;$(EtervaleAssets)image/Sinimage/Quest/**/*.bmp;$(EtervaleAssets)image/Sinimage/Quest/**/*.tga;$(EtervaleAssets)image/Sinimage/Quest/**/*.png;$(EtervaleAssets)image/Sinimage/Quest/**/*.jpg;$(EtervaleAssets)image/GuideMap/**/*.bmp;$(EtervaleAssets)image/GuideMap/**/*.tga;$(EtervaleAssets)image/GuideMap/**/*.png;$(EtervaleAssets)image/GuideMap/**/*.jpg;$(EtervaleAssets)image/Field/**/*.bmp;$(EtervaleAssets)image/Field/**/*.tga;$(EtervaleAssets)image/Field/**/*.png;$(EtervaleAssets)image/Field/**/*.jpg;$(EtervaleAssets)image/party/**/*.bmp;$(EtervaleAssets)image/party/**/*.tga;$(EtervaleAssets)image/party/**/*.png;$(EtervaleAssets)image/party/**/*.jpg;$(EtervaleAssets)image/settings/**/*.bmp;$(EtervaleAssets)image/settings/**/*.tga;$(EtervaleAssets)image/settings/**/*.png;$(EtervaleAssets)image/settings/**/*.jpg" Root="$(EtervaleAssets)../" />
       <_EtervaleBootstrap Include="$(EtervaleAssets)Field/map/*.tga;$(EtervaleAssets)Field/Title/*.tga;$(EtervaleAssets)image/MapBox.tga;$(EtervaleAssets)image/ARROW.tga;$(EtervaleAssets)image/npc.tga" Root="$(EtervaleAssets)../" />
+      <_EtervaleBootstrap Include="$(EtervaleAssets)image/Sinimage/help/HelpBoxCorner.tga;$(EtervaleAssets)image/Sinimage/help/HelpBoxLine.tga;$(EtervaleAssets)image/Sinimage/help/box3.tga;$(EtervaleAssets)image/Sinimage/help/box4.tga;$(EtervaleAssets)image/Sinimage/help/box5.tga;$(EtervaleAssets)image/Sinimage/help/box6.tga;$(EtervaleAssets)image/Sinimage/help/box7.tga;$(EtervaleAssets)image/Sinimage/help/box8.tga;$(EtervaleAssets)image/Sinimage/help/box9.tga;$(EtervaleAssets)image/Sinimage/help/Box_Line.tga;$(EtervaleAssets)image/Sinimage/help/box-test-title.bmp;$(EtervaleAssets)image/Sinimage/help/box-test-title2.bmp;$(EtervaleAssets)image/Sinimage/help/scl_bar.tga;$(EtervaleAssets)image/Sinimage/help/scl_icon.tga" Root="$(EtervaleAssets)../" />
       <_EtervaleBootstrap Include="$(EtervaleAssets)image/Sinimage/Items/Defense/*.bmp;$(EtervaleAssets)image/Sinimage/Items/Weapon/*.bmp;$(EtervaleAssets)image/Sinimage/Items/Event/*.bmp;$(EtervaleAssets)image/Sinimage/Items/DropItem/mixM_04.bmp;$(EtervaleAssets)image/party/party_DATA/**/*.msg;$(EtervaleAssets)image/Sinimage/Quest/**/*.sin;$(EtervaleAssets)image/clanImage/Help/AutoHelp/*.ini" Root="$(EtervaleAssets)../" />
       <_EtervaleBootstrap Include="$(EtervaleAssets)image/Sinimage/Items/DropItem/DS101-2X2a.tga;$(EtervaleAssets)image/Sinimage/Items/DropItem/DS101-2X2b.tga;$(EtervaleAssets)image/Sinimage/Items/DropItem/itda102.bmp;$(EtervaleAssets)image/Sinimage/Items/DropItem/itda102.smd;$(EtervaleAssets)image/Sinimage/Items/DropItem/itds101.smd;$(EtervaleAssets)image/Sinimage/Items/DropItem/itGP101.smd;$(EtervaleAssets)image/Sinimage/Items/DropItem/itwp101.bmp;$(EtervaleAssets)image/Sinimage/Items/DropItem/itWP101.smd" Root="$(EtervaleAssets)../" />
       <_EtervaleBootstrap Include="$(EtervaleAssets)char/tmABCD/Tmh_C01b.smd;$(EtervaleAssets)char/tmABCD/TmhC01c.smd;$(EtervaleAssets)char/tmABCD/Tmhc01t.smd" Root="$(EtervaleAssets)../" />
@@ -219,7 +231,10 @@
       <_EtervaleBootstrap Include="$(EtervaleAssets)Field/forest/wire-bridge-6.bmp" Root="$(EtervaleAssets)../" />
       <_EtervaleBootstrap Include="$(EtervaleAssets)Field/forest/wire-bridge-dam4.tga" Root="$(EtervaleAssets)../" />
       <_EtervaleBootstrap Include="$(EtervaleAssets)Field/forest/woodpan_01.BMP" Root="$(EtervaleAssets)../" />
+      <_EtervaleBootstrap Include="$(EtervaleAssets)char/tmABCD/m1.smb;$(EtervaleAssets)char/tmABCD/m2.smb;$(EtervaleAssets)char/tmABCD/m3.smb;$(EtervaleAssets)char/tmABCD/m5.smb;$(EtervaleAssets)char/tmABCD/m6.smb;$(EtervaleAssets)char/tmABCD/m7.smb;$(EtervaleAssets)char/tmABCD/m8.smb"
+                         Root="$(EtervaleAssets)../" />
       <_EtervaleBootstrap Update="@(_EtervaleBootstrap)" Path="$([MSBuild]::MakeRelative('%(Root)', '%(FullPath)').Replace('\', '/'))" />
+      <_EtervaleBootstrap Include="$(_EtervalePreviewMotionDirectory)/m4.preview.smb" Path="assets/char/tmABCD/m4.preview.smb" />
       <_EtervaleBootstrap Include="$(MSBuildThisFileDirectory)../../Web/PristonTale.Web/wwwroot/img/emblem-256.png"
                          Path="assets/Field/forest/avalon-banner-emblem.png" />
     </ItemGroup>
@@ -232,22 +247,35 @@
       <Output TaskParameter="Items" ItemName="_EtervaleBootstrapHashed" />
     </GetFileHash>
     <WriteLinesToFile File="$(PublishDir)wwwroot/bootstrap.txt" Lines="@(_EtervaleBootstrapHashed->'%(Path)%09%(FileHash)')" Overwrite="true" WriteOnlyWhenDifferent="true" />
-    <!-- Each class needs its base body, three faces, the materials they use and the linked motion assets. These files
-         are served by the browser client, but absent from bootstrap.txt so character creation can fetch them on demand. -->
+    <!-- Each class needs its base body, three faces, their materials, and its compact preview skeleton. The full
+         gameplay skeletons stay in bootstrap.txt in the world wave. -->
     <ItemGroup>
-      <_EtervaleCharacterFiles Include="B001.inx;m1.smb;M1Bip.inx;TmbB01.bmp;tmbB01.smd;tmh-b01.inx;tmh-B01.smd;tmh-b02.inx;tmh-B02.smd;tmh-b03.inx;tmh-B03.smd;TmhB01.bmp;TmhB02.bmp;TmhB03.bmp" Class="Fighter" />
-      <_EtervaleCharacterFiles Include="A001.inx;m1.smb;M1Bip.inx;TmbA01.bmp;tmbA01.smd;tmh-a01.inx;tmh-A01.smd;tmh-a02.inx;tmh-A02.smd;tmh-a03.inx;tmh-A03.smd;TmhA01.bmp;TmhA02.tga;TmhA03.bmp" Class="Mechanician" />
-      <_EtervaleCharacterFiles Include="D001.inx;m2.smb;M2Bip.inx;TfbD01.bmp;tfbD01.smd;tfh-D01.inx;tfh-D01.smd;tfh-d02.inx;tfh-D02.smd;tfh-d03.inx;tfh-D03.smd;TfhD01a.bmp;TfhD01b.tga;TfhD02a.bmp;TfhD02b.tga;TfhD03a.bmp;TfhD03b.tga" Class="Archer" />
-      <_EtervaleCharacterFiles Include="C001.inx;m4.smb;M4Bip.inx;TmbC01.bmp;TmbC01.smd;tmh-c01.inx;tmh-C01.smd;tmh-c02.inx;tmh-C02.smd;tmh-c03.inx;tmh-C03.smd;TmhC01-1.bmp;TmhC01-2.bmp;TmhC02.bmp;TmhC03.bmp" Class="Pikeman" />
-      <_EtervaleCharacterFiles Include="_MfbB01.bmp;m2.smb;M2Bip.inx;mB001.inx;MfbB01.smd;Mfh-B01.inx;Mfh-B02.inx;Mfh-B03.inx;MfhB01-f.BMP;MfhB01-h.BMP;MfhB01.smd;MfhB02-f.BMP;MfhB02-h.BMP;MfhB02.smd;MfhB03-f.BMP;MfhB03-h.BMP;MfhB03.smd" Class="Atalanta" />
-      <_EtervaleCharacterFiles Include="m1.smb;M1Bip.inx;mA001.inx;MmbA01.bmp;MmbA01.smd;Mmh-A01.inx;Mmh-A02.inx;Mmh-A03.inx;MmhA01.bmp;MmhA01.smd;MmhA02.bmp;MmhA02.smd;MmhA03.bmp;MmhA03.smd" Class="Knight" />
-      <_EtervaleCharacterFiles Include="m3.smb;M3Bip.inx;mD001.inx;MmbD01.BMP;MmbD01.smd;Mmh-D01.inx;Mmh-D02.inx;Mmh-D03.inx;MmhD01.smd;MmhD01.TGA;MmhD02.smd;MmhD02.TGA;MmhD03.smd;MmhD03.TGA" Class="Magician" />
-      <_EtervaleCharacterFiles Include="m5.smb;M5Bip.inx;mC001.inx;MfbC01.bmp;MfbC01.smd;MfbC01h-02.TGA;Mfh-C01.inx;Mfh-C02.inx;Mfh-C03.inx;MfhC01-01.BMP;MfhC01.smd;MfhC02.BMP;MfhC02.smd;MfhC03.BMP;MfhC03.smd" Class="Priestess" />
-      <_EtervaleCharacterFiles Include="e001.inx;m6.smb;M6Bip.inx;Tahe01.tga;Tbhe01.tga;TfbE01.smd;tfh-e01.inx;tfh-e02.inx;tfh-e03.inx;Tfhe.tga;TfhE01.smd;Tfhe01.tga;TfhE02.smd;Tfhe02.tga;TfhE03.smd;Tfhe03.tga;Tlhe01.tga" Class="Assassin" />
-      <_EtervaleCharacterFiles Include="m7.smb;M7Bip.inx;Mahe01.tga;Mbhe01.tga;me001.inx;Mlhe01.tga;MmbE01.smd;Mmh-E01.inx;Mmh-E02.inx;Mmh-E03.inx;MmhE_face_01.tga;MmhE_face_02.tga;MmhE_face_03.tga;MmhE01.smd;MmhE01.tga;MmhE02.smd;MmhE02.tga;MmhE03.smd;MmhE03.tga;Mshe01.tga" Class="Shaman" />
-      <_EtervaleCharacterFiles Include="f001.inx;m8.smb;M8Bip.inx;Tahf01.tga;Tbhf01.tga;Tdhf01.tga;TfbF01.smd;tfh-f01.inx;tfh-f02.inx;tfh-f03.inx;TfhF.tga;TfhF01.smd;TfhF01.tga;TfhF02.smd;TfhF02.tga;TfhF03.smd;TfhF03.tga;Tlhf01.tga" Class="MartialArtist" />
+      <_EtervaleCharacterFiles Include="B001.inx;M1Bip.inx;TmbB01.bmp;tmbB01.smd;tmh-b01.inx;tmh-B01.smd;tmh-b02.inx;tmh-B02.smd;tmh-b03.inx;tmh-B03.smd;TmhB01.bmp;TmhB02.bmp;TmhB03.bmp" Class="Fighter" />
+      <_EtervaleCharacterMotions Include="m1.preview.smb" Class="Fighter" />
+      <_EtervaleCharacterFiles Include="A001.inx;M1Bip.inx;TmbA01.bmp;tmbA01.smd;tmh-a01.inx;tmh-A01.smd;tmh-a02.inx;tmh-A02.smd;tmh-a03.inx;tmh-A03.smd;TmhA01.bmp;TmhA02.tga;TmhA03.bmp" Class="Mechanician" />
+      <_EtervaleCharacterMotions Include="m1.preview.smb" Class="Mechanician" />
+      <_EtervaleCharacterFiles Include="D001.inx;M2Bip.inx;TfbD01.bmp;tfbD01.smd;tfh-D01.inx;tfh-D01.smd;tfh-d02.inx;tfh-D02.smd;tfh-d03.inx;tfh-D03.smd;TfhD01a.bmp;TfhD01b.tga;TfhD02a.bmp;TfhD02b.tga;TfhD03a.bmp;TfhD03b.tga" Class="Archer" />
+      <_EtervaleCharacterMotions Include="m2.preview.smb" Class="Archer" />
+      <_EtervaleCharacterFiles Include="C001.inx;M4Bip.inx;TmbC01.bmp;TmbC01.smd;tmh-c01.inx;tmh-C01.smd;tmh-c02.inx;tmh-C02.smd;tmh-c03.inx;tmh-C03.smd;TmhC01-1.bmp;TmhC01-2.bmp;TmhC02.bmp;TmhC03.bmp" Class="Pikeman" />
+      <_EtervaleCharacterMotions Include="m4.preview.smb" Class="Pikeman" />
+      <_EtervaleCharacterFiles Include="_MfbB01.bmp;M2Bip.inx;mB001.inx;MfbB01.smd;Mfh-B01.inx;Mfh-B02.inx;Mfh-B03.inx;MfhB01-f.BMP;MfhB01-h.BMP;MfhB01.smd;MfhB02-f.BMP;MfhB02-h.BMP;MfhB02.smd;MfhB03-f.BMP;MfhB03-h.BMP;MfhB03.smd" Class="Atalanta" />
+      <_EtervaleCharacterMotions Include="m2.preview.smb" Class="Atalanta" />
+      <_EtervaleCharacterFiles Include="M1Bip.inx;mA001.inx;MmbA01.bmp;MmbA01.smd;Mmh-A01.inx;Mmh-A02.inx;Mmh-A03.inx;MmhA01.bmp;MmhA01.smd;MmhA02.bmp;MmhA02.smd;MmhA03.bmp;MmhA03.smd" Class="Knight" />
+      <_EtervaleCharacterMotions Include="m1.preview.smb" Class="Knight" />
+      <_EtervaleCharacterFiles Include="M3Bip.inx;mD001.inx;MmbD01.BMP;MmbD01.smd;Mmh-D01.inx;Mmh-D02.inx;Mmh-D03.inx;MmhD01.smd;MmhD01.TGA;MmhD02.smd;MmhD02.TGA;MmhD03.smd;MmhD03.TGA" Class="Magician" />
+      <_EtervaleCharacterMotions Include="m3.preview.smb" Class="Magician" />
+      <_EtervaleCharacterFiles Include="M5Bip.inx;mC001.inx;MfbC01.bmp;MfbC01.smd;MfbC01h-02.TGA;Mfh-C01.inx;Mfh-C02.inx;Mfh-C03.inx;MfhC01-01.BMP;MfhC01.smd;MfhC02.BMP;MfhC02.smd;MfhC03.BMP;MfhC03.smd" Class="Priestess" />
+      <_EtervaleCharacterMotions Include="m5.preview.smb" Class="Priestess" />
+      <_EtervaleCharacterFiles Include="e001.inx;M6Bip.inx;Tahe01.tga;Tbhe01.tga;TfbE01.smd;tfh-e01.inx;tfh-e02.inx;tfh-e03.inx;Tfhe.tga;TfhE01.smd;Tfhe01.tga;TfhE02.smd;Tfhe02.tga;TfhE03.smd;Tfhe03.tga;Tlhe01.tga" Class="Assassin" />
+      <_EtervaleCharacterMotions Include="m6.preview.smb" Class="Assassin" />
+      <_EtervaleCharacterFiles Include="M7Bip.inx;Mahe01.tga;Mbhe01.tga;me001.inx;Mlhe01.tga;MmbE01.smd;Mmh-E01.inx;Mmh-E02.inx;Mmh-E03.inx;MmhE_face_01.tga;MmhE_face_02.tga;MmhE_face_03.tga;MmhE01.smd;MmhE01.tga;MmhE02.smd;MmhE02.tga;MmhE03.smd;MmhE03.tga;Mshe01.tga" Class="Shaman" />
+      <_EtervaleCharacterMotions Include="m7.preview.smb" Class="Shaman" />
+      <_EtervaleCharacterFiles Include="f001.inx;M8Bip.inx;Tahf01.tga;Tbhf01.tga;Tdhf01.tga;TfbF01.smd;tfh-f01.inx;tfh-f02.inx;tfh-f03.inx;TfhF.tga;TfhF01.smd;TfhF01.tga;TfhF02.smd;TfhF02.tga;TfhF03.smd;TfhF03.tga;Tlhf01.tga" Class="MartialArtist" />
+      <_EtervaleCharacterMotions Include="m8.preview.smb" Class="MartialArtist" />
       <_EtervaleCharacterFiles Update="@(_EtervaleCharacterFiles)" Path="assets/char/tmABCD/%(Identity)" />
+      <_EtervaleCharacterMotions Update="@(_EtervaleCharacterMotions)" Path="assets/char/tmABCD/%(Identity)" />
       <_EtervaleCharacterSources Include="@(_EtervaleCharacterFiles->'$(EtervaleAssets)char/tmABCD/%(Identity)')" />
+      <_EtervaleCharacterSources Include="@(_EtervaleCharacterMotions->'$(_EtervalePreviewMotionDirectory)/%(Identity)')" />
       <_EtervaleCharacterCopy Include="@(_EtervaleCharacterSources->Distinct())" />
     </ItemGroup>
     <Copy SourceFiles="@(_EtervaleCharacterCopy)" DestinationFiles="@(_EtervaleCharacterCopy->'$(PublishDir)wwwroot/%(Path)')" SkipUnchangedFiles="true" />

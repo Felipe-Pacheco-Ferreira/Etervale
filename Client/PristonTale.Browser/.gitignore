@@ -1,0 +1,4 @@
+node_modules/
+wwwroot/three-worker-bundle.js
+wwwroot/three-worker-bundle.js.LEGAL.txt
+wwwroot/three-worker-bundle.manifest.json

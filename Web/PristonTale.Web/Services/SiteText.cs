@@ -1,4 +1,5 @@
 using System.Globalization;
+using PristonTale.Application.Support;
 using PristonTale.Simulation.Progression;
 using PristonTale.Simulation.Social.Castle;
 using PristonTale.Simulation.World.Bellatra;
@@ -60,6 +61,14 @@ public static class SiteText
     public static string BossMinuteRange => $":{BossSpawnSchedule.FirstMinute:00} e :{BossSpawnSchedule.LastMinute:00}";
 
     public static string Number(long value) => value.ToString("N0", Culture);
+
+    // A support ticket's state as the site and the Discord bot word it.
+    public static string TicketState(SupportTicket ticket) => ticket.Status switch
+    {
+        TicketStatus.Closed => ticket.ClosedByPlayer ? "Cancelado pelo jogador" : "Fechado pela equipe",
+        TicketStatus.Answered => "Respondido",
+        _ => "Aguardando atendimento"
+    };
 
     public static string Day(DateOnly day)
     {

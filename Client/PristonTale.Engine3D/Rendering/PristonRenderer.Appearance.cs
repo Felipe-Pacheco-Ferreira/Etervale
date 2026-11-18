@@ -55,7 +55,8 @@ public sealed partial class PristonRenderer
 {
     // Decodes an overlay texture (absolute path) on a worker; an appearance shows it once it is ready.
     public Task PrepareActorOverlayAsync(string path) =>
-        _textureLoader.PrepareTextureAsync(Path.GetDirectoryName(path) ?? ".", Path.GetFileName(path));
+        _externalRenderer is not null ? _externalRenderer.PrepareTextureAsync(path)
+            : _textureLoader.PrepareTextureAsync(Path.GetDirectoryName(path) ?? ".", Path.GetFileName(path));
 
     public void SetActorAppearance(ActorHandle handle, in PristonActorAppearance appearance)
     {
@@ -70,7 +71,8 @@ public sealed partial class PristonRenderer
         shade.Wobble = appearance.Wobble;
         shade.CastsShadow = appearance.CastsShadow && !runtime.EchoSource.IsValid;
         shade.OverlayForm = appearance.OverlayForm;
-        shade.Overlay = string.IsNullOrEmpty(appearance.Overlay) ? null : PreparedOverlay(appearance.Overlay);
+        runtime.ExternalOverlay = appearance.Overlay ?? string.Empty;
+        shade.Overlay = _externalRenderer is not null || string.IsNullOrEmpty(appearance.Overlay) ? null : PreparedOverlay(appearance.Overlay);
         shade.Scale = appearance.Scale > 0f ? appearance.Scale : 1f;
     }
 

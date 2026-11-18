@@ -19,6 +19,10 @@ public sealed class PristonSkyLibrary : IDisposable
     private readonly Dictionary<(string Path, Color Color), PreparedLayer> _cache = [];
     private readonly Dictionary<PreparedLayer, RenderBatch[]> _caps = [];
     private readonly HashSet<Texture2D> _counted = [];
+    private readonly bool _externalMode;
+    private readonly Dictionary<RenderBatch, ExternalSceneMesh> _externalGeometry = new(ReferenceEqualityComparer.Instance);
+    private readonly Dictionary<PristonMaterialRuntime, (string Directory, PristonMaterial Material)> _externalMaterials = new(ReferenceEqualityComparer.Instance);
+    private readonly Dictionary<int, ExternalSceneMesh[]> _externalProfiles = new();
     private IReadOnlyList<PristonSkyLayer[]> _manifest = [];
     private RenderBatch[][] _profiles = [];
     private bool[] _animated = [];
@@ -29,8 +33,12 @@ public sealed class PristonSkyLibrary : IDisposable
 
     private PristonSkyLibrary(GraphicsDevice device, IClientLog log)
     {
+        _externalMode = PristonRenderer.ExternalSceneRendererFactory is not null;
         _textures = new PristonTextureLoader(device, log, displayReferred: true);
-        _textures.Initialize();
+        if (!_externalMode)
+        {
+            _textures.Initialize();
+        }
     }
 
     public int ProfileCount => _manifest.Count;
@@ -138,8 +146,13 @@ public sealed class PristonSkyLibrary : IDisposable
                             authored = authored with { TextureName = "dayspace02.BMP" };
                         }
 
-                        var material = materials.Create(Path.GetDirectoryName(path), authored, softAlpha: true);
-                        modelBatches.Add(new RenderBatch([], [], Upload(builder, vertices), material));
+                        var material = _externalMode ? materials.Describe(authored, softAlpha: true)
+                            : materials.Create(Path.GetDirectoryName(path), authored, softAlpha: true);
+                        if (_externalMode)
+                        {
+                            _externalMaterials[material] = (Path.GetDirectoryName(path), authored);
+                        }
+                        modelBatches.Add(BuildBatch(builder, vertices, material));
                         if (PristonBlendType.Covers(material.BlendType))
                         {
                             opaque.Add((material, vertices));
@@ -175,7 +188,7 @@ public sealed class PristonSkyLibrary : IDisposable
             {
                 if (!caps.TryGetValue(outer, out var cap))
                 {
-                    cap = outer.Opaque.Select(group => new RenderBatch([], [], Upload(builder, CapAbove(group.Vertices)), group.Material)).ToArray();
+                    cap = outer.Opaque.Select(group => BuildBatch(builder, CapAbove(group.Vertices), group.Material)).ToArray();
                     caps.Add(outer, cap);
                 }
 
@@ -201,13 +214,39 @@ public sealed class PristonSkyLibrary : IDisposable
         return Profile(profile);
     }
 
-    private PristonGpuMesh Upload(PristonGpuMeshBuilder builder, List<PristonCornerVertex> vertices)
+    internal ExternalSceneMesh[] GetExternalMeshes(int profile)
     {
-        var mesh = builder.Upload(builder.PrepareStaticMesh(vertices.ToArray()));
+        if (_externalProfiles.TryGetValue(profile, out var meshes))
+        {
+            return meshes;
+        }
+        var batches = GetBatches(profile);
+        meshes = new ExternalSceneMesh[batches.Length];
+        for (var index = 0; index < batches.Length; index++)
+        {
+            var batch = batches[index];
+            meshes[index] = _externalGeometry[batch];
+        }
+        _externalProfiles.Add(profile, meshes);
+        return meshes;
+    }
+
+    private RenderBatch BuildBatch(PristonGpuMeshBuilder builder, List<PristonCornerVertex> vertices, PristonMaterialRuntime material)
+    {
+        var prepared = builder.PrepareStaticMesh(vertices.ToArray());
+        if (_externalMode)
+        {
+            var batch = new RenderBatch(prepared.Vertices, [], null, material);
+            var source = _externalMaterials[material];
+            _externalGeometry.Add(batch, PristonRenderer.ExternalMesh(source.Directory, source.Material, prepared.Vertices, prepared.Indices) with { IsSky = true });
+            MeshBytes += PristonGpuMeshBuilder.EstimateBytes(prepared);
+            return batch;
+        }
+        var mesh = builder.Upload(prepared);
         _meshes.Add(mesh);
         MeshBytes += mesh.VertexBuffer.VertexDeclaration.VertexStride * (long)mesh.VertexCount;
         MeshBytes += mesh.IndexCount * (long)(mesh.IndexBuffer.IndexElementSize == IndexElementSize.SixteenBits ? 2 : 4);
-        return mesh;
+        return new RenderBatch([], [], mesh, material);
     }
 
     // An open layer mirrored up over its rim onto the dome to the zenith: each vertex keeps its direction, distance and
@@ -317,6 +356,9 @@ public sealed class PristonSkyLibrary : IDisposable
         }
 
         _meshes.Clear();
+        _externalGeometry.Clear();
+        _externalMaterials.Clear();
+        _externalProfiles.Clear();
         _profiles = [];
         _animated = [];
         _textures.Dispose();

@@ -45,7 +45,7 @@ public sealed class SuporteModel(IAccountRepository accounts, SupportTickets tic
             return Page();
         }
 
-        await tickets.CreateAsync(account.Id, Assunto.Trim(), Mensagem.Trim(), ct);
+        await tickets.CreateAsync(account.Id, Assunto.Trim(), Mensagem.Trim(), account.UserId, ct);
         return RedirectToPage();
     }
 

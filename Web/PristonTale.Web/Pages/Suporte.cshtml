@@ -1,4 +1,5 @@
 @page
+@using PristonTale.Application.Support
 @model SuporteModel
 @{
     ViewData["Title"] = "Suporte";
@@ -23,16 +24,11 @@
         @foreach (var ticket in Model.Tickets)
         {
             <details>
-                <summary>@ticket.Subject · @ticket.CreatedAt.ToString("dd/MM/yyyy HH:mm 'UTC'")</summary>
-                <p>@ticket.Message</p>
-                @if (ticket.Reply is { } reply)
+                <summary>#@ticket.Number @ticket.Subject · @SiteText.TicketState(ticket) · @ticket.CreatedAt.ToString("dd/MM/yyyy HH:mm 'UTC'")</summary>
+                @foreach (var message in ticket.Messages)
                 {
-                    <h3>Resposta da equipe</h3>
-                    <p>@reply</p>
-                }
-                else
-                {
-                    <p>Aguardando atendimento</p>
+                    <h3>@(message.Author == TicketAuthor.Staff ? "Equipe" : "Você") · @message.At.ToString("dd/MM/yyyy HH:mm 'UTC'")</h3>
+                    <p>@message.Text</p>
                 }
                 <small>@ticket.Id</small>
             </details>

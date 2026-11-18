@@ -91,7 +91,8 @@ public sealed partial class GameScene
             _log.Info($"[WebWorld] {field.Name}: player models");
         AddPlayerActors(assetRoot, entered?.FaceIndex ?? 0, entered?.Tier ?? 0, entered?.HairIndex ?? 0);
 
-        _camera = new PristonCamera(_playerBody.Position, _playerForward, ToCameraSettings(field.Camera));
+        _camera = new PristonCamera(_playerBody.Position, _playerForward,
+            ToEntryCameraSettings(field, entered, OperatingSystem.IsBrowser()));
         Status = $"Loaded {field.Name}: {loaded.Stage.Vertices.Count} vertices, {loaded.Stage.Faces.Count} faces, " +
                  $"{field.StageObjectSmds.Count} animation SMDs + {_player.Name}";
         if (OperatingSystem.IsBrowser())
@@ -114,7 +115,8 @@ public sealed partial class GameScene
         _monsterComposer = new ModelActorComposer(actorScene, _actorLoader);
         _groundLoot = new GroundLootPresentation(actorScene, _actorLoader, _assetRoot, _log)
         {
-            IsVisible = drop => GroundLootFilter.IsVisible(_presentation.Requested, drop)
+            IsVisible = drop => GroundLootFilter.IsVisible(_presentation.Requested, drop),
+            AlwaysShowLabel = drop => _presentation.Requested.AlwaysShowRareGroundLabels && drop.Rare
         };
         _lootInteraction = new GroundLootInteraction(ApplyInventoryAsync, _log, drop => _fieldAudio?.PlayItem(drop.CatalogKey, drop.Gold),
             drop => PickupToCursor?.Invoke(drop.ItemCode) == true, (ok, revision) => PickupToCursorAnswered?.Invoke(ok, revision));
@@ -353,6 +355,20 @@ public sealed partial class GameScene
         FieldOfViewDegrees = c.FieldOfViewDegrees,
         TargetHeight = c.TargetHeight,
     };
+
+    internal static PristonCameraSettings ToEntryCameraSettings(FieldDef field, EnteredCharacter entered, bool browser)
+    {
+        var settings = ToCameraSettings(field.Camera);
+        var arrival = field.Arrival;
+        if (browser && field.FieldCode == FieldCodes.Ricarten && entered is not null
+            && entered.SpawnX == arrival.X && entered.SpawnZ == arrival.Z)
+        {
+            // At the carpet entrance, this higher angle clears the masonry behind the avatar.
+            return settings with { DefaultDistance = 410f, DefaultPitch = 0.575f, FieldOfViewDegrees = 40f };
+        }
+
+        return settings;
+    }
 
     private static DayNightSettings ToDayNightSettings(FieldDayNight d)
     {

@@ -14,7 +14,7 @@ public static class HudInventoryLayout
     // Which owned items lie on the bag grid, for HudGridPlacement.
     public static readonly Func<OwnedItemView, bool> InBag = static item => item.InBag;
 
-    public static Point Origin(HudLayout layout, int slideOffset = 0) => new(0, layout.BottomOffset + slideOffset);
+    public static Point Origin(HudLayout layout, int slideOffset = 0) => new(layout.BottomBarOffset, layout.BottomOffset + slideOffset);
 
     public static Rectangle Bag(Point origin) => new(origin.X + 23, origin.Y + 436, Columns * HudGridPlacement.CellSize, Rows * HudGridPlacement.CellSize);
 

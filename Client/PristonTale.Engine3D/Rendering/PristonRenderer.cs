@@ -17,6 +17,8 @@ namespace PristonTale.Engine3D.Rendering;
 
 public sealed partial class PristonRenderer : IDisposable
 {
+    public static Func<IExternalSceneRenderer> ExternalSceneRendererFactory { get; set; }
+    private readonly IExternalSceneRenderer _externalRenderer;
     private static readonly ConditionalWeakTable<PristonActor, PreparedActorGeometry> PreparedActorGeometries = new();
 
     // The original game advances stage-object animation by two ticks per millisecond.
@@ -149,6 +151,7 @@ public sealed partial class PristonRenderer : IDisposable
     private float _lampFactor;
     private PristonFrameExposure _exposure = PristonFrameExposure.Neutral;
     private PristonPostSettings _postSettings = PristonPostSettings.From(new ClientSettings());
+    private float _renderScale = 1f;
     private float _lastDeltaSeconds;
     // Motion vectors: the frame counter the skin palettes are stamped with, and the previous frame's unjittered camera.
     private uint _motionFrame = 1;
@@ -161,18 +164,29 @@ public sealed partial class PristonRenderer : IDisposable
     private PristonExposureInputs _exposureInputs;
     private readonly Dictionary<BlendState, BlendState> _temporalBlendStates = new(ReferenceEqualityComparer.Instance);
 
-    public PristonRenderer(GraphicsDevice graphicsDevice, ContentManager content, IClientLog log = null, PresentationSettings presentation = null)
+    public PristonRenderer(GraphicsDevice graphicsDevice, ContentManager content, IClientLog log = null, PresentationSettings presentation = null,
+        IExternalSceneRenderer externalSceneRenderer = null)
     {
         _graphicsDevice = graphicsDevice;
         _log = log ?? ConsoleClientLog.Instance;
         _presentation = presentation;
+        _externalRenderer = externalSceneRenderer ?? ExternalSceneRendererFactory?.Invoke();
+        _meshBuilder = new PristonGpuMeshBuilder(graphicsDevice);
+        if (_externalRenderer is not null)
+        {
+            ApplyQuality(presentation?.Rendering ?? new ClientSettings());
+            if (_presentation is not null)
+            {
+                _presentation.RenderingChanged += ApplyQuality;
+            }
+            return;
+        }
         _stateCache = new PristonRenderStateCache(graphicsDevice);
         _textureLoader = new PristonTextureLoader(graphicsDevice, _log);
         _textureLoader.Initialize();
         _shaders = new PristonShaderLibrary(content, _log, _textureLoader.White);
         _sceneTargets = new PristonSceneTargets(graphicsDevice, content, _log);
         _materialFactory = new PristonMaterialRuntimeFactory(_textureLoader);
-        _meshBuilder = new PristonGpuMeshBuilder(graphicsDevice);
         _batchUploader = new BatchUploader(graphicsDevice);
         _glowRenderer = new GlowRenderer(graphicsDevice, content, _log);
         _skyCapture = new PristonSkyCapture(graphicsDevice);
@@ -196,6 +210,25 @@ public sealed partial class PristonRenderer : IDisposable
 
     private void ApplyQuality(ClientSettings settings)
     {
+        if (_externalRenderer is not null)
+        {
+            _renderScale = settings.RenderScale;
+            ShadowsEnabled = settings.ShadowsEnabled;
+            DistanceFog = PristonDistanceFog.For(settings.DistanceFog);
+            ExposureCompensation = settings.ExposureCompensation;
+            RealisticSky = settings.RealisticSky;
+            CloudQuality = settings.CloudQuality;
+            DebugView = settings.DebugView;
+            _maxLocalLights = Math.Clamp(settings.LocalLightLimit, 1, PristonShaderLibrary.MaxLocalLightCount);
+            _externalRenderer.Configure(settings);
+            return;
+        }
+        if (_renderScale != settings.RenderScale)
+        {
+            _renderScale = settings.RenderScale;
+            ResetTemporalState();
+        }
+
         if (_shadowMap?.Width != settings.ShadowMapSize)
         {
             // Release first so a size change never holds both maps (an 8192² Depth32Float map is 256 MiB).
@@ -226,7 +259,7 @@ public sealed partial class PristonRenderer : IDisposable
         _maxLocalLights = Math.Clamp(settings.LocalLightLimit, 1, PristonShaderLibrary.MaxLocalLightCount);
         _postSettings = PristonPostSettings.From(settings);
         _log.Info(
-            $"[Rendering] quality={settings.Quality}; sun shadow={_shadowMap.Width} in {_cascades.Count} cascade(s) of {_cascades.TileSize} " +
+            $"[Rendering] quality={settings.Quality}; render scale={settings.RenderScale:P0}; sun shadow={_shadowMap.Width} in {_cascades.Count} cascade(s) of {_cascades.TileSize} " +
             $"to {PristonShadowCascades.ShadowDistance:0} units, {settings.ShadowFilter}; ambient occlusion={settings.AmbientOcclusion}; " +
             $"contact shadows={settings.ContactShadows}; lamp shadows={_lampShadows.Lamps} x {settings.LampShadowTileSize}; " +
             $"anti-aliasing={settings.AntiAliasing}" +
@@ -274,7 +307,7 @@ public sealed partial class PristonRenderer : IDisposable
     public float FieldSightDistance { get; set; }
 
     // Sky captures rendered since the renderer was created; the fog refreshes its sky copy only on sky changes.
-    public int SkyCaptureRefreshes => _skyCapture.Refreshes;
+    public int SkyCaptureRefreshes => _skyCapture?.Refreshes ?? 0;
 
     // Development view of the surface shader; Overdraw also switches every scene pass to additive blending.
     public PristonDebugView DebugView { get; set; }
@@ -520,6 +553,11 @@ public sealed partial class PristonRenderer : IDisposable
         _lodFrustum.Matrix = camera.View * camera.Projection;
         _lodFocus = camera.Target;
         _lodCameraKnown = true;
+        if (_externalRenderer is not null)
+        {
+            DrawExternalScene(camera);
+            return;
+        }
         var staticBatches = 0;
         var dynamicBatches = 0;
         var drawCalls = 0;
@@ -533,7 +571,7 @@ public sealed partial class PristonRenderer : IDisposable
         // The depth pre-pass pays for itself: the lit pass shades each pixel once and the light tiles get depth bounds.
         var prepass = _multiSampleCount == 0 && DebugView != PristonDebugView.Overdraw;
         // Binding the scene target ends the caller's render pass, so the profiler can reset its timestamps outside one.
-        _sceneTargets.Begin(_multiSampleCount, temporal, prepass);
+        _sceneTargets.Begin(_multiSampleCount, temporal, prepass, _renderScale);
         Profiler.BeginFrame();
         Profiler.Begin(RenderSection.Frame);
         EnsureBatchLists();
@@ -545,7 +583,7 @@ public sealed partial class PristonRenderer : IDisposable
         Profiler.Begin(RenderSection.Lighting);
         var lighting = BuildFrameLighting(camera.Target);
         Profiler.End(RenderSection.Lighting);
-        var sunShadowsEnabled = ShadowsEnabled && lighting.Sun.DiffuseColor != Vector3.Zero && !Underground;
+        var sunShadowsEnabled = DirectionalShadowsEnabled(lighting);
         InvalidateShadowAfterTeleport(camera.Target);
         // The moon's shadows move with the actors only: half the refresh rate is enough for its soft, dim light.
         var shadowRate = SunLights || _shadowUpdateRate == 0 ? _shadowUpdateRate : Math.Max(_shadowUpdateRate / 2, 30);
@@ -849,6 +887,11 @@ public sealed partial class PristonRenderer : IDisposable
     // bound when Draw began. Call after the effects that draw into the scene, before the UI.
     public void ComposeScene()
     {
+        if (_externalRenderer is not null)
+        {
+            _externalRenderer.Compose();
+            return;
+        }
         var postFrame = new PristonPostFrame(
             _postSettings,
             _exposureInputs,
@@ -870,6 +913,10 @@ public sealed partial class PristonRenderer : IDisposable
     // Makes the next frame adopt its metered exposure and drop the temporal history (camera cuts, teleports).
     public void ResetTemporalState()
     {
+        if (_externalRenderer is not null)
+        {
+            return;
+        }
         _sceneTargets.Post.Exposure.Snap();
         _sceneTargets.InvalidateHistory();
         _hasPreviousCamera = false;
@@ -883,7 +930,7 @@ public sealed partial class PristonRenderer : IDisposable
     public Color? BackgroundColor { get; set; }
 
     // Samples of the HDR scene target as created (0 without MSAA).
-    public int EffectiveMultiSampleCount => _sceneTargets.EffectiveMultiSampleCount;
+    public int EffectiveMultiSampleCount => _sceneTargets?.EffectiveMultiSampleCount ?? 0;
 
     private int _maxLocalLights = PristonShaderLibrary.MaxLocalLightCount;
     // The gameplay colour add (hover and target highlight) becomes a rim of this strength rather than added light.
@@ -964,9 +1011,26 @@ public sealed partial class PristonRenderer : IDisposable
 
         RemoveAllStages();
         ClearActors();
+        foreach (var resource in _actorGpuResources.Values)
+        {
+            DisposeActorGpuBatches(resource.Batches);
+            DisposeActorGpuBatch(resource.ShadowAggregate);
+        }
+        _actorGpuResources.Clear();
+
+        DisposeExternalScene();
+
         if (_presentation is not null)
         {
             _presentation.RenderingChanged -= ApplyQuality;
+        }
+
+        if (_externalRenderer is not null)
+        {
+            _externalRenderer.Dispose();
+            Profiler.Dispose();
+            _disposed = true;
+            return;
         }
 
         _shadowMap.Dispose();
@@ -1082,6 +1146,10 @@ public sealed partial class PristonRenderer : IDisposable
         public bool Hidden { get; set; }
         public int Generation { get; set; }
         public ActorShade Shade { get; set; }
+        public Vector3 ExternalColorAdd { get; set; }
+        public Vector4 ExternalOutline { get; set; }
+        public string ExternalOverlay { get; set; } = string.Empty;
+        public int[] ExternalMeshes { get; set; } = [];
         // An echo plays its source's clip EchoLagTicks behind.
         public ActorHandle EchoSource { get; set; } = ActorHandle.None;
         public float EchoLagTicks { get; set; }
@@ -1129,6 +1197,12 @@ public sealed partial class PristonRenderer : IDisposable
         public List<RenderBatch> ShadowBatches { get; } = [];
         public BoundingBox BindBounds { get; private set; }
         private bool _hasBindBounds;
+
+        public void IncludeExternalBounds(BoundingBox bounds)
+        {
+            BindBounds = _hasBindBounds ? BoundingBox.CreateMerged(BindBounds, bounds) : bounds;
+            _hasBindBounds = true;
+        }
 
         public void AddBatch(RenderBatch batch)
         {

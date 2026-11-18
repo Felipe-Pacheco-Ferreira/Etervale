@@ -31,6 +31,7 @@ public sealed class GroundLootPresentation(IActorScene scene, PristonActorLoader
     private int _floorRevision;
     private Guid _hovered;
     public Func<GroundDropView, bool> IsVisible { get; init; } = static _ => true;
+    public Func<GroundDropView, bool> AlwaysShowLabel { get; init; } = static _ => false;
 
     public void InvalidateFloor() => _floorRevision++;
 
@@ -234,7 +235,7 @@ public sealed class GroundLootPresentation(IActorScene scene, PristonActorLoader
                 continue;
             }
 
-            if ((showAllLabels || entry.Drop.Id == _hovered) && entry.LabelBounds.Contains(cursor))
+            if (entry.LabelBounds.Contains(cursor) && WantsLabel(entry.Drop, _hovered, showAllLabels))
             {
                 id = entry.Drop.Id;
                 position = entry.Position;
@@ -254,8 +255,8 @@ public sealed class GroundLootPresentation(IActorScene scene, PristonActorLoader
     }
 
     // The labels to draw this frame, each anchored at its own drop 16 units up, in the order the HUD stacks them: nearest
-    // first, kept from frame to frame (SettleOrder) and a newly named drop placed by its depth. Holding A names the drops
-    // 32 to 768 units from the camera; the hovered drop is named at any distance. The HUD reports where each label landed
+    // first, kept from frame to frame (SettleOrder) and a newly named drop placed by its depth. Automatic labels are
+    // limited to nearby drops; the hovered drop is named at any distance. The HUD reports where each label landed
     // (SetLabelBounds) so a click on it picks the drop.
     public void CollectLabels(Viewport viewport, PristonCamera camera, Guid hovered, bool showAll, List<GroundLabel> labels)
     {
@@ -264,7 +265,8 @@ public sealed class GroundLootPresentation(IActorScene scene, PristonActorLoader
         foreach (var entry in _entries.Values)
         {
             entry.LabelBounds = Rectangle.Empty;
-            entry.Shown = IsVisible(entry.Drop) && TryAnchorLabel(entry, viewport, camera, entry.Drop.Id == hovered, showAll);
+            entry.Shown = IsVisible(entry.Drop) && WantsLabel(entry.Drop, hovered, showAll)
+                && TryAnchorLabel(entry, viewport, camera, entry.Drop.Id == hovered);
         }
 
         var kept = 0;
@@ -295,9 +297,12 @@ public sealed class GroundLootPresentation(IActorScene scene, PristonActorLoader
         }
     }
 
-    private static bool TryAnchorLabel(Entry entry, Viewport viewport, PristonCamera camera, bool hovered, bool showAll)
+    private bool WantsLabel(GroundDropView drop, Guid hovered, bool showAll) =>
+        showAll || drop.Id == hovered || AlwaysShowLabel(drop);
+
+    private static bool TryAnchorLabel(Entry entry, Viewport viewport, PristonCamera camera, bool hovered)
     {
-        if (!entry.FloorFound || (!showAll && !hovered))
+        if (!entry.FloorFound)
         {
             return false;
         }

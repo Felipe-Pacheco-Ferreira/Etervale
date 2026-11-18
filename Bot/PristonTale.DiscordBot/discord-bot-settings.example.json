@@ -1,0 +1,45 @@
+{
+  "Discord": {
+    "Token": "",
+    "GuildId": 0,
+    "Channels": {
+      "Announcements": 0,
+      "PublicChat": 0,
+      "PrivateChat": 0,
+      "Tickets": 0
+    },
+    "GameMasterRoles": {
+    }
+  },
+  "Site": {
+    "BaseUrl": "https://localhost:6443"
+  },
+  "Database": {
+    "Provider": "Sqlite",
+    "SqlitePath": "data/pristontale.db",
+    "Postgres": ""
+  },
+  "GameLink": {
+    "Url": "",
+    "Key": ""
+  },
+  "Activity": {
+    "PublicPath": "",
+    "PrivatePath": ""
+  },
+  "Tickets": {
+    "Path": "",
+    "MinGmLevel": 1
+  },
+  "Watch": {
+    "PollSeconds": 5,
+    "StatusSeconds": 30,
+    "NewsSeconds": 120,
+    "RelayToGame": true
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information"
+    }
+  }
+}

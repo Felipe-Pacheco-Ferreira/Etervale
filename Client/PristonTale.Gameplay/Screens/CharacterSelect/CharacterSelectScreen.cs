@@ -35,6 +35,7 @@ public sealed partial class CharacterSelectScreen : GameScreen
     private CharacterSelectCamera _cameraCtl;
     private CharacterSelectScene _scene;
     private CharacterSelectPortrait _portrait;
+    private WebArrivalBackdrop _backdrop;
 
     private VfxSystem _vfx;
     private VfxRenderer _vfxRenderer;
@@ -79,6 +80,9 @@ public sealed partial class CharacterSelectScreen : GameScreen
     private Task _jobPreparationTask;
     private Task<EnterWorldOutcome> _enterTask;
     private CharacterSummary _enteringSummary;
+    private GameplayScreen _pendingWorldScreen;
+    private bool _pendingWorldFrameDrawn;
+    private bool _handingOffToWorld;
     private Task<DeleteCharacterOutcome> _deleteTask;
     private Task<CreateCharacterOutcome> _createTask;
 
@@ -117,10 +121,20 @@ public sealed partial class CharacterSelectScreen : GameScreen
     private Vector2 UiCursor(in MouseState mouse) => new(mouse.X / UiScale, mouse.Y / UiScale);
 
     public override string StatusText => ClientText.Get("Status.CharacterSelect");
-    internal WebArrivalBackdrop Backdrop { get; init; }
+    internal WebArrivalBackdrop Backdrop { get => _backdrop; init => _backdrop = value; }
+    internal Func<ScreenContext, WebArrivalBackdrop> CreateWebBackdrop { get; init; } = WebArrivalBackdrop.CreateAtRoster;
+
+    internal void EnsureWebBackdrop()
+    {
+        if (_webOverlay && _backdrop is null)
+        {
+            _backdrop = CreateWebBackdrop(Context);
+        }
+    }
 
     public override void Enter()
     {
+        EnsureWebBackdrop();
         var stage = Backdrop?.Stage;
         if (Backdrop is null)
         {
@@ -136,7 +150,7 @@ public sealed partial class CharacterSelectScreen : GameScreen
         }
 
         _cameraCtl = new CharacterSelectCamera(Context.GraphicsDevice, (int)State.CharacterSelect, CameraDistanceScale, Backdrop?.Camera);
-        _scene = new CharacterSelectScene(_renderer, _actorLoader, Context.AssetRoot, _cameraCtl, stage, Context.Log);
+        _scene = new CharacterSelectScene(_renderer, _actorLoader, Context.AssetRoot, _cameraCtl, stage, Context.Log, Backdrop?.PreviewWarmup?.Composer);
 
         _nameField = new TextInputField { MaxLength = MaxNameLength };
 
@@ -182,7 +196,7 @@ public sealed partial class CharacterSelectScreen : GameScreen
 
         var cameraStep = Backdrop is not null && _state == State.RaceSelect
             && (_busy == Busy.PreparingJobLineup || _scene.JobCount > 0) ? State.JobSelect : _state;
-        _cameraCtl.Update(Context.GraphicsDevice, (int)cameraStep, dt);
+        _cameraCtl.Update(Context.GraphicsDevice, (int)cameraStep, dt, loadingWorld: _webOverlay && _busy == Busy.Entering);
 
         _scene.UpdateRun(dt);
 
@@ -214,6 +228,11 @@ public sealed partial class CharacterSelectScreen : GameScreen
             UpdateWebFacePreparation();
             UpdateWebClassSelection();
             ReportWeb();
+            if (_busy == Busy.None && (_state is State.CharacterSelect or State.RaceSelect
+                || _state == State.JobSelect && !_webJobsArriving) && HasFreeSlot)
+            {
+                Backdrop?.PreviewWarmup?.Update(_elapsedSeconds);
+            }
         }
         else if (_busy == Busy.None && !Context.Presentation.AwaitingConfirmation)
         {
@@ -463,6 +482,10 @@ public sealed partial class CharacterSelectScreen : GameScreen
         _errorMessage = string.Empty;
         _busy = Busy.Entering;
         ResetBackendCall();
+        if (_webOverlay)
+        {
+            WebWorldLoading.Begin();
+        }
         _enterTask = EnterWithAssetsAsync(name, _backendCts.Token);
     }
 
@@ -473,11 +496,25 @@ public sealed partial class CharacterSelectScreen : GameScreen
             await prepare().WaitAsync(cancellationToken);
         }
 
+        WebWorldLoading.Connecting();
         return await Context.Backend.EnterWorldAsync(name, cancellationToken);
     }
 
     private void PollEnterWorld()
     {
+        if (_pendingWorldScreen is { } next)
+        {
+            if (!_pendingWorldFrameDrawn)
+            {
+                return;
+            }
+
+            _pendingWorldScreen = null;
+            _handingOffToWorld = true;
+            Context.RequestScreen(next);
+            return;
+        }
+
         if (_enterTask is not { IsCompleted: true })
         {
             return;
@@ -493,7 +530,15 @@ public sealed partial class CharacterSelectScreen : GameScreen
             _enterTask = null;
             if (WorldEntered is { } onWorldEntered)
             {
+                WebWorldLoading.Cancel();
                 onWorldEntered(s, outcome);
+            }
+            else if (_webOverlay && WebWorldLoading.Active)
+            {
+                // Draw one more live character-screen frame so the confirmed map title can paint before the
+                // world creates its renderer, field and HUD.
+                _pendingWorldScreen = new GameplayScreen(Context, entered);
+                WebWorldLoading.ConfirmField(outcome.FieldId);
             }
             else
             {
@@ -507,6 +552,7 @@ public sealed partial class CharacterSelectScreen : GameScreen
         _enterTask = null;
         _busy = Busy.None;
         _state = State.CharacterSelect;
+        WebWorldLoading.Cancel();
     }
 
     private void BeginDelete()
@@ -933,6 +979,11 @@ public sealed partial class CharacterSelectScreen : GameScreen
 
     public override void Draw()
     {
+        if (_pendingWorldScreen is not null)
+        {
+            _pendingWorldFrameDrawn = true;
+        }
+
         if (Backdrop is not null)
         {
             Backdrop.Draw();
@@ -1036,6 +1087,10 @@ public sealed partial class CharacterSelectScreen : GameScreen
         if (_webOverlay)
         {
             CloseWeb();
+            if (!_handingOffToWorld)
+            {
+                WebWorldLoading.Cancel();
+            }
         }
 
         _backendCts?.Cancel();

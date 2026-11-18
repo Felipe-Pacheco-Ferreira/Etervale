@@ -15,6 +15,8 @@ using PristonTale.Simulation.Progression;
 using PristonTale.Simulation.Quests;
 using PristonTale.Simulation.World.Npcs;
 using PristonTale.Contracts.Characters;
+using PristonTale.Protocol.Packets;
+using PristonTale.Simulation.Events;
 using PristonTale.Gameplay.Localization;
 
 namespace PristonTale.Gameplay.UI;
@@ -22,10 +24,29 @@ namespace PristonTale.Gameplay.UI;
 // Quests in the HUD: the dialog, its boxes and the quest window.
 public sealed partial class GameplayHud
 {
+    private string _questNavigationMessage = "";
+    internal bool QuestGuideEnabled { get; private set; }
+    internal bool QuestTrackingEnabled => !_context.Presentation.Requested.HideQuestTracker;
+    public event Action<RoutePoint> QuestDestinationRequested;
+    public event Action QuestNavigationCanceled;
+
     // Quest notices go to the combat log (chat lines), the notice strip (events and messages) or the fanfare; a new quest
     // dialog takes the help box from the NPC dialog until it closes.
     private void ApplyQuests()
     {
+        _questWindow.DailyOpened ??= RefreshDailyQuestRewards;
+        _questWindow.ClaimDaily ??= ClaimDailyQuestReward;
+        _questWindow.NavigateRequested ??= NavigateSelectedQuest;
+        _questWindow.ToggleAutoHunt ??= ToggleQuickHunt;
+        _questWindow.ToggleGuide ??= ToggleQuestGuide;
+        _questWindow.TrackingChanged ??= SetQuestTracking;
+        _questWindow.SetTracking(QuestTrackingEnabled);
+        _questWindow.AutoHuntEnabled = AutoHuntEnabled;
+        _questWindow.GuideEnabled = QuestGuideEnabled;
+        _questWindow.CanNavigate = _questWindow.Page == HudQuestPage.Running && CanNavigateTrackedQuest;
+        _questWindow.SetDailyRewards(_rewardBoard.Find(RewardTrack.Daily), _state?.Level ?? 1,
+            Environment.TickCount64 < _rewardDeadline,
+            _questWindow.Page == HudQuestPage.Daily ? _rewardMessage : _questNavigationMessage);
         while (_quests.TryTakeNotice(out var notice))
         {
             switch (notice.Kind)
@@ -45,6 +66,7 @@ public sealed partial class GameplayHud
         if (_quests.DialogsOpened != _questDialogs)
         {
             _questDialogs = _quests.DialogsOpened;
+            ClearQuestNavigationNotice();
             _skills.CancelTraining();
             _settingsOpen = false;
             foreach (var document in _quests.Dialog?.ChoiceDocuments ?? [])
@@ -67,6 +89,10 @@ public sealed partial class GameplayHud
                 ? RankUpByQuestWeapon.HuntLine(QuestClasses.WeaponHunt(_class), _questView.WeaponStage, _questView.WeaponKillsLeft)
                 : "";
             _questWindow.Refresh(_questView);
+            if (QuestGuideEnabled)
+            {
+                NavigateSelectedQuest();
+            }
             foreach (var entry in _questView is null ? [] : _questView.Progress.Concat(_questView.Finished))
             {
                 _questDocuments.Lines(HudQuestDocuments.BoardPath(entry.Description));
@@ -120,5 +146,106 @@ public sealed partial class GameplayHud
         }
 
         return _questWindow.Click(layout, pointer, _questView);
+    }
+
+    private void RefreshDailyQuestRewards() => _ = RequestDailyQuestRewardsAsync(RewardEventsAction.Open, 0);
+
+    private void ClaimDailyQuestReward(int index)
+    {
+        var entry = _rewardBoard.Find(RewardTrack.Daily)?.Entries.ElementAtOrDefault(index);
+        if (entry?.State != RewardEntryState.Ready || Environment.TickCount64 < _rewardDeadline || SendRewards is null)
+        {
+            return;
+        }
+        _rewardDeadline = Environment.TickCount64 + 8000;
+        _rewardMessage = "";
+        _ = RequestDailyQuestRewardsAsync(RewardEventsAction.Claim, index);
+    }
+
+    private async Task RequestDailyQuestRewardsAsync(RewardEventsAction action, int index)
+    {
+        if (SendRewards is null)
+        {
+            return;
+        }
+        try
+        {
+            await SendRewards(action, RewardTrack.Daily, index);
+        }
+        catch (Exception exception)
+        {
+            _rewardDeadline = 0;
+            _rewardMessage = ClientText.Language == "pt-BR" ? "Não foi possível atualizar as recompensas." : "Could not update rewards.";
+            _context.Log.Warn($"[Quest] daily reward request failed: {exception.Message}");
+        }
+    }
+
+    internal bool CanNavigateTrackedQuest => QuestDestinationRequested is not null && TryJourneyDestination(_questView, _class, out _);
+
+    internal void NavigateSelectedQuest()
+    {
+        if (_questWindow.Page == HudQuestPage.Running)
+        {
+            NavigateTrackedQuest();
+        }
+    }
+
+    internal void NavigateTrackedQuest()
+    {
+        if (TryJourneyDestination(_questView, _class, out var destination))
+        {
+            QuestDestinationRequested?.Invoke(destination);
+        }
+    }
+
+    private void ToggleQuestGuide()
+    {
+        QuestGuideEnabled = !QuestGuideEnabled;
+        if (QuestGuideEnabled)
+        {
+            NavigateSelectedQuest();
+        }
+        else
+        {
+            QuestNavigationCanceled?.Invoke();
+        }
+    }
+
+    private void SetQuestTracking(bool enabled)
+    {
+        _context.Presentation.Requested = _context.Presentation.Requested with { HideQuestTracker = !enabled };
+    }
+
+    internal void CancelQuestGuide()
+    {
+        QuestGuideEnabled = false;
+    }
+
+    internal void QuestNavigationNotice(string message)
+    {
+        _questNavigationMessage = message;
+        _chat.Assist(message);
+    }
+
+    internal void ClearQuestNavigationNotice() => _questNavigationMessage = "";
+
+    internal static bool TryJourneyDestination(QuestView view, PlayerClass playerClass, out RoutePoint destination)
+    {
+        destination = default;
+        if (view is null)
+        {
+            return false;
+        }
+        var welcome = view.Code == QuestCode.None && view.Progress.Any(entry =>
+            entry.Description == AdventurerJourneyRoute.MeetSkadiDescription || entry.Description == AdventurerJourneyRoute.MeetJinDescription);
+        if (!welcome && view.Code != QuestCode.AdventurerJourney)
+        {
+            return false;
+        }
+        var route = AdventurerJourneyRoute.For(playerClass);
+        destination = view is { Code: QuestCode.AdventurerJourney, KillsNeeded: > 0 } && view.Kills < view.KillsNeeded
+            ? route.HuntPoints[0]
+            : route.Guide;
+        return true;
     }
 }

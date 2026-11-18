@@ -10,12 +10,12 @@ internal sealed class VulkanLoadingScreen : FrameLayout
     public VulkanLoadingScreen(Activity activity, string message) : base(activity)
     {
         SetBackgroundColor(Color.Rgb(12, 18, 24));
-        var art = new ImageView(activity) { ContentDescription = "Priston Avalon" };
+        var art = new ImageView(activity) { ContentDescription = "Noxius Tale" };
         using (var stream = activity.Assets!.Open("priston-avalon-loading.png"))
         {
             art.SetImageBitmap(BitmapFactory.DecodeStream(stream));
         }
-        art.SetScaleType(ImageView.ScaleType.CenterCrop);
+        art.SetScaleType(ImageView.ScaleType.FitCenter);
         AddView(art, new LayoutParams(-1, -1));
 
         var footer = new LinearLayout(activity)

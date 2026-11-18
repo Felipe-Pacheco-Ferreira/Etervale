@@ -98,6 +98,26 @@ public static class CharacterSelectArt
     public static IReadOnlyList<PlayerClass> MorionLineup { get; } =
         [PlayerClass.Knight, PlayerClass.Atalanta, PlayerClass.Priestess, PlayerClass.Magician, PlayerClass.Shaman];
 
+    // Alternates tribes so each lineup gets a head start when the browser fetches and prepares classes in the background.
+    public static IReadOnlyList<PlayerClass> PreviewOrder { get; } = BuildPreviewOrder();
+
+    private static PlayerClass[] BuildPreviewOrder()
+    {
+        var order = new List<PlayerClass>(TempskronLineup.Count + MorionLineup.Count);
+        for (var slot = 0; slot < Math.Max(TempskronLineup.Count, MorionLineup.Count); slot++)
+        {
+            if (slot < TempskronLineup.Count)
+            {
+                order.Add(TempskronLineup[slot]);
+            }
+            if (slot < MorionLineup.Count)
+            {
+                order.Add(MorionLineup[slot]);
+            }
+        }
+        return order.ToArray();
+    }
+
     public static IReadOnlyDictionary<PlayerClass, ClassArt> Classes { get; } = new Dictionary<PlayerClass, ClassArt>
     {
         [PlayerClass.Mechanician] = new("T_cls-meca_.tga", "T_cls-meca.tga", "T_chr-meca.tga"),

@@ -3,6 +3,8 @@ using PristonTale.Application.Sessions;
 using PristonTale.Application.World;
 using PristonTale.Assets;
 using PristonTale.Gameplay.Screens.CharacterSelect;
+using PristonTale.Gameplay.Screens.Framework;
+using PristonTale.Gameplay.UI;
 using PristonTale.Gameplay.UI.Rendering;
 using PristonTale.Gameplay.World.Remote;
 using PristonTale.Persistence.Abstractions.Characters;
@@ -12,6 +14,7 @@ using PristonTale.Simulation.Items;
 using PristonTale.Simulation.World;
 using Microsoft.Xna.Framework.Graphics;
 using PristonTale.Contracts.Characters;
+using PristonTale.Contracts.Motion;
 
 namespace PristonTale.Tests;
 
@@ -24,9 +27,55 @@ internal static class CharacterSelectTests
         yield return ("a new or moved character takes the account's lowest free slot, none past the sixth", FreeSlotAsync);
         yield return ("character-select roster and class positions preserve the original ordering", OriginalPlacementAsync);
         yield return ("character-select web camera brings the chosen class forward and to the right", WebCreationCameraAsync);
+        yield return ("character-select web reentry creates its courtyard before the legacy stage loader; native keeps its scene", WebReturnBackdropAsync);
+        yield return ("character-select web lineup stops walking on the same frame each class reaches its place", WebLineupStopsWalkingAsync);
+        yield return ("character-select web stage clicks keep their event times when a slow frame drains both clicks together", WebQueuedClassClicksAsync);
+        yield return ("character-select web roster clicks queue selection and confirmation without borrowing class gestures", WebQueuedRosterClicksAsync);
+        yield return ("character-select web double click confirms only the same selected class within the gesture interval", WebClassDoubleClickAsync);
+        yield return ("character-select web drags, missed picks and other controls break the pending double click", WebClassClickResetAsync);
         yield return ("character-select face layout scales the authored canvas uniformly", FaceLayoutAsync);
         yield return ("the Assassin, the Shaman and the Martial Artist use the original creation definitions and class facts", ExtendedClassDefinitionsAsync);
         yield return ("a text box takes the window's typed text, so a held Backspace or key repeats, and only while focused", TypedTextAsync);
+    }
+
+    private sealed class BackdropCreationRequestedException : Exception;
+
+    private static Task WebReturnBackdropAsync()
+    {
+        var report = WebCharacterSelectOverlay.Report;
+        var context = new ScreenContext(null!, null!, null!, null!, "", null!, null!, _ => { });
+        var creations = 0;
+        try
+        {
+            WebCharacterSelectOverlay.Report = null!;
+            var native = new CharacterSelectScreen(context)
+            {
+                CreateWebBackdrop = _ => throw new AssertionException("native selection requested the browser courtyard")
+            };
+            WebCharacterSelectOverlay.Report = _ => { };
+            native.EnsureWebBackdrop();
+            Assert.True(native.Backdrop is null, "the native screen changed scene after a browser overlay toggle");
+
+            var returning = new CharacterSelectScreen(context)
+            {
+                CreateWebBackdrop = supplied =>
+                {
+                    Assert.True(ReferenceEquals(supplied, context), "returning roster lost its original resource context");
+                    creations++;
+                    throw new BackdropCreationRequestedException();
+                }
+            };
+            Assert.True(creations == 0, "courtyard resources were allocated before the previous world was disposed");
+            Assert.Throws<BackdropCreationRequestedException>(returning.Enter,
+                "direct browser return bypassed its courtyard factory and reached the original temple loader");
+            Assert.True(creations == 1 && returning.Backdrop is null,
+                "a failed courtyard creation was retained or created more than once");
+        }
+        finally
+        {
+            WebCharacterSelectOverlay.Report = report;
+        }
+        return Task.CompletedTask;
     }
 
     private static Task WebCreationCameraAsync()
@@ -49,6 +98,118 @@ internal static class CharacterSelectTests
         Assert.True(lineupTarget.X < lineupEye.Z - lineupZ && lineupEye.Z > lineupZ, "the lineup is framed from in front");
         Assert.True(faceTarget.X < 0f && faceTarget.Y < lineupTarget.Y && faceEye.Z - faceZ < lineupEye.Z - lineupZ,
             "the forward subject comes closer and to the right of the web camera");
+        return Task.CompletedTask;
+    }
+
+    private static Task WebLineupStopsWalkingAsync()
+    {
+        const float forward = 3f;
+        var (moving, walking) = CharacterSelectScene.AdvanceWebLineupStep(0f, forward, 2f);
+        Assert.True(moving == 2f && walking == MotionCode.Walk, "the selected class walks while it advances");
+        var (arrived, onArrival) = CharacterSelectScene.AdvanceWebLineupStep(moving, forward, 2f);
+        Assert.True(arrived == forward && onArrival == MotionCode.Stand, "the last step applies the idle pose immediately");
+        var (returned, onReturn) = CharacterSelectScene.AdvanceWebLineupStep(arrived, 0f, forward);
+        Assert.True(returned == 0f && onReturn == MotionCode.Stand, "an exact step back to the lineup also applies idle");
+        return Task.CompletedTask;
+    }
+
+    private static Task WebQueuedClassClicksAsync()
+    {
+        WebCharacterSelectOverlay.Clear();
+        try
+        {
+            var point = new Microsoft.Xna.Framework.Vector2(0.3f, 0.4f);
+            WebCharacterSelectOverlay.PickOnStage(WebCharacterStage.Class, point, 10d);
+            WebCharacterSelectOverlay.PickOnStage(WebCharacterStage.Class, point, 10.2d);
+            var firstFound = WebCharacterSelectOverlay.TryTake(out var first);
+            var secondFound = WebCharacterSelectOverlay.TryTake(out var second);
+            Assert.True(firstFound && secondFound, "a slow frame lost one of the two class clicks");
+            var clicks = new WebStageClickTracker();
+            Assert.True(first.StagePosition == point && second.StagePosition == point && first.ClickSeconds == 10d && second.ClickSeconds == 10.2d,
+                "queued class picks lost their event coordinates or timestamps");
+            Assert.True(!clicks.Pick(2, -1, first.ClickSeconds) && clicks.Pick(2, 2, second.ClickSeconds),
+                "draining both clicks together did not select then confirm the same class");
+
+            WebCharacterSelectOverlay.PickOnStage(WebCharacterStage.Class, point, 20d);
+            WebCharacterSelectOverlay.PickOnStage(WebCharacterStage.Class, point, 21d);
+            Assert.True(WebCharacterSelectOverlay.TryTake(out first) && WebCharacterSelectOverlay.TryTake(out second), "queued slow clicks were lost");
+            clicks.Reset();
+            Assert.True(!clicks.Pick(2, 2, first.ClickSeconds) && !clicks.Pick(2, 2, second.ClickSeconds),
+                "two clicks actually a second apart became a double click when drained in one frame");
+        }
+        finally
+        {
+            WebCharacterSelectOverlay.Clear();
+        }
+        return Task.CompletedTask;
+    }
+
+    private static Task WebClassDoubleClickAsync()
+    {
+        var clicks = new WebStageClickTracker();
+        Assert.True(!clicks.Pick(0, 0, 1d), "the first click confirmed a preselected default class");
+        var observed = clicks.Snapshot;
+        Assert.True(observed is { Pending: true, Index: 0, Seconds: 1d, Stage: WebCharacterStage.Class }
+            && clicks.Snapshot == observed, "observing the diagnostic click state changed the pending gesture");
+        Assert.True(!clicks.Pick(1, 0, 1.1d), "clicks on two different classes confirmed one");
+        Assert.True(clicks.Pick(1, 1, 1.2d), "the second click on the newly selected class did not confirm it");
+        Assert.True(!clicks.Pick(1, 1, 1.3d), "a third click confirmed the same gesture again");
+        clicks.Reset();
+        Assert.True(!clicks.Pick(0, 0, 3d) && !clicks.Pick(0, 1, 3.1d), "a class changed by another control was confirmed");
+        clicks.Reset();
+        Assert.True(!clicks.Pick(0, 0, 4d) && !clicks.Pick(0, 0, 4d + CharacterSelectStage.DoublePressSeconds),
+            "a click outside the existing double-press interval confirmed the class");
+        return Task.CompletedTask;
+    }
+
+    private static Task WebQueuedRosterClicksAsync()
+    {
+        WebCharacterSelectOverlay.Clear();
+        try
+        {
+            var point = new Microsoft.Xna.Framework.Vector2(0.5f, 0.5f);
+            WebCharacterSelectOverlay.PickOnStage(WebCharacterStage.Roster, point, 5d);
+            WebCharacterSelectOverlay.PickOnStage(WebCharacterStage.Roster, point, 5.15d);
+            var firstFound = WebCharacterSelectOverlay.TryTake(out var first);
+            var secondFound = WebCharacterSelectOverlay.TryTake(out var second);
+            Assert.True(firstFound && secondFound, "a slow frame lost a roster click");
+            Assert.True(first.Kind == WebCharacterCommandKind.PickOnStage && first.Stage == WebCharacterStage.Roster
+                && second.Stage == WebCharacterStage.Roster && first.StagePosition == point && second.ClickSeconds == 5.15d,
+                "queued roster clicks lost their stage identity, coordinates or event time");
+            var clicks = new WebStageClickTracker();
+            Assert.True(!clicks.Pick(1, 0, first.ClickSeconds, first.Stage) && clicks.Pick(1, 1, second.ClickSeconds, second.Stage),
+                "two roster clicks drained in one frame did not select then confirm");
+            Assert.True(!clicks.Pick(1, 1, 5.2d, WebCharacterStage.Roster), "a third roster click confirmed twice");
+            clicks.Reset();
+            Assert.True(!clicks.Pick(0, 0, 8d, WebCharacterStage.Class)
+                && !clicks.Pick(0, 0, 8.1d, WebCharacterStage.Roster)
+                && clicks.Pick(0, 0, 8.2d, WebCharacterStage.Roster), "a class click became the first half of a roster gesture");
+            clicks.Reset();
+            clicks.Pick(0, 0, 10d, WebCharacterStage.Roster);
+            WebCharacterSelectOverlay.Send(WebCharacterCommandKind.ResetStagePick, -1, "");
+            WebCharacterSelectOverlay.PickOnStage(WebCharacterStage.Roster, point, 10.1d);
+            Assert.True(WebCharacterSelectOverlay.TryTake(out var reset) && reset.Kind == WebCharacterCommandKind.ResetStagePick,
+                "drag cancellation did not precede the next roster pick");
+            clicks.Reset();
+            Assert.True(WebCharacterSelectOverlay.TryTake(out var afterReset) && !clicks.Pick(0, 0, afterReset.ClickSeconds, afterReset.Stage),
+                "a cancelled roster gesture confirmed the next click");
+        }
+        finally
+        {
+            WebCharacterSelectOverlay.Clear();
+        }
+        return Task.CompletedTask;
+    }
+
+    private static Task WebClassClickResetAsync()
+    {
+        var clicks = new WebStageClickTracker();
+        clicks.Pick(0, 0, 1d);
+        clicks.Reset();
+        Assert.True(!clicks.Pick(0, 0, 1.1d), "a drag or another control left the prior class click pending");
+        Assert.True(!clicks.Pick(-1, 0, 1.2d) && !clicks.Pick(0, 0, 1.3d), "a missed stage pick did not break the gesture");
+        Assert.True(!clicks.Pick(0, 0, double.NaN) && !clicks.Pick(0, 0, 1.4d), "an invalid event time confirmed a class");
+        Assert.True(!clicks.Pick(0, 0, 1d), "an out-of-order event time confirmed a class");
         return Task.CompletedTask;
     }
 

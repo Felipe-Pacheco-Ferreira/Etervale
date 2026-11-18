@@ -345,6 +345,7 @@ public sealed class WorldPlayer
     // The party the player belongs to and the request to join one it has not answered (WorldServer.Parties).
     public Party? Party { get; internal set; }
     public PartyRequest? PartyRequest { get; internal set; }
+    public Contracts.Social.PartyDirectoryEntry[]? PartyDirectory { get; internal set; }
 
     public bool SharesPartyWith(WorldPlayer other) => Party is { } party && ReferenceEquals(party, other.Party);
 

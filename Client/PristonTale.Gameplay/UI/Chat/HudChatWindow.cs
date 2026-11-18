@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
 using PristonTale.Gameplay.UI.Rendering;
 using PristonTale.Contracts.Social;
+using PristonTale.Gameplay.Localization;
 
 namespace PristonTale.Gameplay.UI.Chat;
 
@@ -13,10 +14,16 @@ public sealed class HudChatWindow
     // The most messages a frame walks back through the log, and the painter's delegates and the input's visible tail,
     // made once instead of every frame.
     private const int MostMessages = 32;
+    private const float BrowserTextScale = 11f / HudPainter.BakePixels;
+    private static readonly string[] PortugueseTabs = ["Todos", "Clã", "Grupo", "Troca", "Msg.P"];
+    private static readonly string[] EnglishTabs = ["All", "Clan", "Party", "Trade", "Whisper"];
     private Func<char, bool> _canDraw;
     private Func<string, int> _measure;
+    private Func<string, int> _browserMeasure;
     private string _inputText;
     private string _inputShown = "";
+    private string _browserInput;
+    private string _browserInputShown = "";
 
     private const string Chat = "image/Sinimage/Inter/Chat/";
     public const string Default = Chat + "ChatDefault-1.tga";
@@ -43,6 +50,15 @@ public sealed class HudChatWindow
     private static readonly Color InputColor = Color.White;
     private readonly List<(Rectangle Bounds, HudChatEntry Entry)> _drawnLines = new();
     private readonly HudWrapCache _wrap = new(WrapPixels, 255);
+    private readonly HudWrapCache _browserWrap = new(282, 255);
+
+    public HudChatWindow()
+    {
+        if (OperatingSystem.IsBrowser())
+        {
+            NoticeMode = 1;
+        }
+    }
 
     public HudChatLog Log { get; } = new();
     public HudChatInput Input { get; } = new();
@@ -94,14 +110,27 @@ public sealed class HudChatWindow
         Log.ResetScroll();
     }
 
-    public static Rectangle TabButton(HudLayout layout, int tab) => new(100 + tab * 40, 563 + layout.BottomOffset, 40, 16);
+    public static Rectangle TabButton(HudLayout layout, int tab, bool side = false) => layout.Browser
+        ? new Rectangle(layout.BottomBarOffset + 63 + tab * 47, 564 + layout.BottomOffset - Lift(side), 47, 16)
+        : new Rectangle(100 + tab * 40, 563 + layout.BottomOffset, 40, 16);
 
-    public static Rectangle NoticeButton(HudLayout layout) => new(0, 563 + layout.BottomOffset, 45, 16);
+    public static Rectangle NoticeButton(HudLayout layout, bool side = false) => layout.Browser
+        ? new Rectangle(layout.BottomBarOffset + 8, 564 + layout.BottomOffset - Lift(side), 55, 16)
+        : new Rectangle(0, 563 + layout.BottomOffset, 45, 16);
 
-    public static Rectangle Toggle(HudLayout layout, bool side) => new(7, 579 - Lift(side) + layout.BottomOffset, 15, 19);
+    public static Rectangle Toggle(HudLayout layout, bool side) => layout.Browser
+        ? new Rectangle(layout.BottomBarOffset + 8, 581 + layout.BottomOffset - Lift(side), 20, 19)
+        : new Rectangle(7, 579 - Lift(side) + layout.BottomOffset, 15, 19);
 
-    public static Rectangle Box(HudLayout layout, bool side) =>
-        side ? new Rectangle(0, 294 + layout.BottomOffset, 300, 116) : new Rectangle(0, 408 + layout.BottomOffset, 305, 192);
+    public static Rectangle Box(HudLayout layout, bool side)
+    {
+        if (layout.Browser)
+        {
+            return new Rectangle(layout.BottomBarOffset + 8, 419 + layout.BottomOffset - Lift(side), 294, 181);
+        }
+
+        return side ? new Rectangle(0, 294 + layout.BottomOffset, 300, 116) : new Rectangle(0, 408 + layout.BottomOffset, 305, 192);
+    }
 
     public bool Contains(HudLayout layout, Point pointer, bool side) =>
         Open && (Box(layout, side).Contains(pointer) || InputBox(layout, side).Contains(pointer)) || Toggle(layout, side).Contains(pointer);
@@ -125,18 +154,24 @@ public sealed class HudChatWindow
             return false;
         }
 
-        if (!side)
+        if (layout.Browser && InputBox(layout, side).Contains(pointer))
+        {
+            OpenInput();
+            return true;
+        }
+
+        if (!side || layout.Browser)
         {
             for (var tab = 0; tab < Tabs.Length; tab++)
             {
-                if (TabButton(layout, tab).Contains(pointer))
+                if (TabButton(layout, tab, side).Contains(pointer))
                 {
                     Log.SelectTab((HudChatTab)tab);
                     return true;
                 }
             }
 
-            if (NoticeButton(layout).Contains(pointer))
+            if (NoticeButton(layout, side).Contains(pointer))
             {
                 NoticeMode = (NoticeMode + 1) % 3;
                 return true;
@@ -176,6 +211,12 @@ public sealed class HudChatWindow
         _measure ??= painter.Measure;
         _drawnLines.Clear();
         ShownMessages = 0;
+        if (layout.Browser)
+        {
+            DrawBrowser(painter, layout, side);
+            return;
+        }
+
         if (!Open)
         {
             return;
@@ -213,57 +254,125 @@ public sealed class HudChatWindow
         if (Focused)
         {
             painter.Sprite(DownButton, 7, 580 - lift + bottom);
-            // The input's visible tail is cut again only when the text changes.
-            var text = Input.Text;
-            if (!ReferenceEquals(text, _inputText))
-            {
-                _inputText = text;
-                var start = 0;
-                while (start < text.Length && painter.Measure(text[start..]) > InputPixels)
-                {
-                    start++;
-                }
-
-                _inputShown = start == 0 ? text : text[start..];
-            }
-
-            var visible = _inputShown;
-
-            painter.Text(visible, InputX, 584 - lift + bottom - (Math.Max(12, HudPainter.LineHeight) - 12) / 2, InputColor);
+            DrawInputText(painter, InputX, 584 - lift + bottom - (Math.Max(12, HudPainter.LineHeight) - 12) / 2);
         }
 
         painter.Flush();
         DrawMessages(painter, layout, side);
     }
 
+    private void DrawBrowser(HudPainter painter, HudLayout layout, bool side)
+    {
+        _browserMeasure ??= text => painter.MeasureAt(text, BrowserTextScale);
+        var toggle = Toggle(layout, side);
+        var portuguese = ClientText.Language == "pt-BR";
+        if (Open)
+        {
+            var box = Box(layout, side);
+            painter.ColorBox(box, 159, 136, 92, 155);
+            box.Inflate(-1, -1);
+            painter.ColorBox(box, 13, 14, 19, 199);
+
+            DrawBrowserTab(painter, NoticeButton(layout, side), portuguese ? "Alerta" : "Alert", NoticeMode != 0);
+            var labels = portuguese ? PortugueseTabs : EnglishTabs;
+            for (var tab = 0; tab < labels.Length; tab++)
+            {
+                DrawBrowserTab(painter, TabButton(layout, tab, side), labels[tab], (int)Log.Tab == tab);
+            }
+
+            if (NoticeMode == 1)
+            {
+                painter.ColorBox(new Rectangle(box.X, box.Top + 42, box.Width, 1), 170, 137, 66, 190);
+            }
+
+            var input = InputBox(layout, side);
+            painter.ColorBox(input, 12, 12, 16, 226);
+            if (Focused)
+            {
+                painter.ColorBox(new Rectangle(input.X, input.Y, input.Width, 1), 201, 165, 90, 170);
+                var text = Input.Text;
+                if (!ReferenceEquals(text, _browserInput))
+                {
+                    _browserInput = text;
+                    var start = 0;
+                    while (start < text.Length && painter.MeasureAt(text[start..], BrowserTextScale) > input.Width - 10)
+                    {
+                        start++;
+                    }
+
+                    _browserInputShown = start == 0 ? text : text[start..];
+                }
+
+                painter.Text(_browserInputShown, input.X + 5, input.Y + 3, InputColor, BrowserTextScale);
+            }
+        }
+
+        DrawBrowserTab(painter, toggle, Open ? "v" : "^", false);
+        painter.Flush();
+        if (Open)
+        {
+            DrawMessages(painter, layout, side);
+        }
+    }
+
+    private static void DrawBrowserTab(HudPainter painter, Rectangle bounds, string label, bool selected)
+    {
+        painter.ColorBox(bounds, 133, 111, 73, 183);
+        bounds.Inflate(-1, -1);
+        painter.ColorBox(bounds, selected ? 92 : 27, selected ? 70 : 25, selected ? 33 : 25, 225);
+        var textX = bounds.X + (bounds.Width - painter.MeasureAt(label, BrowserTextScale)) / 2;
+        painter.Text(label, textX, bounds.Top + 2, selected ? Color.Wheat : new Color(204, 193, 166), BrowserTextScale);
+    }
+
+    private void DrawInputText(HudPainter painter, int x, int y)
+    {
+        // Cut the input's visible tail only when the text changes.
+        var text = Input.Text;
+        if (!ReferenceEquals(text, _inputText))
+        {
+            _inputText = text;
+            var start = 0;
+            while (start < text.Length && painter.Measure(text[start..]) > InputPixels)
+            {
+                start++;
+            }
+
+            _inputShown = start == 0 ? text : text[start..];
+        }
+
+        painter.Text(_inputShown, x, y, InputColor);
+    }
+
     private void DrawMessages(HudPainter painter, HudLayout layout, bool side)
     {
         var bottom = layout.BottomOffset;
-        if (side)
+        if (side && !layout.Browser)
         {
-            DrawLines(painter, NoticeMode == 2 ? HudChatTab.Assist : Log.Tab, 570 - SideLift - 5 + bottom, 8, NoticeMode == 2 ? 0 : Log.Scroll);
+            DrawLines(painter, NoticeMode == 2 ? HudChatTab.Assist : Log.Tab, MessageX, 570 - SideLift - 5 + bottom, 8, NoticeMode == 2 ? 0 : Log.Scroll);
             return;
         }
 
+        var x = MessageX + layout.BottomBarOffset;
+        var y = (layout.Browser ? 552 : 550) + bottom - Lift(side);
         switch (NoticeMode)
         {
             case 1:
-                DrawLines(painter, HudChatTab.Assist, 570 - 125 + bottom, 3, 0);
-                DrawLines(painter, Log.Tab, 570 - 20 + bottom, 8, Log.Scroll);
+                DrawLines(painter, HudChatTab.Assist, x, (layout.Browser ? 455 : 445) + bottom - Lift(side), 3, 0, layout.Browser);
+                DrawLines(painter, Log.Tab, x, y, 8, Log.Scroll, layout.Browser);
                 break;
             case 2:
-                DrawLines(painter, HudChatTab.Assist, 570 - 20 + bottom, 12, Log.Scroll);
+                DrawLines(painter, HudChatTab.Assist, x, y, 12, Log.Scroll, layout.Browser);
                 break;
             default:
-                DrawLines(painter, Log.Tab, 570 - 20 + bottom, 12, Log.Scroll);
+                DrawLines(painter, Log.Tab, x, y, 12, Log.Scroll, layout.Browser);
                 break;
         }
     }
 
     // The newest message sits at y; older messages go up line by line, each wrapped and drawn from its last line upward.
-    private void DrawLines(HudPainter painter, HudChatTab tab, int y, int maxLines, int scroll)
+    private void DrawLines(HudPainter painter, HudChatTab tab, int x, int y, int maxLines, int scroll, bool browser = false)
     {
-        var lineHeight = Math.Max(12, HudPainter.LineHeight);
+        var lineHeight = browser ? 12 : Math.Max(12, HudPainter.LineHeight);
         // The classic lines are 12 pixels high; a taller line keeps the newest line's bottom where the classic one ended
         // and draws fewer lines so each block stays inside its classic area.
         y -= lineHeight - 12;
@@ -279,13 +388,20 @@ public sealed class HudChatWindow
                 break;
             }
 
-            var lines = _wrap.Wrap(entry.Text, maxLines, _measure);
+            var lines = browser ? _browserWrap.Wrap(entry.Text, maxLines, _browserMeasure) : _wrap.Wrap(entry.Text, maxLines, _measure);
             messages++;
             var color = HudChatLog.ColorOf(entry.Kind);
             for (var index = lines.Count - 1; index >= 0 && drawn < maxLines; index--)
             {
-                painter.Text(lines[index], MessageX, y, color, true, new Point(-1, -1));
-                _drawnLines.Add((new Rectangle(MessageX, y, WrapPixels, lineHeight), entry));
+                if (browser)
+                {
+                    painter.Text(lines[index], x, y, color, BrowserTextScale);
+                }
+                else
+                {
+                    painter.Text(lines[index], x, y, color, true, new Point(-1, -1));
+                }
+                _drawnLines.Add((new Rectangle(x, y, WrapPixels, lineHeight), entry));
                 y -= lineHeight;
                 drawn++;
             }
@@ -296,6 +412,13 @@ public sealed class HudChatWindow
 
     private static int Lift(bool side) => side ? SideLift : 0;
 
-    private static Rectangle InputBox(HudLayout layout, bool side) =>
-        side ? new Rectangle(4, 576 - SideLift + layout.BottomOffset, 406, 32) : new Rectangle(4, 576 + layout.BottomOffset, 296, 24);
+    private static Rectangle InputBox(HudLayout layout, bool side)
+    {
+        if (layout.Browser)
+        {
+            return new Rectangle(layout.BottomBarOffset + 28, 581 + layout.BottomOffset - Lift(side), 274, 19);
+        }
+
+        return side ? new Rectangle(4, 576 - SideLift + layout.BottomOffset, 406, 32) : new Rectangle(4, 576 + layout.BottomOffset, 296, 24);
+    }
 }

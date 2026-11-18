@@ -243,7 +243,7 @@ internal sealed class VulkanHudLifecycle : Java.Lang.Object, Application.IActivi
         var version = activity.PackageManager?.GetPackageInfo(activity.PackageName!, Android.Content.PM.PackageInfoFlags.Activities)?.VersionName;
         if (!string.IsNullOrWhiteSpace(version))
         {
-            var versionLabel = new TextView(activity) { Text = $"Priston Avalon · {version}", TextSize = 11 };
+            var versionLabel = new TextView(activity) { Text = $"Noxius Tale · {version}", TextSize = 11 };
             versionLabel.SetTextColor(Color.Rgb(168, 199, 193));
             identity.AddView(versionLabel);
         }
