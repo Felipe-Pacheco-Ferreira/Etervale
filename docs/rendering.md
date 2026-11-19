@@ -239,15 +239,21 @@ map and a true-colour or run-length type. The stage collision reader does the sa
   holding the frame is sampled: a bone with no keys there takes its bind pose (relative to its parent), a missing
   rotation the base rotation, a missing position the base position, a missing scale none. An actor's rotation does not
   interpolate toward a key past its motion's end frame; the key before it holds.
-- Crowd level of detail (`CrowdAnimationLod`): a root actor samples its skeleton again every frame within 400 units of
-  the focus of the last frame drawn (on screen or not), every second frame to 900, every fourth beyond and every eighth
-  off screen (its last world bounds outside the view), staggered by its slot; a new motion is sampled at once, an actor
+- Crowd level of detail (`CrowdAnimationLod`): at the High `characterQuality` a root actor samples its skeleton again
+  every frame within 400 units of the focus of the last frame drawn (on screen or not), every second frame to 900, every
+  fourth beyond and every eighth off screen (its last world bounds outside the view), staggered by its slot; the other
+  qualities change these distances and intervals ([client-settings.md](client-settings.md)); a new motion is sampled at once, an actor
   coming into view at once, and its world moves the palette every frame; the target frame's portrait actor
   (`PortraitActor`, set by `HudTargetPortrait`) samples every frame wherever it stands. The palette's pose is a copy
   (`ActorPose`), so bone queries and portraits evaluating into the animator's buffer never change what is drawn; an
   attached actor (a held weapon) hangs from that pose. The render statistics show the actors posed and the actors in the
   last update (`Pose n/m`, `LastAnimationCounts`). With 176 actors in Ricarten (`--benchmark-render` with a crowd of
   150, GTX 1050 Ti) the animation update costs about 1 ms of CPU a frame and allocates about 0.3 KB.
+- `ExactActorPoseMemoization` is opt-in on `PristonRenderer`; the browser's shared arrival courtyard enables it.
+  Animators sharing the same skeleton instance can copy the last raw pose only at exactly the same sample frame and
+  rotation-end limit. It never rounds animation time or changes the crowd intervals. The cache owns its raw matrices
+  before seating; each animator and held palette keeps its own buffer. Entries expire on every renderer update and
+  leave when their last actor is removed. Native clients and world renderers keep the default disabled policy.
 - glTF actors (`PristonActor.Gltf`, `Rendering/Gltf`): `GltfActorSource.Load` reads the model, scales it by
   `UnitsPerMetre` (30) into actor space, lays its clips one after another on the actor timeline (each from a whole
   frame, as `Skeleton.FrameRanges`, so a motion entry with `MotionFrame` k + 1 plays clip k), takes the nodes as the

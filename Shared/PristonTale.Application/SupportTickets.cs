@@ -208,6 +208,13 @@ public sealed class SupportTickets(string directory)
 
     public bool Exists(long accountId, Guid id) => File.Exists(TicketPath(accountId, id) + ".json");
 
+    // The extension an uploaded file is kept under: lower case, .jpeg as .jpg (AttachAsync refuses the others).
+    public static string AttachmentExtension(string fileName)
+    {
+        var extension = Path.GetExtension(fileName).ToLowerInvariant();
+        return extension == ".jpeg" ? ".jpg" : extension;
+    }
+
     public string? Attachment(long accountId, Guid id)
     {
         var prefix = TicketPath(accountId, id) + ".media";

@@ -41,6 +41,9 @@ public interface IGameMasterRepository
     // Newest first.
     Task<IReadOnlyList<GmAuditRecord>> RecentAuditAsync(int limit, CancellationToken ct = default);
 
+    // The entries after an id, oldest first: what a follower (the Discord bot's audit channel) has not seen yet.
+    Task<IReadOnlyList<GmAuditRecord>> AuditAfterAsync(long afterId, int limit, CancellationToken ct = default);
+
     // Moves a character to another account, into that account's first free slot below maxSlots.
     Task<CharacterTransfer> MoveCharacterAsync(string characterName, string targetUserId, int maxSlots, CancellationToken ct = default);
 }

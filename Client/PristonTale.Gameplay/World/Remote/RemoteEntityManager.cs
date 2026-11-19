@@ -598,14 +598,17 @@ public sealed partial class RemoteEntityManager
         static float Planar(XnaVector3 a, XnaVector3 b) => (a.X - b.X) * (a.X - b.X) + (a.Z - b.Z) * (a.Z - b.Z);
     }
 
-    public bool TryPick(Microsoft.Xna.Framework.Ray ray, ulong selfId, out ulong entityId, out EntityKind kind)
+    // excluded: entities the settings hide (other players under "hide other players"). preferPlayers: a player under the
+    // ray wins over a nearer monster ("prioritize players"); NPCs keep the nearest-wins rule.
+    public bool TryPick(Microsoft.Xna.Framework.Ray ray, ulong selfId, out ulong entityId, out EntityKind kind, IReadOnlySet<ulong> excluded = null,
+        bool preferPlayers = false)
     {
         entityId = 0;
         kind = EntityKind.None;
         var bestDistance = float.MaxValue;
         foreach (var (id, entity) in _entities)
         {
-            if (id == selfId)
+            if (id == selfId || excluded?.Contains(id) == true)
                 continue;
             if (entity.IsDead || _summonOwners.ContainsKey(id))
                 continue;
@@ -615,7 +618,9 @@ public sealed partial class RemoteEntityManager
             var hit = CursorPicking.IntersectSphere(ray, entity.DrawnPosition, radius);
             if (hit is null)
                 continue;
-            if (hit.Value < bestDistance)
+            var promoted = preferPlayers && entity.Kind == EntityKind.Player && kind == EntityKind.Monster;
+            var demoted = preferPlayers && kind == EntityKind.Player && entity.Kind == EntityKind.Monster;
+            if (promoted || !demoted && hit.Value < bestDistance)
             {
                 bestDistance = hit.Value;
                 entityId = id;
@@ -625,9 +630,24 @@ public sealed partial class RemoteEntityManager
         return entityId != 0;
     }
 
+    // The remote players in view, into a list the caller reuses.
+    public void CollectPlayers(List<ulong> into)
+    {
+        into.Clear();
+        foreach (var (id, entity) in _entities)
+        {
+            if (entity.Kind == EntityKind.Player)
+            {
+                into.Add(id);
+            }
+        }
+    }
+
     // Entities still loading their models are not in the roster and have no actors yet.
     public int CopyActorHandles(ulong entityId, Span<ActorHandle> destination) =>
         _entities.TryGetValue(entityId, out var entity) ? entity.CopyActorHandles(destination) : 0;
+
+    public bool IsPlayer(ulong entityId) => _entities.TryGetValue(entityId, out var entity) && entity.Kind == EntityKind.Player;
 
     public bool TryGetDrawnPosition(ulong entityId, out XnaVector3 position)
     {

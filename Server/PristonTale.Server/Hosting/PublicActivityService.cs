@@ -16,6 +16,7 @@ internal sealed class PublicActivityService(WorldServer world, ChatDirectory cha
         }
 
         var path = Path.GetFullPath(configuredPath, AppContext.BaseDirectory);
+        world.FeatRecorded = chat.RecordFeat;
         var whisperPath = settings["PublicActivity:WhisperPath"] is { Length: > 0 } configuredWhispers
             ? Path.GetFullPath(configuredWhispers, AppContext.BaseDirectory) : null;
         if (string.Equals(path, whisperPath, StringComparison.OrdinalIgnoreCase))

@@ -22,6 +22,38 @@ internal static class WebCompressedGameFilesTests
         yield return ("website compressed assets: missing sidecars retain raw validators without dynamic representation collisions", RawFallbackValidatorsAsync);
         yield return ("website compressed assets: malformed indexes preserve raw file and private endpoint handling", InvalidIndexAndPrivatePathAsync);
         yield return ("website compressed assets: explicit encoding exclusions override wildcard and unsafe paths", NegotiationAsync);
+        yield return ("website compressed assets: fingerprinted runtime files use the publish's sidecars, the loader stays raw", FrameworkAsync);
+    }
+
+    private static async Task FrameworkAsync()
+    {
+        using var fixture = new Fixture();
+        const string Module = "/play/_framework/game.abc123.wasm";
+        var tags = new HashSet<string>();
+        foreach (var encoding in new[] { "br", "gzip", "identity" })
+        {
+            var context = await fixture.RequestAsync("", encoding, path: Module);
+            var data = Decode(((MemoryStream)context.Response.Body).ToArray(), context.Response.Headers.ContentEncoding.ToString());
+            Assert.True(context.Response.StatusCode == 200 && data.SequenceEqual(fixture.Bytes), $"{encoding} changed the runtime module's bytes");
+            Assert.True(context.Response.Headers.ContentEncoding.ToString() == (encoding == "identity" ? "" : encoding), $"{encoding} was not negotiated");
+            Assert.True(context.Response.ContentType == "application/wasm", "the module lost its MIME type, which streaming compilation needs");
+            Assert.True(context.Response.Headers.Vary.ToString().Contains("Accept-Encoding", StringComparison.OrdinalIgnoreCase), "runtime variants were merged");
+            Assert.True(context.Response.Headers.CacheControl.ToString().Contains("immutable", StringComparison.Ordinal), "fingerprinted caching was lost");
+            Assert.True(tags.Add(context.Response.Headers.ETag.ToString()), "two representations share a validator");
+        }
+
+        var br = await fixture.RequestAsync("", "br", path: Module);
+        var notModified = await fixture.RequestAsync("", "br", path: Module, headers: new Dictionary<string, string> { ["If-None-Match"] = br.Response.Headers.ETag.ToString() });
+        Assert.True(notModified.Response.StatusCode == 304 && notModified.Response.Body.Length == 0, "the encoded validator did not revalidate");
+        var range = await fixture.RequestAsync("", "br", path: Module, headers: new Dictionary<string, string> { ["Range"] = "bytes=0-15" });
+        Assert.True(range.Response.StatusCode == 206 && range.Response.Headers.ContentEncoding.Count == 0, "a range was served from an encoded sidecar");
+        File.Delete(Path.Combine(fixture.Root, "_framework", "game.abc123.wasm.br"));
+        var missing = await fixture.RequestAsync("", "br", path: Module);
+        Assert.True(missing.Response.Headers.ContentEncoding.Count == 0 && ((MemoryStream)missing.Response.Body).ToArray().SequenceEqual(fixture.Bytes),
+            "a missing sidecar blocked the raw module");
+        var loader = await fixture.RequestAsync("", "br", path: "/play/_framework/dotnet.js");
+        Assert.True(loader.Response.StatusCode == 200 && loader.Response.Headers.ContentEncoding.Count == 0,
+            "the loader, which keeps its name across builds, was served from a sidecar");
     }
 
     private static async Task FormatsAsync()
@@ -166,20 +198,16 @@ internal static class WebCompressedGameFilesTests
             foreach (var extension in new[] { ".bmp", ".tga", ".smd", ".smb", ".xnb" })
             {
                 var path = Path.Combine(Root, "assets", "sample" + extension);
-                File.WriteAllBytes(path, Bytes);
-                using (var output = File.Create(path + ".br"))
-                using (var compression = new BrotliStream(output, CompressionLevel.Fastest))
-                {
-                    compression.Write(Bytes);
-                }
-                using (var output = File.Create(path + ".gz"))
-                using (var compression = new GZipStream(output, CompressionLevel.Fastest))
-                {
-                    compression.Write(Bytes);
-                }
+                WriteWithSidecars(path);
                 WebCompressedGameFiles.CompressedVariant Variant(string name) => new(Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(name))), new FileInfo(name).Length);
                 records.Add(new("assets/sample" + extension, hash, Bytes.Length, File.GetLastWriteTimeUtc(path), Variant(path + ".br"), Variant(path + ".gz")));
             }
+            Directory.CreateDirectory(Path.Combine(Root, "_framework"));
+            foreach (var name in new[] { "game.abc123.wasm", "dotnet.js" })
+            {
+                WriteWithSidecars(Path.Combine(Root, "_framework", name));
+            }
+
             GzipTag = '"' + records[0].Gzip!.Sha256 + '"';
             File.WriteAllText(Path.Combine(Root, WebCompressedGameFiles.IndexName), JsonSerializer.Serialize(new WebCompressedGameFiles.AssetIndex(1, records)));
             prepareIndex?.Invoke(Path.Combine(Root, WebCompressedGameFiles.IndexName));
@@ -206,6 +234,22 @@ internal static class WebCompressedGameFilesTests
                 context.Response.StatusCode = 404;
             });
             _pipeline = builder.Build();
+        }
+
+        private void WriteWithSidecars(string path)
+        {
+            File.WriteAllBytes(path, Bytes);
+            using (var output = File.Create(path + ".br"))
+            using (var compression = new BrotliStream(output, CompressionLevel.Fastest))
+            {
+                compression.Write(Bytes);
+            }
+
+            using (var output = File.Create(path + ".gz"))
+            using (var compression = new GZipStream(output, CompressionLevel.Fastest))
+            {
+                compression.Write(Bytes);
+            }
         }
 
         internal async Task<DefaultHttpContext> RequestAsync(string extension, string encoding, string method = "GET", Dictionary<string, string>? headers = null,

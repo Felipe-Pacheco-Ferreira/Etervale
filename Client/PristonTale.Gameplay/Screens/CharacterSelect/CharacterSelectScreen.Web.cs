@@ -441,7 +441,7 @@ public sealed partial class CharacterSelectScreen
         {
             var deltaMs = previous.Pending ? (clickSeconds - previous.Seconds) * 1000 : double.NaN;
             Context.Log.Info(FormattableString.Invariant($"[StagePick] pick stage={stage} eventMs={clickSeconds * 1000:F3} hit={hit} selectedBefore={selectedBefore} confirm={confirm} ")
-                + FormattableString.Invariant($"pending={previous.Pending} priorIndex={previous.Index} priorStage={previous.Stage} deltaMs={deltaMs:F3} maxMs={CharacterSelectStage.DoublePressSeconds * 1000:F3} ")
+                + FormattableString.Invariant($"pending={previous.Pending} priorIndex={previous.Index} priorStage={previous.Stage} deltaMs={deltaMs:F3} maxMs={WebStageClickTracker.DoublePressSeconds * 1000:F3} ")
                 + FormattableString.Invariant($"x={position.X:F5} y={position.Y:F5} viewport={viewport.Width}x{viewport.Height} state={stateBefore}->{_state} busy={_busy} tribe={_chosenBrood} selectedClass={_jobSelected}"));
         }
     }

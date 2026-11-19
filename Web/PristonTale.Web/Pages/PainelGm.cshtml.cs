@@ -141,7 +141,7 @@ public sealed class PainelGmModel(IAccountRepository accounts, IGameMasterReposi
         }
     }
 
-    public async Task<IActionResult> OnPostNoticiaAsync(string? title, string? summary, string? body, CancellationToken ct)
+    public async Task<IActionResult> OnPostNoticiaAsync(string? title, string? summary, string? body, NewsKind kind, CancellationToken ct)
     {
         if (await ReadIssuerAsync(ct) is not { IsBlocked: false, GmLevel: GameMasterLevel.Administrator } issuer)
         {
@@ -150,7 +150,8 @@ public sealed class PainelGmModel(IAccountRepository accounts, IGameMasterReposi
 
         if (title?.Trim() is not { Length: > 0 and <= 120 } headline ||
             summary?.Trim() is not { Length: > 0 and <= 300 } excerpt ||
-            body?.Trim() is not { Length: > 0 and <= 8000 } content)
+            body?.Trim() is not { Length: > 0 and <= 8000 } content ||
+            !Enum.IsDefined(kind))
         {
             Feedback = "Preencha título, resumo e texto dentro dos limites indicados.";
             return RedirectToPage(new { areaGm = "noticias" });
@@ -159,7 +160,7 @@ public sealed class PainelGmModel(IAccountRepository accounts, IGameMasterReposi
         try
         {
             news.Publish(new NewsItem(DateOnly.FromDateTime(DateTime.Today), headline, excerpt,
-                content.Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)));
+                content.Split('\n', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries), Kind: kind));
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException)
         {

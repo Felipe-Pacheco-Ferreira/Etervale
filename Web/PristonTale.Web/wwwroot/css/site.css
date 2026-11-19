@@ -25,6 +25,22 @@
     box-sizing: border-box;
 }
 
+/* An open list cannot draw its select's gradient, so the browser falls back to white behind the light text. */
+select option,
+select optgroup {
+    color: #fbf1dd;
+    background-color: #1a130a;
+}
+
+select option:checked {
+    color: #fff;
+    background-color: #2a5fbf;
+}
+
+select option:disabled {
+    color: #7d705a;
+}
+
 html {
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;

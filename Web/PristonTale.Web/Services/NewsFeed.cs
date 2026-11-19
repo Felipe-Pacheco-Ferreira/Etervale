@@ -1,9 +1,21 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace PristonTale.Web.Services;
 
-// One news post: plain text only (the pages encode it), a paragraph per line of Body.
-public sealed record NewsItem(DateOnly Date, string Title, string Summary, IReadOnlyList<string> Body);
+// One news post: plain text only (the pages encode it), a paragraph per line of Body, who signed it (empty: nobody) and
+// its kind, the game's badge.
+public sealed record NewsItem(DateOnly Date, string Title, string Summary, IReadOnlyList<string> Body, string? Author = null,
+    NewsKind Kind = NewsKind.News);
+
+// A new system or other news, an event, an improvement; written by name in news.json and the game's feed.
+[JsonConverter(typeof(JsonStringEnumConverter<NewsKind>))]
+public enum NewsKind
+{
+    News,
+    Event,
+    Improvement
+}
 
 // The news of content/news.json beside the executable, newest first. The file is read again when it changes, so a post
 // is published by editing it, without a restart; a file that does not parse keeps the posts read before and is logged.
@@ -68,7 +80,8 @@ public sealed class NewsFeed(string path)
             items.RemoveAll(static item => string.IsNullOrWhiteSpace(item.Title));
             for (var index = 0; index < items.Count; index++)
             {
-                items[index] = items[index] with { Summary = items[index].Summary ?? "", Body = items[index].Body ?? [] };
+                var kind = Enum.IsDefined(items[index].Kind) ? items[index].Kind : NewsKind.News;
+                items[index] = items[index] with { Summary = items[index].Summary ?? "", Body = items[index].Body ?? [], Kind = kind };
             }
 
             items.Sort(static (a, b) => b.Date.CompareTo(a.Date));

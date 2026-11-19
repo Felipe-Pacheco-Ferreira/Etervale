@@ -1,5 +1,4 @@
 using Microsoft.Xna.Framework;
-using PristonTale.Assets;
 
 namespace PristonTale.Gameplay.UI;
 
@@ -31,6 +30,8 @@ public readonly record struct WebCharacterCommand(WebCharacterCommandKind Kind, 
 
 internal struct WebStageClickTracker
 {
+    internal const double DoublePressSeconds = 0.5d;
+
     private bool _pending;
     private int _index;
     private double _seconds;
@@ -42,7 +43,7 @@ internal struct WebStageClickTracker
     {
         var valid = index >= 0 && double.IsFinite(seconds) && seconds >= 0;
         var confirm = valid && _pending && stage == _stage && index == _index && index == selectedIndex && seconds >= _seconds
-            && seconds < _seconds + CharacterSelectStage.DoublePressSeconds;
+            && seconds < _seconds + DoublePressSeconds;
         _pending = valid && !confirm;
         _index = index;
         _seconds = seconds;

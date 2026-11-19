@@ -144,9 +144,31 @@ internal static class SupportTicketTests
         Assert.True(item is { Number: "#5388", Status: "Answered", Category: "Melhoria", Subject: "MELHORIA NO GRAFICO" } && item.Id == id
             && item.Details.Contains("3 ", StringComparison.Ordinal), $"a list item is read with its subject and details ({item})");
         Assert.True(HudNews.ParseItem("broken") is null, "a broken item is left out");
+
+        var wrapped = HudNews.WrapBold("A **poção da Black Friday** já pode", 60, static text => text.Length * 6);
+        Assert.True(wrapped.SequenceEqual(["A **poção da**", "**Black**", "**Friday** já", "pode"]),
+            $"a bold run broken across lines stays bold on each line and is measured without its marks ({string.Join(" | ", wrapped)})");
+
+        var window = new HudNews();
+        window.ReceiveTicket("Ticket> list");
+        window.ReceiveTicket($"Ticket> item {id:N} 5388 Answered Melhoria 1763437620 1763437680 3 0 MELHORIA NO GRAFICO");
+        window.ReceiveTicket($"Ticket> item {Guid.NewGuid():N} 5389 Open Bug 1763437620 1763437680 1 0 OUTRO");
+        window.ReceiveTicket("Ticket> listend");
+        var unseen = new PristonTale.Engine3D.Rendering.ClientSettings();
+        Assert.True(window.UpdateNotices(unseen) is null && window.Unread == 1, "an answered ticket not read marks the News & Support plaque");
+        Assert.True(window.UpdateNotices(unseen with { TicketsSeen = [item!.SeenKey] }) is null && window.Unread == 0, "a read answer marks nothing");
+        Assert.True(HudNews.ParseItem($"{id:N} 5388 Answered Melhoria 1763437620 1763437999 4 0 X")!.SeenKey != item.SeenKey,
+            "a new answer on the same ticket marks it again");
         var detail = HudNews.ParseView($"{id:N} 5388 Open - 1763437620 1 SatroX (Zephira)");
         Assert.True(detail is { Number: "#5388", Status: "Open", Category: "", Editable: true } && detail.Id == id
             && detail.Opened.EndsWith("SatroX (Zephira)", StringComparison.Ordinal), "a ticket's header is read with who opened it");
+        Assert.True(SupportTickets.AttachmentExtension("Foto.JPEG") == ".jpg" && SupportTickets.AttachmentExtension("clip.webm") == ".webm"
+            && SupportTickets.AttachmentExtension("sem-extensao") == "", "an uploaded file is not kept under its lower-case extension, .jpeg as .jpg");
+
+        var page = new HudNews();
+        Assert.True(!page.PageAction("send", "", " ", 0, "texto") && page.PageState().Contains("\"state\":\"invalid\"", StringComparison.Ordinal),
+            "the page's form sent a ticket without a subject");
+        Assert.True(!page.PageAction("unknown", "", "", 0, "") && !page.PageAction("cancel", "", "", 0, ""), "the page ran an unknown action or one without its ticket");
         return Task.CompletedTask;
     }
 }

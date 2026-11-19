@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using PristonTale.Engine3D.Rendering;
 using PristonTale.Gameplay.Localization;
 
 namespace PristonTale.Gameplay.Effects;
@@ -11,7 +12,9 @@ public enum FloatingTextKind
     DamageTaken,
     Heal,
     Miss,
-    Evade
+    Evade,
+    // A hit between other entities (ClientSettings.ShowOtherPlayersDamage): smaller and dimmer than the local player's.
+    OtherDamage
 }
 
 // Damage and heal numbers above the entities they hit. Entries live in a fixed ring; their text is formatted once when
@@ -22,8 +25,23 @@ public sealed class FloatingCombatText
     private const float LifetimeSeconds = 1.25f;
     private const float RiseUnits = 34f;
 
+    // Spread numbers land this far apart (world units) instead of in a narrow column.
+    private const float SpreadUnits = 40f;
+
     private readonly Entry[] _entries = new Entry[Capacity];
     private int _next;
+
+    // The settings' number size and spread (DamageNumberSize, SpreadDamageNumbers).
+    public float SizeScale { get; set; } = 1f;
+    public bool Spread { get; set; }
+
+    public static float ScaleOf(DamageNumberSize size) => size switch
+    {
+        DamageNumberSize.Small => 0.75f,
+        DamageNumberSize.Large => 1.35f,
+        DamageNumberSize.Huge => 1.75f,
+        _ => 1f
+    };
 
     public int Count
     {
@@ -49,8 +67,11 @@ public sealed class FloatingCombatText
             FloatingTextKind.Critical => amount + "!",
             _ => amount.ToString(System.Globalization.CultureInfo.InvariantCulture)
         };
-        var jitter = ((_next * 37) % 21 - 10) * 1.5f;
-        _entries[_next] = new Entry(worldPosition + new Vector3(jitter, 0f, 0f), text, kind, 0f);
+        var jitter = ((_next * 37) % 21 - 10) / 10f;
+        var offset = Spread
+            ? new Vector3(jitter * SpreadUnits, 0f, ((_next * 53) % 21 - 10) / 10f * SpreadUnits)
+            : new Vector3(jitter * 15f, 0f, 0f);
+        _entries[_next] = new Entry(worldPosition + offset, text, kind, 0f);
         _next = (_next + 1) % Capacity;
     }
 
@@ -90,7 +111,8 @@ public sealed class FloatingCombatText
                 begun = true;
             }
 
-            var (color, scale) = Style(entry.Kind);
+            var (color, style) = Style(entry.Kind);
+            var scale = style * SizeScale;
             var alpha = life < 0.7f ? 1f : 1f - (life - 0.7f) / 0.3f;
             var pop = entry.Kind == FloatingTextKind.Critical ? 1f + 0.35f * MathF.Max(0f, 1f - entry.Age * 6f) : 1f;
             var size = font.MeasureString(entry.Text) * scale * pop;
@@ -111,6 +133,7 @@ public sealed class FloatingCombatText
         FloatingTextKind.DamageTaken => (new Color(255, 90, 80), 1f),
         FloatingTextKind.Heal => (new Color(120, 255, 140), 1.05f),
         FloatingTextKind.Miss => (new Color(200, 200, 200), 0.9f),
+        FloatingTextKind.OtherDamage => (new Color(205, 205, 195), 0.8f),
         _ => (new Color(255, 255, 235), 1f)
     };
 

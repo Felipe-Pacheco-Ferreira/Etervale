@@ -2,6 +2,8 @@ using PristonTale.Assets;
 using PristonTale.Contracts.Characters;
 using PristonTale.Engine3D.Rendering;
 using PristonTale.Gameplay.UI;
+using PristonTale.Gameplay.World;
+using System.Security.Cryptography;
 
 namespace PristonTale.Browser;
 
@@ -12,7 +14,7 @@ namespace PristonTale.Browser;
 // opening, and the rest after a character enters the world. Class models are warmed after the opening's downloads.
 internal static class BootstrapFiles
 {
-    private const string ListFile = "bootstrap.txt";
+    private const string ListFile = WebAssetPacks.BootstrapFile;
     private const string CharacterListFile = "character-previews.txt";
     private const string AssetsFolder = "assets";
     private const string CharacterFolder = AssetsFolder + "/char/tmABCD/";
@@ -50,6 +52,8 @@ internal static class BootstrapFiles
     private static Uri? _clientAddress;
     private static string[] _remainingPaths = [];
     private static string[] _deferredPaths = [];
+    private static string _bootstrapSha256 = string.Empty;
+    private static Dictionary<string, string>? _bootstrapHashes;
     private static HttpClient? _characterHttp;
     private static Task<Dictionary<PlayerClass, List<string>>>? _characterPaths;
     private static readonly Dictionary<string, Task> CharacterDownloads = new(StringComparer.Ordinal);
@@ -64,8 +68,10 @@ internal static class BootstrapFiles
     public static async Task FetchAsync(Uri clientAddress)
     {
         using var http = new HttpClient { BaseAddress = clientAddress };
-        var list = await FetchWithRetryAsync(() => http.GetStringAsync(ListFile));
-        var paths = list.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var bytes = await FetchWithRetryAsync(() => http.GetByteArrayAsync(ListFile));
+        var paths = WebAssetPacks.BootstrapLines(bytes);
+        _bootstrapSha256 = Convert.ToHexString(SHA256.HashData(bytes));
+        _bootstrapHashes = WebAssetPacks.ReadBootstrap(paths);
         _clientAddress = clientAddress;
         var manifestEntry = paths.FirstOrDefault(entry => SkyManifest.Equals(EntryPath(entry), StringComparison.OrdinalIgnoreCase))
             ?? throw new InvalidDataException($"{ListFile} is missing {SkyManifest}.");
@@ -97,7 +103,7 @@ internal static class BootstrapFiles
         }
 
         _remainingPaths = remainingPaths.ToArray();
-        _deferredPaths = deferredPaths.ToArray();
+        _deferredPaths = deferredPaths.Distinct(StringComparer.Ordinal).ToArray();
         await FetchPathsAsync(http, scenePaths, BrowserHost.ReportLoginProgress);
     }
 
@@ -119,11 +125,42 @@ internal static class BootstrapFiles
         await FetchPathsAsync(http, _remainingPaths, BrowserHost.ReportLoginProgress, BackgroundFetches);
     }
 
-    public static async Task FetchWorldAssetsAsync()
+    // The field's files before entering; other class families' motion banks, other fields' minimaps and art the world
+    // does not draw once the field shows (DeferredWorldFiles).
+    public static async Task FetchWorldAssetsAsync(PlayerClass playerClass)
     {
         _characterWarmup?.Cancel();
+        string? ownMotionBank = null;
+        if (await CharacterPathsAsync(CancellationToken.None) is { } catalog && catalog.TryGetValue(playerClass, out var classFiles))
+        {
+            ownMotionBank = classFiles.Select(entry => DeferredWorldFiles.FullMotionBank(EntryPath(entry))).FirstOrDefault(path => path is not null);
+        }
+
+        var entryWave = new List<string>();
+        var later = new List<string>();
+        foreach (var entry in _deferredPaths)
+        {
+            (DeferredWorldFiles.CanWait(EntryPath(entry), ownMotionBank) ? later : entryWave).Add(entry);
+        }
+
+        await FetchWaveAsync(entryWave, WebWorldLoading.DownloadProgress);
+        DeferredWorldFiles.Defer(() => FetchWaveAsync(later, null));
+    }
+
+    private static async Task FetchWaveAsync(List<string> entries, Action<int, int>? progress)
+    {
         using var http = new HttpClient { BaseAddress = _clientAddress };
-        await FetchPathsAsync(http, _deferredPaths, WebWorldLoading.DownloadProgress);
+        // A few ZIP chunks instead of thousands of requests; without valid packs, one request per file as before.
+        if (_bootstrapHashes is not null
+            && await WebAssetPacks.TryFetchAsync(http, Root, _bootstrapSha256, _bootstrapHashes, entries.Select(EntryPath), progress))
+        {
+            return;
+        }
+
+        // Files a pack already wrote count as done, so the bar keeps its place.
+        var missing = entries.Where(entry => !File.Exists(Target(EntryPath(entry)))).ToArray();
+        var present = entries.Count - missing.Length;
+        await FetchPathsAsync(http, missing, progress is null ? null : (done, _) => progress(present + done, entries.Count));
     }
 
     public static async Task PrefetchCharacterAssetsAsync()
@@ -267,14 +304,8 @@ internal static class BootstrapFiles
         || skyFolders.Any(prefix => path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
 
     private static bool IsRosterAsset(string path) =>
-        path.StartsWith(CharacterFolder, StringComparison.OrdinalIgnoreCase) && !IsFullCharacterMotion(path)
+        path.StartsWith(CharacterFolder, StringComparison.OrdinalIgnoreCase) && !DeferredWorldFiles.IsFullMotionBank(path)
         || RosterEffects.Contains(path);
-
-    private static bool IsFullCharacterMotion(string path) =>
-        path.Length == CharacterFolder.Length + 6
-        && path[CharacterFolder.Length] is 'm' or 'M'
-        && path[CharacterFolder.Length + 1] is >= '1' and <= '8'
-        && path.EndsWith(".smb", StringComparison.OrdinalIgnoreCase);
 
     // Requests kept in flight at once: a slow file holds one of them, not a whole batch. Before the game starts nothing
     // else runs, so many; behind the running opening, few.
@@ -364,15 +395,5 @@ internal static class BootstrapFiles
         }
     }
 
-    // A listed path stays inside the root: relative, '/'-separated, without "." or ".." segments.
-    private static string Target(string relativePath)
-    {
-        var segments = relativePath.Split('/');
-        if (relativePath.StartsWith('/') || segments.Any(static segment => segment is "" or "." or ".." || segment.Contains('\\')))
-        {
-            throw new InvalidDataException($"{ListFile} lists a path outside the client: {relativePath}");
-        }
-
-        return Path.Combine([Root, .. segments]);
-    }
+    private static string Target(string relativePath) => WebAssetPacks.LocalPath(Root, relativePath);
 }

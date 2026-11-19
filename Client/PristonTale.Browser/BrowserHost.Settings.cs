@@ -1,9 +1,11 @@
 using System.Runtime.InteropServices.JavaScript;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Xna.Framework.Input;
 using PristonTale.Engine3D.Diagnostics;
 using PristonTale.Engine3D.IO;
 using PristonTale.Engine3D.Rendering;
+using PristonTale.Gameplay.UI;
 using PristonTale.Gameplay.UI.Widgets;
 
 namespace PristonTale.Browser;
@@ -15,8 +17,12 @@ public static partial class BrowserHost
 {
     private static PresentationSettings? _presentation;
 
-    // The settings the game starts with: the saved document, or the defaults at the Low preset.
-    internal static ClientSettings StartSettings { get; private set; } = new ClientSettings().WithQuality(GraphicsQuality.Low);
+    // The settings the game starts with: the saved document, or the defaults at the Low preset. The browser starts with
+    // the classic light, also for a document saved before the choice existed.
+    internal static ClientSettings StartSettings { get; private set; } =
+        new ClientSettings().WithQuality(GraphicsQuality.Low) with { ClassicLighting = true };
+
+    private const string ClassicLightingKey = "classicLighting";
 
     internal static void Attach(PresentationSettings presentation) => _presentation = presentation;
 
@@ -29,12 +35,26 @@ public static partial class BrowserHost
     {
         if (ClientSettingsStore.Parse(json, ConsoleClientLog.Instance) is { } saved)
         {
-            StartSettings = saved;
+            var chosen = JsonNode.Parse(json) is JsonObject document && document.ContainsKey(ClassicLightingKey);
+            StartSettings = chosen ? saved : saved with { ClassicLighting = true };
         }
     }
 
     [JSExport]
     public static string Settings() => ClientSettingsStore.Serialize(Current);
+
+    // The page resolves Auto by the device's memory and calls this before the game decodes a texture.
+    [JSExport]
+    public static void SetTextureQuality(string quality) =>
+        BrowserSceneTextures.Divisor = TextureDownscale.Divisor(Enum.TryParse<TextureQuality>(quality, out var parsed) ? parsed : TextureQuality.Original);
+
+    // The local player's life for the page's death and low-life effects: -1 outside the world, 0 dead, else the fraction.
+    [JSExport]
+    public static double PlayerLife() => WebWorldHud.Current?.PlayerLife ?? -1;
+
+    // F12 hides the game's HUD; the page hides its own HUD with it.
+    [JSExport]
+    public static bool HudHidden() => WebWorldHud.Current?.HudHidden ?? false;
 
     [JSExport]
     public static string SettingsWithQuality(string json, string quality) =>
@@ -99,7 +119,7 @@ public static partial class BrowserHost
     [JSExport]
     public static string RestoreShortcuts(string json) => ClientSettingsStore.Serialize(Parse(json) with { ShortcutKeys = [] });
 
-    private static bool Available(int slot) => slot >= 0 && slot < HudSettingsPanel.PageShortcutCount;
+    private static bool Available(int slot) => HudSettingsPanel.OnPage(slot);
 
     private static readonly JsonSerializerOptions ShortcutJson = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 

@@ -23,7 +23,7 @@ public sealed class HudGroundLabels
 
     public void Draw(HudPainter painter, HudLayout layout, IReadOnlyList<GroundLabel> labels, Action<Guid, Rectangle> placed)
     {
-        var scale = Math.Max(1, layout.Scale);
+        var scale = layout.Scale;
         var (line, textTop) = painter.NameBoxText(HudPainter.TextScale, PadY);
         _placed.Clear();
         foreach (var label in labels)
@@ -39,7 +39,7 @@ public sealed class HudGroundLabels
             _placed.Add(box);
             painter.DrawNameBox(box);
             painter.Text(label.Text, box.X + HudPainter.NameBoxSide, box.Y + textTop, label.Hovered ? Hovered : Named, HudPainter.TextScale);
-            placed?.Invoke(label.Id, new Rectangle(box.X * scale, box.Y * scale, box.Width * scale, box.Height * scale));
+            placed?.Invoke(label.Id, new Rectangle((int)(box.X * scale), (int)(box.Y * scale), (int)(box.Width * scale), (int)(box.Height * scale)));
         }
     }
 

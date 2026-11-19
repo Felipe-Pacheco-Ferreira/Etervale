@@ -113,6 +113,19 @@ public sealed partial class WorldServer
         _bossSchedule = new BossSpawnSchedule(_clock.GetLocalNow(), bossRng ?? new CombatRng(0xB055));
     }
 
+    public static FieldSpawnData WithoutRemovedNpcs(FieldSpawnData spawnData, NpcCatalog? npcs, IReadOnlyList<string> removed)
+    {
+        if (removed.Count == 0 || npcs is null)
+        {
+            return spawnData;
+        }
+
+        var placed = spawnData.FixedNpcs
+            .Where(placement => !npcs.TryGet(placement.NpcCode, out var definition) || !removed.Contains(definition.Name, StringComparer.OrdinalIgnoreCase))
+            .ToList();
+        return placed.Count == spawnData.FixedNpcs.Count ? spawnData : spawnData with { FixedNpcs = placed };
+    }
+
     private FieldInstance GetField(int fieldId)
     {
         if (_fields.TryGetValue(fieldId, out var field))
@@ -124,7 +137,7 @@ public sealed partial class WorldServer
         var spawnData = data.FieldSpawns.TryGetValue(fieldId, out var spawns) ? spawns : FieldSpawnData.Empty;
         field = new FieldInstance(
             fieldId,
-            spawnData,
+            WithoutRemovedNpcs(spawnData, data.Npcs, _options.RemovedNpcs),
             data.Monsters,
             _ids,
             new CombatRng(fieldId),
@@ -139,6 +152,7 @@ public sealed partial class WorldServer
         field.Event = _catalog.TryGetFieldByCode(fieldId, out var described) ? described.FieldEvent : FieldEventKind.None;
         field.Rains = described is not null && WeatherSchedule.Rains(described);
         field.DropLedger = DropLedgerFor(_worldData.Current.Items);
+        field.FeatRaised = RaiseFeat;
         _fields.Add(fieldId, field);
         OpenSiegeIn(field);
         if (fieldId == Simulation.World.Bellatra.BellatraArena.Field)

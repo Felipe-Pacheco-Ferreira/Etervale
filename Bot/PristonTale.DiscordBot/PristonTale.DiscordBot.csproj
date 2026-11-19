@@ -26,6 +26,8 @@
 
   <ItemGroup>
     <None Update="discord-bot-settings.example.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <!-- The development notes of the repository travel with the bot, which publishes each new one (DevNoteSettings). -->
+    <None Include="..\..\devnotes\**\*" LinkBase="devnotes" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

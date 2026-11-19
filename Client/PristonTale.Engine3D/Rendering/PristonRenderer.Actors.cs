@@ -321,6 +321,10 @@ public sealed partial class PristonRenderer
         _batchListsDirty = true;
         var handle = new ActorHandle(slot, generation);
         _externalRenderer?.CreateActor(handle, runtime.ExternalMeshes, runtime.Palette.Count);
+        if (ExactActorPoseMemoization && runtime.Animator is PristonModelAnimator animator)
+        {
+            animator.SetMemoization(_poseMemoization ??= new PristonPoseMemoization());
+        }
         return handle;
     }
 
@@ -331,6 +335,10 @@ public sealed partial class PristonRenderer
         _externalRenderer?.RemoveActor(handle);
         ReleaseExternalActor(runtime);
         ReleaseActorGpuResource(runtime);
+        if (runtime.Animator is PristonModelAnimator animator)
+        {
+            animator.SetMemoization(null);
+        }
         runtime.Alive = false;
         _freeActorSlots.Push(handle.Slot);
         _batchListsDirty = true;
@@ -346,9 +354,14 @@ public sealed partial class PristonRenderer
                 _externalRenderer?.RemoveActor(new ActorHandle(slot, actor.Generation));
                 ReleaseExternalActor(actor);
                 ReleaseActorGpuResource(actor);
+                if (actor.Animator is PristonModelAnimator animator)
+                {
+                    animator.SetMemoization(null);
+                }
             }
         }
 
+        _poseMemoization?.Clear();
         _actors.Clear();
         _freeActorSlots.Clear();
         _batchListsDirty = true;

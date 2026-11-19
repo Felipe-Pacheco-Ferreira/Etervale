@@ -156,7 +156,18 @@ public sealed class PlayerActorComposer(IActorScene scene, PristonActorLoader ac
         {
             part = Task.Run(async () =>
             {
-                var actor = ReadPart(root, path, rigid);
+                PristonActor actor;
+                try
+                {
+                    actor = ReadPart(root, path, rigid);
+                }
+                catch (FileNotFoundException) when (!DeferredWorldFiles.Pending.IsCompleted)
+                {
+                    // Another class family's motion bank still downloading: the browser fetches it after the field shows.
+                    await DeferredWorldFiles.Pending;
+                    actor = ReadPart(root, path, rigid);
+                }
+
                 await _scene.PrepareActorResourcesAsync(actor);
                 return actor;
             });

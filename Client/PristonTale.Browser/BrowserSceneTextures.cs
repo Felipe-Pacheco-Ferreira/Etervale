@@ -13,6 +13,9 @@ internal sealed class BrowserSceneTextures(Action<int, int, int, byte[]> publish
     private static readonly SemaphoreSlim DecodeSlots = new(DecodeConcurrency, DecodeConcurrency);
     private static int _nextTextureId;
     private readonly ConcurrentDictionary<string, Entry> _entries = new(StringComparer.OrdinalIgnoreCase);
+
+    // Set before the game starts (BrowserHost.SetTextureQuality); textures already decoded keep their size.
+    public static int Divisor { get; set; } = 1;
     private sealed record Pixels(int Width, int Height, byte[] Rgba)
     {
         public static readonly Pixels Empty = new(0, 0, []);
@@ -129,7 +132,8 @@ internal sealed class BrowserSceneTextures(Action<int, int, int, byte[]> publish
                 rgba[i * 4 + 2] = pixel.B;
                 rgba[i * 4 + 3] = pixel.A;
             }
-            return new Pixels(image.Width, image.Height, rgba);
+            var (width, height, shrunk) = TextureDownscale.Shrink(image.Width, image.Height, rgba, Divisor);
+            return new Pixels(width, height, shrunk);
         }
         catch (Exception exception) when (exception is IOException or InvalidDataException or ArgumentException or OverflowException)
         {

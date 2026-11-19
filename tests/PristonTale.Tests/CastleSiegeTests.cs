@@ -255,6 +255,18 @@ internal static class CastleSiegeTests
         harness.Tick(1);
         Assert.True(foe.Life < life && harness.World.Siege.Top is [{ ClanId: 9 } score] && score.Damage == Math.Max(1, (life - foe.Life) / CastleSiegeRules.PkScoreDivisor),
             "the swings on a player of the owner clan did not land and score");
+
+        var feats = new List<Contracts.Social.GameFeat>();
+        harness.World.FeatRecorded = feats.Add;
+        foe.ApplyDamage(foe.Life - 1);
+        field.SetAttackTarget(attacker.EntityId, foe.EntityId, sustained: true);
+        for (var step = 0; step < 300 && !foe.IsDead; step++)
+        {
+            harness.Tick(20);
+        }
+
+        Assert.True(foe.IsDead && feats is [{ Kind: Contracts.Social.GameFeat.Pvp } pvp] && pvp.Players[0].Name == attacker.Character.Name
+            && pvp.Victim is { Name: "Foe", Clan: "Lions" } && pvp.Field.Length > 0, "a player killed by another is not recorded as a feat");
         attacker.Hidden = true;
         Assert.True(!field.SetAttackTarget(attacker.EntityId, foe.EntityId, sustained: false), "a hidden player took a foe");
     }

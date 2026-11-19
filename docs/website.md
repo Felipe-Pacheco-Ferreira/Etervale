@@ -46,10 +46,12 @@ settings table as the server reads it), `IRankingRepository`, `IAccountRepositor
 | --- | --- | --- |
 | `/` | The game itself, filling the window (`Jogar`, no site layout). The page shows loading progress while the browser client starts, then plays the live opening flight with the login panel and a bar for language, site menu and full screen. "Em breve" while the client or its endpoint is missing ([web-client.md](web-client.md#entry-page)). | `Play:*` |
 | `/inicio` | The portal: hero art, server status, accounts and characters, experience rate, Android version, the latest news, the next events and the top five | Everything below |
-| /api/client/news | Latest 20 news posts as JSON for the game client | content/news.json |
+| /api/client/news | Latest 20 news posts as JSON for the game client (date, title, summary, body, author, kind) | content/news.json |
 | `/api/worlds` | The worlds the entry page offers after the login: name, region, kind (`Normal`/`AntiKs`), `endpoint` (wss) and `status` (the edge's `https://host:port/status`) | `Play:Worlds` (or `Play:GameEndpoint` alone as the world "Noxius") |
+| `/manifest.webmanifest` | The web app manifest: "Adicionar à tela inicial" opens `/` full screen and in landscape, with `img/icon-192.png` and `img/icon-512.png` (`WebAppManifest`) | `Site:Name` |
 | `/api/play-session` | GET identifies the remembered browser account. Same-origin HTTPS POST verifies credentials and sets a separate encrypted, HTTP-only cookie for 14 days. DELETE forgets the account in this browser. | `BrowserSessionApi`, `AccountSession` |
 | `POST /api/play-session/ticket` | Exchanges a valid browser cookie for a single-use game login ticket that expires after 45 seconds. The website and accepting game world must share the account database. | `BrowserSessionApi`, `browser_login_tickets` |
+| `POST /api/play-session/attachment/<ticket>` | Same-origin multipart upload of one PNG, JPEG, WebP, MP4 or WebM file of up to 20 MB to a ticket of the play session's account, one per ticket; the game's News & Support window sends it. | `BrowserSessionApi`, `SupportTickets` |
 | `POST /api/conta` | The entry page's "Criar conta" (`Hosting/RegistrationApi.cs`): JSON from the site's own origin (else 403) with account, e-mail, password and its confirmation, optional referral code, accepted terms and the Turnstile token when configured; answers `{ ok, field, message }`. Counts against `FormPostsPerMinute` and `RegistrationsPerIp`; the account keeps its e-mail (lower case, one per account) and referral code (migration 44) | `AccountAppService.RegisterAsync`, `content/termos.txt` |
 | /noticias | Every news post, newest first | `content/news.json` |
 | `/download` | The APK's version, size, date and SHA-256, the download button and how to install | `Downloads:*` |
@@ -77,6 +79,11 @@ applied to account or support APIs. The index is read once when the site starts;
 set and index before starting that site instance. Variant size is checked per request; decoded-byte and compressed-SHA
 integrity is verified by the offline generator and immutable staged-file inventory rather than hashing files on every request.
 When accepted encodings have equal quality, the smaller indexed representation is selected.
+
+Fingerprinted browser runtime files (`/play/_framework/*` except the `dotnet.js` loader) use the `.br` and `.gz` the
+browser publish writes beside them, with the same negotiation, the original MIME type (`application/wasm` keeps
+streaming compilation), `Vary: Accept-Encoding`, the immutable cache and a validator made of the file name and encoding.
+A fingerprinted name never changes content, so its sidecars need no index. Ranges and missing sidecars get the raw file.
 
 Data shown and its sources:
 
@@ -202,7 +209,10 @@ database: the site writes the accounts it registers.
 ## How to
 
 - **Publish a news post:** add an object to `content/news.json` beside the executable (`date` as `yyyy-MM-dd`, `title`,
-  `summary`, `body` as a list of paragraphs; a post without a title is left out, a missing summary or body is empty).
+  `summary`, `body` as a list of paragraphs, optional `author` shown by the game, optional `kind` `News`, `Event`
+  or `Improvement`, the game's Novidade, Evento or Melhoria badge, `News` when missing; a post without a title is left
+  out, a missing summary or body is empty). The GM panel's News area publishes a post of any of the three kinds. The Discord bot adds the repository's development notes here
+  ([discord-bot.md](discord-bot.md#development-notes)).
   The site reads the file again when it changes; a file that does not parse keeps the old posts and logs an error.
 - **Publish a new Android version:** copy the new APK beside the old one and rename it over `Downloads:AndroidApkPath`
   (a rename, so the SHA-256 is never taken from a half-copied file), and set `Downloads:AndroidVersion` (restart for the

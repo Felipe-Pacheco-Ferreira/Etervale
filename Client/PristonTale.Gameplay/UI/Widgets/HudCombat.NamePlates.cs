@@ -35,33 +35,37 @@ public sealed partial class HudCombat
     // Whether a monster's name box carries its life bar.
     public static bool ShowsPlateBar(bool classic, bool hovered, bool traced, bool attacked) => classic ? hovered : traced || attacked;
 
-    public void DrawNamePlates(HudPainter painter, HudLayout layout, Func<ulong, HudOverheadPoint?> project, ulong hovered, ulong traced, bool classic, bool hideUnfocused = false)
+    public void DrawNamePlates(HudPainter painter, HudLayout layout, Func<ulong, HudOverheadPoint?> project, ulong hovered, ulong traced, bool classic,
+        NamePlateFilter filter = default)
     {
         _plates.Clear();
         foreach (var (id, entity) in _entities)
         {
             var focus = id == hovered || id == traced;
             var kind = entity.Spawn.Kind;
+            var self = id == _self;
             var member = kind == EntityKind.Player && InParty(id);
-            var mate = kind == EntityKind.Player && id != _self && OwnClan != 0 && ClanOf(id) == OwnClan;
+            var mate = kind == EntityKind.Player && !self && OwnClan != 0 && ClanOf(id) == OwnClan;
             var summon = kind == EntityKind.Monster && entity.Spawn.OwnerId != 0;
-            var shown = kind == EntityKind.Npc || member || mate || kind == EntityKind.Player && id != _self && focus
+            var shown = kind == EntityKind.Npc || member || mate || self || kind == EntityKind.Player && (focus || filter.AllPlayers)
                 || (kind == EntityKind.Monster && entity.Life > 0 && (summon || focus));
-            if (shown && (!hideUnfocused || focus || member) && project(id) is { } point && (focus || member || point.Depth < HudNameColors.OverheadDepth))
+            if (shown && filter.Allows(kind, focus, member, self) && project(id) is { } point
+                && (focus || member || self || point.Depth < HudNameColors.OverheadDepth))
             {
                 _plates.Add((id, point, focus));
             }
         }
 
         _plates.Sort(static (left, right) => left.Focus != right.Focus ? (left.Focus ? 1 : -1) : right.Point.Depth.CompareTo(left.Point.Depth));
-        var scale = Math.Max(1, layout.Scale);
+        var scale = layout.Scale;
         foreach (var (id, point, _) in _plates)
         {
             var entity = _entities[id];
             var monster = entity.Spawn.Kind == EntityKind.Monster;
             var member = entity.Spawn.Kind == EntityKind.Player;
             var summon = monster && entity.Spawn.OwnerId != 0;
-            var color = member || summon ? HudNameColors.Party : !monster ? HudNameColors.Npc : id == traced ? HudNameColors.HoveredMonster : HudNameColors.Monster;
+            var color = id == _self ? NamePlateFilter.ColorOf(filter.OwnColor)
+                : member || summon ? HudNameColors.Party : !monster ? HudNameColors.Npc : id == traced ? HudNameColors.HoveredMonster : HudNameColors.Monster;
             var owner = summon ? OwnerLabel(entity) : null;
             var clan = member || entity.Spawn.Kind == EntityKind.Player && (id == hovered || id == traced || OwnClan != 0 && ClanOf(id) == OwnClan)
                 ? ClanLine(id)
@@ -72,12 +76,12 @@ public sealed partial class HudCombat
             if (classic)
             {
                 DrawClassicPlate(painter, layout, Name(id), owner ?? clan, owner is null && clan is not null, x, y, color, id == hovered,
-                    member || ownSummon || monster && !summon && ShowsPlateBar(true, id == hovered, id == traced, entity.Attacked) ? entity : null);
+                    member && id != _self || ownSummon || monster && !summon && ShowsPlateBar(true, id == hovered, id == traced, entity.Attacked) ? entity : null);
             }
             else
             {
                 DrawPlate(painter, layout, Name(id), owner ?? clan, owner is null && clan is not null, x, y, color, id == hovered,
-                    member || ownSummon || monster && !summon && ShowsPlateBar(false, id == hovered, id == traced, entity.Attacked) ? entity : null);
+                    member && id != _self || ownSummon || monster && !summon && ShowsPlateBar(false, id == hovered, id == traced, entity.Attacked) ? entity : null);
             }
         }
     }
@@ -93,7 +97,7 @@ public sealed partial class HudCombat
             return;
         }
 
-        var scale = Math.Max(1, layout.Scale);
+        var scale = layout.Scale;
         var x = (int)(point.Screen.X / scale);
         var anchorY = (int)(point.Screen.Y / scale);
         var plateTop = classic ? anchorY - ClassicPlateLift : anchorY - PlateLift - HudPainter.NameBoxExtent(0, painter.NameBoxText(PlateTextScale, PlatePadY).Line, 1).Y;

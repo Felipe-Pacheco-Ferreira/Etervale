@@ -6,7 +6,7 @@ using PristonTale.Web.Services;
 namespace PristonTale.DiscordBot;
 
 // The answers of the bot's commands, the same in Discord and in the console's --check.
-public sealed class BotQueries(SiteClient site, SiteData data, ClassTitles titles, GameLinkClient link)
+public sealed class BotQueries(SiteClient site, SiteData data, ClassTitles titles, GameLinks links)
 {
     public async Task<string> StatusAsync(CancellationToken ct) => BotTexts.Status(await site.WorldsAsync(ct));
 
@@ -22,7 +22,7 @@ public sealed class BotQueries(SiteClient site, SiteData data, ClassTitles title
 
     public async Task<string> GameMasterAsync(string userId, string name, int level, string line, CancellationToken ct)
     {
-        if (!link.Enabled)
+        if (links.Commands is not { } link)
         {
             return "O link com o servidor de jogo não está configurado (GameLink:Url).";
         }

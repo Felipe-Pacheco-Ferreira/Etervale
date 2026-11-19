@@ -28,7 +28,7 @@ function loopFixture(worker = true, failFrame = false, custom = {}) {
         profileFrames: false, publicAssetCache: null, enableTextureArrayBenchmark() {},
         console: { info() {}, error(...args) { errors.push(args); } }, performance: { now: () => 100 },
         requestAnimationFrame(callback) { queue.push(callback); }, setTimeout(callback) { timers.push(callback); },
-        reportWorldLoading(phase) { events.push(phase); }, fenceWorldReady() { events.push('fence'); }, updateAdaptiveResolution() {}, showLoading() { events.push('error-ui'); },
+        reportWorldLoading(phase) { events.push(phase); }, fenceWorldReady() { events.push('fence'); }, applyMaxPixelRatio() {}, updateAdaptiveResolution() {}, showLoading() { events.push('error-ui'); },
         text: { stopped: error => error.message }, remainingDelayMs: 1000, loginDelayMs: 0, phases: { runtime: 0, files: 0, start: 0 },
         revealLogin() {}, prefetchCharacters() {}, fetchRemaining() {} };
     new Function(...Object.keys(context), 'let loginPainted = false;\n' + loopSource)(...Object.values(context));

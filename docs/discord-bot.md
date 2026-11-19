@@ -44,16 +44,30 @@ the game server's activity snapshots, and talks to the game server through the s
 | `/eventos` | `SiteData.CalendarAsync` (settings table and boss hours, as `/eventos` on the site) | Running now, next 24 hours, next three boss calls |
 | `/noticias` | `/api/client/news` | The three latest posts |
 | `/gm <ação>` | The bot link | Ephemeral answer; see Game masters |
-| Public chat | `Activity:PublicPath` (spoken `local`, `trade`, standing `notice` lines) | `Channels:PublicChat`, `**[Troca]** Name: text`, batched every `PollSeconds` |
-| Private chat | `Activity:PrivatePath` (`whisper`, `party`, `clan`) | `Channels:PrivateChat`, a channel only game masters see |
-| Discord to game | Messages in `Channels:PublicChat` | Sent to every player on the trade channel as `[Discord] Name: text` (`Watch:RelayToGame`); a ⚠️ reaction when the server refused or did not answer |
-| Announcements | Worlds every `StatusSeconds`, events and boss calls every `StatusSeconds`, news every `NewsSeconds` | `Channels:Announcements` |
+| `/devnota titulo texto [imagem1..4]` | The command's options | A development note in `Channels:Development`: title, text (`\n` breaks a line), up to four images uploaded again as a gallery, signed with the member's server nickname and the day; needs `Discord:DevNoteMinGmLevel`, hidden from members without Manage Messages, audited as `discord: devnota` |
+| `/manutencao ativa [motivo]` | The command's options | Maintenance on (True) or off: announced with `@everyone` in the world status channel ("🟡 Manutenção iniciada", "🟢 Manutenção concluída"); while on, the status panel is yellow with every world "Em atualização" and the reason, and worlds going down or up are not announced. Kept in the state file; needs Moderator (level 2), hidden from members without Manage Messages, audited as `discord: manutencao on\|off` |
+| `/limparchat [canal] [quantidade]` | The command's options | Deletes the newest messages of a channel (the one it is typed in when `canal` is empty), all up to 1000 or `quantidade`, after a 🗑️ button only the member sees; messages under 14 days old go in bulk, older ones one by one. Needs Administrator (level 4) and the bot's Manage Messages there; hidden from members without Manage Messages, audited as `discord: limparchat <channel>` |
+| GM audit | `gm_audit` (`IGameMasterRepository.AuditAfterAsync`): the game's game-master commands, the site's GM panel and ticket answers (`web:`), the bot's own actions (`discord:`) | `Channels:GmAudit`, a channel only game masters see: one line per entry every `PollSeconds` (🎮 game, 🌐 site, 💬 Discord; time, who, level, command, ✅/⛔ and the result cut to 300 characters); the first read only marks the last id, kept in the state file (`GmAudit`) |
+| Global chat | Each server's `PublicPath` (spoken `local` lines and `notice` lines: `/>`, `/>>`, the shutdown countdown) | `Channels:PublicChat`, `[Local] Name: text` lines in a code block (`BotTexts.ChatBlocks`), batched every `PollSeconds` |
+| Trade chat | Each server's `PublicPath` (`trade` lines) | `Channels:TradeChat`, `[Troca] Name: text`, in a code block |
+| Private chat | Each server's `PrivatePath` (`whisper`, `party`) | `Channels:PrivateChat`, a channel only game masters see |
+| Clan chat | Each server's `PrivatePath` (`clan`) | `Channels:ClanChat`, a channel only game masters see; `PrivateChat` while it is 0 |
+| Boss kills | Each server's `PublicPath` (`boss` lines carrying a `GameFeat`) | `Channels:BossKills`, a card per boss (`FeatCards`): the final blow's player, class, level and clan, the party members in the field, the drops, the field |
+| PvP kills | Each server's `PublicPath` (`pvp` lines carrying a `GameFeat`) | `Channels:PvpKills`, a card per kill: winner and loser (class, level, clan), the field, and a call-out when the loser was 10 or more levels higher |
+| Discord to game | Messages in `Channels:TradeChat` | Sent to every player on the trade channel of every server as `[Discord] Name: text` (`Watch:RelayToGame`); a ⚠️ reaction when any server refused or did not answer. `Channels:PublicChat` is read only |
+| Announcements | Events and boss calls every `StatusSeconds`, news every `NewsSeconds` | `Channels:Announcements` |
+| World status | Worlds going down or up, every `StatusSeconds` | `Channels:WorldStatus` (`Announcements` while it is 0): a line when a world goes down or up, and a standing card (`BotTexts.StatusPanel`, its message id in the state file) with each world up or down and its players, edited when that changes and posted again below each down/up line |
 | Tickets | `Tickets:Path` (the same folder as the site's `Site:SupportTicketsPath` and the server's `SupportTickets:Path`) | The channel of its category (`Discord:TicketChannels`, else `Channels:Tickets`): a post per ticket and a thread with the conversation ([Support tickets](#support-tickets)) |
 
 Rules:
 
-- Every message is sent with mentions off, and the game's words are escaped, so a line from the game never pings or
-  formats.
+- With `Servers`, the bot follows every listed game server: each line starts with its server's name
+  (`[Avalon · Troca]`), each server keeps its own relay position, and `/gm` goes to the first server with a link.
+  Without `Servers`, `GameLink` and `Activity` are the one server and lines carry no name.
+- Every message is sent with mentions off, and the game's chat goes in code blocks (a fence in a line is turned into
+  `'''`), so a line from the game never pings or formats. The one ping is the bot's own `@everyone` on announcements,
+  world status, boss kills and development notes (`Discord:PingEveryone`), once per batch; it needs the bot's Mention
+  Everyone permission in those channels.
 - The first activity snapshot after the bot starts is backlog and is skipped; a snapshot of a new server run
   (`StreamId`) is read from its first line. Positions are kept in the state file, so a restarted bot neither repeats nor
   loses lines. The server keeps the last 100 lines of each snapshot and writes it every second: more than 100 lines in
@@ -61,7 +75,7 @@ Rules:
 - A Discord message for the game becomes one line: line breaks turn into spaces, the author is cut to 24 characters and
   the text to the chat input's 78 (`ExternalChat`). The game draws only its own font's characters; others show as boxes.
 - Each Discord author passes the players' flood rules before a line reaches the game; a refused line gets the ⚠️ reaction.
-  Discord's slowmode on the public channel keeps the channel itself calm.
+  Discord's slowmode on the trade channel keeps the channel itself calm.
 - A send to Discord that fails (an outage, a deleted post) is tried again: chat positions and announced news are saved
   only after Discord took the messages, and one ticket that cannot be posted or updated does not hold the others; a
   ticket whose post was deleted is posted again while open.
@@ -87,6 +101,35 @@ ticket in the queue every `PollSeconds`:
 - The post's header follows the ticket: an edit by the player, an answer, a closing or reopening change it in place.
 - Ticket actions are recorded in `gm_audit` as `discord: ticket reply|close|reopen|delete <id>` under `discord:<member id>`
   and need `Tickets:MinGmLevel`.
+
+## Boss and PvP feeds
+
+A field raises a feat (`FieldInstance.Feats.cs`) when a boss (`MonsterDefinition.IsBoss`) dies with a credited player,
+with the killer, its party members in the field and the rolled drops, and when a player's blow or skill kills another
+player. `WorldServer.RaiseFeat` names it in Portuguese (the pt-BR monster and item data, the field's name, gold as
+`1.234 de ouro`) as a `GameFeat`, and the server's activity snapshot (`PublicActivityService` wires
+`WorldServer.FeatRecorded` to `ChatDirectory.RecordFeat`) records it as a `boss` or `pvp` line with a readable text. The
+bot sends each feat to its feed as an embed built by `FeatCards` (one of a few opening lines picked by the line's
+sequence) and leaves it out of the chat relays. Feats ride the public activity's last hundred lines, so they need
+`PublicActivity:Path` on the server.
+
+## Development notes
+
+A new system players will see gets a note in the repository's `devnotes/` folder ([devnotes/README.md](../devnotes/README.md)):
+a folder `yyyy-MM-dd-subject` with `nota.md` (`# Title`, the summary paragraph, then the body's paragraphs) and up to
+four images. The bot's build copies the folder beside the executable (`DevNotes:Path`), and every `NewsSeconds` the bot:
+
+- puts every new system and improvement of the folder in the site's news (`DevNotes:NewsPath`, the site's
+  `content/news.json`; empty leaves it out), signed by `DevNotes:Author`, once per title and day, so the game shows it
+  under News with its author and badge (an improvement as `NewsKind.Improvement`);
+- posts each note not in its state file (`DevNotes`) to its Discord channel, as `/devnota` posts it, with the images in
+  a gallery, and marks it; a failure, or its channel still 0, is tried again.
+
+The kind is a line under the title (`DevNoteKind`): none is a new system (🛠️, `Channels:Development`, and the
+announcements channel announces its news post); `Tipo: melhoria` an improvement ("✨ Nova melhoria:",
+`Channels:Development`; its news post is never announced in the announcements channel, `NewsWatch`); `Tipo: equipe` a
+staff tool ("🧰 Ferramenta da equipe:", `Channels:StaffDevelopment` only, never the news). Deleting the state file
+publishes every note again on Discord (not on the site, which already has them).
 
 ## Game masters
 
@@ -146,13 +189,17 @@ committed or pasted anywhere.
 | --- | --- | --- |
 | `Discord:Token` | empty | The bot's token (Discord Developer Portal, Bot) |
 | `Discord:GuildId` | 0 | The Discord server where the commands are registered |
-| `Discord:Channels:Announcements`, `PublicChat`, `PrivateChat`, `Tickets` | 0 | Channel ids; 0 turns that feature off |
+| `Discord:Channels:Announcements`, `WorldStatus`, `PublicChat`, `TradeChat`, `PrivateChat`, `ClanChat`, `BossKills`, `PvpKills`, `Tickets`, `Development`, `StaffDevelopment`, `GmAudit` | 0 | Channel ids; 0 turns that feature off |
 | `Discord:TicketChannels` | `{}` | Ticket category (`Bug`, `Melhoria`, `Outro`) to its channel id; a category without one goes to `Channels:Tickets` |
 | `Discord:GameMasterRoles` | `{}` | Role id to game-master level (1-4) |
+| `Discord:DevNoteMinGmLevel` | 4 | The level that may post `/devnota` |
+| `Discord:PingEveryone` | true | Announcements, world status, boss kills and development notes start with `@everyone` (PvP kills never do) |
+| `DevNotes:Path`, `NewsPath`, `Author` | `devnotes`, empty, `Equipe Etervale` | The notes' folder, the site's news file and the notes' signature ([Development notes](#development-notes)) |
 | `Site:BaseUrl` | `https://localhost:6443` | The website (https) |
 | `Database:Provider`, `SqlitePath`, `Postgres`, `MaxPoolSize` | Sqlite, `data/pristontale.db` | The game server's database, as the site's `Database:*`; the SQLite file must exist |
 | `GameLink:Url`, `GameLink:Key` | empty | The server's `BotLink:Url` and `BotLink:Key`; empty turns off `/gm` and Discord to game |
 | `Activity:PublicPath`, `Activity:PrivatePath` | empty | The server's `PublicActivity:Path` and `PublicActivity:WhisperPath` |
+| `Servers` | `[]` | Several game servers, each `{ "Name", "GameLink": { "Url", "Key" }, "Activity": { "PublicPath", "PrivatePath" } }` with a name of its own; when set, the top-level `GameLink` and `Activity` are not read |
 | `Tickets:Path`, `Tickets:MinGmLevel` | empty, 1 | The tickets' folder; the level that may answer, close, reopen and delete |
 | `Watch:PollSeconds`, `StatusSeconds`, `NewsSeconds` | 5, 30, 120 | Loop periods (at least 1, 5 and 30) |
 | `Watch:RelayToGame` | true | Discord's public channel goes to the game |
@@ -166,7 +213,8 @@ paths (the same files the server writes). The SQLite path resolves like the site
 1. Discord Developer Portal: create an application and its bot, copy the token, and turn on the **Message Content**
    intent (needed to relay the public channel to the game). Invite the bot with the scopes `bot` and
    `applications.commands` and the permissions View Channels, Send Messages, Attach Files, Add Reactions, Read Message
-   History, Create Public Threads, Send Messages in Threads and Manage Threads (permissions integer `326417615936`).
+   History, Create Public Threads, Send Messages in Threads, Manage Threads, Mention Everyone and Manage Messages (for
+   `/limparchat`; permissions integer `326417755200`).
 2. Create the channels; make `PrivateChat` and `Tickets` visible to game masters only. Copy the channel, role and
    server ids (Discord's developer mode, right click, Copy ID).
 3. Game server settings: `BotLink:Enabled=true`, a random `BotLink:Key` of 32 or more characters, and the activity and
@@ -215,7 +263,8 @@ only `content/class-titles.pt-BR.resx` of them.
 - Slash commands are registered in `Discord:GuildId` when the bot connects; a changed command shows after Discord
   refreshes the client (seconds for a guild).
 - The bot posts in the server's time zone; it must run on the game server's machine (or in its zone) like the site.
-- A notice sent with `/>` reaches the players but is not in the activity snapshot; a standing notice (`/>>`) is.
+- Moving from the top-level `GameLink`/`Activity` to `Servers` gives the server a new relay position: its first
+  snapshot after that is skipped as backlog.
 - Deleting `discord-bot-state.json` posts every ticket not closed again (closed ones lose their post) and skips the chat
   backlog.
 

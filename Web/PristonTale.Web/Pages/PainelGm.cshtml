@@ -103,6 +103,13 @@
         <section aria-labelledby="gm-news">
             <h2 id="gm-news">Publicar notícia</h2>
             <form class="plate gm-editor" method="post" asp-page-handler="Noticia">
+                <label>Tipo
+                    <select name="kind">
+                        <option value="News">Novidade</option>
+                        <option value="Event">Evento</option>
+                        <option value="Improvement">Melhoria</option>
+                    </select>
+                </label>
                 <label>Título <input name="title" maxlength="120" required></label>
                 <label>Resumo <input name="summary" maxlength="300" required></label>
                 <label>Texto <textarea name="body" rows="6" maxlength="8000" required></textarea></label>

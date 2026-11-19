@@ -48,6 +48,7 @@ public sealed partial class GameplayScreen : GameScreen
         _hud.CharacterName = _scene.Player.Name;
         _hud.CharacterClass = _scene.Player.Class.Class;
         _hud.PortraitScene = _scene;
+        _scene.IsPartyMember = _hud.InParty;
         _scene.PresenceObserved += _hud.Combat.Observe;
         _scene.PresenceObserved += _hud.StringEffect.Observe;
         _scene.PresenceObserved += _hud.ObserveQuests;
@@ -111,6 +112,7 @@ public sealed partial class GameplayScreen : GameScreen
         _scene.BeginRemotePresence(Context.Backend.OpenPlayChannel(), _entered);
 
         _ = FetchWorldCatalogAsync();
+        AttachTouch();
         WebWorldHud.Attach(_hud);
         WebWorldLoading.ScenePrepared();
     }
@@ -174,7 +176,7 @@ public sealed partial class GameplayScreen : GameScreen
     {
         var code = _hud.AutoHuntQuestCode;
         if (_hud.InTown || code == 0 || _scene.PlayerDead || !Context.IsWindowActive ||
-            (!_hud.PointerCaptured && Mouse.GetState().LeftButton == ButtonState.Pressed))
+            (!_hud.PointerCaptured && Mouse.GetState().LeftButton == ButtonState.Pressed) || TouchJoystickMoving)
         {
             _hud.AutoHuntEnabled = false;
         }
@@ -218,7 +220,7 @@ public sealed partial class GameplayScreen : GameScreen
         _ = _scene.TryGetNeighbourMap(out var neighbour, out var neighbourMap);
         var mapHidden = field is not null && HudMinimap.HiddenOn(field.FieldCode, field.State);
         _hud.World = new HudWorldView(field?.Id, field?.Underground == true, _scene.ActiveMapRectangle, _scene.PlayerPosition,
-            _scene.PlayerForward, _scene.TimeOfDay, _scene.RunFlag, mapHidden, neighbour, neighbourMap);
+            _scene.PlayerForward, _scene.TimeOfDay, _scene.RunFlag, mapHidden, neighbour, neighbourMap, field?.FieldCode ?? 0);
         _hud.PremiumTimers = _scene.PremiumTimers;
         _hud.InCastleField = field?.State == Simulation.World.FieldState.Castle;
         _scene.OwnClanId = _hud.Combat.OwnClan;
@@ -232,6 +234,7 @@ public sealed partial class GameplayScreen : GameScreen
         _hud.RestartOffer = _scene.RestartOffer;
         _hud.Update(_scene.Owner);
         _scene.PointerCaptured = _hud.PointerCaptured;
+        UpdateTouch();
         _scene.MovementLocked = _hud.HoldsPlayer;
         _scene.KeyboardCaptured = _hud.KeyboardCaptured;
         _hud.Chat.SelfId = _scene.SelfEntityId;
@@ -278,10 +281,12 @@ public sealed partial class GameplayScreen : GameScreen
             _scene.DrawCombatText(Context.SpriteBatch, Context.Font);
         }
         _hud.Draw();
+        DrawTouch();
         if (_worldLoadUpdated)
         {
             _worldLoadUpdated = false;
             WebWorldLoading.Complete();
+            DeferredWorldFiles.Begin();
         }
     }
 
@@ -401,8 +406,11 @@ public sealed partial class GameplayScreen : GameScreen
             _hud.RunToggleRequested -= _scene.ToggleRun;
             _hud.YahooKeyPressed -= _scene.PressYahooKey;
             _hud.ItemSound -= _scene.PlayItemSound;
+            _hud.TouchAttackRequested -= TouchAttack;
+            _hud.TouchSkillRequested -= TouchSkill;
         }
 
+        _joystick?.Dispose();
         _hud?.Dispose();
         _scene?.Dispose();
     }

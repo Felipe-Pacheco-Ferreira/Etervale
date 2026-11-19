@@ -3,7 +3,10 @@
 // with its own rules, and applies a saved document at once (BrowserHost.SaveSettings). The saved document lives in the
 // page's storage and goes to the game before it starts (BrowserHost.LoadSettings), since the browser has no settings file.
 
-import { dynamicResolutionLabel, normalizeRendererSettings, originalTextures, qualityChoices, qualityLabel, say, setRendererOptions, shortcutColumns, shortcutGroups, tabs, unavailableShortcuts } from './settings-options.js';
+import { makeDraggable, resetDraggables } from './draggable.js';
+import { dynamicResolutionLabel, normalizeRendererSettings, originalTextures, qualityChoices, qualityLabel, rowDisabled, say, setRendererOptions,
+    shadowChoice, shadowSettings, shortcutColumns, shortcutGroups, tabs, textureQualityFor, unavailableShortcuts } from './settings-options.js';
+import { createSettingsEffects } from './settings-effects.js';
 
 const storageKey = 'avalon.settings';
 const profileKey = 'avalon.settings.quality';
@@ -24,21 +27,27 @@ const texts = {
     restoreKeys: say('Restaurar padrão', 'Restore defaults'),
     keysHint: say('Clique em um atalho e pressione a nova tecla. Uma tecla já usada troca de lugar com a anterior.',
         'Click a shortcut and press the new key. A key already in use swaps with the old one.'),
+    help: say('Mostrar explicação', 'Show explanation'),
     unavailable: say('Opção ainda indisponível no cliente web.', 'This option is currently unavailable in the web client.'),
     detect: say('Detectar', 'Detect'),
     detecting: say('Detectando…', 'Detecting…'),
     pc: say('Este PC: Baixo', 'This PC: Low'),
     default: say('Padrão', 'Default'),
-    reset: say('Resetar', 'Reset'),
+    reset: say('Redefinir', 'Reset'),
     resetKey: say('Restaurar tecla padrão', 'Restore default key'),
-    textureHint: say('Baixa texturas menores: Leve usa metade da largura e altura; Muito leve, um quarto. Interface e ícones mantêm a qualidade.',
-        'Downloads smaller textures: Light uses half the width and height; Very light uses a quarter. Interface and icons retain their quality.'),
-    textureAutomatic: say('Automático usa Original neste aparelho', 'Automatic uses Original on this device'),
+    textureHint: say('Usa texturas menores na placa de vídeo: Leve usa metade da largura e altura; Muito leve, um quarto. Interface e ícones mantêm a qualidade.',
+        'Uses smaller textures on the graphics card: Light uses half the width and height; Very light uses a quarter. Interface and icons retain their quality.'),
+    textureAutomatic: say('Automático neste aparelho:', 'Automatic on this device:'),
     textureMemory: say('memória', 'memory'),
-    textureCurrent: say('Texturas nesta sessão: Original.', 'Textures in this session: Original.')
+    textureOriginal: say('Original', 'Original'),
+    textureCurrent: say('Texturas nesta sessão:', 'Textures in this session:'),
+    textureReload: say('Uma mudança vale ao recarregar o jogo.', 'A change applies when the game reloads.'),
+    needsDefaultLight: say('Vale só com a iluminação Padrão (novo).', 'Applies only with the Default (new) lighting.'),
+    needsFog: say('Ligue a névoa para escolher a distância.', 'Turn the fog on to choose its distance.'),
+    died: say('Seu personagem morreu.', 'Your character died.'),
+    windowsReset: say('As janelas voltaram ao lugar.', 'Windows are back in place.')
 };
 
-const shadowModes = { High: [4096, 4], Medium: [2048, 3], Low: [1024, 2], Simple: [2048, 2] };
 
 function load(key = storageKey) {
     try {
@@ -65,6 +74,7 @@ function element(tag, className, content) {
 
 export function createSettings(root, getHost, getLanguage, setLanguage, onApplied) {
     const dialog = root.querySelector('[data-role="settings"]');
+    makeDraggable(dialog, dialog?.querySelector('.settings-head'));
     const opener = root.querySelector('[data-role="settings-open"]');
     if (!dialog || !opener) return { openingMusicEnabled: true, maxFps: 0, qualityLabel: qualityLabel('Auto', null, getLanguage()),
         dynamicResolutionEnabled: true, renderScale: 1, appliedRevision: 0,
@@ -90,6 +100,20 @@ export function createSettings(root, getHost, getLanguage, setLanguage, onApplie
     let rendererCapabilities;
     let detecting = false;
     const dynamicResolutionState = { enabled: false, scale: 0, width: 0, height: 0, shadowUpdateRate: 0 };
+    let sessionTextures = 'Original';
+    const effects = createSettingsEffects(root, getHost, () => active, () => word(texts.died));
+    // The panel's reset buttons: the page's windows back to their places, and the HUD scale with them.
+    const actions = {
+        'reset-windows': () => {
+            resetDraggables();
+            note.textContent = word(texts.windowsReset);
+        },
+        'reset-interface': () => {
+            resetDraggables();
+            draft.uiScale = 1;
+            render();
+        }
+    };
 
     function shownQualityLabel() {
         return qualityLabel(appliedProfile, active.quality, getLanguage())
@@ -133,7 +157,7 @@ export function createSettings(root, getHost, getLanguage, setLanguage, onApplie
             const settings = JSON.parse(getHost().SettingsWithQuality(JSON.stringify(draft), preset));
             draft = normalizeRendererSettings({ ...settings, language: draft.language }, rendererCapabilities);
             if (chosen === 'VeryLow') {
-                Object.assign(draft, { quality: 'Custom', shadowsEnabled: false, renderScale: 0.75 });
+                Object.assign(draft, { quality: 'Custom', shadowsEnabled: false, anisotropicFilter: 2 });
             }
         }
         profile = chosen;
@@ -141,22 +165,24 @@ export function createSettings(root, getHost, getLanguage, setLanguage, onApplie
     }
 
     function shadowSelection() {
-        if (!draft.shadowsEnabled) return 'Off';
-        const match = Object.entries(shadowModes).find(([, [size, cascades]]) =>
-            size === draft.shadowMapSize && cascades === draft.shadowCascades);
-        return match?.[0] ?? (draft.shadowMapSize > 2048 ? 'High' : 'Medium');
+        return shadowChoice(draft);
     }
 
     function change(row, value) {
         if (row.kind === 'shadow') {
-            draft.shadowsEnabled = value !== 'Off';
-            if (draft.shadowsEnabled) [draft.shadowMapSize, draft.shadowCascades] = shadowModes[value];
+            Object.assign(draft, shadowSettings(value));
+        } else if (row.kind === 'window') {
+            draft.windowMode = value ? 'Windowed' : 'Fullscreen';
         } else if (row.kind === 'fog') {
             draft.distanceFog = value ? 'Atmospheric' : 'Off';
+            render();
+        } else if (row.kind === 'reflection') {
+            draft.screenSpaceReflections = value !== 'Off';
+            draft.sceneryOnlyReflections = value === 'Scenery';
         } else if (row.kind === 'side-buttons') {
             draft.cameraMouseButtons = value ? (draft.cameraMouseButtons === 2 ? 0 : draft.cameraMouseButtons) : 2;
         } else {
-            draft[row.field] = row.kind === 'reflection' ? value === true : value;
+            draft[row.field] = value;
         }
 
         if (!row.preset) return;
@@ -176,6 +202,8 @@ export function createSettings(root, getHost, getLanguage, setLanguage, onApplie
             line.title = word(texts.unavailable);
         }
         choices.forEach(([value, text, disabled], index) => {
+            // A choice this browser cannot use is left out, unless it is the saved one.
+            if (disabled && value !== current) return;
             const option = element('option', '', word(text));
             option.value = String(index);
             option.selected = value === current;
@@ -191,10 +219,11 @@ export function createSettings(root, getHost, getLanguage, setLanguage, onApplie
     }
 
     function rowFor(row) {
+        if (row.hidden) return null;
         if (row.caption) return element('p', 'settings-group-caption', word(row.caption));
         if (row.pair) {
             const pair = element('div', 'settings-option-pair');
-            pair.append(...row.pair.map(rowFor));
+            pair.append(...row.pair.map(rowFor).filter(Boolean));
             return pair;
         }
         if (row.action || row.keyDisplay) {
@@ -204,16 +233,20 @@ export function createSettings(root, getHost, getLanguage, setLanguage, onApplie
             const button = element('button', row.action ? 'settings-mini-button' : 'settings-keycap',
                 row.action ? word(texts.reset) : row.keyDisplay);
             button.type = 'button';
-            button.disabled = true;
-            line.title = word(texts.unavailable);
+            const run = actions[row.run];
+            button.disabled = !run;
+            if (run) button.addEventListener('click', () => run());
+            else line.title = word(texts.unavailable);
             line.append(description, button);
             return line;
         }
+        const disabled = rowDisabled(row, draft);
         let value = draft[row.field] ?? row.fallback;
         if (row.kind === 'shadow') value = shadowSelection();
-        if (row.kind === 'reflection' && !value) value = 'Off';
+        if (row.kind === 'reflection') value = !value ? 'Off' : draft.sceneryOnlyReflections ? 'Scenery' : true;
         if (row.kind === 'fog') value = value !== 'Off';
         if (row.kind === 'side-buttons') value = value !== 2;
+        if (row.kind === 'window') value = value !== 'Fullscreen';
         if (row.toggle) {
             const line = element('label', 'settings-row settings-toggle');
             const input = element('input');
@@ -221,20 +254,31 @@ export function createSettings(root, getHost, getLanguage, setLanguage, onApplie
             input.setAttribute('role', 'switch');
             input.setAttribute('aria-label', word(row.label));
             input.checked = row.invert ? !value : !!value;
-            input.disabled = !!row.unavailable;
-            if (row.unavailable) {
-                line.title = word(texts.unavailable);
+            input.disabled = disabled;
+            if (disabled) {
+                line.title = word(row.unavailable ? texts.unavailable : row.defaultLight ? texts.needsDefaultLight : texts.needsFog);
                 line.classList.add('settings-unavailable');
             }
             input.addEventListener('change', () => change(row, row.invert ? !input.checked : input.checked));
             line.append(input, element('span', 'settings-switch'), element('span', 'settings-label', word(row.label)));
-            if (row.help) {
-                const help = element('span', 'settings-help', '?');
-                help.title = word(row.help === true ? texts.unavailable : row.help);
-                help.setAttribute('aria-hidden', 'true');
-                line.append(help);
-            }
-            return line;
+            if (!row.help) return line;
+            const help = element('button', 'settings-help', '?');
+            const hint = element('p', 'settings-help-text', word(row.help === true ? texts.unavailable : row.help));
+            help.type = 'button';
+            help.setAttribute('aria-label', word(texts.help));
+            help.setAttribute('aria-expanded', 'false');
+            hint.hidden = true;
+            // The button sits inside the switch's label, so a click must not reach the label and flip the switch.
+            help.addEventListener('click', event => {
+                event.preventDefault();
+                event.stopPropagation();
+                hint.hidden = !hint.hidden;
+                help.setAttribute('aria-expanded', String(!hint.hidden));
+            });
+            line.append(help);
+            const group = element('div', 'settings-help-group');
+            group.append(line, hint);
+            return group;
         }
 
         if (row.hudScale) {
@@ -246,39 +290,50 @@ export function createSettings(root, getHost, getLanguage, setLanguage, onApplie
             input.max = '150';
             input.step = '5';
             input.value = String(Math.round((value ?? 1) * 100));
-            input.disabled = true;
-            input.style.setProperty('--settings-range-fill', `${(Number(input.value) - 75) / 0.75}%`);
             input.setAttribute('aria-label', label);
-            line.title = word(texts.unavailable);
+            const shown = element('output', 'settings-range-value');
+            const show = () => {
+                shown.textContent = `${input.value}%`;
+                input.style.setProperty('--settings-range-fill', `${(Number(input.value) - 75) / 0.75}%`);
+            };
+            show();
+            input.addEventListener('input', () => {
+                show();
+                change(row, Number(input.value) / 100);
+            });
             const reset = element('button', 'settings-reset', word(texts.default));
             reset.type = 'button';
-            reset.disabled = true;
-            line.append(element('span', 'settings-label', label), input,
-                element('output', 'settings-range-value', `${input.value}%`), reset);
+            reset.addEventListener('click', () => {
+                input.value = '100';
+                show();
+                change(row, 1);
+            });
+            line.append(element('span', 'settings-label', label), input, shown, reset);
             return line;
         }
 
         if (row.range) {
             const volume = row.range === 'volume';
+            const percent = volume || row.range === 'percent';
             const line = element('label', 'settings-row settings-range settings-range-simple');
             const input = element('input');
-            const min = volume ? 0 : 1000;
-            const max = volume ? 100 : 4000;
+            const min = percent ? 0 : 1000;
+            const max = volume ? 100 : percent ? 200 : 4000;
             input.type = 'range';
             input.min = String(min);
             input.max = String(max);
-            input.step = volume ? '10' : '200';
-            input.value = String(value ?? max);
-            input.disabled = !!row.unavailable;
+            input.step = percent ? '10' : '200';
+            input.value = String(value ?? row.fallback ?? max);
+            input.disabled = disabled;
             input.setAttribute('aria-label', word(row.label));
-            if (row.unavailable) line.title = word(texts.unavailable);
+            if (disabled) line.title = word(row.unavailable ? texts.unavailable : row.defaultLight ? texts.needsDefaultLight : texts.needsFog);
             if (!volume) {
                 line.classList.add('settings-range-caption');
                 line.append(element('span', 'settings-label', word(row.label)));
             }
             const shown = element('output', 'settings-range-value');
             function updateRange() {
-                shown.textContent = volume ? input.value + '%' : input.value;
+                shown.textContent = percent ? input.value + '%' : input.value;
                 input.style.setProperty('--settings-range-fill', (100 * (Number(input.value) - min) / (max - min)) + '%');
             }
             updateRange();
@@ -291,14 +346,21 @@ export function createSettings(root, getHost, getLanguage, setLanguage, onApplie
         }
 
         const current = row.options.some(([option]) => option === value) ? value : row.options[0][0];
-        return selectRow(word(row.label), row.options, current, chosen => change(row, chosen), row);
+        return selectRow(word(row.label), row.options, current, chosen => {
+            change(row, chosen);
+            if (row.rerender) render();
+        }, { ...row, unavailable: disabled });
     }
 
     function texturesFor(box, title) {
-        box.append(selectRow(title, originalTextures, 'Auto', () => {}, { wide: true, unavailable: true }));
+        box.append(selectRow(title, originalTextures, draft.textureQuality ?? 'Auto', chosen => {
+            draft.textureQuality = chosen;
+        }, { wide: true }));
         const memory = navigator.deviceMemory;
-        const device = word(texts.textureAutomatic) + (memory ? ` (${word(texts.textureMemory)} ${memory} GB).` : '.');
-        box.append(...[word(texts.textureHint), device, word(texts.textureCurrent)]
+        const automatic = textureQualityFor('Auto', memory);
+        const name = quality => word(originalTextures.find(([value]) => value === quality)?.[1] ?? texts.textureOriginal);
+        const device = word(texts.textureAutomatic) + ' ' + name(automatic) + (memory ? ` (${word(texts.textureMemory)} ${memory} GB).` : '.');
+        box.append(...[word(texts.textureHint), device, word(texts.textureCurrent) + ' ' + name(sessionTextures) + '.', word(texts.textureReload)]
             .map(hint => element('p', 'settings-hint', hint)));
     }
 
@@ -349,7 +411,9 @@ export function createSettings(root, getHost, getLanguage, setLanguage, onApplie
             box.append(line, deviceDiagnostics());
         }
         if (card.hint) box.append(element('p', 'settings-hint', word(card.hint)));
-        for (const row of card.rows) box.append(rowFor(row));
+        // A card whose every row this browser cannot offer is left out.
+        if (card.rows.length > 0 && card.rows.every(row => row.hidden || row.caption)) return null;
+        box.append(...card.rows.map(rowFor).filter(Boolean));
         if (card.site) {
             const links = element('nav', 'settings-links');
             links.setAttribute('aria-label', word(card.title));
@@ -444,7 +508,10 @@ export function createSettings(root, getHost, getLanguage, setLanguage, onApplie
         } else {
             for (const column of tabs[tab]) {
                 const stack = element('div', 'settings-column');
-                for (const card of column) stack.append(cardFor(card));
+                for (const card of column) {
+                    const box = cardFor(card);
+                    if (box) stack.append(box);
+                }
                 body.append(stack);
             }
         }
@@ -490,6 +557,7 @@ export function createSettings(root, getHost, getLanguage, setLanguage, onApplie
         appliedRevision++;
         appliedProfile = profile;
         applyMusic(active, wasDisabled);
+        effects.applied(active);
         onApplied?.();
         note.textContent = word(texts.saved);
         dialog.close();
@@ -550,7 +618,21 @@ export function createSettings(root, getHost, getLanguage, setLanguage, onApplie
         get appliedRevision() { return appliedRevision; },
         get dynamicResolutionEnabled() { return active.dynamicResolution !== false; },
         get renderScale() { return active.renderScale ?? 1; },
+        get maxPixelRatio() { return active.maxPixelRatio ?? 2; },
+        get classicLighting() { return active.classicLighting === true; },
         get qualityLabel() { return shownQualityLabel(); },
+        get interfaceMode() { return active.interfaceMode ?? 'Auto'; },
+        // The interface type answered in the touch HUD's first question, saved as the panel saves it.
+        setInterfaceMode(mode) {
+            const host = getHost();
+            const current = host && parse(host.Settings());
+            if (!current) return;
+            const saved = host.SaveSettings(JSON.stringify({ ...current, interfaceMode: mode }));
+            store(saved);
+            active = parse(saved) ?? active;
+            appliedRevision++;
+            onApplied?.();
+        },
         setDynamicResolutionState(state) {
             const enabled = state?.enabled === true;
             const valid = enabled && Number.isFinite(state.scale) && state.scale > 0
@@ -583,6 +665,9 @@ export function createSettings(root, getHost, getLanguage, setLanguage, onApplie
             const saved = load();
             if (saved) host.LoadSettings(saved);
             active = parse(host.Settings()) ?? {};
+            sessionTextures = textureQualityFor(active.textureQuality, navigator.deviceMemory);
+            host.SetTextureQuality(sessionTextures);
+            effects.start();
             const supported = normalizeRendererSettings(active, rendererCapabilities);
             if (supported !== active) {
                 const applied = host.SaveSettings(JSON.stringify(supported));

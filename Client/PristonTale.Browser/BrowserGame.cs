@@ -27,8 +27,8 @@ internal sealed class BrowserGame : Game
         var settings = savedSettings with
         {
             Language = ClientSettings.NormalizeLanguage(language),
-            InstagramUrl = string.IsNullOrWhiteSpace(savedSettings.InstagramUrl)
-                ? "https://www.instagram.com/noxiustale/" : savedSettings.InstagramUrl,
+            DiscordUrl = string.IsNullOrWhiteSpace(savedSettings.DiscordUrl) ? ClientSettings.CommunityDiscordUrl : savedSettings.DiscordUrl,
+            InstagramUrl = string.IsNullOrWhiteSpace(savedSettings.InstagramUrl) ? ClientSettings.CommunityInstagramUrl : savedSettings.InstagramUrl,
             NewsEndpoint = new Uri(new Uri(origin, UriKind.Absolute), "/api/client/news").AbsoluteUri
         };
         _presentation = new PresentationSettings { Requested = settings };
@@ -129,6 +129,7 @@ internal sealed class BrowserGame : Game
     {
         _frameTiming = new FrameTiming();
         BrowserExternalSceneRenderer.ProfileTiming = _frameTiming;
+        PristonPoseMemoization.ProfileTiming = _frameTiming;
         _frameSample = default;
         _profileUpdateCalls = 0;
         _profileDrawCalls = 0;
@@ -167,12 +168,13 @@ internal sealed class BrowserGame : Game
         return new BrowserFrameProfile(_frameTiming is not null, _profileUpdateCalls, _profileDrawCalls,
             _lastUpdatesPerDraw, _maxUpdatesPerDraw, IsFixedTimeStep, InactiveSleepTime.TotalMilliseconds, IsActive,
             settings.Quality.ToString(), settings.RenderScale, settings.MaxFps, settings.BackgroundMaxFps,
-            GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, _frameSample, _client?.WeatherDiagnostic.Sample ?? default);
+            GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height, _frameSample, _client?.WeatherDiagnostic.Sample ?? default, _frameTiming?.AnimationPoses ?? default);
     }
 
     protected override void UnloadContent()
     {
         BrowserExternalSceneRenderer.ProfileTiming = null;
+        PristonPoseMemoization.ProfileTiming = null;
         _client?.Dispose();
         _client = null;
         base.UnloadContent();

@@ -88,7 +88,8 @@ public static class HostingExtensions
         {
             MaxPendingCommandsPerPlayer = builder.Configuration.GetValue("World:MaxPendingCommandsPerPlayer",
                 WorldServerOptions.DefaultMaxPendingCommandsPerPlayer),
-            CheckpointSeconds = builder.Configuration.GetValue("World:CheckpointSeconds", WorldServerOptions.DefaultCheckpointSeconds)
+            CheckpointSeconds = builder.Configuration.GetValue("World:CheckpointSeconds", WorldServerOptions.DefaultCheckpointSeconds),
+            RemovedNpcs = builder.Configuration.GetSection("World:RemovedNpcs").Get<string[]>() ?? WorldServerOptions.DefaultRemovedNpcs
         }.Validated();
         builder.Services.AddSingleton(worldOptions);
         builder.Services.AddSingleton(services => new WorldServer(

@@ -77,14 +77,37 @@ renderer through `PresentationSettings.ApplyRendering` and apply at once.
 | `musicEnabled`, `soundEnabled` | bool, `true`, `true` | | yes (BGM, Audio) | Read by `PristonAudioLibrary.ApplySettings` every update; the login and character screens ignore them. |
 | `maxFps` | int, `0` | 0 or 15-1000 | yes: 0, 30, 60, 90, 120, 144, 165, 240, 360 | Foreground frame limit; 0 unlimited. Paced by `PresentationController.Pace` (sleeps in 1-4 ms steps). |
 | `backgroundMaxFps` | int, `30` | 0 or 15-1000 | yes (same list) | Limit while the window is inactive: `min(maxFps, backgroundMaxFps)`, or `backgroundMaxFps` when `maxFps` is 0; 0 means "use `maxFps`". |
-| `uiScale` | float, `1` | 0.75-1.5 | | Validated and stored only; the in-game HUD always uses the largest integer scale that fits. |
+| `uiScale` | float, `1` | 0.75-1.5 | web ("Escala do HUD") | Multiplies the HUD's scale, the largest integer that fits the 800x600 design (`HudLayout.Create`), never past the scale at which the design still fits. A fractional scale draws the HUD art with linear filtering instead of point sampling. The desktop panel cycles 75, 90, 100, 110, 125 and 150 % ("HUD scale", `HudSettingsPanel.NextUiScale`). |
 | `showMinimap` | bool, `true` | | yes (web) | Shared by the gear, the minimap button and its shortcut. A field that hides the map takes precedence. |
+| `interfaceMode` | `Auto` (default), `Pc`, `Touch` | defined enum | yes (web: Outros, Interface) | The HUD for mouse and keyboard or for touch (`ClientSettings.UsesTouch`). `Auto` uses the touch HUD on a browser device without a fine pointer (a phone or tablet). Only the browser reads it; the Android client is always touch. |
 | `alwaysShowRareGroundLabels` | bool, `false` | | yes (web) | Shows names of nearby rare drops that pass the loot filter. Labels remain clickable. |
 | `classicTargetHealthBar` | bool, `false` | | yes (Target HP) | `false`: the target frame always shows the HP bar with level and life percentage. `true`: the bar, without numbers, appears only after you attack a monster at full life. Either way the frame shows a live 3D portrait of the target's head, its name and, for monsters, the race icon. |
 | `classicNamePlates` | bool, `false` | | yes (Name plates) | `false`: the name boxes over monsters and NPCs (rounded, in the speech bubble's colours) hold smaller text, a monster's life bar shows once it was clicked or attacked, and NPCs get no hover outline. `true`: the same box, the HUD text size, the bar while the cursor is on the monster, and a green NPC outline. |
 | `levelGuide` | bool, `true` | | yes (the guide window's On/Off) | On reaching a level the game guide has a page for, a blinking notice offers its summary. |
 | `realisticSky` | bool, `true` | | yes (Sky) | The physical sky (sun, moon, stars, aurora, rainbow, clouds) instead of the original's painted domes ([rendering.md](rendering.md#realistic-sky)). |
 | `cloudQuality` | `Off`, `Low`, `Medium` (default), `High` | others: the default | yes (Clouds) | The realistic sky's volumetric clouds and their shadows: off, or their hemisphere rendered at 768 x 192, 1024 x 256 or 1536 x 384 (High costs about 2.7 ms a frame on a GTX 1050 Ti at 1920 x 1080); presets Low and Medium take `Low`, High `Medium`, Ultra `High`. |
+| `textureQuality` | `Auto` (default), `Original`, `Light`, `VeryLight` | defined enum | web ("Texturas") | Browser only: the scene textures shrink to half (`Light`) or a quarter (`VeryLight`) of each side as they decode, never below 32 pixels, averaging colour by alpha (`TextureDownscale`); interface art keeps its size. `Auto` is resolved by the page from the device's memory; the choice applies on the next load. |
+| `confirmClose`, `grayscaleOnDeath`, `lowHealthWarning`, `notifyOnDeath` | bool, `true`, `true`, `true`, `false` | | web | Browser page only (`settings-effects.js`): the prompt before leaving while in the world, the grey canvas while dead, a red border pulsing under 30 % of life, a system notification of the death while the tab is hidden. |
+| `hideOtherPlayers` | bool, `false` | | web | Players outside the party are not drawn (`PristonRenderer.SetActorFiltered`, apart from the gameplay's own hiding), nor their skill effects and costume wings; they have no name box, speech bubble or shop sign (`GameScene.Overhead` returns none) and cannot be clicked. |
+| `hidePlayerNames`, `hideNpcNames`, `hideMonsterNames` | bool, `false` | | web ("Nomes") | That kind's name boxes show only under the cursor or for the clicked target (`NamePlateFilter`); party members always show. |
+| `showOwnName`, `ownNameColor` | bool, `false`; `White` (default), `Gold`, `Green`, `Blue`, `Pink`, `Orange` | defined enum | web | The local player's name box over its character, in that colour, without a life bar. |
+| `persistentCharacterInfo` | bool, `false` | | web; Backspace in game | Every player's name box shows, not only the hovered one's. The Backspace shortcut flips the saved value. |
+| `damageNumberSize` | `Small`, `Normal` (default), `Large`, `Huge` | defined enum | web | Scales the floating numbers by 0.75, 1, 1.35 or 1.75 (`FloatingCombatText.ScaleOf`). |
+| `showOtherPlayersDamage` | bool, `true` | | web | Hits in view between other entities float their numbers too, smaller and paler (`FloatingTextKind.OtherDamage`). |
+| `spreadDamageNumbers` | bool, `false` | | web | Numbers land up to 40 units apart on both axes instead of a narrow column. |
+| `hidePotionHeals` | bool, `false` | | web | A life potion floats the life it restored over the local player: the life gained over the life before the update that carried the potion, within 1.5 s (`PotionHealWatch`); the server reports only that a potion took effect. |
+| `hideSkillEffects` | bool, `false` | | web ("Forces, habilidades e emotes", inverted) | Other players' skill effects are not drawn unless aimed at the local player (`OtherPlayerEffects.HiddenBySwitch`). |
+| `hideStealthEffect` | bool, `false` | | web | A stealthed (Vanish, Vague) character keeps its full opacity (`ActorLookBook.HideStealth`). |
+| `monsterDissolve` | bool, `true` | | web ("Efeito de dissolver") | Every corpse fades out once it has dimmed fully, at the rate bodies of light fade at once (`MonsterPresentation.CorpseFade`); off, ordinary corpses stay. |
+| `chatFilter` | bool, `false` | | web ("Censura de chat") | Swear words, matched whole and ignoring case and accents, in what players write show as asterisks; the speaker's name before ": " is kept (`ChatCensor.MaskMessage`). |
+| `streamerMode`, `streamerHidesWholeChat` | bool, `false`, `false` | | web | Streamer mode hides whispers, or every written line (whisper, party, clan, trade, speech and its bubbles); notices stay (`ChatLineFilter`). |
+| `hideBossNotices` | bool, `false` | | web | Hides the boss time notice (`GameTextId.BossTime`). The other notice switches (`hideTradeChat` ... `hideCastleNotices`) are applied by the same rule. |
+| `prioritizePlayers` | bool, `false` | | web | A player under the cursor wins over a nearer monster when clicking or hovering (`RemoteEntityManager.TryPick`); NPCs keep the nearest-wins rule. |
+| `runByDefault` | bool, `true` | | web | Each world entry starts running; R switches to walking until the next entry. |
+| `centeredInterface` | bool, `true` | | web | Browser only: the bottom bar centred under a wide screen (`HudLayout.CenteredBar`); off, at the left. |
+| `hideHudIcons` | bool, `false` | | web | Browser page only: hides the corner shortcuts (News, Auto-hunt, More). |
+| `showPartyDps` | bool, `true` | | web | Beside the target frame, the damage per second the local player and its party dealt to the target over the last 5 s, at least over a second (`PartyDpsMeter`). |
+| `minimapGuide` | bool, `true` | | web | A gold marker on the minimap at the Adventurer's Journey destination in the current field, held to the box's edge while beyond the view (`HudMinimap.GuideOffset`). |
 | `weatherEnabled` | bool, `true` | | yes (Weather) | The weather the server sends: clouds, rain, splashes, lightning, the rain and thunder sounds ([client.md](client.md#weather)). `false` keeps the sky clear and the field ambience on (the ice fields' snow included), as the original's rain switch did. |
 
 ### Rendering
@@ -93,6 +116,8 @@ renderer through `PresentationSettings.ApplyRendering` and apply at once.
 |---|---|---|---|---|
 | `renderScale` | float, `1` | 0.5-1 | web | Saved cap for the internal 3D scene resolution; the exact scale when dynamic resolution is disabled. The final output, HUD and input keep the display's resolution. |
 | `dynamicResolution` | bool, `true` | | web | Allows the browser to adapt the transient 3D resolution below `renderScale`. The effective scale is not saved and the chosen preset's effects remain selected. Quality presets preserve this independent choice. Desktop stores the field but does not adapt resolution. |
+| `maxPixelRatio` | float, `2` | 1, 1.5, 2 | web ("Resolução máxima") | Browser only: the most drawing pixels per CSS pixel. The canvas uses the lower of this and the display's `devicePixelRatio`, so on a display at 100 % scaling every value draws the same; on a dense display (Windows scaling above 100 %, retina) a lower value draws fewer pixels. Presets: Low 1, Medium 1.5, High and Ultra 2. The desktop renderer ignores it. |
+| `anisotropicFilter` | int, `16` | 1, 2, 4, 8, 16 | web ("Filtro anisotrópico") | Browser only: texture samples along slanted surfaces such as the ground seen at a distance; 1 turns it off. Presets: Low 4, Medium 8, High and Ultra 16; the panel's "Muito baixo" uses 2. Capped by the GPU's limit. The desktop renderer always uses 16. |
 | `quality` | `High` (default), `Low`, `Medium`, `Ultra`, `Custom` | defined enum | yes (Graphics quality) | Label of the preset the fields came from. The panel applies a preset with `WithQuality`; editing any preset field in the panel sets `Custom`. Loading a file never applies a preset. |
 | `antiAliasing` | `Taa` (default), `Off`, `Fxaa`, `Smaa`, `Msaa` | defined enum | yes | `Taa`: jittered projection, motion vectors (skinned actors from their previous pose), history resolve. `Msaa`: multisampled HDR scene, no depth pre-pass. `Fxaa`/`Smaa`: 1x filter on the 8-bit display image. |
 | `multiSampleCount` | int, `4` | 0, 2, 4, 8 | label only | Samples of the HDR scene with `antiAliasing` `Msaa` only; the renderer clamps to 2-4 (`PristonRenderer.ApplyQuality`). Also a Display field: a change goes through confirmation. |
@@ -100,11 +125,17 @@ renderer through `PresentationSettings.ApplyRendering` and apply at once.
 | `exposureCompensation` | float stops, `0` | finite, -3 to 3 | | Added to the automatic or fixed exposure. |
 | `tonemapper` | `PbrNeutral` (default), `AgX`, `Aces` | defined enum | | Display transform of the final pass. |
 | `bloom` | `High` (default), `Low`, `Off` | defined enum | | Bloom pyramid mixed at 5 % (High) or 3 % (Low). |
-| `colorGrading` | bool, `true` | | | Applies the 3D LUT grade after the display transform. |
+| `colorGrading` | bool, `true` | | | Applies the 3D LUT grade after the display transform. In the browser, under the default light: a warm, golden grade with a little more saturation and contrast ("Cores (LUT)"). |
+| `toneMapping` | bool, `true` | | | Browser only, default light: the `tonemapper` curve; `false` sends the light to the display as it is. |
+| `vignette` | bool, `true` | | | Browser only, default light: darker corners. |
+| `filmGrain` | bool, `false` | | | Browser only, default light: a faint moving grain. |
+| `bloomIntensityPercent` | int, `100` | 0-200 | | Browser only: the bloom's strength. |
 | `colorGradingLut` | string, `""` | `null` becomes `""` | | Path of a `.cube` file (any size, display-referred sRGB input) replacing the built-in grade. Relative paths resolve against the process working directory; an unreadable or malformed file logs a warning and keeps the built-in grade. |
 | `sharpening` | float, `0.6` | finite, 0-1 | | Contrast-adaptive sharpening in the final pass: 0 turns it off; above 0 the peak weight runs from -1/8 to -1/5 (FidelityFX CAS's range). With `Taa`, 0.4 is added (capped at 1) to restore the detail the temporal average softens. |
 | `localLightLimit` | int, `32` | 8, 16, 32 | | Local lights shaded per pixel: transient combat lights first (at most 8), then the stage lamps nearest the camera focus. |
 | `shadowsEnabled` | bool, `true` | | yes (Shadows) | All shadows: sun cascades and lamp cube shadows. |
+| `actorShadowsOnly` | bool, `false` | | web ("Sombras: Simples") | Browser only: the scenery casts no sun shadow, characters still do (`stageShadows` in `three-scene.js`). The browser draws one sun shadow map, so its other shadow choices are the map size: High 4096, Medium 2048, Low 1024. Presets set it to `false`. |
+| `fogDistance` | int, `2208` | 1000-4000 | web ("Distância da névoa") | Where the distance fog starts, in world units (`PristonDistanceFog.For(mode, start)`); the default is the original's clip start. |
 | `shadowMapSize` | int, `4096` | 1024, 2048, 4096, 8192 | yes (Sun shadow) | Size of the sun's cascade atlas (a 32-bit float depth surface). If allocation fails the renderer halves the size down to 1024. |
 | `shadowCascades` | int, `4` | 1-4 | | Stabilized cascades over 9000 units of view depth; from 2 cascades on the atlas is a 2x2 grid. |
 | `shadowFilter` | `Pcss` (default), `Pcf` | defined enum | | PCSS widens the penumbra with the blocker distance; the moon always uses PCF. |
@@ -114,7 +145,14 @@ renderer through `PresentationSettings.ApplyRendering` and apply at once.
 | `ambientOcclusion` | bool, `true` | | | Half-resolution GTAO from the depth pre-pass (not with MSAA). |
 | `contactShadows` | bool, `true` | | | Screen-space contact shadows toward the sun (by day only, not by moonlight; not with MSAA). |
 | `imageBasedLighting` | bool, `true` | | | Sky-dome irradiance (spherical harmonics) and prefiltered reflections, refreshed every 250 ms; `false`: hemispherical sky/ground ambient. |
+| `classicLighting` | bool, `false` (browser: `true`) | | | Browser only, the settings panel's "Iluminação": the original look, the texture times the stage's baked vertex light under an even ambient, a soft key, dimmer nights, quieter lamps and no tonemapper, grade, vignette, grain or bloom, at the saved render scale (the adaptive budget only slows shadows). `false`, "Padrão (novo)": the same even base with a strong key in the sun's colour, finished by the "Gráficos aprimorados" settings. A browser document saved without the key starts classic. The desktop renderer ignores it. |
 | `screenSpaceReflections` | bool, `false` | | | Screen-space reflections of smooth surfaces (water, ice) over the sky reflection; needs the depth pre-pass; skipped when no smooth surface is visible. |
+| `sceneryOnlyReflections` | bool, `false` | | web ("Reflexo na água: Só cenário") | Browser only: with `screenSpaceReflections`, the reflections trace a colour target that characters, monsters and their outlines write black into, so the water mirrors the scenery and not the actors. The desktop renderer ignores it. |
+| `reflectionsEveryOtherFrame` | bool, `true` | | web ("Reflexo a cada 2 quadros") | Browser only: the screen-space reflections are traced on alternate frames and kept in between, halving their cost; a turning camera sees them one frame late. |
+| `characterQuality` | `VeryHigh`, `High`, `Medium`, `Low`; `High` | | web ("Qualidade dos personagens") | How often a crowd's characters sample their pose (`CrowdAnimationLod`): Very high every frame while on screen; High every frame within 400 units of the camera's focus, every second to 900, every fourth beyond; Medium the same intervals from 250 and 600 units; Low from 250 and 600 units at every fourth and eighth frame. Off screen: every eighth frame (sixteenth on Low). The portrait's actor samples every frame. |
+| `outlineGlow` | bool, `true` | | web ("Brilho de contorno") | The hover outline around the character, monster or NPC under the cursor (`GameScene.UpdateOutline`). |
+| `agingMixGlow` | bool, `true` | | web ("Brilho de aging e mix") | The coloured glow and mix overlay of held weapons and shields with aging, mix or a unique glow (`GameScene.Hold`); class-up orbits stay. |
+| `limitOtherPlayerEffects` | bool, `true` | | web ("Limitar efeitos de outros jogadores") | Other players' skill effects farther than 1200 units from the camera are not drawn, and at most 48 of theirs nearer it are live (`OtherPlayerEffects`). The local player's, its target's and monsters' effects, and effects aimed at the local player or its target, always show. |
 | `volumetricLight` | bool, `true` | | | Sunlight scattered by a thin height fog, with shadow shafts, at quarter resolution up to the distance-fog start; by day only, needs the depth pre-pass and sun shadows. |
 | `distanceFog` | `Atmospheric` (default), `Classic`, `Off`; older `true`/`false` | defined enum | | `Atmospheric`: from 2208 units the surface fades toward the captured sky, at most 85 %, with forward scattering toward the sun. `Classic` is accepted for old files and draws exactly as `Atmospheric`. `true` reads as `Atmospheric`, `false` as `Off`; saving writes the name. |
 | `calibrationSpheres` | bool, `false` | | | Look development: an 18 % grey and a chrome sphere beside the camera focus. |
@@ -193,6 +231,7 @@ values. The defaults equal the High preset (checked by `PhotorealTests`).
 | `localLightLimit` | 8 | 16 | 32 | 32 |
 | `volumetricLight` | off | off | on | on |
 | `screenSpaceReflections` | off | off | off | on |
+| `characterQuality` | `Low` | `Medium` | `High` | `VeryHigh` |
 | `shadowsEnabled`, `autoExposure`, `colorGrading` | on | on | on | on |
 
 Reference GPU frame totals, measured with `--benchmark-render` at 1920x1080 on a GTX 1050 Ti in Ricarten at noon and in
@@ -215,7 +254,9 @@ or resumes the day cycle. These change the live renderer only; the file keeps it
   obvious); add its range to `Validate`; if the renderer reads it, add it to `HasSameRendering` and read it in
   `PristonRenderer.ApplyQuality` (or `PristonPostSettings.From` for post options); if it changes the swap chain, add it
   to `HasSameDisplay` and `DisplayController.Apply`; decide whether `WithQuality` sets it per preset; add a panel row in
-  `HudSettingsPanel` (`_labels` length, `Click`, `RefreshLabels`, and the box height `SizeH` if needed); extend
+  `HudSettingsPanel` (`_labels` length, `Click`, `RefreshLabels`, and the box height `SizeH` if needed) and, for the
+  browser, a row in `Client/PristonTale.Browser/wwwroot/settings-options.js` (`SettingsOptionsTests` checks that every
+  row's field exists); extend
   `ClientSettingsTests` (validation, round trip) and `PhotorealTests` for presets; update this document. Existing files
   without the field load with the default, so no version bump is needed.
 - **Rename or remove a field:** existing files with the old name then fail to load (unknown property) and the user gets

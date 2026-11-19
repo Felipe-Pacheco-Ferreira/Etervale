@@ -25,7 +25,7 @@ function fixture(run, saved = {}) {
     const originals = new Map(['document', 'localStorage', 'navigator', 'addEventListener'].map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]));
     const storage = new Map([['avalon.settings.quality', 'High']]), writes = [], saves = [], callbacks = [];
     let settings = { quality: 'High', antiAliasing: 'Fxaa', renderScale: 1, dynamicResolution: true, ...saved };
-    const host = { Settings: () => JSON.stringify(settings), LoadSettings() {}, SaveSettings(json) {
+    const host = { Settings: () => JSON.stringify(settings), LoadSettings() {}, SetTextureQuality() {}, SaveSettings(json) {
         settings = JSON.parse(json); saves.push(settings); return JSON.stringify(settings);
     } };
     const root = new Node(), dialog = new Node(), opener = new Node(), body = new Node(), save = new Node();

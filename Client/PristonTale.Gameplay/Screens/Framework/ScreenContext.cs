@@ -61,7 +61,7 @@ public sealed class ScreenContext
 
     internal string ServerAddress { get; set; }
     internal Action<string> SelectServer { get; init; }
-    internal Func<Task> PrepareWorldAssetsAsync { get; init; }
+    internal Func<PlayerClass, Task> PrepareWorldAssetsAsync { get; init; }
     internal Func<IReadOnlyList<PlayerClass>, CancellationToken, Task> PrepareCharacterAssetsAsync { get; init; }
     internal Func<PlayerClass, bool> CharacterAssetsReady { get; init; }
 

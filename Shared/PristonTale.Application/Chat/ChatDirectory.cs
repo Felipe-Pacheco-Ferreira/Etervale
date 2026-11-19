@@ -81,7 +81,7 @@ public sealed class ChatDirectory
         }
     }
 
-    private void RecordPublicMessage(string channel, string text)
+    private void RecordPublicMessage(string channel, string text, GameFeat? feat = null)
     {
         lock (_activityGate)
         {
@@ -90,11 +90,24 @@ public sealed class ChatDirectory
                 _activity.Dequeue();
             }
 
-            _activity.Enqueue(new PublicGameMessage(++_sequence, DateTimeOffset.UtcNow, channel, text));
+            _activity.Enqueue(new PublicGameMessage(++_sequence, DateTimeOffset.UtcNow, channel, text, feat));
         }
     }
 
+    // A boss slain or a player killed (WorldServer.FeatRecorded), with a line for readers of the plain activity.
+    public void RecordFeat(GameFeat feat)
+    {
+        ArgumentNullException.ThrowIfNull(feat);
+        var killer = feat.Players.FirstOrDefault()?.Name ?? "";
+        RecordPublicMessage(feat.Kind, feat.Kind == GameFeat.Boss
+            ? $"{feat.Target} derrotado por {killer} em {feat.Field}"
+            : $"{feat.Target} morto por {killer} em {feat.Field}", feat);
+    }
+
     internal void RecordLocalMessage(string text) => RecordPublicMessage("local", text);
+
+    // ChatRules.Notice's prefix, left out of the activity: the relays name the channel themselves.
+    private const string NoticePrefix = "Notice> ";
 
     public IEnumerable<ChatMember> Members => _byEntity.Values;
 
@@ -176,6 +189,10 @@ public sealed class ChatDirectory
         if (line.Kind == ChatKind.Trade)
         {
             RecordPublicMessage("trade", line.Text);
+        }
+        else if (line.Kind == ChatKind.Notice && line.Text.Length > 0)
+        {
+            RecordPublicMessage("notice", line.Text.StartsWith(NoticePrefix, StringComparison.Ordinal) ? line.Text[NoticePrefix.Length..] : line.Text);
         }
 
         foreach (var member in _byEntity.Values)

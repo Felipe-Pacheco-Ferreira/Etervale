@@ -60,7 +60,20 @@ static void MGP_Web_Push(MGP_Platform* platform, MGEventType type, MGP_Window* w
 	platform->events.push(event_);
 }
 
-// The canvas's drawing size follows its laid-out size in device pixels, so the game renders at the display's density.
+// Drawing pixels per CSS pixel: the display's density, capped by the page's maxPixelRatio on the graphics object (a
+// dense display can then render fewer pixels than it shows). Without a cap it is the display's density.
+static double MGP_Web_PixelRatio()
+{
+	double ratio = emscripten_get_device_pixel_ratio();
+	double cap = EM_ASM_DOUBLE({
+		const graphics = Module.noxiusThreeGraphics;
+		const cap = graphics ? graphics.maxPixelRatio : 0;
+		return typeof cap === 'number' && cap >= 1 ? cap : 0;
+	});
+	return cap > 0 && cap < ratio ? cap : ratio;
+}
+
+// The canvas's drawing size follows its laid-out size in drawing pixels (MGP_Web_PixelRatio).
 static void MGP_Web_FitCanvas(MGP_Window* window, mgbool notify)
 {
 	double cssWidth = 0;
@@ -70,7 +83,7 @@ static void MGP_Web_FitCanvas(MGP_Window* window, mgbool notify)
 		return;
 	}
 
-	double ratio = emscripten_get_device_pixel_ratio();
+	double ratio = MGP_Web_PixelRatio();
 	mgint width = (mgint)std::lround(cssWidth * ratio);
 	mgint height = (mgint)std::lround(cssHeight * ratio);
 	if (width <= 0 || height <= 0 || (width == window->width && height == window->height))
@@ -234,10 +247,10 @@ static EM_BOOL MGP_Web_OnKey(int eventType, const EmscriptenKeyboardEvent* keyEv
 }
 
 // Canvas coordinates in CSS pixels to back buffer pixels: the canvas's drawing size is its laid-out size times the
-// device pixel ratio (MGP_Web_FitCanvas).
+// drawing pixel ratio (MGP_Web_FitCanvas).
 static mgint MGP_Web_ToPixels(long cssCoordinate)
 {
-	return (mgint)std::lround(cssCoordinate * emscripten_get_device_pixel_ratio());
+	return (mgint)std::lround(cssCoordinate * MGP_Web_PixelRatio());
 }
 
 static void MGP_Web_PushButton(MGP_Platform* platform, MGEventType type, MGMouseButton button, mgint x, mgint y)

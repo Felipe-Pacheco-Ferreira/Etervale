@@ -65,13 +65,16 @@ public sealed class EventWatch
 }
 
 // News posts not announced yet, oldest first; none on the first read (no list in the state), which marks every post.
-// Posts are marked only after they were sent, so a failed send announces them on the next read.
+// Posts are marked only after they were sent, so a failed send announces them on the next read. Improvements are in the
+// game's and the site's news but announced on Discord only in the development channel, never here.
 public static class NewsWatch
 {
     public static IReadOnlyList<NewsItem> Fresh(BotState state, IReadOnlyList<NewsItem> items)
     {
         ArgumentNullException.ThrowIfNull(state);
-        return state.News is null ? [] : items.Where(item => !state.News.Contains(Key(item))).Reverse().ToArray();
+        return state.News is null
+            ? []
+            : items.Where(item => item.Kind != NewsKind.Improvement && !state.News.Contains(Key(item))).Reverse().ToArray();
     }
 
     public static void Mark(BotState state, IEnumerable<NewsItem> items)

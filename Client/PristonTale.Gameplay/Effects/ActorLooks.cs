@@ -63,6 +63,9 @@ public sealed class ActorLookBook
     // Looks to apply this frame, including a last Normal for entities whose look just ended.
     public Dictionary<ulong, EntityLook> Looks => _looks;
 
+    // ClientSettings.HideStealthEffect: a stealthed character keeps its full opacity.
+    public bool HideStealth { get; set; }
+
     private readonly Dictionary<ulong, EntityLook> _looks = new();
 
     // A cast started: its weapon growth and afterimages follow the cast's clip.
@@ -198,7 +201,7 @@ public sealed class ActorLookBook
         var red = state.Rage + (distortion ? DistortionLight : 0f) + grace;
         var green = -state.Rage / 2f + MathF.Abs(state.Poison) + (distortion ? DistortionLight : 0f);
         var alpha = -ice / 2f;
-        if (vanish || vague)
+        if ((vanish || vague) && !HideStealth)
         {
             alpha += vague && self ? OwnVagueAlpha : VanishAlpha;
         }

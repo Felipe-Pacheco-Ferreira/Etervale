@@ -40,6 +40,9 @@ public sealed class HudChat
     internal Func<string, bool> GlobalBonusLine { get; set; }
     internal Func<string, bool> TicketLine { get; set; }
     internal Func<string, bool> ServerLine { get; set; }
+    // Whether the chat filter masks offensive words in what players write (ClientSettings.ChatFilter).
+    internal Func<bool> CensorEnabled { get; set; }
+
     internal Func<ChatLineInfo, bool> HideLine { get; set; }
 
     public bool KeyboardCaptured => Window.Focused;
@@ -89,6 +92,11 @@ public sealed class HudChat
         }
 
         var text = line.Line.IsNone ? line.Text : ClientText.Format(line.Line);
+        if (CensorEnabled?.Invoke() == true && (line.SpeakerId != 0 || ChatLineFilter.Written(line.Kind)))
+        {
+            text = ChatCensor.MaskMessage(text);
+        }
+
         if (line.Kind == ChatKind.Server && (GlobalBonusLine?.Invoke(text) == true || TicketLine?.Invoke(text) == true || ServerLine?.Invoke(text) == true))
         {
             return;

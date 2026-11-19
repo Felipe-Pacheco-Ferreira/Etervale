@@ -42,15 +42,17 @@ internal sealed partial class HudNews
     private static readonly Rectangle CancelButton = new(176, 210, 116, 22);
     private static readonly Rectangle ReplyBox = new(102, 418, 600, 154);
     private static readonly Rectangle ReplyField = new(114, 428, 576, 62);
-    private static readonly Rectangle ReplyAttach = new(114, 512, 176, 22);
     private static readonly Rectangle ReplySend = new(608, 532, 84, 30);
     private static readonly Rectangle Subject = new(102, 178, 600, 27);
     private static readonly Rectangle Description = new(102, 214, 600, 200);
-    private static readonly Rectangle AttachmentButton = new(102, 424, 210, 24);
     private static readonly Rectangle FormSend = new(570, 470, 132, 30);
     private static readonly Rectangle FormCancel = new(430, 470, 132, 30);
 
-    internal sealed record TicketItem(Guid Id, string Number, string Status, string Category, string Subject, string Details);
+    internal sealed record TicketItem(Guid Id, string Number, string Status, string Category, string Subject, string Details, long Updated = 0)
+    {
+        // An answered ticket the player has not read yet marks the plaque until its seen key is kept.
+        public string SeenKey { get; } = Id.ToString("N") + ":" + Updated.ToString(CultureInfo.InvariantCulture);
+    }
 
     internal sealed record TicketMessageView(bool Staff, string Header, string Text);
 
@@ -80,9 +82,7 @@ internal sealed partial class HudNews
     private int _listScroll;
     private int _detailScroll;
     private int _category;
-    private Uri _attachmentSite;
     private Guid _savedTicket;
-    private bool _attachOnSave;
     private bool _editingDescription;
     private bool _confirmCancel;
     private string _subject = "";
@@ -94,9 +94,9 @@ internal sealed partial class HudNews
 
     public Func<string, Task> Send { get; set; }
 
-    public bool TicketTyping => _open && _tab != 0;
+    public bool TicketTyping => _open && !PageDrawn && _tab != 0;
 
-    private static Rectangle Tab(int index) => new(102 + index * 202, 66, 194, 40);
+    private static Rectangle Tab(int index) => new(102 + index * 202, 64, 194, 44);
 
     private static Rectangle Category(int index) => new(102 + index * 202, 124, 194, 46);
 
@@ -136,6 +136,7 @@ internal sealed partial class HudNews
                     _incomingList = null;
                 }
 
+                _backgroundList = false;
                 Answered("");
                 break;
             case "view":
@@ -194,12 +195,7 @@ internal sealed partial class HudNews
                 _subject = "";
                 _description = "";
                 _editingTicket = Guid.Empty;
-                if (Guid.TryParseExact(rest, "N", out _savedTicket) && _attachOnSave && _attachmentSite is { } site)
-                {
-                    DesktopCommunityLinks.Open(new Uri(site, $"/suporte/anexo/{_savedTicket:D}"));
-                }
-
-                _attachOnSave = false;
+                _ = Guid.TryParseExact(rest, "N", out _savedTicket);
                 Answered("saved");
                 OpenTicket(_savedTicket);
                 break;
@@ -223,7 +219,8 @@ internal sealed partial class HudNews
                 // "error", and the plain list of the earlier window ("begin", "line", "end").
                 _incomingList = null;
                 _incomingDetail = null;
-                Answered(word == "error" ? "error" : "");
+                Answered(word == "error" && !_backgroundList ? "error" : "");
+                _backgroundList = false;
                 break;
         }
 
@@ -261,7 +258,7 @@ internal sealed partial class HudNews
         var portuguese = Portuguese;
         var messages = count == 1 ? (portuguese ? "1 mensagem" : "1 message") : count + (portuguese ? " mensagens" : " messages");
         var details = (portuguese ? "aberto " : "opened ") + Date(created) + " · " + messages + " · " + (portuguese ? "atualizado " : "updated ") + Date(updated);
-        return new TicketItem(id, "#" + fields[1], fields[2], fields[3] == "-" ? "" : fields[3], fields[8], details);
+        return new TicketItem(id, "#" + fields[1], fields[2], fields[3] == "-" ? "" : fields[3], fields[8], details, updated);
     }
 
     internal static TicketDetail ParseView(string text)
@@ -472,11 +469,7 @@ internal sealed partial class HudNews
             return;
         }
 
-        if (ReplyAttach.Contains(point) && _attachmentSite is { } site)
-        {
-            DesktopCommunityLinks.Open(new Uri(site, $"/suporte/anexo/{detail.Id:D}"));
-        }
-        else if (ReplySend.Contains(point) && !string.IsNullOrWhiteSpace(_reply))
+        if (ReplySend.Contains(point) && !string.IsNullOrWhiteSpace(_reply))
         {
             _ = SendTextAsync("/ticketreply " + detail.Id.ToString("N"), _reply.Trim());
         }
@@ -515,19 +508,6 @@ internal sealed partial class HudNews
             }
         }
 
-        if (_attachmentSite is { } site && _editingTicket == Guid.Empty && AttachmentButton.Contains(point) && _state != "waiting")
-        {
-            if (_savedTicket != Guid.Empty && _subject.Length == 0 && _description.Length == 0)
-            {
-                DesktopCommunityLinks.Open(new Uri(site, $"/suporte/anexo/{_savedTicket:D}"));
-            }
-            else
-            {
-                _attachOnSave = !_attachOnSave;
-            }
-
-            return;
-        }
 
         if (Subject.Contains(point) || Description.Contains(point))
         {
@@ -813,11 +793,6 @@ internal sealed partial class HudNews
         }
 
         painter.TextCentered($"{_reply.Length}/{DescriptionLimit}", ReplyField.Right - 80, ReplyField.Right, ReplyField.Bottom + 4, new Color(150, 130, 100));
-        if (_attachmentSite is not null)
-        {
-            DrawSupportButton(painter, ReplyAttach, portuguese ? "Anexar imagem ou vídeo" : "Attach image or video");
-        }
-
         DrawSupportButton(painter, ReplySend, portuguese ? "ENVIAR" : "SEND", primary: true);
     }
 
@@ -847,13 +822,6 @@ internal sealed partial class HudNews
             new Color(150, 130, 100));
         if (_editingTicket == Guid.Empty)
         {
-            if (_attachmentSite is not null)
-            {
-                DrawSupportButton(painter, AttachmentButton, _attachOnSave
-                    ? (portuguese ? "Escolher arquivo após enviar" : "Choose file after sending")
-                    : (portuguese ? "Anexar imagem ou vídeo" : "Attach image or video"), _attachOnSave);
-            }
-
             DrawSupportButton(painter, FormSend, portuguese ? "Enviar ticket" : "Send ticket", primary: true);
         }
         else
@@ -924,12 +892,34 @@ internal sealed partial class HudNews
 
     private static void IconButton(HudPainter painter, Rectangle bounds, string text, int icon, bool active, bool stacked)
     {
-        DrawSupportButton(painter, bounds, "", active);
-        var x = stacked ? bounds.Center.X - 6 : bounds.Left + 14;
-        var y = stacked ? bounds.Top + 6 : bounds.Center.Y - 7;
-        DrawIcon(painter, x, y, icon);
-        painter.TextCentered(text, stacked ? bounds.Left : bounds.Left + 30, bounds.Right,
-            stacked ? bounds.Top + 25 : bounds.Center.Y - 7, active ? Color.White : Color.Wheat);
+        if (stacked)
+        {
+            DrawSupportButton(painter, bounds, "", active);
+            DrawIcon(painter, bounds.Center.X - 6, bounds.Top + 6, icon);
+            painter.TextCentered(text, bounds.Left, bounds.Right, bounds.Top + 25, active ? Color.White : Color.Wheat);
+            return;
+        }
+
+        DrawTab(painter, bounds, text, icon, active);
+    }
+
+    // A tab of the window: a framed plate, gold and lighter while chosen with a diamond under it; its icon in a tile on
+    // the left and its name in bold beside it.
+    private static void DrawTab(HudPainter painter, Rectangle bounds, string text, int icon, bool active)
+    {
+        painter.FramedBox(bounds, active ? new Color(206, 166, 82) : new Color(76, 60, 39),
+            active ? new Color(58, 45, 29) : new Color(36, 28, 20), active ? new Color(36, 28, 19) : new Color(26, 20, 15), 6);
+        var tile = new Rectangle(bounds.X + 9, bounds.Center.Y - 14, 30, 28);
+        painter.FramedBox(tile, new Color(96, 78, 52), new Color(58, 47, 34), new Color(40, 32, 23), 4);
+        DrawIcon(painter, tile.Center.X - 6, tile.Center.Y - 7, icon);
+        var scale = HudPainter.TextScale * 1.1f;
+        var ink = active ? Color.White : new Color(196, 180, 152);
+        painter.Text(text, tile.Right + 11, bounds.Center.Y - 7, ink, scale);
+        painter.Text(text, tile.Right + 12, bounds.Center.Y - 7, ink, scale);
+        if (active)
+        {
+            painter.Diamond(bounds.Center.X, bounds.Bottom, 4, new Color(222, 180, 90));
+        }
     }
 
     private static void DrawIcon(HudPainter painter, int x, int y, int icon)

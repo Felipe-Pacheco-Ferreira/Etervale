@@ -233,7 +233,7 @@ internal sealed class HudTargetCaptureProbe : Game
         var keyboard = _bindFrame == 2 ? new KeyboardState(Keys.S) : default;
         var left = _bindFrame == 80 ? ButtonState.Pressed : ButtonState.Released;
         var right = _bindFrame == 90 ? ButtonState.Pressed : ButtonState.Released;
-        var mouse = new MouseState(node.X * layout.Scale, node.Y * layout.Scale, 0, left, ButtonState.Released, right, ButtonState.Released, ButtonState.Released);
+        var mouse = new MouseState((int)(node.X * layout.Scale), (int)(node.Y * layout.Scale), 0, left, ButtonState.Released, right, ButtonState.Released, ButtonState.Released);
         _hud.Update(_owner, keyboard, mouse, step);
         _bindFrame++;
         if (_bindFrame == 85)
@@ -314,7 +314,7 @@ internal sealed class HudTargetCaptureProbe : Game
     {
         var layout = HudLayout.Create(scenario.Width, scenario.Height);
         var point = scenario.HoverMap ? HudMinimap.Box(layout).Center : new Point(layout.Width / 2, layout.Height / 3);
-        return new MouseState(point.X * layout.Scale, point.Y * layout.Scale, 0,
+        return new MouseState((int)(point.X * layout.Scale), (int)(point.Y * layout.Scale), 0,
             ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
     }
 

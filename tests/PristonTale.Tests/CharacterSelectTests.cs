@@ -32,6 +32,8 @@ internal static class CharacterSelectTests
         yield return ("character-select web stage clicks keep their event times when a slow frame drains both clicks together", WebQueuedClassClicksAsync);
         yield return ("character-select web roster clicks queue selection and confirmation without borrowing class gestures", WebQueuedRosterClicksAsync);
         yield return ("character-select web double click confirms only the same selected class within the gesture interval", WebClassDoubleClickAsync);
+        yield return ("character-select web double click accepts the browser's 378 and 424 ms pairs below its own 500 ms boundary", WebBrowserClickIntervalAsync);
+        yield return ("character-select web tribe and back commands reset a pending stage gesture before dispatch", WebStageCommandResetAsync);
         yield return ("character-select web drags, missed picks and other controls break the pending double click", WebClassClickResetAsync);
         yield return ("character-select face layout scales the authored canvas uniformly", FaceLayoutAsync);
         yield return ("the Assassin, the Shaman and the Martial Artist use the original creation definitions and class facts", ExtendedClassDefinitionsAsync);
@@ -120,12 +122,12 @@ internal static class CharacterSelectTests
         {
             var point = new Microsoft.Xna.Framework.Vector2(0.3f, 0.4f);
             WebCharacterSelectOverlay.PickOnStage(WebCharacterStage.Class, point, 10d);
-            WebCharacterSelectOverlay.PickOnStage(WebCharacterStage.Class, point, 10.2d);
+            WebCharacterSelectOverlay.PickOnStage(WebCharacterStage.Class, point, 10.424d);
             var firstFound = WebCharacterSelectOverlay.TryTake(out var first);
             var secondFound = WebCharacterSelectOverlay.TryTake(out var second);
             Assert.True(firstFound && secondFound, "a slow frame lost one of the two class clicks");
             var clicks = new WebStageClickTracker();
-            Assert.True(first.StagePosition == point && second.StagePosition == point && first.ClickSeconds == 10d && second.ClickSeconds == 10.2d,
+            Assert.True(first.StagePosition == point && second.StagePosition == point && first.ClickSeconds == 10d && second.ClickSeconds == 10.424d,
                 "queued class picks lost their event coordinates or timestamps");
             Assert.True(!clicks.Pick(2, -1, first.ClickSeconds) && clicks.Pick(2, 2, second.ClickSeconds),
                 "draining both clicks together did not select then confirm the same class");
@@ -157,8 +159,71 @@ internal static class CharacterSelectTests
         clicks.Reset();
         Assert.True(!clicks.Pick(0, 0, 3d) && !clicks.Pick(0, 1, 3.1d), "a class changed by another control was confirmed");
         clicks.Reset();
-        Assert.True(!clicks.Pick(0, 0, 4d) && !clicks.Pick(0, 0, 4d + CharacterSelectStage.DoublePressSeconds),
-            "a click outside the existing double-press interval confirmed the class");
+        Assert.True(!clicks.Pick(0, 0, 4d) && !clicks.Pick(0, 0, 4d + WebStageClickTracker.DoublePressSeconds),
+            "a click at the browser double-press boundary confirmed the class");
+        return Task.CompletedTask;
+    }
+
+    private static Task WebBrowserClickIntervalAsync()
+    {
+        Assert.True(WebStageClickTracker.DoublePressSeconds == 0.5d && CharacterSelectStage.DoublePressSeconds == 0.35d,
+            "the browser interval changed the native and Android double-press policy");
+        foreach (var stage in new[] { WebCharacterStage.Class, WebCharacterStage.Roster })
+        {
+            foreach (var interval in new[] { 0.3779d, 0.424d, 0.499999d })
+            {
+                var clicks = new WebStageClickTracker();
+                Assert.True(!clicks.Pick(2, 2, 10d, stage) && clicks.Pick(2, 2, 10d + interval, stage),
+                    $"the same selected {stage} did not confirm after {interval * 1000} ms");
+                Assert.True(!clicks.Pick(2, 2, 10.7d, stage), "a third click reused the confirmed gesture");
+            }
+            foreach (var interval in new[] { 0.5d, 0.500001d, 1d })
+            {
+                var clicks = new WebStageClickTracker();
+                Assert.True(!clicks.Pick(2, 2, 20d, stage) && !clicks.Pick(2, 2, 20d + interval, stage),
+                    $"the {stage} confirmed at or beyond the 500 ms boundary");
+            }
+            var changed = new WebStageClickTracker();
+            Assert.True(!changed.Pick(1, 1, 30d, stage) && !changed.Pick(2, 1, 30.424d, stage),
+                "two different actors borrowed the longer browser interval");
+            changed.Reset();
+            Assert.True(!changed.Pick(1, 1, 40d, stage) && !changed.Pick(1, 2, 40.424d, stage),
+                "a selection changed by another control was confirmed");
+        }
+        var swapped = new WebStageClickTracker();
+        Assert.True(!swapped.Pick(1, 1, 50d, WebCharacterStage.Class)
+            && !swapped.Pick(1, 1, 50.424d, WebCharacterStage.Roster), "class and roster clicks shared a gesture");
+        return Task.CompletedTask;
+    }
+
+    private static Task WebStageCommandResetAsync()
+    {
+        const System.Reflection.BindingFlags flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+        var type = typeof(CharacterSelectScreen);
+        var tracker = type.GetField("_webStageClicks", flags) ?? throw new AssertionException("missing browser click tracker");
+        var state = type.GetField("_state", flags) ?? throw new AssertionException("missing character screen state");
+        var dispatch = type.GetMethod("RunWebCommand", flags) ?? throw new AssertionException("missing browser command dispatcher");
+        var context = new ScreenContext(null!, null!, null!, null!, "", null!, null!, _ => { });
+        var screen = new CharacterSelectScreen(context);
+        state.SetValue(screen, Enum.Parse(state.FieldType, "CharacterSelect"));
+        var profiling = WebCharacterSelectOverlay.ProfileStageInput;
+        try
+        {
+            WebCharacterSelectOverlay.ProfileStageInput = false;
+            foreach (var kind in new[] { WebCharacterCommandKind.Tribe, WebCharacterCommandKind.Back, WebCharacterCommandKind.ResetStagePick })
+            {
+                var clicks = new WebStageClickTracker();
+                clicks.Pick(1, 1, 10d);
+                tracker.SetValue(screen, clicks);
+                dispatch.Invoke(screen, [new WebCharacterCommand(kind, 0, string.Empty)]);
+                var after = (WebStageClickTracker)tracker.GetValue(screen)!;
+                Assert.True(!after.Snapshot.Pending && !after.Pick(1, 1, 10.424d), $"{kind} kept a pending stage click alive");
+            }
+        }
+        finally
+        {
+            WebCharacterSelectOverlay.ProfileStageInput = profiling;
+        }
         return Task.CompletedTask;
     }
 

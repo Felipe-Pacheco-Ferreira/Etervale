@@ -65,15 +65,15 @@ test('production adaptive readiness needs four completed frames AND the initial 
     f.loading.hidden = true; await f.tick(200, 4);
     assert.equal(f.controller.world, true); assert.equal(f.controller.scale, 1);
     assert.equal(f.state().ready, false, 'the login does not become an authenticated world');
-    await f.run(4, 32);
-    assert.ok(f.controller.scale < 1, 'real completed-frame pressure lowers the login budget after warmup');
+    await f.run(9, 32);
+    assert.equal(f.controller.shadowHz, 30, 'real completed-frame pressure lowers the login budget after warmup');
     assert.equal(f.labels.at(-1).enabled, true);
     assert.equal(f.settings.renderScale, 1, 'transient adaptation never changes the saved cap');
     assert.deepEqual(f.failures, []);
 });
 
 test('actual creation and name reports do not reset a continuous courtyard budget or authorize the world HUD', async () => {
-    const f = fixture(); f.loading.hidden = true; await f.tick(0, 4); await f.run(4, 32);
+    const f = fixture(); f.loading.hidden = true; await f.tick(0, 4); await f.run(9, 32);
     const scale = f.controller.scale, readyAt = f.controller.readyAt, revision = f.controller.settingsRevision;
     for (const [screen, name] of [['roster', ''], ['tribe', ''], ['class', ''], ['face', 'N'], ['face', 'No'], ['face', 'Noxius']]) {
         f.reportCharacters({ screen, name }); await f.tick();
@@ -84,7 +84,7 @@ test('actual creation and name reports do not reset a continuous courtyard budge
 });
 
 test('map loading and its actual pending GPU fence block adaptation and keep99percent until completion', async () => {
-    const f = fixture(); f.loading.hidden = true; await f.tick(0, 4); await f.run(4, 32);
+    const f = fixture(); f.loading.hidden = true; await f.tick(0, 4); await f.run(9, 32);
     f.reportWorldLoading('loading', 0, 'Ricarten'); await f.tick();
     assert.equal(f.state().loading, true); assert.equal(f.controller.world, false); assert.equal(f.controller.scale, null);
     f.reportWorldLoading('loading', 99, 'Ricarten'); f.reportWorldLoading('ready', 100, 'Ricarten');
@@ -94,7 +94,7 @@ test('map loading and its actual pending GPU fence block adaptation and keep99pe
     await f.releaseWorld(); await f.tick();
     assert.equal(f.state().pending, false); assert.equal(f.state().loading, false); assert.equal(f.state().ready, true);
     assert.equal(f.progress.value, 100); assert.equal(f.worldLoading.hidden, true);
-    assert.equal(f.controller.scale, 1); assert.equal(f.controller.readyAt, f.time + 2000);
+    assert.equal(f.controller.scale, 1); assert.equal(f.controller.readyAt, f.time + 5000);
     const noLoadingReport = fixture(); noLoadingReport.loading.hidden = true; await noLoadingReport.tick(0, 4);
     noLoadingReport.reportWorldLoading('ready', 100, 'Ricarten'); await noLoadingReport.tick();
     assert.equal(noLoadingReport.state().loading, false); assert.equal(noLoadingReport.state().pending, true);
@@ -102,14 +102,14 @@ test('map loading and its actual pending GPU fence block adaptation and keep99pe
 });
 
 test('world/courtyard transitions and saved revisions restore the cap and warm up while hidden/settings pauses freeze it', async () => {
-    const f = fixture(); f.loading.hidden = true; await f.tick(0, 4); await f.run(4, 32);
+    const f = fixture(); f.loading.hidden = true; await f.tick(0, 4); await f.run(9, 32);
     f.reportWorldLoading('ready', 100, 'Ricarten'); f.fenceWorldReady(f.graphics, assert.fail); await f.releaseWorld(); await f.tick();
     assert.equal(f.controller.settingsRevision, 3); assert.equal(f.controller.scale, 1);
-    await f.run(4, 32); const worldScale = f.controller.scale;
-    assert.ok(worldScale < 1);
+    await f.run(9, 32); const worldShadows = f.controller.shadowHz;
+    assert.equal(worldShadows, 30);
     f.reportCharacters({ screen: 'roster' }); await f.tick();
     assert.equal(f.controller.settingsRevision, 2); assert.equal(f.controller.scale, 1);
-    await f.run(4, 32); const courtyardScale = f.controller.scale;
+    await f.run(9, 32); const courtyardScale = f.controller.scale;
     f.settingsPanel.open = true; await f.run(10, 1);
     assert.equal(f.controller.scale, courtyardScale);
     f.settingsPanel.open = false; f.document.visibilityState = 'hidden'; await f.run(10, 1);

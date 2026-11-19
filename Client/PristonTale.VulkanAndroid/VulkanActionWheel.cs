@@ -1,5 +1,6 @@
 using Android.App;
 using Android.Widget;
+using PristonTale.Gameplay.Input;
 using PristonTale.Gameplay.Localization;
 using PristonTale.Mobile;
 using PristonTale.Mobile.CharacterSelect;
@@ -14,7 +15,7 @@ using PristonTale.Simulation.Skills;
 // use are the commands the server validates.
 internal sealed class VulkanActionWheel
 {
-    private const int SkillSlots = 4;
+    private const int SkillSlots = TouchSkillSlots.Count;
     // The wheel's box, the attack button and the arc, in fractions of the screen height.
     private const float BoxWidth = .7f;
     private const float BoxHeight = .56f;
@@ -114,31 +115,10 @@ internal sealed class VulkanActionWheel
             _belt[box].Enabled = item is not null && owner.Life > 0;
         }
 
-        var learned = owner.Skills.Where(skill => skill.Rank > 0 && SkillRuleCatalog.TryGet(skill.Code, out _)).Select(skill => skill.Code).ToArray();
-        var taken = new HashSet<uint>();
+        TouchSkillSlots.Fill(owner.Skills, _skillCodes, _chosen);
         for (var slot = 0; slot < SkillSlots; slot++)
         {
-            _chosen[slot] &= learned.Contains(_skillCodes[slot]);
-            if (_chosen[slot])
-            {
-                taken.Add(_skillCodes[slot]);
-            }
-        }
-
-        var next = 0;
-        for (var slot = 0; slot < SkillSlots; slot++)
-        {
-            if (!_chosen[slot])
-            {
-                while (next < learned.Length && taken.Contains(learned[next]))
-                {
-                    next++;
-                }
-
-                _skillCodes[slot] = next < learned.Length ? learned[next++] : 0;
-            }
-
-            _skills[slot].SetCaption(_skillCodes[slot] == 0 ? "" : Short(SkillName(_skillCodes[slot])));
+            _skills[slot].SetCaption(_skillCodes[slot] == 0 ? "" : TouchSkillSlots.ButtonCaption(SkillName(_skillCodes[slot])));
             // A slot with no learned skill to hold stays in its place, dimmed.
             _skills[slot].Enabled = owner.Life > 0 && _skillCodes[slot] != 0;
         }
@@ -229,13 +209,6 @@ internal sealed class VulkanActionWheel
     }
 
     private static string SkillName(uint code) => SkillRuleCatalog.TryGet(code, out var rule) ? DataText.SkillName(code, rule.Name) : "Habilidade";
-
-    // The first word of a skill's name, cut to fit a button.
-    private static string Short(string name)
-    {
-        var word = name.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? name;
-        return word.Length <= 7 ? word : word[..6] + "…";
-    }
 
     private async Task CastAsync(int slot)
     {

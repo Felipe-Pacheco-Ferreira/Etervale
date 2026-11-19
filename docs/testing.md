@@ -31,8 +31,8 @@ benchmarks, and the asset/GPU probes that read game data or create a Vulkan devi
 | `*Probe.cs`, `*Probe.<Topic>.cs` | Opt-in probes (see Probes); never part of the default suite |
 | `*Benchmark.cs`, `RenderBenchmarkProbe.cs` | Opt-in benchmarks; `DomainTests.BenchmarkAsync` is the `--benchmark` tick benchmark |
 
-The csproj references Gameplay, Server, Web, the Discord bot, Protocol, GltfExport and WorldImport, so the runner sees every
-layer.
+The csproj references Gameplay, Server, Web, the Discord bot, Protocol, GltfExport, WorldImport, VfxImport and
+WebAssetPacks, so the runner sees every layer.
 Default case files by area (all `tests/PristonTale.Tests/<Name>.cs`):
 
 | Area | Files | Covers |
@@ -73,11 +73,12 @@ Default case files by area (all `tests/PristonTale.Tests/<Name>.cs`):
 | Parties | `PartyTests` (with `ChatFixture`), `PartyHudTests` | Requests, answers and recommendations, the leader's commands, leaving the world, shared experience and gold, rules, wire; the party window, request box and player buttons |
 | Chat, game masters | `ChatRoutingTests`, `GameMasterCommandTests` (with `ChatFixture`), `ChatClientTests`, `GameMasterStorageTests` | Spoken range, whispers, channels, notices, shutdown; every command and the level table; window, input, flood and bubbles; `gm_level`, audit and character moves on SQLite |
 | Discord bot | `DiscordBotTests` (with `ChatFixture`) | Remote game-master commands and their audit, Discord lines on the trade channel, the bot link (key, chat, commands, level cap, settings), the activity cursor, world, event and news watches, texts and packing, `/gm` actions, role levels, ticket ids, the bot's settings and command line |
-| Client | `RemotePlaybackTests`, `AttackInputTests`, `FrameTimingTests`, `ClientSettingsTests`, `FieldAudioTests`, `ClientLogTests` | Playback, input, settings, the client log |
+| Client | `RemotePlaybackTests`, `AttackInputTests`, `FrameTimingTests`, `ClientSettingsTests`, `FieldAudioTests`, `ClientLogTests`, `TouchInputTests` | Playback, input, settings, the client log, the touch gestures and skill buttons shared by Android and the browser |
 | HUD and screens | `HudInteractionTests`, `CharacterHeadTests`, `CharacterSelectTests` | 800x600 layout, hit tests |
 | Rendering | `RenderTests`, `RenderFidelityTests`, `PhotorealTests`, `MaterialAdapterTests`, `ShadowProjectionTests`, `SkyTests` | CPU-side renderer |
-| Meshes, effects | `SkinPaletteTests`, `ModelNormalTests`, `AnimationFallbackTests`, `TransientLightTests` | Skinning, lights |
+| Meshes, effects | `SkinPaletteTests`, `ModelNormalTests`, `AnimationFallbackTests`, `PoseMemoizationTests`, `TransientLightTests` | Skinning, exact pose reuse and buffer lifetime, lights |
 | Formats | `BinaryCursorTests`, `EffectLoadingTests`, `GltfExportTests`, `GltfModelTests`, `ModelTextTests` | Binary readers, shader load failure, glTF export, glTF reading, model descriptors compiled to model info and model path resolution |
+| Browser downloads | `WebAssetPackTests` | World packs built by `ptwebpacks` and read by the browser's reader over a fake site: reproducible chunks, missing files only, fallback on absent, stale or forged packs, damaged chunks, cancellation, bootstrap path rules |
 | glTF rendering | `GltfRenderingTests` | glTF animation sampling and skin matrices, material map packing, texture transform, batches of 64 bones and the clip timeline |
 
 ## Running
@@ -167,6 +168,7 @@ All CPU-only; no GPU, assets or database unless stated.
 | `--benchmark-world` | 128 players + 512 monsters at 20 Hz (AI, combat, collision, snapshots, 128 drained outboxes); spacing 128 and 64 units, 5 runs each |
 | `--benchmark-presence <counts> <layouts> <ticks> [--allocations]` | The real `WorldServer` tick plus one `PresenceEncoder` per player (no sockets): e.g. `500,1000,2000,5000 spread,crowded 100`. Players walk, a quarter fight, a tenth cast; prints tick and encode p50/p99, CPU cores, bytes per client per second and per tick, allocations (tick and encode), collections and heap. `--allocations` adds the allocating types. Results: [protocol.md](protocol.md#measured-capacity) |
 | `--benchmark-parsing <assets>` | Binary cursor microbenchmarks and `Field/forest/fore-1.smd` parses; requires 752 materials, 35,519 faces |
+| `--benchmark-pose-memoization <assets>` | Twelve uncached versus exact-cache samples over six compact preview skeletons; CPU-only |
 | `--profile-ricarten <assets>` | Ricarten stage and model parsing, collision build and texture preparation times |
 
 Render and streaming benchmarks need the GPU; see Probes.
@@ -359,6 +361,11 @@ this is not a readback of write-only GPU buffers or a visual comparison.
 - Template: `MonsterNameTests`, `NpcServiceTests`, `WorldImportTests`.
 
 ### Add a probe or benchmark
+
+`--benchmark-pose-memoization <assets-root>` reads six compact `char/tmABCD/m1.preview.smb` through
+`m6.preview.smb` skeletons and compares twelve uncached versus exact-cache body/head samples. It alternates five
+measurements, checks identical output checksums, and reports CPU time and allocations per simulated frame. This
+isolates skeleton evaluation; it does not measure actor palettes, scene rendering, GPU time or in-game FPS.
 
 - Add the class (`<Topic>Probe.cs`, a `Game` subclass for GPU work) and a dispatch block in `Program.cs` before the
   case list, matching `args.Length` exactly and returning 0.

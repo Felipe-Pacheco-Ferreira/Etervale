@@ -106,7 +106,7 @@ All registrations are singletons in `HostingExtensions.AddPristonServer`.
 | Persistence | `AddPristonSqlite(path)` or `AddPristonPostgres(connectionString, Database:MaxPoolSize)` | Repositories, `IDbConnectionFactory`, `IDatabaseMigrator`, FluentMigrator runner. See [persistence.md](persistence.md). |
 | `WorldDataAppService`, `WorldDataHolder`, `WorldDataLanguagesHolder` | types | Catalog build and the immutable holders read by the world and the encoders. |
 | `FieldTerrainCatalog` | type | Filled by `FieldTerrainLoadService`. |
-| `WorldServer` | factory with `WorldServerOptions` (`World:MaxPendingCommandsPerPlayer` and `World:CheckpointSeconds` from the host), the save queue and the game log | The game settings arrive from the settings table through `ApplyOptionsAsync`. |
+| `WorldServer` | factory with `WorldServerOptions` (`World:MaxPendingCommandsPerPlayer`, `World:CheckpointSeconds` and `World:RemovedNpcs` from the host), the save queue and the game log | The game settings arrive from the settings table through `ApplyOptionsAsync`. |
 | `GameLogQueue`, `IGameLog` | factory: `IGameLogRepository` | The item transfer writer ([application.md](application.md#game-logs)); a failed batch is logged as an error. |
 | `GmAuditQueue` | factory: `IGameMasterRepository` | The game masters' audit writer, run by `GameLogService`; a failed row is logged as an error and retried. |
 | `CharacterSaveQueue`, `ICharacterSaves` | factory: the character repository, `SaveJournal` (`Database:SaveJournalPath`), `Database:SaveBatchSize` | The background character store ([application.md](application.md#character-saves)); a failed batch is logged as an error. |
@@ -151,6 +151,7 @@ that limit; negative values stop startup. The game settings live in the database
 | `Logs:CurrencyMinutes` | 10 | `GameLogOptions` | Period of the currency sink rows, 1 to 1440. |
 | `Logs:RetentionDays` | 180 | `GameLogOptions` | Game log rows older than this are deleted once a day; 0 keeps them, negative stops startup. |
 | `World:CheckpointSeconds` | 60 | `WorldServerOptions` | Every playing character is captured for storage once per this many seconds; at least 1. |
+| `World:RemovedNpcs` | `Event Girl`, `Event Girl 2` | `WorldServerOptions` | NPC definition names no field places (`WorldServer.WithoutRemovedNpcs`); an empty list places every authored NPC. |
 | `Network:Port` | 10009 | `GameTcpServer` | TCP game port, 0 to 65535; 0 binds a free port (in-process tests read it from `GameTcpServer.BoundPort`). The client always connects to 10009. |
 | `Network:Certificate:Path` | `data/server-certificate.pfx` | `ServerCertificate` | TLS certificate (PKCS#12); relative paths resolve from the solution root. Created self-signed when missing. |
 | `Network:Certificate:Password` | none | `ServerCertificate` | Password of the PKCS#12 file. |

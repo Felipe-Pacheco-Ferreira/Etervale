@@ -1,5 +1,6 @@
 import * as THREE from './vendor/three/three.webgpu.js';
-import { mrt, output, normalView, roughness, float, vec4, texture, renderOutput, rtt, convertToTexture } from './vendor/three/three.tsl.js';
+import { mrt, output, normalView, roughness, float, vec2, vec3, vec4, texture, renderOutput, rtt, convertToTexture, luminance, mix, screenUV,
+    screenSize, smoothstep, time } from './vendor/three/three.tsl.js';
 import { ao } from './vendor/three/addons/tsl/display/GTAONode.js';
 import { denoise } from './vendor/three/addons/tsl/display/DenoiseNode.js';
 import { ssr } from './vendor/three/addons/tsl/display/SSRNode.js';
@@ -13,11 +14,28 @@ import { fusedSharpen } from './three-sharpen.js';
 const unsupported = Object.freeze({
     temporalAntiAliasing: 'Temporal AA requires a velocity and jitter pass controlled by the scene renderer.',
     autoExposure: 'Histogram exposure is not part of the current Three pipeline.',
-    colorGradingLut: 'Custom 3D LUT import is not part of the current Three pipeline.',
     volumetricLight: 'Volumetric shafts require the sun shadow texture bridge.',
     contactShadows: 'Screen-space contact shadow tracing is not part of the current Three pipeline.'
 });
 const defaultSettings = Object.freeze({});
+
+// Display-referred finishing of the default light, after the tone curve: a warm, golden grade with a little more
+// saturation and contrast, darker corners, and a faint moving grain. Strengths were set by eye against captures.
+function warmGrade(color) {
+    const warmed = color.rgb.mul(vec3(1.06, 1.0, 0.9));
+    const saturated = mix(vec3(luminance(warmed)), warmed, 1.15);
+    return vec4(saturated.sub(0.5).mul(1.08).add(0.5).saturate(), color.a);
+}
+
+function vignette(color) {
+    const edge = smoothstep(0.45, 0.85, screenUV.sub(0.5).length());
+    return vec4(color.rgb.mul(edge.mul(-0.35).add(1)), color.a);
+}
+
+function filmGrain(color) {
+    const noise = screenUV.mul(screenSize).add(time.mul(97)).dot(vec2(12.9898, 78.233)).sin().mul(43758.5453).fract().sub(0.5);
+    return vec4(color.rgb.add(noise.mul(0.035)).saturate(), color.a);
+}
 
 function finite(value, fallback, low, high) {
     return Number.isFinite(value) ? Math.min(high, Math.max(low, value)) : fallback;
@@ -28,17 +46,40 @@ export function postOptions(settings = {}) {
     const multisampled = antiAliasing === 'msaa';
     const samples = multisampled ? (settings.multiSampleCount >= 4 ? 4 : 2) : 0;
     const quality = String(settings.quality ?? 'High').toLowerCase();
+    const classic = settings.classicLighting === true;
     return {
         renderScale: finite(settings.renderScale, 1, 0.5, 2),
         antiAliasing: ['off', 'fxaa', 'smaa', 'msaa', 'taa'].includes(antiAliasing) ? antiAliasing : 'off',
         samples,
         ambientOcclusion: !!settings.ambientOcclusion && !multisampled,
         screenSpaceReflections: !!settings.screenSpaceReflections && !multisampled,
-        bloom: String(settings.bloom ?? 'Off').toLowerCase(),
+        sceneryReflections: !!settings.screenSpaceReflections && !multisampled && settings.sceneryOnlyReflections === true,
+        reflectionsEveryOtherFrame: settings.reflectionsEveryOtherFrame !== false,
+        // The classic light keeps the original's flat image: no tone curve, grade, vignette, grain or glow.
+        bloom: classic ? 'off' : String(settings.bloom ?? 'Off').toLowerCase(),
+        bloomIntensity: finite((settings.bloomIntensityPercent ?? 100) / 100, 1, 0, 2),
+        colorGrading: !classic && settings.colorGrading === true,
+        vignette: !classic && settings.vignette !== false,
+        filmGrain: !classic && settings.filmGrain === true,
         exposureCompensation: finite(settings.exposureCompensation, 0, -3, 3),
-        tonemapper: String(settings.tonemapper ?? 'PbrNeutral').toLowerCase(),
+        tonemapper: classic || settings.toneMapping === false ? 'none' : String(settings.tonemapper ?? 'PbrNeutral').toLowerCase(),
         sharpening: finite(settings.sharpening, 0, 0, 1),
         highQuality: quality === 'ultra' || quality === 'high'
+    };
+}
+
+// Merged into the scene MRT by actor materials: with scenery-only reflections, characters and monsters leave the
+// reflected colour black, so the water mirrors the stages and not the actors moving over them.
+export const sceneryReflectionMrt = mrt({ reflectColor: vec4(0, 0, 0, output.a) });
+
+// The trace keeps its last result between updates, so tracing on alternate frames halves its cost; the reflection of
+// a moving camera then lags one frame.
+function traceEveryOtherFrame(reflections) {
+    const trace = reflections.updateBefore.bind(reflections);
+    let traced = false;
+    reflections.updateBefore = frame => {
+        traced = !traced;
+        if (traced) trace(frame);
     };
 }
 
@@ -235,7 +276,7 @@ class ThreePost {
         const options = this.options;
         const normals = options.screenSpaceReflections;
         this.target = new THREE.RenderTarget(1, 1, { type: THREE.HalfFloatType, depthBuffer: true, stencilBuffer: false,
-            count: normals ? 2 : 1, samples: options.samples });
+            count: normals ? (options.sceneryReflections ? 3 : 2) : 1, samples: options.samples });
         this.target.texture.name = 'output';
         this.target.texture.colorSpace = THREE.LinearSRGBColorSpace;
         this.target.depthTexture = new THREE.DepthTexture(1, 1, THREE.FloatType);
@@ -249,6 +290,13 @@ class ThreePost {
         }
         const color = texture(this.target.texture);
         const depth = texture(this.target.depthTexture);
+        let reflectedColor = color;
+        if (options.sceneryReflections) {
+            // Actor materials write black here (sceneryReflectionMrt), so the reflections pick up only the scenery.
+            this.target.textures[2].name = 'reflectColor';
+            this.mrt = mrt({ output, normalRoughness: vec4(normalView, roughness), reflectColor: output });
+            reflectedColor = texture(this.target.textures[2]);
+        }
         let result = color;
         if (options.ambientOcclusion) {
             const occlusion = ao(depth, normalTexture, this.camera);
@@ -268,7 +316,7 @@ class ThreePost {
             result = vec4(result.rgb.mul(this.aoCache.r), result.a);
         }
         if (normals) {
-            const reflections = ssr(color, depth, normalTexture, {
+            const reflections = ssr(reflectedColor, depth, normalTexture, {
                 camera: this.camera, metalnessNode: float(0), roughnessNode: normalTexture.a, reflectNonMetals: true, binaryRefine: options.highQuality
             });
             this.reflectionEffect = reflections;
@@ -278,11 +326,12 @@ class ThreePost {
             reflections.thickness.value = 8;
             reflections.intensity.value = 0.35;
             reflections.screenEdgeFadeBlack = true;
+            if (options.reflectionsEveryOtherFrame) traceEveryOtherFrame(reflections);
             this.effects.push(reflections);
             result = vec4(result.rgb.add(reflections.rgb), result.a);
         }
         if (options.bloom !== 'off') {
-            const glow = bloom(result, options.bloom === 'high' ? 0.05 : 0.03, 0.35, 1);
+            const glow = bloom(result, (options.bloom === 'high' ? 0.05 : 0.03) * options.bloomIntensity, 0.35, 1);
             this.bloomEffect = glow;
             glow.setResolutionScale(options.renderScale * 0.5);
             this.effects.push(glow);
@@ -295,9 +344,12 @@ class ThreePost {
             this.effects.push(antialiased);
             result = antialiased;
         }
-        const tonemapper = options.tonemapper === 'agx' ? THREE.AgXToneMapping
+        const tonemapper = options.tonemapper === 'none' ? THREE.NoToneMapping : options.tonemapper === 'agx' ? THREE.AgXToneMapping
             : options.tonemapper === 'aces' ? THREE.ACESFilmicToneMapping : THREE.NeutralToneMapping;
         result = renderOutput(result, tonemapper, THREE.SRGBColorSpace);
+        if (options.colorGrading) result = warmGrade(result);
+        if (options.vignette) result = vignette(result);
+        if (options.filmGrain) result = filmGrain(result);
         if (options.antiAliasing === 'fxaa') {
             const antialiased = fxaa(result);
             this.effects.push(antialiased);

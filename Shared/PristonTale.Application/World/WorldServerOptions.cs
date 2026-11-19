@@ -17,6 +17,9 @@ public sealed record WorldServerOptions
     // A crash loses at most this much of what no operation queued for storage: experience, life, position.
     public const int DefaultCheckpointSeconds = 60;
 
+    // The two event girls of the towns: Etervale has no use for their stat redistribution stand.
+    public static readonly IReadOnlyList<string> DefaultRemovedNpcs = ["Event Girl", "Event Girl 2"];
+
     public static readonly WorldServerOptions Default = new();
 
     public int ExperienceMultiplier { get; init; } = DefaultExperienceMultiplier;
@@ -53,6 +56,9 @@ public sealed record WorldServerOptions
     public ItemEventRates ItemEvents { get; init; } = ItemEventRates.None;
 
     public BellatraOptions Bellatra { get; init; } = BellatraOptions.Default;
+
+    // NPCs, by their definition name, that no field places.
+    public IReadOnlyList<string> RemovedNpcs { get; init; } = DefaultRemovedNpcs;
 
     public WorldServerOptions Validated()
     {

@@ -162,7 +162,7 @@ public sealed class PristonCamera
         var scroll = mouse.ScrollWheelValue - _lastMouse.ScrollWheelValue;
         if (!pointerCaptured && scroll != 0)
         {
-            _distance = MathHelper.Clamp(_distance - scroll * _settings.MouseZoomSensitivity * (invertScroll ? -1f : 1f), _settings.MinDistance, _settings.MaxDistance);
+            _pitch = MathHelper.Clamp(_pitch - scroll * _settings.MouseTiltSensitivity * (invertScroll ? -1f : 1f), _settings.MinPitch, _settings.MaxPitch);
         }
 
         _lastMouse = mouse;

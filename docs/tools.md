@@ -26,13 +26,14 @@ JSON, UI font) and the Blender helper scripts in `3d_glb/blender/`. None of them
 | `tools/PristonTale.WorldJson/` | `ptworldjson`: dumps `WorldCatalog` fields, gates and warps to `world.json` |
 | `tools/PristonTale.VfxImport/` | `ptvfx`: converts the original effect scripts and installs the authored effect definitions into `<assetRoot>/Effect/Vfx` |
 | `tools/PristonTale.DataImport/` | `ptdata`: copies folders of another client's game data into `assets/`, unmasking XOR-masked files and refusing what the game cannot read |
+| `tools/PristonTale.WebAssetPacks/` | `ptwebpacks`: packs the browser client's `bootstrap.txt` files into the world packs `BootstrapFiles` reads (`WebAssetPackBuilder.cs`) |
 | `tools/ui/build_font.py` | Builds the UI font subset and its MonoGame `.spritefont` description |
 | `3d_glb/blender/` | Blender scripts for viewing exported GLBs (`frame_map.py`, `play_animation.py`) |
 
 Solution membership: SmokeClient, GltfExport, LoadTest, VfxImport and DataImport are in `PristonTale.sln` and are built by the
 solution build.
-AssetDump, WorldImport, DevAccounts and WorldJson are not; build them explicitly. The rest of `3d_glb/` is git-ignored
-local export output (`chars/<class>/_animations.glb`, `bodies/`, `heads/`, `fields/`, `monsters/`, `npcs/` and others).
+AssetDump, WorldImport, DevAccounts, WorldJson and WebAssetPacks are not; build them explicitly. The rest of `3d_glb/`
+is git-ignored local export output (`chars/<class>/_animations.glb`, `bodies/`, `heads/`, `fields/`, `monsters/`, `npcs/` and others).
 
 ## Common conventions
 
@@ -292,6 +293,30 @@ dotnet run --project tools/PristonTale.WorldJson -c Release --no-build -- /tmp/w
   per field `id`, `name`, `code`, `glb` (stage path relative to `Field/` without extension, e.g. `Ricarten/village-2`),
   `center`, `start` points, `gates` (`dest`, `x`, `z`, `angle`) and `warps` (box, destination, `limitLevel`,
   `special`). Coordinates are world units before any export scale.
+
+## WebAssetPacks (`ptwebpacks`)
+
+Builds the world packs of a published browser client ([web-client.md](web-client.md#world-packs)). The browser publish
+scripts run it after `dotnet publish`; run it by hand to add packs to a client folder that has none.
+
+```bash
+dotnet build tools/PristonTale.WebAssetPacks/PristonTale.WebAssetPacks.csproj -c Release -m:1 -warnaserror
+dotnet run --project tools/PristonTale.WebAssetPacks -c Release --no-build -- --root <client folder> --out <new folder>
+```
+
+| Option | Meaning |
+|---|---|
+| `--root` | The published client folder: the one holding `bootstrap.txt` and the files it lists |
+| `--out` | A folder that does not exist yet; the tool refuses to write into an existing one |
+
+- Output: `world-packs/<SHA-256>.zip` chunks, `pack-build-report.json` (file, chunk and byte counts, time) and, written
+  last, `world-packs.json`. Copy `world-packs/` into the client folder before `world-packs.json`.
+- Every listed file is hashed against `bootstrap.txt` while it is packed; a difference stops the tool. The output is
+  then read back through the browser's own index and archive checks, and every entry is inflated against its hash.
+- Chunks hold files in ordinal path order up to `WebAssetPacks.ChunkBudgetBytes` (8 MiB raw); a larger file gets a chunk
+  of its own. Entries carry a fixed timestamp, so a rebuild of the same files on the same platform and runtime writes
+  the same bytes and chunk names.
+- Exit codes: 0 done, 1 refused input or I/O failure (message on stderr), 2 usage.
 
 ## VfxImport (`ptvfx`)
 

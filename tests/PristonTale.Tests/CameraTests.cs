@@ -24,7 +24,7 @@ internal static class CameraTests
         yield return ("camera lateral edge orbit is timed and respects viewport and focus", EdgeOrbitAsync);
         yield return ("camera arrows orbit horizontally and vertically", KeyboardOrbitAsync);
         yield return ("camera follow is time based and teleport reanchoring preserves framing", FollowAsync);
-        yield return ("camera uses middle drag and respects UI pointer ownership", InputAsync);
+        yield return ("camera uses middle drag, tilts with the wheel as Page Up and Page Down do and respects UI pointer ownership", InputAsync);
     }
 
     private static PristonCamera CreateCamera()
@@ -224,6 +224,25 @@ internal static class CameraTests
         camera.UpdateOrbit(Mouse(600, 600, middle: ButtonState.Pressed, wheel: 120));
         camera.UpdateFollow(Vector3.Zero, 0);
         Assert.True(camera.Position == orbited, "releasing UI capture replayed old pointer motion");
+
+        var tiltable = new PristonCameraSettings { DefaultDistance = 100, DefaultPitch = 0.5f };
+        var tilted = new PristonCamera(Vector3.Zero, Vector3.Forward, tiltable);
+        tilted.UpdateOrbit(Mouse(400, 300));
+        tilted.UpdateFollow(Vector3.Zero, 0);
+        var level = tilted.Position - tilted.Target;
+        tilted.UpdateOrbit(Mouse(400, 300, wheel: 120));
+        tilted.UpdateFollow(Vector3.Zero, 0);
+        var wheelUp = tilted.Position - tilted.Target;
+        var paged = new PristonCamera(Vector3.Zero, Vector3.Forward, tiltable);
+        paged.UpdateOrbit(Mouse(400, 300));
+        paged.UpdateOrbit(Mouse(400, 300), new KeyboardState(Keys.PageUp), deltaSeconds: 0.1f);
+        paged.UpdateFollow(Vector3.Zero, 0);
+        var pageUp = paged.Position - paged.Target;
+        Assert.True(MathF.Abs(wheelUp.Length() - level.Length()) < 0.01f && MathF.Sign(wheelUp.Y - level.Y) == MathF.Sign(pageUp.Y - level.Y)
+            && wheelUp.Y != level.Y, "the wheel up did not tilt the camera as Page Up does, without zooming");
+        tilted.UpdateOrbit(Mouse(400, 300, wheel: 0));
+        tilted.UpdateFollow(Vector3.Zero, 0);
+        Assert.True(Vector3.Distance(tilted.Position - tilted.Target, level) < 0.01f, "the wheel down did not tilt back as Page Down does");
         camera.SnapFollow(new Vector3(1000, 0, 1000));
         Assert.True(Vector3.Distance(orbited - new Vector3(0, 30, 0), camera.Position - camera.Target) < 0.001f,
             "teleport reset the player's chosen orbit");

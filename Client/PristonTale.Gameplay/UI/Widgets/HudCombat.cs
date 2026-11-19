@@ -109,6 +109,8 @@ public sealed partial class HudCombat
             {
                 NoteAttack(combat.TargetId);
             }
+
+            ObserveDps(combat);
         }
 
         foreach (var id in update.Removed)
@@ -223,7 +225,7 @@ public sealed partial class HudCombat
     // what the original shows: the name, the race icon and the life bar once StateBarEnabled.
     // playerButtons: the trade, party and friend buttons take the life bar's place under the frame (HudPlayerButtons).
     public void DrawTarget(HudPainter painter, HudLayout layout, ulong target, bool classicHealthBar = false, Texture2D portrait = null,
-        bool playerButtons = false)
+        bool playerButtons = false, bool showDps = false)
     {
         if (target == 0 || !_entities.TryGetValue(target, out var entity))
         {
@@ -252,6 +254,11 @@ public sealed partial class HudCombat
         var centerX = box.X + (box.Width >> 1);
         var room = Math.Max(box.Width - 8, 2 * Math.Min(centerX, layout.Width - centerX) - 8);
         painter.TextCentered(painter.Fit(Name(target), room), centerX - room / 2, centerX + room / 2, frame.NameY, color, true, NameShadow);
+        if (showDps)
+        {
+            DrawDps(painter, box, target);
+        }
+
         if (playerButtons || !ShowsHealthBar(target, classicHealthBar))
         {
             return;

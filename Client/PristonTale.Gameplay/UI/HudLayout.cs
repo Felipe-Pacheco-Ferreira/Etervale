@@ -4,27 +4,43 @@ namespace PristonTale.Gameplay.UI;
 
 // The original HUD is authored for 800x600 and offset by (window width - 800, window height - 600):
 // bottom-anchored elements move down by the extra height and right-anchored elements move right by the extra width.
-public readonly record struct HudLayout(int Scale, int Width, int Height, int ViewportWidth, int ViewportHeight)
+// Scale is the largest integer that fits the 800x600 design, times the settings' HUD scale (ClientSettings.UiScale),
+// never so large that the design no longer fits.
+public readonly record struct HudLayout(float Scale, int Width, int Height, int ViewportWidth, int ViewportHeight)
 {
     public const int DesignWidth = 800;
     public const int DesignHeight = 600;
 
     public static HudLayout Of(Microsoft.Xna.Framework.Graphics.Viewport viewport) => Create(viewport.Width, viewport.Height);
 
-    public static HudLayout Create(int viewportWidth, int viewportHeight)
+    public static HudLayout Of(Microsoft.Xna.Framework.Graphics.Viewport viewport, float uiScale) => Create(viewport.Width, viewport.Height, uiScale);
+
+    public static HudLayout Create(int viewportWidth, int viewportHeight, float uiScale = 1f)
     {
         viewportWidth = Math.Max(1, viewportWidth);
         viewportHeight = Math.Max(1, viewportHeight);
-        var scale = Math.Max(1, Math.Min(viewportWidth / DesignWidth, viewportHeight / DesignHeight));
-        return new HudLayout(scale, Math.Max(1, viewportWidth / scale), Math.Max(1, viewportHeight / scale), viewportWidth, viewportHeight);
+        float scale = Math.Max(1, Math.Min(viewportWidth / DesignWidth, viewportHeight / DesignHeight));
+        if (uiScale != 1f && float.IsFinite(uiScale) && uiScale > 0f)
+        {
+            var fits = MathF.Max(1f, MathF.Min((float)viewportWidth / DesignWidth, (float)viewportHeight / DesignHeight));
+            scale = MathF.Min(scale * uiScale, MathF.Max(scale, fits));
+        }
+
+        return new HudLayout(scale, Math.Max(1, (int)(viewportWidth / scale)), Math.Max(1, (int)(viewportHeight / scale)), viewportWidth, viewportHeight);
     }
+
+    // Whether the HUD is drawn at a whole number of pixels per design pixel (sharp point sampling) or between them.
+    public bool WholeScale => Scale == MathF.Floor(Scale);
 
     public int BottomOffset => Height - DesignHeight;
     public int RightOffset => Width - DesignWidth;
     public bool Browser { get; init; }
     public bool SidePanelOpen { get; init; }
 
-    public int BottomBarOffset => Browser ? Math.Max(0, RightOffset / 2) : 0;
+    // Browser only: the bottom bar centred under a wide screen (ClientSettings.CenteredInterface), else at the left.
+    public bool CenteredBar { get; init; } = true;
+
+    public int BottomBarOffset => Browser && CenteredBar ? Math.Max(0, RightOffset / 2) : 0;
     public Point BottomBarOrigin => new(BottomBarOffset, BottomOffset);
     public Point ToBottomBarDesign(Point pointer) => pointer - BottomBarOrigin;
 
@@ -35,8 +51,8 @@ public readonly record struct HudLayout(int Scale, int Width, int Height, int Vi
 
     public Point ToLogical(Point pointer)
     {
-        var scale = Math.Max(1, Scale);
-        return new Point(FloorDivide(pointer.X, scale), FloorDivide(pointer.Y, scale));
+        var scale = Scale;
+        return new Point((int)MathF.Floor(pointer.X / scale), (int)MathF.Floor(pointer.Y / scale));
     }
 
     public Rectangle PlaceOverlay(Point preferred, int width, int height)

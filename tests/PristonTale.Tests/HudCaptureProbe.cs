@@ -576,7 +576,7 @@ internal sealed class HudCaptureProbe : Game
             {
                 _hud.Update(state, default, default);
                 var row = HudSkillsPanel.ClassRow(HudInventoryLayout.Origin(layout), scenario.RightSelect).Center;
-                var (x, y) = (row.X * layout.Scale, row.Y * layout.Scale);
+                var (x, y) = ((int)(row.X * layout.Scale), (int)(row.Y * layout.Scale));
                 _hud.Update(state, default, new MouseState(x, y, 0, ButtonState.Released, ButtonState.Released, ButtonState.Pressed,
                     ButtonState.Released, ButtonState.Released));
                 _hud.Update(state, default, new MouseState(x, y, 0, ButtonState.Released, ButtonState.Released, ButtonState.Released,
@@ -715,8 +715,8 @@ internal sealed class HudCaptureProbe : Game
 
     private void Click(OwnerState state, HudLayout layout, Point logical)
     {
-        var x = logical.X * layout.Scale;
-        var y = logical.Y * layout.Scale;
+        var x = (int)(logical.X * layout.Scale);
+        var y = (int)(logical.Y * layout.Scale);
         _hud.Update(state, default, new MouseState(x, y, 0,
             ButtonState.Pressed, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released));
         _hud.Update(state, default, new MouseState(x, y, 0,
@@ -752,7 +752,7 @@ internal sealed class HudCaptureProbe : Game
             Hover.RestartTown => HudRestartPanel.Button(layout, RestartChoice.Town).Center,
             _ => new Point(layout.Width - 200, layout.Height / 2)
         };
-        return new MouseState(point.X * layout.Scale, point.Y * layout.Scale, 0,
+        return new MouseState((int)(point.X * layout.Scale), (int)(point.Y * layout.Scale), 0,
             ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
     }
 

@@ -156,6 +156,8 @@ public sealed partial class GameScene
 
     private void ApplyPresence(PresenceUpdate update)
     {
+        // The life before this update, for a potion whose effect and raised life arrive together (PotionHealWatch).
+        _lifeBeforeUpdate = Owner?.Life ?? -1;
         if (update.Owner is not null)
         {
             Owner = update.Owner;

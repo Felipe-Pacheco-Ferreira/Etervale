@@ -122,8 +122,9 @@ public static class WebHosting
             Status = new UriBuilder(world.Endpoint) { Scheme = Uri.UriSchemeHttps, Path = "/status" }.Uri.AbsoluteUri
         })));
         app.MapGet(SecurityHeaders.LegacyPlayPagePath, static () => Results.Redirect(SecurityHeaders.PlayPagePath, permanent: true));
+        app.MapGet(WebAppManifest.Path, static (WebSettings settings) => WebAppManifest.Result(settings.Site.Name));
         app.MapGet("/api/client/news", static (NewsFeed feed, ILogger<NewsFeed> logger) =>
-            Results.Json(feed.Items(logger).Take(20).Select(post => new { post.Date, post.Title, post.Summary, post.Body })));
+            Results.Json(feed.Items(logger).Take(20).Select(post => new { post.Date, post.Title, post.Summary, post.Body, Author = post.Author ?? "", post.Kind })));
         app.MapMethods(AndroidDownloadPath, [HttpMethods.Get, HttpMethods.Head], static (AndroidPackage package) => package.Current() is { } file
             ? Results.File(file.Path, AndroidPackage.ContentType, file.DownloadName, file.LastWrite, enableRangeProcessing: true)
             : Results.NotFound());
@@ -154,7 +155,7 @@ public static class WebHosting
                 headers.CacheControl = BrowserClient.IsFingerprinted(request.Path.Value ?? "") || request.Query.ContainsKey(BrowserClient.VersionQuery)
                     ? ImmutableFileCache
                     : "no-cache";
-                if (WebCompressedGameFiles.IsEligible(request.Path))
+                if (WebCompressedGameFiles.Varies(request.Path))
                 {
                     WebCompressedGameFiles.ApplyVary(headers);
                 }

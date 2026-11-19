@@ -41,6 +41,22 @@
     box-sizing: border-box;
 }
 
+/* An open list cannot draw its select's gradient, so the browser falls back to white behind the light text. */
+select option,
+select optgroup {
+    color: #fbf1dd;
+    background-color: #1a130a;
+}
+
+select option:checked {
+    color: #fff;
+    background-color: #2a5fbf;
+}
+
+select option:disabled {
+    color: #7d705a;
+}
+
 html,
 body {
     height: 100%;
@@ -293,6 +309,122 @@ a {
     color: var(--gold-light);
 }
 
+/* The shortcuts stay faint over the game until the pointer reaches them: only their plate and edge fade, so the
+   label and the icon keep their colour instead of turning grey over the sky. */
+.world-hud-controls > .world-hud-button,
+.world-hud-hunt,
+.world-hud-more > summary {
+    background: rgba(14, 13, 9, 0.42);
+    border-color: rgba(188, 157, 93, 0.38);
+    box-shadow: none;
+    text-shadow: 0 1px 2px #000, 0 0 4px #000c;
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.world-hud-controls > .world-hud-button:is(:hover, :focus-visible),
+.world-hud-hunt:is(:hover, :focus-within),
+.world-hud-more > summary:is(:hover, :focus-visible),
+.world-hud-more[open] > summary {
+    background: linear-gradient(180deg, #3b2b13, #20190c);
+    border-color: var(--gold);
+    box-shadow: 0 2px 5px #0008;
+}
+
+/* News or a ticket answer waiting: a red count on the shortcut's corner. */
+.world-hud-button[data-unread] {
+    position: relative;
+}
+
+.world-hud-button[data-unread]::after {
+    content: attr(data-unread);
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    box-sizing: border-box;
+    border: 1px solid #ffd7c2;
+    border-radius: 8px;
+    background: linear-gradient(180deg, #e0472f, #9d1d12);
+    box-shadow: 0 0 6px #ff4a2a99;
+    color: #fff;
+    font: 700 10px/14px system-ui, sans-serif;
+    text-align: center;
+    text-shadow: none;
+    animation: world-hud-unread 1.6s ease-in-out infinite;
+}
+
+@keyframes world-hud-unread {
+    50% { box-shadow: 0 0 11px #ff4a2acc; }
+}
+
+.world-hud-menu button:disabled {
+    opacity: 0.32;
+}
+
+/* The players online: a dark pill at the top centre with a glowing green light. */
+.world-online {
+    position: absolute;
+    top: max(6px, env(safe-area-inset-top));
+    left: 50%;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 0;
+    padding: 4px 13px 4px 10px;
+    color: #f2f2f2;
+    font: 700 12.5px/1.2 "Segoe UI", Arial, sans-serif;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    background: rgba(20, 20, 20, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 999px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
+.world-online[hidden] {
+    display: none;
+}
+
+.world-online-dot {
+    width: 8px;
+    height: 8px;
+    background: #5fdc6e;
+    border-radius: 50%;
+    box-shadow: 0 0 6px #5fdc6e, 0 0 2px #b8ffbf;
+}
+
+.world-hud-tip {
+    position: fixed;
+    z-index: 4;
+    display: grid;
+    gap: 4px;
+    width: max-content;
+    max-width: 260px;
+    padding: 9px 12px;
+    color: #f4e8d0;
+    font: 400 12.5px/1.4 "Segoe UI", Arial, sans-serif;
+    text-align: center;
+    background: linear-gradient(180deg, rgba(36, 28, 16, 0.97), rgba(16, 12, 8, 0.97));
+    border: 1px solid #c79a45;
+    border-radius: 5px;
+    box-shadow: 0 6px 16px #000a;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.world-hud-tip[hidden] {
+    display: none;
+}
+
+.world-hud-tip strong {
+    color: #f3c75d;
+    font: 700 13px Georgia, Palatino, serif;
+}
+
 .world-hud-button[aria-pressed="true"] {
     border-color: #8bd77d;
     color: #b8f7ae;
@@ -388,6 +520,8 @@ a {
 }
 
 .world-hunt-head {
+    cursor: move;
+    touch-action: none;
     display: flex;
     min-height: 36px;
     align-items: center;
@@ -509,8 +643,7 @@ a {
 }
 
 .world-hud-more:not([open]) .world-hud-menu,
-.world-hud-menu [hidden],
-.world-hud-secondary:not([open]) > div {
+.world-hud-menu [hidden] {
     display: none;
 }
 
@@ -533,69 +666,15 @@ a {
     color: var(--gold);
 }
 
-.world-hud-secondary {
-    display: grid;
-    justify-items: end;
-}
-
-.world-hud-secondary > summary::after {
-    content: "▾";
-    color: var(--gold);
-}
-
-.world-hud-secondary > div {
-    display: grid;
-    justify-items: end;
-    gap: 5px;
-    margin-top: 5px;
+/* The shortcuts' icons are colour emoji, drawn by the system's emoji font. */
+.world-hud-emoji {
+    flex: 0 0 auto;
+    font: 13px/1 "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif;
+    filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6));
 }
 
 .game:has(> .world-hud[data-state="active"]) > .game-bar {
     display: none;
-}
-
-.world-hud-utilities .game-bar {
-    position: static;
-    gap: 4px;
-    padding: 3px;
-    background: rgba(18, 15, 9, 0.9);
-    border-color: rgba(188, 157, 93, 0.55);
-    border-radius: 3px;
-    box-shadow: 0 2px 5px #0008;
-}
-
-.world-hud-utilities .game-language {
-    gap: 4px;
-    padding-left: 3px;
-}
-
-.world-hud-utilities .game-language-label {
-    display: none;
-}
-
-.world-hud-utilities .game-language .dot {
-    flex-basis: 16px;
-    height: 16px;
-    font-size: 14px;
-}
-
-.world-hud-utilities .game-language select {
-    min-width: 92px;
-    height: 25px;
-    padding: 0 4px;
-    font-size: 12px;
-}
-
-.world-hud-utilities .game-bar .icon-button {
-    width: 25px;
-    height: 25px;
-    min-height: 25px;
-    padding: 0;
-}
-
-.world-hud-utilities .game-bar .icon-button svg {
-    width: 14px;
-    height: 14px;
 }
 
 @media (max-width: 600px) {
@@ -614,6 +693,251 @@ a {
     .world-hud-status-divider {
         display: none;
     }
+}
+
+/* The touch HUD (touch-hud.js), laid out as the Android client's action wheel in hundredths of the screen's short side
+   (--touch-unit): the attack button at the lower right, four skills on an arc around it at 184°, 146°, 109° and 72°,
+   the potion belt above them and the window dock on the left. The joystick is the game's, drawn on the canvas. */
+.touch-hud {
+    --touch-unit: min(1dvh, 1dvw);
+    --touch-right: max(env(safe-area-inset-right), 0px);
+    --touch-bottom: max(env(safe-area-inset-bottom), 0px);
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+.touch-hud[hidden] {
+    display: none;
+}
+
+.touch-orb {
+    --size: calc(var(--touch-unit) * 13.2);
+    position: absolute;
+    display: grid;
+    place-items: center;
+    width: var(--size);
+    height: var(--size);
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0;
+    border: 2px solid var(--gold);
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 35%, #3a3f48, #14171c 70%);
+    box-shadow: 0 0 0 2px #2a1d09, 0 0 0 3px rgba(232, 199, 129, 0.55), 0 3px 8px #000a;
+    color: var(--gold-light);
+    font: 700 calc(var(--touch-unit) * 2.4) / 1.05 Georgia, Palatino, serif;
+    text-shadow: 0 1px 2px #000;
+    pointer-events: auto;
+    touch-action: manipulation;
+    cursor: pointer;
+    transform: translate(50%, 50%);
+}
+
+.touch-orb:active:not(:disabled) {
+    filter: brightness(1.35);
+    transform: translate(50%, 50%) scale(0.94);
+}
+
+.touch-orb:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+.touch-attack {
+    --size: calc(var(--touch-unit) * 26);
+    right: calc(var(--touch-right) + var(--touch-unit) * 16);
+    bottom: calc(var(--touch-bottom) + var(--touch-unit) * 16);
+    background: radial-gradient(circle at 50% 40%, #8a9099, #3a3f48 45%, #14171c 75%);
+    box-shadow: 0 0 0 3px #2a1d09, 0 0 0 5px rgba(232, 199, 129, 0.6), 0 0 22px rgba(190, 40, 30, 0.55), 0 4px 10px #000b;
+}
+
+.touch-attack svg {
+    width: 52%;
+    height: 52%;
+    fill: #e9edf2;
+    filter: drop-shadow(0 1px 2px #000);
+}
+
+.touch-skill {
+    --angle: 184deg;
+    right: calc(var(--touch-right) + var(--touch-unit) * (16 - 25 * cos(var(--angle))));
+    bottom: calc(var(--touch-bottom) + var(--touch-unit) * (16 + 25 * sin(var(--angle))));
+    overflow: hidden;
+}
+
+.touch-skill[data-touch-slot="1"] {
+    --angle: 146deg;
+}
+
+.touch-skill[data-touch-slot="2"] {
+    --angle: 109deg;
+}
+
+.touch-skill[data-touch-slot="3"] {
+    --angle: 72deg;
+}
+
+.touch-potion {
+    --size: calc(var(--touch-unit) * 10.4);
+    right: calc(var(--touch-right) + var(--touch-unit) * 6);
+    bottom: calc(var(--touch-bottom) + var(--touch-unit) * 52);
+    background: radial-gradient(circle at 50% 35%, #4b2626, #1b1010 70%);
+}
+
+.touch-potion[data-touch-box="1"] {
+    bottom: calc(var(--touch-bottom) + var(--touch-unit) * 64);
+}
+
+.touch-potion[data-touch-box="2"] {
+    bottom: calc(var(--touch-bottom) + var(--touch-unit) * 76);
+}
+
+.touch-potion[data-filled="true"] {
+    background: radial-gradient(circle at 50% 35%, #c2412f, #5a1410 70%);
+}
+
+.touch-dock {
+    position: absolute;
+    left: max(env(safe-area-inset-left), 0px);
+    top: 30%;
+    pointer-events: none;
+}
+
+.touch-dock-orb {
+    --size: calc(var(--touch-unit) * 10);
+    position: relative;
+    display: grid;
+    margin: 0 0 calc(var(--touch-unit) * 1.6) calc(var(--touch-unit) * 1.6);
+    font-size: calc(var(--touch-unit) * 4.4);
+    transform: none;
+}
+
+.touch-dock-orb:active:not(:disabled) {
+    transform: scale(0.94);
+}
+
+/* With the touch HUD the shortcuts are taller and clearer for a finger. */
+.game[data-touch-hud="true"] .world-hud-button {
+    min-height: 40px;
+}
+
+/* A phone or tablet held upright: the game is played lying down, so a plate over everything asks to turn it. */
+.turn-hint {
+    display: none;
+}
+
+@media (orientation: portrait) {
+    .game[data-mobile="true"]:not([data-portrait-allowed="true"]) > .turn-hint {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        display: grid;
+        place-content: center;
+        justify-items: center;
+        gap: 12px;
+        padding: 24px;
+        background: rgba(6, 7, 10, 0.94);
+        color: var(--gold-light);
+        font: 400 16px/1.4 var(--sans);
+        text-align: center;
+    }
+}
+
+.turn-hint strong {
+    font: 700 22px/1.2 Georgia, Palatino, serif;
+    color: var(--gold);
+}
+
+.turn-hint-icon {
+    font-size: 56px;
+    animation: turn-hint-rotate 2.4s ease-in-out infinite;
+}
+
+@keyframes turn-hint-rotate {
+    0%, 30% { transform: rotate(0deg); }
+    60%, 100% { transform: rotate(-90deg); }
+}
+
+.turn-hint-dismiss {
+    margin-top: 12px;
+    min-height: 44px;
+    padding: 8px 18px;
+    border: 1px solid rgba(188, 157, 93, 0.6);
+    border-radius: 4px;
+    background: transparent;
+    color: #d8c79c;
+    font: 400 14px var(--sans);
+}
+
+/* The first world entry on a phone or tablet: phone HUD or PC HUD. */
+.touch-choice {
+    max-width: min(560px, calc(100vw - 24px));
+    padding: 18px;
+    border: 1px solid var(--gold-deep);
+    border-radius: 6px;
+    background: linear-gradient(180deg, #1d1810, #0d0b08);
+    color: #efe2c0;
+    font: 400 14px/1.4 var(--sans);
+    pointer-events: auto;
+}
+
+.touch-choice::backdrop {
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.touch-choice h2 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 4px;
+    color: var(--gold);
+    font: 700 19px/1.2 Georgia, Palatino, serif;
+}
+
+.touch-choice p {
+    margin: 0 0 14px;
+    color: #bfb08c;
+    font-size: 12px;
+}
+
+.touch-choice-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.touch-choice-options button {
+    display: grid;
+    justify-items: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 14px 10px;
+    border: 2px solid rgba(188, 157, 93, 0.7);
+    border-radius: 6px;
+    background: radial-gradient(circle at 50% 30%, #3a3020, #16120b 75%);
+    color: #e8dcbc;
+    font: 400 12px/1.35 var(--sans);
+    text-align: center;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.touch-choice-options button:first-child {
+    border-color: var(--gold);
+    box-shadow: 0 0 14px rgba(232, 199, 129, 0.35);
+}
+
+.touch-choice-options button > span:first-child {
+    font-size: 34px;
+}
+
+.touch-choice-options strong {
+    color: var(--gold-light);
+    font: 700 15px Georgia, Palatino, serif;
 }
 
 /* The panels: a dark plate with a gold edge and a dot in each corner. */
@@ -987,21 +1311,6 @@ a {
     .card-login {
         top: calc(50% + 24px);
     }
-}
-
-.game-community {
-    position: absolute;
-    left: max(12px, env(safe-area-inset-left));
-    bottom: max(12px, env(safe-area-inset-bottom));
-    z-index: 3;
-    padding: 8px 14px;
-    color: var(--gold-light);
-    font: 600 13px var(--serif);
-    letter-spacing: 0.1em;
-    text-decoration: none;
-    background: var(--panel);
-    border: 1px solid var(--panel-edge);
-    border-radius: 4px;
 }
 
 /* "Escolha o mundo": one card per world, with its status light, region, rules badge, ping and players. */

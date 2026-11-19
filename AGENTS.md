@@ -30,6 +30,13 @@ Applies throughout this repository. Follow the user's explicit instructions firs
   Inspect `git status` and `git diff`; do not run `git add`, `git commit`, or `git push`.
 - When the owner asks for a commit, never add a `Co-Authored-By` trailer or any other co-author or attribution line to
   the message, whatever a tool's defaults suggest.
+- A new system players will see gets a development note in the same change: a folder in `devnotes/` with `nota.md` in
+  Portuguese and captures of the system ([devnotes/README.md](devnotes/README.md)). An improvement players will notice
+  gets one too, marked `Tipo: melhoria`: Discord's development channel and the game's news with the improvement badge,
+  never Discord's announcements; a tool for the staff (game
+  masters, administration) is marked `Tipo: equipe` and goes to the staff's development channel only. The Discord bot
+  publishes it. When the work is finished, ask the owner whether its note is a new system, an improvement or a staff
+  tool before writing it; never decide the type alone.
 - Use the user's language when reporting work. State the changes, checks performed, and remaining limitations.
 - Hard rule: keep the agent's temporary folder clean, `claude` under the system temporary directory
   (`%LOCALAPPDATA%\Temp\claude` on Windows, `$TMPDIR/claude` on macOS, `/tmp/claude` on Linux). Captures, probe output,

@@ -18,24 +18,31 @@ constructing a screen. Meshes, texture layers and decoded RGBA textures cross `n
 negative texture IDs separate scene resources from the native HUD adapter. Reusable byte spans carry Float32 camera,
 lighting, actor appearance and dirty WORLD bone palettes. JavaScript copies every borrowed span before returning;
 the C# game retains animation and input authority. Portraits flush pending poses before drawing all actor attachments
-into the HUD's current render target. Sky mesh IDs are sent only when a profile changes; camera height and crossfade
+into the HUD's current render target. A portrait moves its actors, for that draw only, into a studio scene of its own
+with a fixed light layout (sky and ground fill, key and rim lights). Drawing it in the world scene changed the world's
+light count twice a frame, and Three rebuilt every material of both draws: about 50 ms a frame while a target showed. Sky mesh IDs are sent only when a profile changes; camera height and crossfade
 use scalar updates. Scene disposal releases its JS meshes, materials and textures without creating a MonoGame 3D device.
 
 | Path | Responsibility |
 | --- | --- |
-| `Client/PristonTale.Browser/PristonTale.Browser.csproj` | `Microsoft.NET.Sdk.WebAssembly` app (`browser-wasm`, no Blazor) referencing `Gameplay`, with the fork's browser runtime linked in (`BrowserRuntime.props`, needs the `wasm-tools` workload); untrimmed; its publish copies the login's files beside the client and lists them in `bootstrap.txt` (`EtervaleBootstrapFiles`) |
+| `Client/PristonTale.Browser/PristonTale.Browser.csproj` | `Microsoft.NET.Sdk.WebAssembly` app (`browser-wasm`, no Blazor) referencing `Gameplay`, with the fork's browser runtime linked in (`BrowserRuntime.props`, needs the `wasm-tools` workload); published ahead-of-time compiled ([AOT publish](#aot-publish)); its publish copies the login's files beside the client and lists them in `bootstrap.txt` (`EtervaleBootstrapFiles`) |
 | `Client/PristonTale.Browser/BrowserHost.cs` | `[JSExport]` bridge for the page: `PrepareAsync` (fetch the files), `Start` (endpoint, language), `Frame` (one `Game.Tick`), `SubmitLogin` (the page's form); `reportLogin` back to the page |
 | `Client/PristonTale.Browser/BrowserHost.Settings.cs` | `[JSExport]` bridge for the page's Settings panel: the settings document in and out, presets, shortcut keys ([Entry page](#entry-page)) |
 | `Client/PristonTale.Browser/BrowserGame.cs` | Variable-step host for the shared screen lifecycle, one Update/Draw per dispatched animation callback, starting from saved settings |
 | `Client/PristonTale.Browser/BrowserExternalSceneRenderer*.cs`, `BrowserSceneTextures.cs` | Resource and packed-frame bridge; CPU texture decoding and authoritative C# pose updates |
 | `Client/PristonTale.Browser/wwwroot/three-scene.js`, `three-bridge.js`, `three-native.js`, `three-rain.js`, `three-display.js`, `three-camera.js`, `three-post.js`, `three-batching.js`, `three-profile.js` | Scene, packed bridge, native and rain batches, explicit display encoding, supplied camera projections, HDR/post composition, spatial static batching and opt-in CPU submission diagnostics |
 | `Client/PristonTale.Browser/package.json`, `pnpm-lock.yaml`, `vendor-three.mjs`, `wwwroot/vendor/three/` | Pinned Three release and self-hosted official ES bundles with MIT license |
-| `Client/PristonTale.Browser/BootstrapFiles.cs` | Fetches the files `bootstrap.txt` lists into the runtime's in-memory file system, where `ContentManager` and `AssetFiles` read them |
+| `Client/PristonTale.Browser/BootstrapFiles.cs` | Fetches the files `bootstrap.txt` lists into the runtime's in-memory file system, where `ContentManager` and `AssetFiles` read them; the world wave comes from the world packs when they are valid |
+| `Shared/PristonTale.Assets/WebAssetPacks*.cs` | World pack format, bootstrap parsing, index and archive checks, and the browser's pack reader ([World packs](#world-packs)) |
 | `Client/PristonTale.Browser/Content/Content.mgcb` | UI font and compatible effect metadata built for MGCB's Web platform; actual scene shaders are Three node materials |
 | `Client/PristonTale.Browser/Program.cs` | Empty entry point; marks the assembly browser-only |
 | `Client/PristonTale.Browser/wwwroot/main.js` | Initializes Three, installs the scene module and native graphics adapter, starts .NET, drives `BrowserHost` from requestAnimationFrame and runs the page controls |
 | `Client/PristonTale.Browser/wwwroot/settings.js` | The gear's Settings panel: tabs and cards built from a row table, saved in `localStorage` |
-| `Client/PristonTale.Browser/publish.ps1`, `publish.sh` | Release publish into the website's `Play:ClientPath` folder, replacing the previous build |
+| `Client/PristonTale.Browser/wwwroot/settings-options.js` | The panel's rows (each bound to a `client-settings.json` field), presets, shadow and texture choices |
+| `Client/PristonTale.Browser/wwwroot/settings-effects.js` | What settings do on the page: full screen, leave prompt, grey screen while dead, low-life border, death notification, hidden HUD icons |
+| `Client/PristonTale.Browser/wwwroot/news.js` | News & Support in the Settings panel's style: the feed's posts, the tickets the game keeps, the community links |
+| `Client/PristonTale.Browser/wwwroot/draggable.js` | Drags a page window by its header within the viewport; a double click on the header or Settings' reset puts it back |
+| `Client/PristonTale.Browser/publish.ps1`, `publish.sh` | Release publish into the website's `Play:ClientPath` folder, replacing the previous build and its world packs |
 | `Shared/PristonTale.Protocol/Transport/WebSocketTransport.cs` | Frames over a WebSocket, client and server side ([protocol.md](protocol.md#websocket-transport)) |
 | `Server/PristonTale.Server/Net/GameTcpServer.WebSocket.cs` | The game server's WebSocket edge ([server.md](server.md#websocket-edge)) |
 | `Web/PristonTale.Web/Pages/Jogar.cshtml`, `wwwroot/css/play.css`, `Services/BrowserClient.cs` | The entry page (`/`) and the `/play` files ([website.md](website.md)) |
@@ -101,7 +108,12 @@ The site's address (`/`) is the game: the canvas fills the window, and the page'
   golden effect in the roster. The opening manifest loads the sanctuary's textures, flame frames and night sky
   before the first frame.
 - The files come in waves (`BootstrapFiles`): the login scene's before the game starts (`PrepareAsync`), everything up
-  to the character list right after (`FetchRemainingAsync`), and the first field's when a character enters. The roster
+  to the character list right after (`FetchRemainingAsync`), and the first field's when a character enters. The world
+  wave is split by `DeferredWorldFiles` (Gameplay): other class families' full motion banks (about 140 MB), other
+  fields' minimaps and art the world does not draw (guide map, character-select stage, opening images except the chat
+  bubble frames) download after the field's first frame. A remote player whose bank is still downloading is prepared
+  once it lands (`PlayerActorComposer` waits for `DeferredWorldFiles.Pending` and reads again); a neighbouring field's
+  minimap that is not there yet stays undrawn until the minimap next changes field or neighbour. The roster
   fetches additional starter models for classes on the account through `character-previews.txt`. Once the initial
   opening downloads finish and the login form has painted, background requests fetch both tribes' starter models.
   The publish generates compact motion banks for preview poses and idle, walk and run clips. The web host sends those
@@ -115,15 +127,30 @@ The site's address (`/`) is the game: the canvas fills the window, and the page'
   the server and scene initialization milestones. It displays the destination name once the server confirms the field.
   The first completed gameplay frame dismisses the overlay. A failed entry returns to the roster with its error.
 - The in-world HTML shortcuts appear after the first gameplay frame. The world label uses the selected server,
-  FPS counts dispatched game frames, and ping measures that world's status response. News, hunt, and the More menu
-  dispatch to the live HUD controls. URL-backed shortcuts are disabled until configured. The game canvas keeps the inventory,
+  FPS uses acknowledged render-count deltas, and ping measures that world's status response. News, hunt, and the More
+  menu dispatch to the live HUD controls. URL-backed shortcuts, and Tower Defender until the game offers it, are
+  disabled until configured. The shortcuts carry colour emoji icons; until the pointer is on them only their plate and
+  edge fade, so labels and icons keep their colour. News & Support carries a red count of news not seen plus answered
+  tickets not read (`BrowserHost.NewsUnread`, the game's `HudNews.Unread`, read every second). A box beside the one under the pointer names it and says what it opens (`world-hud.js` tips). A pill at the top
+  centre shows the players online the server reports in its heartbeat (`BrowserHost.OnlinePlayers`, read every second),
+  hidden while unknown or when Settings hide it; the desktop and Android HUD draw the same pill on the canvas. The game canvas keeps the inventory,
   character, skills, minimap, chat and other gameplay windows. The web HUD centers the legacy bottom bar and chat
   and opens the same settings dialog from the gear, the system menu and the settings binding.
+- News & Support is a page window in the Settings panel's style (`news.js`, markup in `Jogar.cshtml`, styles in
+  `settings.css`). The game opens it (`HudNews.PageOpen`, the page's `openNews`) and draws nothing of it on the canvas.
+  The News tab reads `/api/client/news` itself: each post is a card tinted by its kind with its line and badge
+  (Novidade, Evento, Melhoria),
+  the title, the day and author, then the summary and body, `- ` lines as bullets and `**text**` bold, and ends
+  with the team's small signature in its corner ("Equipe Noxius", the site's emblem and the community's Discord, which
+  asks before it opens). The ticket tabs
+  read `BrowserHost.NewsState` every half second and act through `NewsAction`; the game keeps the conversation with
+  the server (`HudNews.Page.cs`). The Discord, Instagram and X buttons ask "Abrir link?" and ABRIR or Enter opens the
+  link in a new tab.
 - Social uses a centered browser panel with Group, Friends, Clan, Blocked and Recent tabs. Name entry captures
   keyboard input before chat and gameplay shortcuts. Contact actions use the saved contact lists, whispers open the
   chat composer, and profiles show known presence, party and clan information. Group creation, admission policy,
-  search and joining use the authoritative party commands and directory. The original language, settings and
-  fullscreen controls move into the More menu's Interface section while playing and return on leaving the world.
+  search and joining use the authoritative party commands and directory. The page's language, settings and
+  fullscreen bar is hidden while playing and returns on leaving the world.
 - Quests uses Journey, Daily, Monthly and Completed tabs with the real journal and reward board. Daily claims keep
   server validation. Tracker visibility is shared with Settings. Journey navigation uses the current map's collision
   route planner and stops on manual movement, death or a field change. A destination in another map reports the
@@ -131,6 +158,38 @@ The site's address (`/`) is the game: the canvas fills the window, and the page'
 - At the standard Ricarten arrival point, the browser starts with a tighter field of view and a steeper camera
   pitch to frame the carpet, lamps and approach to the stairs. The server's position is shared. Mouse camera controls
   take effect once the browser has received pointer movement over the canvas.
+- **Phones and tablets.** A tap on the canvas (a touch lifted without a drag) reaches the game as a primary mouse click
+  at that point (`main.js`), so the screens and the canvas windows answer it. In the world, the touch HUD replaces
+  mouse play when Settings' interface type asks for it (`interfaceMode`, [client-settings.md](client-settings.md);
+  `Auto` on a device without a fine pointer, `touchOnlyDevice` in `touch-hud.js`). It is the Android client's:
+  - The page reports every touch on the canvas (`BrowserHost.ReportTouch`, fractions of the canvas, kept in landing
+    order by `BrowserTouchFingers`), and `GameplayScreen.Touch.cs` reads them with the Android client's gestures
+    (`TouchOrbit` in `Client/PristonTale.Gameplay/Input`): a finger landing at the lower left is the joystick
+    (`GameScene.TouchMovement`), drawn on the canvas where it landed (`TouchJoystick`); one finger dragged elsewhere
+    turns the camera and two pinch its distance (`GameScene.TouchCameraOffset`). A tap selects a monster instead of
+    attacking it (`GameScene.SelectCombatTargetOnTap`), as on the phone.
+  - The page draws the action wheel over the canvas (`touch-hud.js`, markup in `Jogar.cshtml`, styles in `play.css`)
+    at the Android client's places, in hundredths of the screen's short side: the attack button at the lower right,
+    four skill buttons on an arc around it, the potion belt above and a dock with Personagem, Bolsa, Habilidades and
+    Missões on the left. Its buttons call `RunWorldAction`: `touch-attack` attacks the selected monster or else the
+    nearest one, `touch-skill:<n>` casts that button's skill at the same target (`GameScene.CastSkillAt`; a self or
+    ally skill needs none), `touch-belt:<n>` drinks that belt box's potion. Every half second the page reads
+    `TouchState` (each skill button's skill and name, each belt box's potion and count). A skill on the action bar's
+    first four slots holds that button; the others fill with the learned skills in order (`TouchSkillSlots`, the
+    Android action wheel's rule).
+  - The Settings, News & Support and auto-hunt windows drag by their headers with a finger (`draggable.js`).
+  - A phone or tablet plays lying down, as a mobile game (`touch-hud.js`, `root.dataset.mobile`): the first touch on
+    the page asks for full screen and locks landscape (`enterLandscape`; browsers that refuse either, such as iOS
+    Safari, keep the page as it is), and while the device stands a plate asks to turn it ("Gire o celular", with
+    "Continuar em pé" to play upright anyway).
+  - The first world entry on such a device, while the interface type is still `Auto`, asks "Como você quer jogar?":
+    HUD de celular (`Touch`) or HUD de PC (`Pc`). The answer is saved as the Settings panel saves
+    (`settings.setInterfaceMode`), so the question does not return; Escape leaves it for the next entry.
+  - The page installs as an app ("Adicionar à tela inicial") from the site's manifest (`/manifest.webmanifest`,
+    [website.md](website.md)): it opens full screen in landscape.
+  - Not ported yet: the Android HUD's own frames and windows (player and target frames, quest card, minimap and map,
+    bag, status, chat, NPC dialog, combat feed, HUD editor, tutorials); the browser keeps the desktop HUD on the canvas
+    for those, at its own scale. Canvas windows take taps but not drags.
 - The login panel ("Bem-vindo") is HTML, not `LoginPanel`: real form fields, so paste, password managers and phone
   keyboards work. `BrowserHost.Start` sets `WebLoginOverlay.Report`; while it is set, `OpeningScreen` takes the login at
   once and `OpeningLoginController` neither updates nor draws `LoginPanel`. The controller reports `form` (ready, or
@@ -150,7 +209,7 @@ The site's address (`/`) is the game: the canvas fills the window, and the page'
   enter, delete, new character, tribe, class, next, face, create with the name, back, exit); clicks on the 3D stage
   pick a roster character or a class. The browser queues both kinds of stage click in canvas coordinates with their input-event
   timestamps and picks the closest visible actor bounds under the pointer. A second click on the same selected class
-  within the normal double-press interval enters appearance selection through the same path as Next; it does not
+  less than 500 ms after the first enters appearance selection through the same path as Next; it does not
   submit a character. In the roster, the same gesture enters the selected character's world. Each queued pick keeps
   its screen identity, so a class click cannot confirm a roster character. Event times remain distinct when a slow
   frame drains several clicks together. Pointer drags, cancelled gestures, missed picks and other controls reset the gesture. The browser skips
@@ -165,11 +224,16 @@ The site's address (`/`) is the game: the canvas fills the window, and the page'
   language picker keeps `avalon.language`. The game takes its language at `Start`, so changing it afterwards reloads the
   page.
 - The gear opens the Settings panel (`settings.js`, with rows in `settings-options.js` and styling in the site's
-  `css/settings.css`). Vídeo includes texture status, quality presets, WebGPU adapter details, scene render scale,
-  the FPS cap and interface options. The cap paces the browser's animation callbacks after the first four frames.
-  Áudio groups music, game effects, voice, and microphone controls. Teclas groups the game bindings with per-row and
-  global reset. Outros includes language, game, camera and notification options plus Noxius-specific settings.
-  Unavailable controls are disabled. The panel edits the
+  `css/settings.css`). Vídeo includes the texture quality, quality presets, WebGPU adapter details, scene render scale,
+  the FPS cap, the window mode, effects and interface, name and damage-number options. The cap paces the browser's
+  animation callbacks after the first four frames. Áudio holds the music, which in the browser applies to the opening
+  music only. Teclas groups the game bindings with per-row and global reset. Outros includes language, game, camera,
+  streamer mode, window resets, chat notifications, ground items and Noxius-specific settings.
+  Every row edits a `client-settings.json` field (checked by `SettingsOptionsTests`) or runs an action; a row the
+  renderer cannot draw (`getCapabilities().unsupported`) is not shown, and a card left without rows is not either. The
+  finishing effects of "Gráficos aprimorados" are disabled under the classic light and the fog distance without fog.
+  A row with a "?" opens its explanation below it on a click and closes it on the next. Its header drags the panel within the viewport (`draggable.js`), as it does the auto-hunt panel and News
+  & Support. The panel edits the
   `client-settings.json` document ([client-settings.md](client-settings.md)) and leaves the rules to the game:
   `BrowserHost.Settings` hands out the current document, `SettingsWithQuality` applies a preset (`WithQuality`),
   `Shortcuts`, `BindShortcut`, `ResetShortcut` and `RestoreShortcuts` use `HudSettingsPanel`'s shortcut list and rebinding (a refused
@@ -179,7 +243,16 @@ The site's address (`/`) is the game: the canvas fills the window, and the page'
   `avalon.settings.quality`. The saved document is kept in `localStorage` (`avalon.settings`)
   and handed to the game with `LoadSettings` before `Start`; without one the game starts at the Low preset. Leaving the
   page stores the game's current document, so changes made in the game's own panel are kept. Game audio is still
-  silent in the browser; the music settings apply to the opening music only. Before the runtime has loaded, the panel
+  silent in the browser; the music settings apply to the opening music only.
+  `settings-effects.js` applies what the page itself does: "Modo janela" off enters the browser's full screen on Save
+  (a user gesture); "Confirmar antes de fechar" asks before leaving while `BrowserHost.PlayerLife` reports the world;
+  every 250 ms it reads the life (-1 outside the world, 0 dead, else the fraction) to grey the canvas while dead,
+  pulse a red border under 30 % of life and, with the tab hidden, show a system notification of the death (permission
+  asked on Save). It hides the corner shortcuts (`hideHudIcons`) and the page's world HUD while F12 hides the game's
+  (`BrowserHost.HudHidden`). Before `Start`, the page resolves "Texturas" (Auto: Very light up to 2 GB of
+  `navigator.deviceMemory`, Light up to 4 GB, else Original) and calls `BrowserHost.SetTextureQuality`, which shrinks
+  the scene textures as they decode (`TextureDownscale`); a change applies on the next load.
+  Before the runtime has loaded, the panel
   shows a waiting line that is replaced by the controls when the runtime is ready. The fullscreen button covers the
   whole page, including the panels.
   The enabled "Resolução dinâmica" switch edits the persisted `dynamicResolution` preference without changing the
@@ -188,10 +261,46 @@ The site's address (`/`) is the game: the canvas fills the window, and the page'
   while the actual enabled scale is below the
   saved render-scale cap, the world quality badge appends its actual 3D dimensions and percentage, such as
   `Alto · 3D 1024×576 (80%, dinâmica)`. Restoring the cap or disabling the reported state removes that suffix.
-  An optional actual shadow cadence below the saved rate appends `· sombras 30 Hz`, including when scale has returned
+  An optional actual shadow cadence below the saved rate appends `· sombras 30 Hz` (or 15 Hz), including when scale has returned
   to its cap. An absent/zero cadence or the preset's existing cadence adds nothing. These reports do not save settings
   or mark the preset Custom, and repeated identical labels do not refresh the HUD.
 - The desktop and Android clients never set `WebLoginOverlay.Report` and keep `LoginPanel`.
+
+## World packs
+
+The world wave is about four thousand files. When the client folder holds world packs, `FetchWorldAssetsAsync`
+fetches them as a few dozen ZIP chunks instead of one request per file (`WebAssetPacks.TryFetchAsync` in
+`Shared/PristonTale.Assets`); `tools/PristonTale.WebAssetPacks` writes them
+([tools.md](tools.md#webassetpacks-ptwebpacks)) and the publish scripts run it.
+
+- `world-packs.json` names the SHA-256 of the exact `bootstrap.txt` bytes it was built from and lists every bootstrap
+  file once, with the bootstrap's spelling, size, hash and chunk. Chunks live at `world-packs/<SHA-256>.zip` and are
+  requested with `?v=<SHA-256>`, so the site caches them for good like the per-file assets.
+- Only the opening's downloads stay per file; packs are read only when a character enters the world. The reader takes
+  the chunks holding a missing world file, two at a time, and extracts only the missing files. A chunk whose files are all
+  present is not requested. Progress starts from the files already present and rises by one per written file.
+- Each chunk is checked whole (size and hash) before it is opened, then its entries against the index (exact names,
+  count, sizes). Every file is written to a temporary name and moved into place only once its listed size arrived. Files
+  are not hashed again in the browser: the chunk's hash covers them, the generator inflated each entry against its
+  bootstrap hash, and the browser's managed hashing is slow. The reader hands the page back after every 12 ms of work,
+  shared by both chunk workers; browsers hold a chained timer for at least 4 ms, so shorter slices idle the download.
+- An absent, stale or malformed index, a bootstrap with unsafe or case-colliding paths, a failed request or any failed
+  check stops both workers and returns to the per-file downloads, which skip the files already written and keep the bar
+  where it was. A cancellation by the caller is passed on, never turned into that fallback.
+- ZIP chunks cost a few percent more transfer than the per-file Brotli/gzip sidecars; they save thousands of requests.
+
+## AOT publish
+
+The publish compiles the game ahead of time to WebAssembly (`RunAOTCompilation`, unless `-p:EtervaleAot=false`).
+Interpreted, a field's C# `Update` and `Draw` alone took about 19 ms per frame at p95 and held the field below 60 FPS;
+compiled, they take about 8–11 ms, and the field's world packs are written faster. The native module grows from about
+3 MB to 32 MB (6.5 MB with Brotli), and the publish takes 15–35 minutes.
+
+- AOT needs the trimmer. `TrimMode` `partial` trims only the framework's assemblies; the game's and MonoGame's stay
+  whole, since they create types by reflection (content readers, JSON).
+- The game reads its JSON by reflection, which trimming turns off: `JsonSerializerIsReflectionEnabledByDefault` keeps
+  it on and the trim analysis warnings are suppressed. Moving those reads to source-generated JSON removes both.
+- `WasmStripILAfterAOT` is off: stripping fails on the framework's facade assemblies, which have no compiled methods.
 
 ## Run it
 
@@ -320,11 +429,17 @@ timing-disabled performance must be compared in the same scene because query wri
 
 `adaptive-resolution.js` controls the transient browser render budget without modifying the saved preset or settings.
 It observes one-second completed-frame windows in worker mode, or dispatched draw windows on the main renderer.
-Two consecutive windows below 98.5 percent of the target lower the 3D scale in bounded steps, down to 50 percent.
-The target is 60 FPS or a deliberately lower foreground limit. At 70 percent scale or below, continued pressure may
-cap shadow refresh at 30 Hz while retaining the selected shadow-map size, filter and enabled effects. This changes
-shadow motion cadence and is reported in the quality badge; it does not claim identical temporal quality.
-Fifteen windows at or above that same healthy threshold allow one small recovery probe. After the initial loader
+Three consecutive windows below 98.5 percent of the target take one step; the target is 60 FPS or a deliberately
+lower foreground limit. The first two steps cap shadow refresh at 30 Hz, then at 15 Hz, while retaining the selected
+shadow-map size, filter and enabled effects; only then do further steps lower the 3D scale, down to 50 percent. A
+field is usually bound by the render worker's CPU, where the shadow pass adds about 2 ms and 180 draw calls to the
+frames that redraw it, while a lower scale saves little and blurs the whole image (on a Vega 8 iGPU Baixo and Médio
+hold 60 FPS at 100 percent). This changes shadow motion cadence and is reported in the quality badge; it does not
+claim identical temporal quality. Under the classic light (`classicLighting`) the scale stays at the saved cap;
+pressure only takes the two shadow steps. A window under 10 FPS is the browser throttling an occluded window, not
+GPU pressure: it is discarded and measurement warms up again. Six windows at or above the healthy threshold allow one
+recovery probe, in reverse order: the scale first, then 30 Hz and the saved shadow rate. The warmup after a change
+is five seconds, so the shader compilation of a new preset or map is not measured. After the initial loader
 is hidden and four real render frames are counted (GPU completions in worker mode), adaptation applies to opening,
 login, roster, creation and world scenes. Map loading and a pending first-world GPU fence suspend adaptation until the
 existing ready acknowledgment; hidden pages and the settings dialog suspend measurement and require a new warmup.
@@ -491,15 +606,23 @@ calls; they describe CPU refresh decisions, not GPU timings or a measured frame-
 Update/Draw P95, presentation and pacing timings. Its scene-bridge P95 and cumulative time/call counts cover only the
 synchronous scene, portrait, compose and sky imports. Those calls are already part of managed Update/Draw work; the
 native HUD adapter and asynchronous GPU execution are outside that bridge subtotal. Resetting profiling creates fresh
-phase and bridge counters. Profiling is disabled by default.
+phase and bridge counters. Its cumulative `animationPoses` counts root pose refreshes/holds and exact raw-pose cache
+hits/misses, so shared skeleton reuse can be verified separately from FPS. The courtyard cache never rounds sample
+time; world and native renderers keep it disabled. Profiling is disabled by default.
 
 The world HUD shows the applied graphics-quality preset at the bottom-left edge, including the effective preset
 when Automatic is known. It uses the gear's saved UI choice rather than an internal Custom classification caused
 by capability normalization. Saving a manual graphics change updates the badge to Custom immediately; cancelling
 a draft does not change it. The badge shares world-HUD visibility and never captures pointer input.
+Visible roster, tribe, class and appearance panels also show FPS at the top-left and the same quality label above
+the bottom-left back button. These character-screen badges reset their sample window on stage/visibility changes,
+use the existing render-count source, and show an unavailable mark rather than counting logic ticks when that source
+is absent. They stay hidden during map loading and do not activate world controls, ping requests or auto-hunt queries.
 The same opt-in records `[StageInput]` and `[StagePick]` diagnostics for character selection: browser event times and
 click details, normalized coordinates, actor hits, pending gesture state, resets and discarded commands. Confirmation
-uses the shared `CharacterSelectStage.DoublePressSeconds` limit and the same selected actor on both clicks.
+uses the browser-only `WebStageClickTracker.DoublePressSeconds` limit (strictly below 500 ms) and the same selected
+actor on both clicks. Native and Android retain their existing 350 ms policy. Browser event timestamps, rather than
+the frame that drains the queue, determine the interval.
 
 The browser maps authored texture layers, material blend modes, animation frames and UV scrolling, floor lighting,
 actor colour adjustments, fades, overlays, outlines and distortion to Three materials. The sky uses the authored
@@ -507,7 +630,9 @@ geometry and profile crossfade. Directional shadows use one conventional-depth m
 native per-frame eligibility rule: enabled preference, nonzero directional illumination and an above-ground scene.
 The authored moon remains a shadow-casting directional light at night.
 The explicit Compose callback applies the Three HDR/post chain after the world and linear effects, before native HUD
-sprites. It supports render scale, GTAO, reflections, bloom, FXAA, SMAA, MSAA, exposure compensation, tone mapping and
+sprites. It supports render scale, GTAO, reflections (traced on alternate frames by default; with
+`sceneryOnlyReflections` the scene pass adds a `reflectColor` target that actor materials, given
+`sceneryReflectionMrt` only around the world draw, leave black, so the trace sees the scenery alone), bloom, FXAA, SMAA, MSAA, exposure compensation, tone mapping and
 sharpening. SMAA lookup images are extracted from the pinned official addon as same-origin PNGs, preserving the site's
 image policy. TAA, histogram auto exposure, contact shadows, custom LUTs and volumetric shafts remain unavailable and
 are declared by `graphics.getCapabilities()`. Cascaded/lamp shadow atlases and glTF actors are separate capabilities.
@@ -546,10 +671,11 @@ This retained backend does not supply a WebGL2 fallback or run concurrently behi
   `wasm-tools` workload: `dotnet workload install wasm-tools`. That command also updates the other workloads already
   installed (Android) to the newest version of the SDK band, so rebuild the Android client after it. Its publish also
   needs the game data's `assets/` folder, including the font and opening scene.
-- The browser client is published untrimmed: the game and MonoGame create types by reflection (content readers, JSON),
-  which the trimmer reports as errors. After a publish that ran the trimmer, delete the project's `bin` and `obj`: the
-  native link's interop tables are cached there, and tables built from trimmed assemblies stop the runtime at start with
-  "runtime and class libraries are out of sync".
+- After switching a publish between AOT and interpreted (`-p:EtervaleAot=false`), delete the project's `bin` and `obj`,
+  or publish with its own `--artifacts-path`: the native link's interop tables are cached there, and tables built from
+  the other kind of assemblies stop the runtime at start with "runtime and class libraries are out of sync". The trimmer
+  also bakes the JSON reflection switch into the trimmed framework, so an incremental publish that only changes it keeps
+  the old value.
 - Keys reach the game as `keydown`/`keyup` on the focused canvas. Text inserted without key events (paste, a password
   manager's fill, the soft keyboard of a phone, an IME) does not reach the game's own text fields (chat) yet; the login is
   the page's HTML form, so it is not affected.
@@ -567,8 +693,10 @@ This retained backend does not supply a WebGL2 fallback or run concurrently behi
 - The browser runtime cannot read textures or the canvas back (`GetData` returns zeros): WebGPU maps buffers
   asynchronously, which a synchronous MonoGame call cannot wait for. A check of what was drawn reads the canvas from
   JavaScript, in the task that drew it, as `WebGpuRepro` does.
-- The site compresses eligible `/play` responses with ASP.NET response compression. Versioned asset requests and
-  fingerprinted framework resources retain their cache policy.
+- The site sends precompressed variants for indexed `assets/` and `Content/` files and for the fingerprinted
+  `_framework` files, from the `.br` and `.gz` the publish writes beside them ([website.md](website.md)). The loader
+  `dotnet.js`, the page's scripts and everything else under `/play` go out as stored. A publish that drops those
+  sidecars sends the AOT native module raw: 32 MB instead of 6.5 MB.
 
 ## Related
 
@@ -577,5 +705,3 @@ This retained backend does not supply a WebGL2 fallback or run concurrently behi
 - [website.md](website.md): the play page, its policy and the `Play:*` settings.
 - [client.md](client.md): `GameServerConnection` and the desktop client the browser will share.
 - [android.md](android.md): the Vulkan Android client and its asset packages.
-
-Touch taps on the browser canvas are translated to primary mouse clicks for the shared game screens.

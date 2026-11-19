@@ -176,6 +176,7 @@ public sealed partial class GameScene : IDisposable, IHudPortraitScene
         PristonTale.Gameplay.Effects.EffectLibrary effects = null, PresentationSettings presentation = null, PristonAudioLibrary audio = null)
     {
         _presentation = presentation;
+        _runFlag = presentation?.Requested.RunByDefault ?? true;
         _sky = sky;
         _effectLibrary = effects;
         if (audio is not null)
@@ -568,6 +569,12 @@ public sealed partial class GameScene : IDisposable, IHudPortraitScene
         ObserveHits(update);
         foreach (var effect in update.Events)
         {
+            if (effect.Kind == CombatEventKind.PotionApplied && effect.TargetId == _remote.SelfEntityId && _lifeBeforeUpdate >= 0
+                && (effect.Resources & (int)Simulation.Items.PotionResource.Life) != 0)
+            {
+                _potionHeals.Drank(_lifeBeforeUpdate, Environment.TickCount64);
+            }
+
             if (effect.Kind != CombatEventKind.PotionApplied || _itemEffects is null)
             {
                 continue;

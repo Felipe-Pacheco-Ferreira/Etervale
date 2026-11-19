@@ -57,6 +57,29 @@ public sealed partial class GameScene : ISkillSceneHost
 
     Vector3 ISkillSceneHost.ListenerPosition => _playerBody?.Position ?? Vector3.Zero;
 
+    EffectLimit ISkillSceneHost.LimitOf(ulong casterId, ulong targetId)
+    {
+        if (_remote is null || _camera is null)
+        {
+            return EffectLimit.None;
+        }
+
+        var casterIsPlayer = _remote.IsPlayer(casterId);
+        if (_filteredPlayers.Contains(casterId))
+        {
+            return EffectLimit.Hidden;
+        }
+
+        if (OtherPlayerEffects.HiddenBySwitch(_presentation?.Requested.HideSkillEffects == true, casterId, targetId, _remote.SelfEntityId, casterIsPlayer))
+        {
+            return EffectLimit.Hidden;
+        }
+
+        var distanceSquared = _remote.TryGetDrawnPosition(casterId, out var position) ? Vector3.DistanceSquared(position, _camera.Position) : 0f;
+        return OtherPlayerEffects.Classify(_presentation?.Requested.LimitOtherPlayerEffects != false, casterId, targetId, _remote.SelfEntityId,
+            SelectedTargetId, casterIsPlayer, distanceSquared);
+    }
+
     private void CreateSkillPresentation()
     {
         if (_skillFx is not null || _effectLibrary is null || _renderer is null)
@@ -94,6 +117,8 @@ public sealed partial class GameScene : ISkillSceneHost
 
     private void UpdateSkills(GameTime gameTime)
     {
+        ApplyPresentationSettings();
+        UpdatePlayerFilter();
         _skillFx?.Update((float)gameTime.ElapsedGameTime.TotalSeconds, _skillClockMs);
         if (OperatingSystem.IsBrowser())
             PlayInitialArrival(SelfEntityId);
@@ -121,12 +146,39 @@ public sealed partial class GameScene : ISkillSceneHost
     }
 
     private Action<ulong, string, bool, float> _wearRemote;
+    private readonly PotionHealWatch _potionHeals = new();
+    private int _lifeBeforeUpdate = -1;
 
     private void WearRemote(ulong entityId, string armorKey, bool shown, float yaw)
     {
         if (_remote.TryGetDrawnPosition(entityId, out var position))
         {
-            _wings.Wear(_skillFx, entityId, armorKey, shown, position, yaw);
+            _wings.Wear(_skillFx, entityId, armorKey, shown && !_filteredPlayers.Contains(entityId), position, yaw);
+        }
+    }
+
+    // The damage number, stealth and corpse settings, and the potion's heal over the local player once its life rose.
+    private void ApplyPresentationSettings()
+    {
+        if (_skillFx is null || _presentation is null)
+        {
+            return;
+        }
+
+        var settings = _presentation.Requested;
+        _skillFx.ShowOthersDamage = settings.ShowOtherPlayersDamage;
+        _skillFx.Text.SizeScale = FloatingCombatText.ScaleOf(settings.DamageNumberSize);
+        _skillFx.Text.Spread = settings.SpreadDamageNumbers;
+        _skillFx.Looks.HideStealth = settings.HideStealthEffect;
+        if (_monsterFx is not null)
+        {
+            _monsterFx.Dissolve = settings.MonsterDissolve;
+        }
+
+        if (Owner is { } owner && _potionHeals.Gained(owner.Life, Environment.TickCount64) is > 0 and var gained && !settings.HidePotionHeals
+            && _playerBody is not null)
+        {
+            _skillFx.Text.Add(_playerBody.Position + new Vector3(0f, SkillPresentation.NumberHeight, 0f), gained, FloatingTextKind.Heal);
         }
     }
 
@@ -199,12 +251,40 @@ public sealed partial class GameScene : ISkillSceneHost
 
         ulong target = 0;
         var kind = EntityKind.Monster;
-        if (TryCursorRay(mouse, out var ray) && _remote.TryPick(ray, _remote.SelfEntityId, out var picked, out var pickedKind))
+        if (TryCursorRay(mouse, out var ray) && _remote.TryPick(ray, _remote.SelfEntityId, out var picked, out var pickedKind, _filteredPlayers, PreferPlayers))
         {
             target = picked;
             kind = pickedKind;
         }
 
+        if (!CastAt(code, rule, target, kind))
+        {
+            return false;
+        }
+
+        if (rule.Target == SkillTarget.Enemy)
+        {
+            StartSkillTrace(code, target, rightButton);
+        }
+
+        return true;
+    }
+
+    // A touch skill button: the skill at the target the HUD chose (0 for none), without the held-button trace. Returns
+    // false when the skill needs an enemy and the target is not one.
+    public bool CastSkillAt(uint code, ulong target)
+    {
+        if (code is 0 or HudSkillBindings.BasicAttackId || _player is null || _remote is null || SelfCasting || !SkillRuleCatalog.TryGet(code, out var rule))
+        {
+            return false;
+        }
+
+        var kind = target != 0 && _remote.IsPlayer(target) ? EntityKind.Player : EntityKind.Monster;
+        return CastAt(code, rule, target, kind);
+    }
+
+    private bool CastAt(uint code, SkillRule rule, ulong target, EntityKind kind)
+    {
         switch (rule.Target)
         {
             case SkillTarget.Self:
@@ -217,9 +297,7 @@ public sealed partial class GameScene : ISkillSceneHost
                 }
 
                 _targetSelection.Trace(target);
-                RequestCast(code, rule, target, null);
-                StartSkillTrace(code, target, rightButton);
-                return true;
+                return RequestCast(code, rule, target, null);
             case SkillTarget.Ally:
                 return RequestCast(code, rule, target != 0 && kind == EntityKind.Player ? target : 0, null);
             default:

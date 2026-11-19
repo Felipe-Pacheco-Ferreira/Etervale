@@ -493,7 +493,7 @@ public sealed partial class CharacterSelectScreen : GameScreen
     {
         if (Context.PrepareWorldAssetsAsync is { } prepare)
         {
-            await prepare().WaitAsync(cancellationToken);
+            await prepare(_enteringSummary.Class).WaitAsync(cancellationToken);
         }
 
         WebWorldLoading.Connecting();

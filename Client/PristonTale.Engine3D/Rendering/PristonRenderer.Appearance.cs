@@ -39,12 +39,14 @@ internal sealed class ActorShade
     public uint OverlayForm;
     public float Scale = 1f;
     public bool EchoHidden;
+    // Hidden by a client setting (another player under "hide other players"), apart from the gameplay's own hiding.
+    public bool Filtered;
 
     public float ShownOpacity => Opacity * Fade;
 
     public Vector3 ShownTint => Tint - new Vector3(Dim);
 
-    public bool Hidden => ShownOpacity <= 0.004f || EchoHidden;
+    public bool Hidden => ShownOpacity <= 0.004f || EchoHidden || Filtered;
 
     public bool Translucent => ShownOpacity < 0.999f;
 
@@ -74,6 +76,15 @@ public sealed partial class PristonRenderer
         runtime.ExternalOverlay = appearance.Overlay ?? string.Empty;
         shade.Overlay = _externalRenderer is not null || string.IsNullOrEmpty(appearance.Overlay) ? null : PreparedOverlay(appearance.Overlay);
         shade.Scale = appearance.Scale > 0f ? appearance.Scale : 1f;
+    }
+
+    // Hides an actor for a client setting without touching the hiding the gameplay controls (SetActorHidden).
+    public void SetActorFiltered(ActorHandle handle, bool filtered)
+    {
+        if (TryResolveActor(handle, out var runtime))
+        {
+            ShadeOf(runtime).Filtered = filtered;
+        }
     }
 
     // A corpse's darkening and fading, kept apart from the appearance gameplay paints each frame.

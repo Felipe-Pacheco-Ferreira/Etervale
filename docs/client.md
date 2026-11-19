@@ -292,7 +292,20 @@ coordinates; their consumers mirror them with `WorldSpace` instead of negating Z
   `SetActorHidden` (kept with its clip and world, left out of the batch lists).
 The desktop system menu opens a server selector after the character session closes. The selector lists the current server and valid addresses from `GameServers` in the client settings. Selecting an entry opens login on a new connection.
 
-The system menu opens News from the HTTPS URL in NewsEndpoint (the website route /api/client/news).
+The system menu opens News from the HTTPS URL in NewsEndpoint (the website route /api/client/news). Dragging the
+window's title bar moves it within the screen (`HudNews.UpdateDrag`; the window draws through `HudPainter.Shift`).
+The window is a dark plate with a thin gold border: a gold diamond and the title, the Discord, Instagram and X
+buttons with each network's mark and colors, a round close button; the three tabs are framed plates with their icon
+in a tile, the chosen one gold with a diamond under it. The News tab is a framed panel of posts with a scroll bar
+(`HudNews.Layout.cs`, measured once, scrolled in pixels): a line of the post's kind colour along its left; the kind's
+badge (`kind`: Novidade gold, Evento purple, Melhoria green; news when missing), a hammer and wrench mark when the
+title starts with "Novo sistema", and the title in bold, wrapped beside them; the day and author
+(`18/11/2026 · DEV Strong`) in grey; then the summary and body in bold, a gap between paragraphs, a line starting with
+`- ` a bullet with a gold square whose wrapped lines hang under its text, `**text**` in white. While the window is closed the client reads
+the feed and sends `/ticketlist` every two minutes (`HudNews.Notices.cs`); the PC News & Support plaque shows a red mark
+while the newest post differs from `NewsSeen` or a ticket is `Answered` with an `id:updated` key missing from
+`TicketsSeen`. Opening the News tab and opening that ticket write those settings, so the mark survives a restart. The
+browser client's HTML world HUD does not show the mark.
 
 - Settings > Keys can rebind the settings window, bag page, weapon set, and three belt slots alongside the window shortcuts.
 - Settings > Other can bypass the ground loot filter while preserving the selected item categories.
@@ -425,16 +438,18 @@ destination. Renderer side of stage publication: [rendering.md](rendering.md).
 |---|---|---|
 | Left click | `GameScene.UpdatePlayerInput` | In order: pick ground loot, cast the left socket skill, pick a monster (attack), a player of another clan where both stand in the castle's battle zone (attack; the server decides, `CastleSiegeRules.MayFight`), or an NPC or another player (approach), move. Holding on the ground keeps updating the move target under the cursor; while the button remains pressed, a point within the player's body radius extends movement in the current facing direction, and releasing continues to the last target. A skill motion is never cut: a click during it casts nothing; a picked monster or NPC is kept and approached once the motion ends, and a ground point is walked to then (`SelfCasting` holds the attack approach, the NPC approach and the walk, and `StopPredictedMovement` leaves the skill clip playing) |
 | Double left click (350 ms) on the ground | same | Keep walking toward the cursor without holding the button, until blocked or the next click |
-| `R`, or the bar's walk/run button | `GameplayHud.RunToggleRequested` -> `GameScene.ToggleRun` | Walk/run setting (running at first) for every move: clicks, monster, NPC and item approaches. A player tracing a target or holding the button keeps its pace while its stamina is at a quarter or less and walks once it runs out; overweight only walks |
+| `R`, or the bar's walk/run button | `GameplayHud.RunToggleRequested` -> `GameScene.ToggleRun` | Walk/run setting (running at first unless `runByDefault` is off) for every move: clicks, monster, NPC and item approaches. A player tracing a target or holding the button keeps its pace while its stamina is at a quarter or less and walks once it runs out; overweight only walks |
 | Shift held while running (game masters) | `GameScene.MovementSpeed` | Dash at 3000/256 units per original tick; `WorldJoined` carries the game master level and the server allows game masters that speed |
 | Shift + click on a monster | same | Automatic attack (keeps attacking after release); a ground click, a cast, a loot pick or a warp leaves it and tells the server to stop chasing (`AttackInputController.Stop`: an attack on no one as the next gesture) |
 | Right click | same | Attack if the right socket holds the basic attack, otherwise cast the right socket skill |
 | Hold `A` | `GameScene.CollectGroundLabels`, `TryPickLoot` | Show and pick every ground item label |
-| Middle drag, cursor at screen edge, wheel, Left/Right, Up/Down | `PristonCamera.UpdateOrbit` (Engine3D) | Orbit (drag, edge, Left/Right at the edge orbit's speed), zoom (wheel; Up/Down at 300 units a second); the mouse is ignored while the HUD captures the pointer, the arrows while a text input has the keyboard |
+| Middle drag, cursor at screen edge, wheel, Left/Right, Up/Down | `PristonCamera.UpdateOrbit` (Engine3D) | Orbit (drag, edge, Left/Right at the edge orbit's speed), tilt (wheel up as Page Up, down as Page Down), zoom (Up/Down at 300 units a second); the mouse is ignored while the HUD captures the pointer, the arrows while a text input has the keyboard |
 | `I` or `V`, `C`, `S`, `X`, `Q`, `D` | `GameplayHud.UpdateKeys` | Inventory, status, skills, system menu, quest window, party window (ignored with Ctrl held) |
 | `F1`-`F8` (remappable) | `HudSkillBindings` | Select a skill shortcut; while pressing a skill in the tree, bind it ([skills.md](skills.md)) |
 | `Enter`, `Page Up`/`Page Down`, `Up`/`Down` | `HudChat.Update` | Open the chat input or send its line, scroll the chat, recall commands; while typing, HUD, binding, debug and motion keys and the `A` labels are suppressed |
 | `Esc` | `Game1` | Close the chat window first, then HUD panels, else quit |
+| `F12` (remappable) | `GameplayHud.UpdateSettingsShortcuts` | Hide or show the whole HUD for screenshots (`HudHidden`, not saved): while hidden the HUD takes no click or key but this one; the browser page hides its world HUD with it and keeps F12 from opening the developer tools |
+| `Backspace` (remappable) | same | Flip `persistentCharacterInfo`: every player's name box, or only the hovered one's ([client-settings.md](client-settings.md)) |
 | `F9` | `Game1.Update` | Show or hide the diagnostics overlay (frame rate and timing, the screen's status; `GameClient.Diagnostics`) |
 | `Ctrl+F3` / `Ctrl+F5` / `Ctrl+F10` | `GameplayScreen.UpdateDebugKeys` | Add the render stats to the F9 diagnostics / toggle shadows / cycle `PristonDebugView` |
 | `Ctrl+1`..`Ctrl+7` | `GameplayScreen.UpdateMotionKeys` | Force Stand, Walk, Run, Attack, Damage, Dead, Skill on the local avatar |
@@ -460,12 +475,13 @@ come from the window's text input (`Game1` to `GameClient.TypeCharacter` to `Scr
 
 ## HUD and windows
 
-- Layout: the HUD is authored in 800x600 logical units. `HudLayout.Create` picks the largest integer scale that fits;
-  bottom-anchored elements move down by `BottomOffset`, right-anchored ones right by `RightOffset`. Convert the mouse
-  with `HudLayout.ToLogical`. The browser centers the original bottom HUD using `BottomBarOrigin`, with the chat
-  immediately to its left. Browser-only Social and Quests windows use their own paired drawing and input bounds.
-- `HudPainter` draws original sprites at the integer scale with point sampling and queues text into a linear-filtered
-  pass; call `Flush` before drawing a layer that must cover earlier text.
+- Layout: the HUD is authored in 800x600 logical units. `HudLayout.Create` picks the largest integer scale that fits,
+  times the settings' `uiScale` (never past the scale at which the design still fits); bottom-anchored
+  elements move down by `BottomOffset`, right-anchored ones right by `RightOffset`. Convert the mouse with
+  `HudLayout.ToLogical`. The browser centers the original bottom HUD using `BottomBarOrigin` (unless
+  `centeredInterface` is off), with the chat immediately to its left. Browser-only Social and Quests windows use their own paired drawing and input bounds.
+- `HudPainter` draws original sprites at the layout's scale, with point sampling at a whole scale and linear filtering
+  at a fractional one, and queues text into a linear-filtered pass; call `Flush` before drawing a layer that must cover earlier text.
 - Draw order (`GameplayHud.Draw`): drop names, name plates, speech bubbles, minimap, target frame, chat window (shrunk while a side window is
   open), status / skills / inventory windows (they share one screen area; opening one closes the others, `OpenOnly`),
   quest window, shop, warehouse, bottom bar, skill sockets, buffs and the quest timer icon, hover text, system menu,
@@ -1047,7 +1063,11 @@ budget; never read files in `Update`/`Draw` after `BeginRemotePresence`. Resolve
 News and Support lets the signed-in player create a text ticket and read recent tickets and staff replies. The game host and website must point to the same support ticket directory.
 The More menu in the desktop HUD opens News and Support, Mail, Quests, and Settings. When the journal reports a kill objective, the tracker shows its target and progress and opens the quest journal.
 The in-game ticket description accepts up to 1,500 characters. A submission sends ordered fragments over the authenticated game connection, then commits the draft on the server.
-The PC News and Support header shows the HTTPS social links configured in DiscordUrl, InstagramUrl, and XUrl. With an HTTPS NewsEndpoint, More also links to the event calendar, rankings, and account page on that site.
+The PC News and Support header shows the HTTPS social links configured in DiscordUrl, InstagramUrl, and XUrl (the
+community's Discord invite and Instagram by default, `ClientSettings.CommunityDiscordUrl` and `CommunityInstagramUrl`;
+the browser client also uses them when its saved values are empty). A button first asks "Abrir link?" with what opens
+and its address (`HudNews.Links.cs`): Cancelar or Esc closes the question, ABRIR or Enter opens the address, in a new
+tab in the browser client (the page's `showCommunityLink` opens it within the click's user activation). With an HTTPS NewsEndpoint, More also links to the event calendar, rankings, and account page on that site.
 The ground loot filter includes summoning crystals and cores. The AlwaysShowGroundNames client setting lists case-insensitive name fragments that override item categories.
 Settings can hide the quest tracker or reset the loot category, specialization, and level restrictions with Show all.
 The desktop Keys tab remaps free-camera rotation, zoom, and tilt. The side mouse buttons rotate the free camera while the pointer is outside captured HUD controls.
@@ -1059,4 +1079,4 @@ On desktop, Settings > Audio groups music and incoming voice on the left, and so
 More can open configured HTTPS service pages for the item shop, auction, coin history, Eragon, item distributor, and community buffs. Unconfigured links are hidden. The client links do not implement the underlying services.
 More > Item Distributor shows unclaimed mail with item attachments and uses the same inventory claim operation as Mail.
 The desktop HUD Video tab can hide unfocused name plates while retaining the focus and party plates, hide floating combat numbers, or keep ground item names visible. The desktop layout is shared by the Windows and browser clients.
-The Other tab can invert free-camera rotation and wheel zoom independently. Inverting rotation keeps vertical tilt direction unchanged.
+The Other tab can invert free-camera rotation and wheel tilt independently. Inverting rotation keeps vertical tilt direction unchanged.

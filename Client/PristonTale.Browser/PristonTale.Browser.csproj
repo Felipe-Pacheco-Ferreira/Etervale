@@ -10,8 +10,8 @@
     <!-- As the desktop client: culture-invariant formatting, text resources looked up by the language's name. -->
     <InvariantGlobalization>true</InvariantGlobalization>
     <PredefinedCulturesOnly>false</PredefinedCulturesOnly>
-    <!-- Not trimmed: the game and MonoGame create types by reflection (content readers, JSON data), which the trimmer
-         cannot follow, so trimming could drop members they need. -->
+    <!-- Not trimmed when interpreted: the game and MonoGame create types by reflection (content readers, JSON data),
+         which the trimmer cannot follow. The AOT publish below trims only the framework's assemblies. -->
     <PublishTrimmed>false</PublishTrimmed>
     <MonoGamePlatform>Web</MonoGamePlatform>
     <EtervaleThreeRenderer>true</EtervaleThreeRenderer>
@@ -19,16 +19,20 @@
          login needs from it (EtervaleBootstrapFiles). -->
     <EtervaleAssets>$(MSBuildThisFileDirectory)../../assets/</EtervaleAssets>
   </PropertyGroup>
-  <!-- Experiment (-p:EtervaleAot=true): the game compiled ahead of time to WebAssembly instead of interpreted. AOT needs
-       the trimmer; the partial mode trims only the framework's assemblies and keeps the game's and MonoGame's whole. -->
-  <PropertyGroup Condition="'$(EtervaleAot)' == 'true'">
+  <!-- The game is compiled ahead of time to WebAssembly: interpreted, a field's Update and Draw alone exceeded a 60 Hz
+       frame (docs/web-client.md, AOT publish). -p:EtervaleAot=false publishes the interpreted client. AOT needs the
+       trimmer; the partial mode trims only the framework's assemblies and keeps the game's and MonoGame's whole. -->
+  <PropertyGroup Condition="'$(EtervaleAot)' != 'false'">
     <RunAOTCompilation>true</RunAOTCompilation>
     <PublishTrimmed>true</PublishTrimmed>
     <TrimMode>partial</TrimMode>
-    <!-- Only while measuring: the game's JSON reads by reflection, which the trim analysis reports. Keeping AOT means
-         moving those reads to source-generated JSON, not keeping this switch. -->
+    <!-- The game reads its JSON by reflection; trimming turns that off unless kept on. Moving those reads to
+         source-generated JSON removes the need for this switch and the suppression below. -->
+    <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
     <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
     <ILLinkTreatWarningsAsErrors>false</ILLinkTreatWarningsAsErrors>
+    <!-- Stripping IL after AOT fails on the framework's facade assemblies, which have no compiled methods. -->
+    <WasmStripILAfterAOT>false</WasmStripILAfterAOT>
   </PropertyGroup>
   <!-- The MonoGame fork's browser runtime (WebGPU), linked into dotnet.native.wasm; needs the wasm-tools workload. -->
   <Import Project="../../monogame/runtime/src/web/BrowserRuntime.props" />

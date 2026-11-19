@@ -27,7 +27,11 @@ public static class BotServices
         }
 
         services.AddSingleton(_ => new SiteClient(Http(new Uri(settings.Site.BaseUrl))));
-        services.AddSingleton(_ => new GameLinkClient(Http(null), settings.GameLink));
+        services.AddSingleton(_ =>
+        {
+            var http = Http(null);
+            return new GameLinks(settings.GameServers.Select(server => new GameLinkClient(http, server.GameLink, server.Name.Trim())).ToArray());
+        });
         services.AddSingleton<BotQueries>();
     }
 

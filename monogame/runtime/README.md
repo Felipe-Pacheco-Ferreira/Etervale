@@ -191,6 +191,9 @@ Since the C# half was forked too (`../issues/001-framework-from-source.md`), eac
     use either WebGPU or WebGL 2 without creating a MonoGame WebGPU device. A worker adapter owns its transferred
     canvas drawing size; the platform retains logical resize notifications. Other browser runtime users keep the
     WebGPU backend; the desktop Vulkan path and the native ABI are unchanged.
+38. **Canvas density cap** (`web/MGP_web.cpp`, `../issues/021-webgpu-backend.md`): the canvas's drawing size and the
+    mouse coordinates use the device pixel ratio capped by the page's `maxPixelRatio` on the Three graphics object, so a
+    dense display can draw fewer pixels than it shows. Without the value nothing changes; the exports are unchanged.
 
 The runtime also prints the swapchain image count and present mode, an early submission when the uniform buffer is
 full, and a warning when two resources of one shader share a binding.

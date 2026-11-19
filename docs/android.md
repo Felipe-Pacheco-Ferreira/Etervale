@@ -405,8 +405,9 @@ movement speed, stamina and weight rules as the desktop client.
 
 `Client/PristonTale.VulkanAndroid` hosts the desktop character selection and gameplay scene through
 MonoGame Native on Android. Its own Android HUD views lie over the Vulkan surface (see "World HUD"). Touch orbit and
-movement feed the desktop camera and locomotion code, and the desktop presence stream supplies actors,
-equipment, pets, weather, the server clock, and effects.
+movement (`TouchOrbit` and `TouchJoystick` in `Client/PristonTale.Gameplay/Input`, shared with the browser's touch HUD,
+over SDL's fingers through `SdlTouchFingers`) feed the desktop camera and locomotion code, and the desktop presence
+stream supplies actors, equipment, pets, weather, the server clock, and effects.
 
 Vulkan Android uses a closer initial world orbit and a shorter selection-camera rail. The selection screens' whole 2D
 layer (frame, title, tribe marks and captions, descriptions, class labels, faces, name and buttons) is laid out on a
@@ -712,8 +713,8 @@ The HUD is drawn by Android views laid out in fractions of the screen height, th
   first choice after `VulkanHudLifecycle.AutoAnswerMilliseconds`.
 - **Action wheel** (`VulkanActionWheel`, bottom right): the large attack button, four skill buttons on an arc around
   it and the potion belt beside them (`VulkanActionOrb` buttons). The skill buttons fill with the learned skills in
-  order; a long press, or the Habilidades window, puts another skill on one (`VulkanActionWheel.Assign`; a button that
-  held that skill gives it up). The choice is kept per character in `hud-layout.json` (`HudLayoutEditor.SkillSlotsOf`,
+  order (`TouchSkillSlots`, shared with the browser's touch HUD); a long press, or the Habilidades window, puts another
+  skill on one (`VulkanActionWheel.Assign`; a button that held that skill gives it up). The choice is kept per character in `hud-layout.json` (`HudLayoutEditor.SkillSlotsOf`,
   `KeepSkillSlots`); a kept skill no longer learned frees its button. A skill that needs an enemy is cast at the current
   target, or the attack button's search picks one first. The belt shows each potion's sprite (`VulkanItemIcons`,
   shared with the character window) and its count.

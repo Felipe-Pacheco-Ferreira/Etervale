@@ -271,6 +271,9 @@ internal sealed class MemoryGameMasters : IGameMasterRepository, IGmAudit
     public Task<IReadOnlyList<GmAuditRecord>> RecentAuditAsync(int limit, CancellationToken ct = default) =>
         Task.FromResult<IReadOnlyList<GmAuditRecord>>([]);
 
+    public Task<IReadOnlyList<GmAuditRecord>> AuditAfterAsync(long afterId, int limit, CancellationToken ct = default) =>
+        Task.FromResult<IReadOnlyList<GmAuditRecord>>([]);
+
     public Task<CharacterTransfer> MoveCharacterAsync(string characterName, string targetUserId, int maxSlots, CancellationToken ct = default)
     {
         Moves.Add((characterName, targetUserId));

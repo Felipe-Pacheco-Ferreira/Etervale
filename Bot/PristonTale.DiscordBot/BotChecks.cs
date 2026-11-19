@@ -42,8 +42,13 @@ public static class BotChecks
             case "tickets":
                 return await TicketsAsync(services.GetService<SupportTickets>(), output, ct);
             case "chat":
-                await ChatAsync("public", settings.Activity.PublicPath, output, ct);
-                await ChatAsync("private", settings.Activity.PrivatePath, output, ct);
+                foreach (var server in settings.GameServers)
+                {
+                    var name = server.Name.Trim();
+                    await ChatAsync(DiscordBotService.StreamKey("public", name), server.Activity.PublicPath, name, output, ct);
+                    await ChatAsync(DiscordBotService.StreamKey("private", name), server.Activity.PrivatePath, name, output, ct);
+                }
+
                 return 0;
             case SlashCommands.GameMaster when argument is not null:
                 var level = check.Count > 2 && int.TryParse(check[2], NumberStyles.None, CultureInfo.InvariantCulture, out var asked)
@@ -81,7 +86,7 @@ public static class BotChecks
         return 0;
     }
 
-    private static async Task ChatAsync(string stream, string path, TextWriter output, CancellationToken ct)
+    private static async Task ChatAsync(string stream, string path, string server, TextWriter output, CancellationToken ct)
     {
         if (path.Length == 0)
         {
@@ -95,7 +100,7 @@ public static class BotChecks
             : $"{stream}: {snapshot.OnlinePlayers} online, written {snapshot.UpdatedAt:u}");
         foreach (var message in snapshot?.Messages.TakeLast(LastLines) ?? [])
         {
-            await output.WriteLineAsync(BotTexts.ChatLine(message));
+            await output.WriteLineAsync(BotTexts.ChatLine(message, server));
         }
     }
 }

@@ -278,7 +278,7 @@ public sealed class MonsterPresentation
         if (tracked.DeathShown)
         {
             tracked.DeathTicks += seconds * GameUnits.TicksPerSecond;
-            var fade = CorpseFade(monster.SoundCode, tracked.DeathTicks);
+            var fade = CorpseFade(monster.SoundCode, tracked.DeathTicks, Dissolve);
             var dim = CorpseDim(tracked.DeathTicks);
             if (fade != tracked.Fade || dim != tracked.Dim)
             {
@@ -359,8 +359,14 @@ public sealed class MonsterPresentation
     public static float CorpseDim(float ticks) =>
         ticks >= DimFullTicks ? DimMost / Units : ticks > DimStartTicks ? (ticks - DimStartTicks) * DimPerTick / Units : 0f;
 
-    // The opacity left to a corpse: a body of light fades out, every other corpse stays.
-    public static float CorpseFade(int soundCode, float ticks) => FadesOnDeath(soundCode) ? Math.Max(0f, 1f - FadePerTick * ticks / Units) : 1f;
+    // The opacity left to a corpse: a body of light fades out at once; with the dissolve effect every other corpse fades
+    // out the same way once it has dimmed fully, otherwise it stays.
+    public static float CorpseFade(int soundCode, float ticks, bool dissolve = false) =>
+        FadesOnDeath(soundCode) ? Math.Max(0f, 1f - FadePerTick * ticks / Units)
+        : dissolve && ticks > DimFullTicks ? Math.Max(0f, 1f - FadePerTick * (ticks - DimFullTicks) / Units) : 1f;
+
+    // ClientSettings.MonsterDissolve.
+    public bool Dissolve { get; set; }
 
     private static bool FadesOnDeath(int soundCode) => soundCode is CharacterSoundCodes.Figon or CharacterSoundCodes.StygianLord
         or CharacterSoundCodes.GuardianSaint or CharacterSoundCodes.FireElemental or CharacterSoundCodes.ChaosCara or CharacterSoundCodes.Inferno;

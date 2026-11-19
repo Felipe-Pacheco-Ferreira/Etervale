@@ -193,6 +193,12 @@ public sealed partial class DiscordBotService
     {
         var customId = component.Data.CustomId;
         var kind = customId.Split(':')[0];
+        if (kind == PurgeButton)
+        {
+            await PurgeAsync(component, ct);
+            return;
+        }
+
         if (ParseTicket(customId, kind) is not { } ticket || _tickets is null
             || kind is not (TicketCloseButton or TicketTranscriptButton or TicketReopenButton or TicketDeleteButton))
         {

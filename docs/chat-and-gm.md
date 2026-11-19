@@ -127,7 +127,9 @@ session and the chat directory; a higher level may use every command of the leve
 `DevAccounts set-gm <user> <level>`; it applies at the next login. Every line that matches a command is written to
 `gm_audit` (account, character, level, line, required level, accepted, result), denied ones included, in the background
 (`IGmAudit`, `GmAuditQueue`): the command answers at once even while the database is slow or locked; read it with
-`DevAccounts gm-audit [count]`. A game master below the level is told the level the command needs
+`DevAccounts gm-audit [count]`. The site's GM panel and its ticket answers (`web: ticket reply|close <id>`) and the
+Discord bot's actions (`discord: ...`) write to the same trail, and the bot posts every new entry to its game masters'
+audit channel ([discord-bot.md](discord-bot.md)). A game master below the level is told the level the command needs
 (`> /cmd needs game-master level N (yours is M)`); a player gets no answer.
 
 Commands match by exact, case-sensitive prefix in table order. Levels:
@@ -215,8 +217,12 @@ the server's `SupportTickets:Path`, which the site and the Discord bot share ([d
 The window: My tickets lists cards (category icon, number, category, subject, state, opened and updated times, message
 count) with Refresh and New ticket, refreshed every 15 s; a card opens the ticket: its header with Edit and Cancel ticket
 while editable, the conversation (the player's messages on the right, the staff's on the left, scrolled to the newest,
-refreshed every 10 s while the answer box is empty) and the answer box with Attach image or video (the site's
-`/suporte/anexo/<id>` page) and Send. New ticket is the form for a new ticket or an edit.
+refreshed every 10 s while the answer box is empty) and the answer box with Send. New ticket is the form for a new
+ticket or an edit. The browser client draws the window as a page window (`news.js`, [web-client.md](web-client.md)):
+there Attach image or video opens the browser's file picker and uploads the file to the site's
+`POST /api/play-session/attachment/<id>` (the game login's play session, same origin, one image or video of up to
+20 MB per ticket; a new ticket's file after the server keeps the ticket). The site has no attachment page; the staff
+opens attachments from the GM support page.
 
 ## How to
 

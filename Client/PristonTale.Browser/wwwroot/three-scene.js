@@ -2,7 +2,7 @@ import * as THREE from './vendor/three/three.webgpu.js';
 import { createNativeBatches } from './three-native.js';
 import { createRainBatches } from './three-rain.js';
 import { ExternalCamera } from './three-camera.js';
-import { createThreePost } from './three-post.js';
+import { createThreePost, sceneryReflectionMrt } from './three-post.js';
 import { createNativeDisplayEncoder } from './three-display.js';
 import { buildStaticStageBatches } from './three-batching.js';
 import { buildTextureArrayStageBatches, createStaticArrayObserverPolicy, textureArrayLimits } from './three-texture-arrays.js';
@@ -21,8 +21,33 @@ const defaultAmbient = [0.55, 0.55, 0.55];
 const defaultGround = [0.3, 0.3, 0.3];
 const defaultSun = [0.7, 0.7, 0.7];
 const defaultDirection = [0.3, -1, 0.2];
+// Classic light levels, set by eye against captures: night keeps the scene readable, the ground fill is a little
+// darker than the sky, the key only shapes the characters, and lamps stay pools of light without a tone curve.
+const classicNightLevel = 0.6;
+const classicGroundFill = 0.85;
+const classicKey = 0.35;
+const classicLampScale = 0.25;
+// The default look's levels: a little less ambient than classic, a strong key, lamps a little brighter under the tone
+// curve, and the level a field underground keeps (0 night, 1 day).
+const defaultAmbientLevel = 0.8;
+const defaultKey = 1.1;
+const defaultLampScale = 0.5;
+const undergroundDay = 0.6;
 const zero = [0, 0, 0];
-const sceneAnisotropy = { VeryLow: 1, Low: 2, Medium: 4, High: 8, Ultra: 16 };
+const mostAnisotropy = 16;
+
+function sceneAnisotropy(settings, renderer) {
+    const wanted = Number.isFinite(settings.anisotropicFilter) ? settings.anisotropicFilter : mostAnisotropy;
+    return Math.max(1, Math.min(wanted, renderer.getMaxAnisotropy?.() ?? 1));
+}
+
+// The scenery casts sun shadows unless the settings keep them to characters (the "Simples" shadows).
+export function stageShadows(group, settings) {
+    for (const object of group.userData.renderObjects ?? group.children) {
+        object.userData.stageCasts ??= object.castShadow;
+        object.castShadow = object.userData.stageCasts && settings?.actorShadowsOnly !== true;
+    }
+}
 
 function textureOffset(form, milliseconds) {
     const tick = milliseconds >>> 6;
@@ -59,6 +84,26 @@ function palette(skeleton, rows) {
             0, 0, 0, 1);
     }
     skeleton.update();
+}
+
+// Sky and ground fill, the key light and the rim light: always these four, so the studio's light layout never changes.
+// Set only around the world draw: Three keeps a render object per render context (target and MRT), each built with
+// the mrtNode its material held when it was first drawn, so the world's scenery-reflection MRT and a portrait's plain
+// target each keep their own build without marking the materials for an update.
+function setActorMrt(resource, mrtNode) {
+    for (const actor of resource.actors.values()) {
+        for (const object of actor.group.children) object.material.mrtNode = mrtNode;
+    }
+}
+
+function createPortraitStudio() {
+    const scene = new THREE.Scene();
+    const ambient = new THREE.HemisphereLight(0xffffff, 0xffffff, 1);
+    const key = new THREE.DirectionalLight(0xffffff, 1);
+    const rim = new THREE.PointLight(0xffffff, 0);
+    rim.decay = 2;
+    scene.add(ambient, key, key.target, rim);
+    return { scene, ambient, key, rim, moved: [] };
 }
 
 function skeletonFor(count) {
@@ -636,12 +681,13 @@ class ThreeGraphics {
         resource.shadowRefresh.invalidate();
         for (const textureId of resource.textureIds) this.configureSceneTexture(id, textureId);
         for (const group of resource.stages.values()) {
+            stageShadows(group, settings);
             this.bundleCache?.invalidate(group);
         }
         for (const group of resource.stages.values()) for (const object of group.userData.renderObjects ?? group.children) {
             const map = object.material.userData.arrayTexture;
             if (!map) continue;
-            const anisotropy = Math.min(sceneAnisotropy[settings.quality] ?? 4, this.renderer.getMaxAnisotropy?.() ?? 1);
+            const anisotropy = sceneAnisotropy(settings, this.renderer);
             if (map.anisotropy !== anisotropy) {
                 map.anisotropy = anisotropy;
                 map.needsUpdate = true;
@@ -676,7 +722,7 @@ class ThreeGraphics {
         map.generateMipmaps = true;
         map.minFilter = THREE.LinearMipmapLinearFilter;
         map.magFilter = THREE.LinearFilter;
-        map.anisotropy = Math.min(sceneAnisotropy[resource.settings.quality] ?? 4, this.renderer.getMaxAnisotropy?.() ?? 1);
+        map.anisotropy = sceneAnisotropy(resource.settings, this.renderer);
         map.needsUpdate = true;
         resource.textureIds.add(textureId);
         if (textureId < 0) this.bundleCache?.invalidate();
@@ -879,6 +925,7 @@ class ThreeGraphics {
         resource.stages.set(id, group);
         resource.scene.add(group);
         group.userData.renderObjects = Array.from(group.children);
+        stageShadows(group, resource.settings);
         this.bundleCache?.register(group);
     }
 
@@ -1189,10 +1236,28 @@ class ThreeGraphics {
     }
 
     light(resource, frame) {
-        resource.ambient.color.fromArray(frame.ambient ?? defaultAmbient);
-        resource.ambient.groundColor.fromArray(frame.groundAmbient ?? frame.ambient ?? defaultGround);
-        resource.sun.color.fromArray(frame.sunColor ?? defaultSun);
         const direction = frame.sunDirection ?? defaultDirection;
+        const classic = resource.settings.classicLighting === true;
+        // Both looks share an even ambient that shows the texture times the stage's baked vertex light at full strength
+        // (Three's hemisphere light divides by pi); night only dims the whole scene, and a field underground keeps one
+        // level. The sun's height above the horizon picks between day and night.
+        const day = frame.underground ? undergroundDay : Math.min(1, Math.max(0, (0.05 - direction[1]) / 0.3));
+        const level = classicNightLevel + (1 - classicNightLevel) * day * day * (3 - 2 * day);
+        resource.ambient.intensity = Math.PI;
+        if (classic) {
+            // The original look: full ambient and a soft key that only gives the characters their shape.
+            resource.ambient.color.setScalar(level);
+            resource.ambient.groundColor.setScalar(level * classicGroundFill);
+            resource.sun.color.setScalar(level * classicKey);
+        } else {
+            // The default look: a little less ambient and a strong key in the sun's own colour, so daylight has shape
+            // and the hour its tint; the tone curve and the warm grade finish it.
+            const sun = frame.sunColor ?? defaultSun;
+            const peak = Math.max(sun[0], sun[1], sun[2], 1e-3);
+            resource.ambient.color.setScalar(level * defaultAmbientLevel);
+            resource.ambient.groundColor.setScalar(level * defaultAmbientLevel * classicGroundFill);
+            resource.sun.color.setRGB(sun[0] / peak, sun[1] / peak, sun[2] / peak).multiplyScalar(level * defaultKey);
+        }
         resource.sun.target.position.fromArray(frame.cameraTarget ?? zero);
         resource.sun.position.copy(resource.sun.target.position);
         resource.sun.position.x -= direction[0] * 3000;
@@ -1229,7 +1294,7 @@ class ThreeGraphics {
             light.visible = true;
             light.position.fromArray(point.position);
             light.color.fromArray(point.color);
-            light.intensity = (point.intensity ?? 1) * (resource.settings.lightIntensityScale ?? 1);
+            light.intensity = (point.intensity ?? 1) * (resource.settings.lightIntensityScale ?? 1) * (classic ? classicLampScale : defaultLampScale);
             light.distance = point.range ?? 0;
             light.decay = 2;
         }
@@ -1281,38 +1346,40 @@ class ThreeGraphics {
                 this.profiler?.endPhase(ThreePhase.native, started, end - index);
                 this.stats.nativeDraws += end - index;
                 index = end - 1;
+            } else if (command.actorIds) {
+                this.renderPortrait(command, target);
             } else {
                 const started = this.profiler?.start();
                 const resource = this.scene(command.sceneId);
-                if (!command.actorIds && resource.lastWorldCamera) {
+                if (resource.lastWorldCamera) {
                     resource.lastWorldCamera.projectionMatrix.copy(command.camera.projectionMatrix);
                     resource.lastWorldCamera.matrixWorldInverse.copy(command.camera.matrixWorldInverse);
                     resource.lastWorldPointLightCount = command.frame.pointLights?.length ?? 0;
                     resource.hasWorldCamera = true;
                 }
-                if (!command.actorIds && this.bundleCache) {
+                if (this.bundleCache) {
                     for (const stage of resource.stages.values()) {
                         this.bundleCache.prepare(stage, command.frame.pointLights?.length ?? 0,
                             !!command.frame.shadowsEnabled && resource.sun.castShadow);
                     }
                 }
                 if (renderer.shadowMap) {
-                    renderer.shadowMap.enabled = !command.actorIds && command.frame.shadowsEnabled && resource.sun.castShadow;
+                    renderer.shadowMap.enabled = command.frame.shadowsEnabled && resource.sun.castShadow;
                     renderer.shadowMap.type = THREE.PCFShadowMap;
                 }
                 this.light(resource, command.frame);
                 const configuredShadowHz = resource.settings.shadowUpdateRate ?? 0;
                 const shadowHz = this.dynamicShadowHz > 0
                     ? (configuredShadowHz > 0 ? Math.min(configuredShadowHz, this.dynamicShadowHz) : this.dynamicShadowHz) : configuredShadowHz;
-                if (!command.actorIds) resource.shadowRefresh.update(resource.sun, command.frame, shadowHz, !!renderer.shadowMap?.enabled);
-                const postTarget = !command.targetId && !command.actorIds
+                resource.shadowRefresh.update(resource.sun, command.frame, shadowHz, !!renderer.shadowMap?.enabled);
+                const postTarget = !command.targetId
                     ? this.post?.beginScene(resource.scene, command.camera, command.frame, resource.settings, null) : null;
                 if (postTarget && this.post.effective) this.post.effective.dynamicShadowUpdateRate = this.dynamicShadowHz > 0
                     && (configuredShadowHz === 0 || this.dynamicShadowHz < configuredShadowHz) && renderer.shadowMap?.enabled ? shadowHz : 0;
                 if (postTarget) renderer.setRenderTarget(postTarget);
                 // Sky alpha layers must finish before either the world's opaque or transparent queues.
                 // A negative renderOrder in the world scene cannot cross Three's separate material queues.
-                if (!command.actorIds && (resource.sky[0].visible || resource.sky[1].visible)) {
+                if (resource.sky[0].visible || resource.sky[1].visible) {
                     const skyMrt = renderer.getMRT?.()?.has('normalRoughness') ? resource.skyMrt : null;
                     if (skyMrt !== resource.activeSkyMrt) {
                         resource.activeSkyMrt = skyMrt;
@@ -1323,34 +1390,65 @@ class ThreeGraphics {
                     }
                     renderer.render(resource.skyScene, command.camera);
                 }
-                if (command.actorIds) {
-                    resource.shadowRefresh.invalidate();
-                    for (const group of resource.stages.values()) group.visible = false;
-                    for (const [id, actor] of resource.actors) {
-                        actor.wasVisible = actor.group.visible;
-                        actor.group.visible = command.actorIds.includes(id);
-                    }
-                }
-                if (command.actorIds && this.display) {
-                    this.display.begin(target, target?.width ?? this.width, target?.height ?? this.height);
-                    try {
-                        renderer.render(resource.scene, command.camera);
-                    } finally {
-                        this.display.compose(target, command.frame.exposure ?? 1);
-                    }
-                } else {
-                    renderer.render(resource.scene, command.camera);
-                }
+                const sceneryMrt = renderer.getMRT?.()?.has('reflectColor') ? sceneryReflectionMrt : null;
+                if (sceneryMrt) setActorMrt(resource, sceneryMrt);
+                renderer.render(resource.scene, command.camera);
+                if (sceneryMrt) setActorMrt(resource, null);
                 if (postTarget) this.post.finishScene();
                 this.stats.sceneDraws++;
-                if (command.actorIds) {
-                    for (const group of resource.stages.values()) group.visible = true;
-                    for (const actor of resource.actors.values()) actor.group.visible = actor.wasVisible;
-                }
-                this.profiler?.endPhase(command.actorIds ? ThreePhase.portrait : ThreePhase.scene, started);
+                this.profiler?.endPhase(ThreePhase.scene, started);
             }
         }
         this.commandCount = 0;
+    }
+
+    // A portrait draws only its actors, moved for the draw into a scene of its own whose studio lights never change in
+    // number. Drawn in the world scene, it hid the stages and swapped the world's eight point lights for its one rim
+    // light twice a frame, and every change in the light count made Three rebuild the materials of both draws.
+    renderPortrait(command, target) {
+        const started = this.profiler?.start();
+        const renderer = this.renderer;
+        const resource = this.scene(command.sceneId);
+        const studio = resource.portrait ??= createPortraitStudio();
+        const frame = command.frame;
+        studio.ambient.color.fromArray(frame.ambient ?? defaultAmbient);
+        studio.ambient.groundColor.fromArray(frame.groundAmbient ?? frame.ambient ?? defaultGround);
+        studio.key.color.fromArray(frame.sunColor ?? defaultSun);
+        const direction = frame.sunDirection ?? defaultDirection;
+        studio.key.position.set(-direction[0] * 3000, -direction[1] * 3000, -direction[2] * 3000);
+        const rim = frame.pointLights?.[0];
+        studio.rim.intensity = rim ? (rim.intensity ?? 1) * (resource.settings.lightIntensityScale ?? 1) : 0;
+        if (rim) {
+            studio.rim.position.fromArray(rim.position);
+            studio.rim.color.fromArray(rim.color);
+            studio.rim.distance = rim.range ?? 0;
+        }
+        const moved = studio.moved;
+        moved.length = 0;
+        for (const id of command.actorIds) {
+            const actor = resource.actors.get(id);
+            if (!actor) continue;
+            moved.push(actor.group, actor.group.visible);
+            actor.group.visible = true;
+            studio.scene.add(actor.group);
+        }
+        if (renderer.shadowMap) renderer.shadowMap.enabled = false;
+        try {
+            this.display?.begin(target, target?.width ?? this.width, target?.height ?? this.height);
+            try {
+                renderer.render(studio.scene, command.camera);
+            } finally {
+                this.display?.compose(target, frame.exposure ?? 1);
+            }
+        } finally {
+            for (let index = 0; index < moved.length; index += 2) {
+                resource.scene.add(moved[index]);
+                moved[index].visible = moved[index + 1];
+            }
+            moved.length = 0;
+        }
+        this.stats.sceneDraws++;
+        this.profiler?.endPhase(ThreePhase.portrait, started);
     }
 
     present() {

@@ -35,7 +35,8 @@ public sealed partial class GameScene
 
         _outlinedId = hovered;
         var classic = _presentation?.Requested.ClassicNamePlates == true;
-        if (hovered == 0 || (kind == EntityKind.Npc && !classic) || !_remote.TryGetDrawnPosition(hovered, out var position))
+        var glow = _presentation?.Requested.OutlineGlow != false;
+        if (hovered == 0 || !glow || (kind == EntityKind.Npc && !classic) || !_remote.TryGetDrawnPosition(hovered, out var position))
         {
             return;
         }

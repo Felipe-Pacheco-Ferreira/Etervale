@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import * as THREE from '../wwwroot/vendor/three/three.webgpu.js';
 import { ExternalCamera } from '../wwwroot/three-camera.js';
 import { internalPostMode } from '../wwwroot/adaptive-resolution.js';
-import { createThreePost, postOptions } from '../wwwroot/three-post.js';
+import { createThreePost, postOptions, sceneryReflectionMrt } from '../wwwroot/three-post.js';
 
 function harness(options) {
     const calls = [];
@@ -428,4 +428,62 @@ test('immutable fused sharpening keeps the full tone input and reports use only 
     assert.equal(normal.post.effects.at(-1).constructor.name, 'SharpenNode');
     assert.deepEqual(normal.post.getFusedSharpenProfile(), { requested: false, enabled: false, compositions: 0 });
     normal.post.dispose();
+});
+
+test('classic lighting reaches the display without a tone curve; the realistic light keeps its tonemapper', () => {
+    assert.equal(postOptions({ classicLighting: true, tonemapper: 'AgX' }).tonemapper, 'none');
+    assert.equal(postOptions({ classicLighting: false, tonemapper: 'AgX' }).tonemapper, 'agx');
+    assert.equal(postOptions({}).tonemapper, 'pbrneutral');
+});
+
+test('the default light takes its finishing from the settings; the classic light turns all of it off', () => {
+    const enhanced = postOptions({ colorGrading: true, vignette: true, filmGrain: true, bloom: 'High', bloomIntensityPercent: 150 });
+    assert.deepEqual([enhanced.colorGrading, enhanced.vignette, enhanced.filmGrain, enhanced.bloom, enhanced.bloomIntensity],
+        [true, true, true, 'high', 1.5]);
+    assert.equal(postOptions({ toneMapping: false }).tonemapper, 'none');
+    assert.equal(postOptions({}).vignette, true, 'the vignette is on unless turned off');
+    const classic = postOptions({ classicLighting: true, colorGrading: true, vignette: true, filmGrain: true, bloom: 'High' });
+    assert.deepEqual([classic.colorGrading, classic.vignette, classic.filmGrain, classic.bloom, classic.tonemapper],
+        [false, false, false, 'off', 'none']);
+    assert.equal(postOptions({ bloomIntensityPercent: 500 }).bloomIntensity, 2);
+});
+
+test('scenery-only reflections trace a colour target the actors leave black, and alternate frames trace once in two', () => {
+    const { post, camera } = harness();
+    post.beginScene(null, camera, null, { screenSpaceReflections: true, sceneryOnlyReflections: true, reflectionsEveryOtherFrame: false });
+    assert.equal(post.target.textures.length, 3);
+    assert.equal(post.target.textures[2].name, 'reflectColor');
+    assert.ok(post.mrt.has('reflectColor'));
+    assert.equal(post.reflectionEffect.colorNode.value, post.target.textures[2]);
+    assert.ok(sceneryReflectionMrt.has('reflectColor') && !sceneryReflectionMrt.has('output'));
+    post.active = false;
+    post.dispose();
+
+    const full = harness();
+    full.post.beginScene(null, full.camera, null, { screenSpaceReflections: true });
+    assert.equal(full.post.target.textures.length, 2);
+    assert.equal(full.post.reflectionEffect.colorNode.value, full.post.target.texture);
+    const traced = [];
+    const ssr = full.post.reflectionEffect;
+    const original = Object.getPrototypeOf(ssr).updateBefore;
+    Object.getPrototypeOf(ssr).updateBefore = frame => traced.push(frame);
+    try {
+        full.post.active = false;
+        full.post.dispose();
+        const alternate = harness();
+        alternate.post.beginScene(null, alternate.camera, null, { screenSpaceReflections: true });
+        for (let frame = 0; frame < 4; frame++) alternate.post.reflectionEffect.updateBefore(frame);
+        assert.deepEqual(traced, [0, 2]);
+        traced.length = 0;
+        alternate.post.active = false;
+        alternate.post.dispose();
+        const every = harness();
+        every.post.beginScene(null, every.camera, null, { screenSpaceReflections: true, reflectionsEveryOtherFrame: false });
+        for (let frame = 0; frame < 4; frame++) every.post.reflectionEffect.updateBefore(frame);
+        assert.deepEqual(traced, [0, 1, 2, 3]);
+        every.post.active = false;
+        every.post.dispose();
+    } finally {
+        Object.getPrototypeOf(ssr).updateBefore = original;
+    }
 });

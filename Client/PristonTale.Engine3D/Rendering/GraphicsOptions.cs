@@ -13,6 +13,16 @@ public enum GraphicsQuality
     Ultra
 }
 
+// How smoothly the crowd's characters animate (CrowdAnimationLod): the order indexes its levels.
+[JsonConverter(typeof(JsonStringEnumConverter<CharacterQuality>))]
+public enum CharacterQuality
+{
+    VeryHigh,
+    High,
+    Medium,
+    Low
+}
+
 // Anti-aliasing of the HDR scene: none, FXAA or SMAA 1x on the display image, MSAA of the scene target
 // (MultiSampleCount samples), or temporal anti-aliasing (jittered frames, motion vectors and a history).
 [JsonConverter(typeof(JsonStringEnumConverter<AntiAliasingMode>))]

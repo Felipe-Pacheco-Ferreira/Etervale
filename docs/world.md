@@ -427,7 +427,8 @@ first snapshot, a change, a field of another sky).
 spawn files; see [world-import.md](world-import.md)): `SpawnPoints` (X/Z, `Active`), weighted `SpawnTable`,
 `BossSpawns` (boss, escort, escort count, hours), `FixedNpcs`, and knobs `MaxConcurrentMonsters` (10),
 `MaxPerSpawnPoint` (3), `SpawnIntervalMask`, `PerPointCooldownMs`, `SpawnPassIntervalMs` (1800), `IdleDespawnMs`
-(15000), `BossIdleDespawnFactor` (32). Unresolved monster or NPC names are dropped at load.
+(15000), `BossIdleDespawnFactor` (32). Unresolved monster or NPC names are dropped at load. A field leaves out the
+fixed NPCs named in `World:RemovedNpcs` ([server.md](server.md)), by default the two event girls.
 
 `FieldSpawner.MaintainPopulation`, once per pass:
 

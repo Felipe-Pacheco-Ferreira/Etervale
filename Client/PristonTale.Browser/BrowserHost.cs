@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices.JavaScript;
 using Microsoft.Xna.Framework;
 using PristonTale.Gameplay.UI;
+using PristonTale.Gameplay.UI.Widgets;
 using PristonTale.Engine3D.Rendering;
 
 namespace PristonTale.Browser;
@@ -107,6 +108,9 @@ public static partial class BrowserHost
     [JSImport("showCommunityLink", "avalon-page")]
     private static partial void ShowCommunityLink(string address);
 
+    [JSImport("openNews", "avalon-page")]
+    private static partial void OpenNews();
+
     [JSExport]
     public static void Frame() => _game?.Tick();
 
@@ -115,7 +119,19 @@ public static partial class BrowserHost
     {
         WebWorldHud.Enabled = true;
         WebWorldHud.OpenSettings = OpenWorldSettings;
+        HudNews.PageOpen = OpenNews;
     }
+
+    // News & Support drawn by the page (news.js): the window's state and the tickets the game keeps, its actions, its close.
+    [JSExport]
+    public static string NewsState() => WebWorldHud.Current?.News.PageState() ?? string.Empty;
+
+    [JSExport]
+    public static bool NewsAction(string action, string id, string subject, int category, string text) =>
+        WebWorldHud.Current?.News.PageAction(action, id, subject, category, text) ?? false;
+
+    [JSExport]
+    public static void NewsClosed() => WebWorldHud.Current?.News.PageClosed();
 
     [JSExport]
     public static void SetWorldCanvasPointer(bool overCanvas) => WebWorldHud.HasCanvasPointer = overCanvas;
@@ -128,4 +144,12 @@ public static partial class BrowserHost
 
     [JSExport]
     public static bool WorldAutoHuntActive() => WebWorldHud.Current?.AutoHuntEnabled ?? false;
+
+    // The players online the page's counter shows; -1 while unknown or hidden in Settings.
+    [JSExport]
+    public static int OnlinePlayers() => WebWorldHud.Current?.OnlinePlayers ?? -1;
+
+    // The mark on the page's News & Support shortcut: news not seen and answered tickets not read.
+    [JSExport]
+    public static int NewsUnread() => WebWorldHud.Current?.NewsUnread ?? 0;
 }

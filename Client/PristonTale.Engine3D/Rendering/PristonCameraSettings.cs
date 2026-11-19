@@ -18,7 +18,8 @@ public sealed record PristonCameraSettings
     // Exponential follow rate (higher = snappier), applied frame-rate-independently via 1 - exp(-rate*dt).
     public float FollowSmoothing { get; init; } = 14f;
     public float MouseOrbitSensitivity { get; init; } = 0.006f;
-    public float MouseZoomSensitivity { get; init; } = 0.35f;
+    // Radians of tilt per wheel unit (120 a notch): the wheel tilts as Page Up (up) and Page Down (down) do.
+    public float MouseTiltSensitivity { get; init; } = 0.001f;
     public float KeyboardZoomUnitsPerSecond { get; init; } = 300f;
     // A pointer within this many pixels of the window's side edge orbits the camera; the angular speed is per second,
     // so it does not depend on the frame rate.

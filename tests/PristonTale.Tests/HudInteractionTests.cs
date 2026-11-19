@@ -96,7 +96,7 @@ internal static class HudInteractionTests
             var window = HudInventoryLayout.Window(HudInventoryLayout.Origin(layout));
             Assert.True(window.Bottom == layout.Height && window.X == 0, "bottom windows are not bottom-left anchored");
             Assert.True(viewport.Contains(HudCombat.TargetBox(layout)), "target box escaped the viewport");
-            var scaled = new Point(minimap.Center.X * layout.Scale + layout.Scale - 1, minimap.Center.Y * layout.Scale);
+            var scaled = new Point((int)(minimap.Center.X * layout.Scale + layout.Scale - 1), (int)(minimap.Center.Y * layout.Scale));
             Assert.True(layout.ToLogical(scaled) == minimap.Center, "scaled pointer does not map back to logical pixels");
         }
 
@@ -703,7 +703,7 @@ internal static class HudInteractionTests
         return Task.CompletedTask;
     }
 
-    private static MouseState MouseAt(Point logical, int scale, ButtonState left) => new(logical.X * scale, logical.Y * scale, 0,
+    private static MouseState MouseAt(Point logical, float scale, ButtonState left) => new((int)(logical.X * scale), (int)(logical.Y * scale), 0,
         left, ButtonState.Released, ButtonState.Released, ButtonState.Released, ButtonState.Released);
 
     private static Task GaugeAsync()

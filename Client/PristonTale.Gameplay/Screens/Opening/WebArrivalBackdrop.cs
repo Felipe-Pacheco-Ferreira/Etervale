@@ -76,7 +76,8 @@ internal sealed class WebArrivalBackdrop : IDisposable
         {
             Sky = context.Sky,
             SkyProfiles = new PristonSkyProfiles(night, night, night),
-            ActorFloorLight = false
+            ActorFloorLight = false,
+            ExactActorPoseMemoization = true
         };
         try
         {

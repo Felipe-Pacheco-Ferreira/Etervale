@@ -147,6 +147,8 @@ public sealed partial class GameplayHud
             MapVisible = !MapVisible;
         }
 
+        UpdateSettingsShortcuts(keyboard);
+
         if (_settings.ShortcutPressed(keyboard, _previousKeyboard, HudSettingsPanel.NewsShortcut))
         {
             OpenNews();

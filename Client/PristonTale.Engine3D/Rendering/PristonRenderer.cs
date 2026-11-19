@@ -210,11 +210,12 @@ public sealed partial class PristonRenderer : IDisposable
 
     private void ApplyQuality(ClientSettings settings)
     {
+        _characterQuality = settings.CharacterQuality;
         if (_externalRenderer is not null)
         {
             _renderScale = settings.RenderScale;
             ShadowsEnabled = settings.ShadowsEnabled;
-            DistanceFog = PristonDistanceFog.For(settings.DistanceFog);
+            DistanceFog = PristonDistanceFog.For(settings.DistanceFog, settings.FogDistance);
             ExposureCompensation = settings.ExposureCompensation;
             RealisticSky = settings.RealisticSky;
             CloudQuality = settings.CloudQuality;
@@ -253,7 +254,7 @@ public sealed partial class PristonRenderer : IDisposable
         _fullShadowRefresh = true;
         _multiSampleCount = settings.AntiAliasing == AntiAliasingMode.Msaa ? Math.Clamp(settings.MultiSampleCount, 2, ClientSettings.MostMultiSamples) : 0;
         ShadowsEnabled = settings.ShadowsEnabled;
-        DistanceFog = PristonDistanceFog.For(settings.DistanceFog);
+        DistanceFog = PristonDistanceFog.For(settings.DistanceFog, settings.FogDistance);
         DebugView = settings.DebugView;
         ExposureCompensation = settings.ExposureCompensation;
         _maxLocalLights = Math.Clamp(settings.LocalLightLimit, 1, PristonShaderLibrary.MaxLocalLightCount);
@@ -428,6 +429,7 @@ public sealed partial class PristonRenderer : IDisposable
     {
         var dt = MathF.Max(0f, (float)gameTime.ElapsedGameTime.TotalSeconds);
         _lastDeltaSeconds = dt;
+        _poseMemoization?.Invalidate();
         _dayNight.Update(dt);
         TransientLights.Update(MathF.Max(0, dt));
         var profile = SkyProfileNow;
@@ -487,6 +489,7 @@ public sealed partial class PristonRenderer : IDisposable
         }
 
         LastAnimationCounts = (posed, reused);
+        PristonPoseMemoization.ProfileTiming?.RecordActorPoses(posed, reused);
 
         FollowEchoes();
         foreach (var actor in _actors)
@@ -499,6 +502,10 @@ public sealed partial class PristonRenderer : IDisposable
         }
     }
 
+    private PristonPoseMemoization _poseMemoization;
+
+    public bool ExactActorPoseMemoization { get; init; }
+
     public bool UseExternalAnimationClock { get; set; }
 
     // The root actors of the last animation update whose pose was sampled again, and those that kept theirs.
@@ -507,6 +514,8 @@ public sealed partial class PristonRenderer : IDisposable
     // The root actor the target frame's portrait shows: sampled every frame whatever its distance, since the portrait
     // shows it close up.
     public ActorHandle PortraitActor { get; set; } = ActorHandle.None;
+
+    private CharacterQuality _characterQuality = CharacterQuality.High;
 
     // The crowd level of detail of an actor, from the view of the last frame drawn (every frame before the first): its
     // distance from the camera's focus, so what the player looks at stays at full rate whatever the zoom; the
@@ -517,7 +526,7 @@ public sealed partial class PristonRenderer : IDisposable
             return (1, true);
         var onScreen = !actor.HasWorldBounds || _lodFrustum.Intersects(actor.WorldBounds);
         var portrait = PortraitActor.Slot == slot && actor.Generation == PortraitActor.Generation;
-        return (CrowdAnimationLod.Interval(Vector3.Distance(actor.World.Translation, _lodFocus), onScreen, portrait), onScreen);
+        return (CrowdAnimationLod.Interval(Vector3.Distance(actor.World.Translation, _lodFocus), onScreen, portrait, _characterQuality), onScreen);
     }
 
     public void SetSceneAnimationFrame(float ticks)

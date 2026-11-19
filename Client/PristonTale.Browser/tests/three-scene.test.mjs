@@ -433,13 +433,21 @@ test('portraits exclude the sky and leave its world layers ready for the followi
     };
     graphics.createTexture(8, 64, 64, null, true);
     graphics.setRenderTarget(8);
+    const worldLights = () => resource.scene.children.filter(object => object.isLight && object.visible).length;
+    graphics.drawScene(1, frame);
+    graphics.present();
+    const lightsBefore = worldLights();
+    seen.length = 0;
     graphics.drawPortrait(1, [1], frame);
     graphics.setRenderTarget(0);
     graphics.drawScene(1, frame);
     graphics.present();
-    assert.deepEqual(seen, [resource.scene, resource.skyScene, resource.scene]);
+    assert.deepEqual(seen, [resource.portrait.scene, resource.skyScene, resource.scene]);
     assert.equal(resource.sky[0].visible, true);
     assert.equal(resource.actors.get(1).group.visible, true);
+    assert.equal(resource.actors.get(1).group.parent, resource.scene, 'the portrait did not return its actor to the world');
+    assert.equal(worldLights(), lightsBefore, 'the portrait changed the world scene\'s light layout');
+    assert.equal(resource.portrait.scene.children.filter(object => object.isLight).length, 3, 'the studio light layout changed');
     seen.length = 0;
     graphics.setSkyLayers(1, [], [2], 1, 0, 1);
     graphics.setSkyParameters(1, 0, 0, 1);
@@ -902,4 +910,24 @@ test('fused sharpening auto resolves the actual backend while generic callers an
     for (const fusedSharpen of [null, 0, 1, 'true', 'false', '', {}, []]) await assert.rejects(createThreeGraphics({ dataset: {} }, {
         fusedSharpen, renderer: { setPixelRatio() { assert.fail('invalid mode must precede renderer mutation'); } }
     }), /mode must be/);
+});
+
+test('classic lighting is an even ambient that dims at night, and the default light adds a key in the colour of the sun', async () => {
+    const { graphics } = await fixture();
+    const resource = graphics.scene(1);
+    graphics.configureScene(1, { classicLighting: true });
+    graphics.light(resource, { ...frame, sunDirection: [0.2, -1, 0.1], pointLights: [] });
+    assert.equal(resource.ambient.intensity, Math.PI);
+    assert.equal(resource.ambient.color.r, 1, 'daylight was not full strength');
+    assert.ok(resource.ambient.groundColor.r < resource.ambient.color.r && resource.sun.color.r < resource.ambient.color.r);
+    graphics.light(resource, { ...frame, sunDirection: [0.2, 1, 0.1], pointLights: [] });
+    assert.ok(resource.ambient.color.r > 0.5 && resource.ambient.color.r < 0.7, 'night was black or as bright as day');
+    graphics.configureScene(1, { classicLighting: false });
+    graphics.light(resource, { ...frame, sunDirection: [0.2, -1, 0.1], sunColor: [1, 0.8, 0.5], pointLights: [] });
+    assert.equal(resource.ambient.intensity, Math.PI);
+    assert.ok(resource.ambient.color.r < 1, 'the default light kept the full classic ambient');
+    assert.ok(resource.sun.color.r > 1 && resource.sun.color.b < resource.sun.color.r, 'the key lost the warm colour of the sun');
+    graphics.light(resource, { ...frame, sunDirection: [0.2, 1, 0.1], underground: true, pointLights: [] });
+    assert.ok(resource.ambient.color.r > 0.6, 'a field underground was lit as night');
+    await graphics.dispose();
 });

@@ -41,6 +41,46 @@ public interface ISkillSceneHost : IVfxAnchors
 
     // A skill's impact shakes the local player's camera by this factor (SkillRule.CameraShake).
     void ShakeCamera(int factor) { }
+
+    // How the "limit other players' effects" setting treats an effect of this caster and target.
+    EffectLimit LimitOf(ulong casterId, ulong targetId) => EffectLimit.None;
+}
+
+// The "limit other players' effects" setting: another player's effect far from the camera is not drawn, and near it
+// at most Limit of them are live at once. The local player's, its target's and monsters' effects, and those aimed at
+// the local player or its target, always show.
+public static class OtherPlayerEffects
+{
+    public const float Distance = 1200f;
+    public const int Limit = 48;
+
+    public static EffectLimit Classify(bool limited, ulong casterId, ulong targetId, ulong selfId, ulong selectedId, bool casterIsPlayer,
+        float cameraDistanceSquared)
+    {
+        if (!limited || !casterIsPlayer || casterId == selfId || targetId == selfId || (selectedId != 0 && (casterId == selectedId || targetId == selectedId)))
+        {
+            return EffectLimit.None;
+        }
+
+        return cameraDistanceSquared > Distance * Distance ? EffectLimit.Hidden : EffectLimit.Counted;
+    }
+
+    public static bool Allows(EffectLimit limit, int countedLive) => limit == EffectLimit.None || (limit == EffectLimit.Counted && countedLive < Limit);
+
+    // The "forces, skills and emotes" switch turned off: no other player's effect is drawn, unless it is aimed at the
+    // local player.
+    public static bool HiddenBySwitch(bool hideOthers, ulong casterId, ulong targetId, ulong selfId, bool casterIsPlayer) =>
+        hideOthers && casterIsPlayer && casterId != selfId && targetId != selfId;
+}
+
+public enum EffectLimit : byte
+{
+    // Always drawn: the setting is off, or the effect is the local player's, its target's, a monster's or aimed at them.
+    None,
+    // Another player's effect near the camera: drawn while fewer than OtherPlayerEffects.Limit of them are live.
+    Counted,
+    // Another player's effect far from the camera: not drawn.
+    Hidden
 }
 
 // Turns the server's skill timeline into motions, effects, sounds, lights, floating numbers and the buff and
@@ -90,6 +130,12 @@ public sealed class SkillPresentation : IVfxServices, IDisposable
     public StatusBook Statuses { get; } = new();
     public SkillCooldownBook Cooldowns { get; } = new();
     public FloatingCombatText Text { get; } = new();
+
+    // How far above an entity's position its floating numbers start.
+    public const float NumberHeight = 62f;
+
+    // Hits between other entities float their numbers too (ClientSettings.ShowOtherPlayersDamage).
+    public bool ShowOthersDamage { get; set; } = true;
     public ActorLookBook Looks { get; } = new();
 
     public event Action<SkillCastResultInfo> CastResolved;
@@ -195,7 +241,29 @@ public sealed class SkillPresentation : IVfxServices, IDisposable
     // Spawns a named effect directly (probes, previews).
     public VfxHandle Spawn(string name, ulong casterId, ulong targetId, Vector3 point, float facing = 0f)
     {
+        var limit = _host.LimitOf(casterId, targetId);
+        if (!OtherPlayerEffects.Allows(limit, limit == EffectLimit.Counted ? CountedEffects() : 0))
+        {
+            return default;
+        }
+
         return Library.TryGet(name, out var effect) ? System.Spawn(effect, new VfxSpawn(casterId, targetId, point, facing)) : default;
+    }
+
+    private int CountedEffects()
+    {
+        var count = 0;
+        var live = System.Instances;
+        for (var index = 0; index < live.Count; index++)
+        {
+            var spawn = live[index].Spawn;
+            if (_host.LimitOf(spawn.CasterId, spawn.TargetId) == EffectLimit.Counted)
+            {
+                count++;
+            }
+        }
+
+        return count;
     }
 
     void IVfxServices.AddLight(Vector3 position, Color color, int power, int decay) => _lights?.Add(position, color, power, decay);
@@ -519,7 +587,8 @@ public sealed class SkillPresentation : IVfxServices, IDisposable
             return;
         }
 
-        if (combat.Kind != CombatEventKind.Hit || combat.Damage <= 0 || combat.AttackerId != self && combat.TargetId != self)
+        var own = combat.AttackerId == self || combat.TargetId == self;
+        if (combat.Kind != CombatEventKind.Hit || combat.Damage <= 0 || !own && !ShowOthersDamage)
         {
             return;
         }
@@ -529,7 +598,8 @@ public sealed class SkillPresentation : IVfxServices, IDisposable
             return;
         }
 
-        var kind = combat.TargetId == self ? FloatingTextKind.DamageTaken : combat.Critical ? FloatingTextKind.Critical : FloatingTextKind.DamageDealt;
+        var kind = !own ? FloatingTextKind.OtherDamage
+            : combat.TargetId == self ? FloatingTextKind.DamageTaken : combat.Critical ? FloatingTextKind.Critical : FloatingTextKind.DamageDealt;
         Text.Add(position, combat.Damage, kind);
     }
 
@@ -540,7 +610,7 @@ public sealed class SkillPresentation : IVfxServices, IDisposable
             return false;
         }
 
-        position.Y += 62f;
+        position.Y += NumberHeight;
         return true;
     }
 

@@ -33,7 +33,33 @@ internal static class ArcherSkillTests
     {
         Assert.True(Stuns(boss: false), "evade shot did not stun the monster it struck");
         Assert.True(!Stuns(boss: true), "evade shot stunned a boss");
+        Assert.True(SlayRaisesFeat(boss: true) is [{ Boss: not null, Victim: null } feat] && feat.Killer.EntityId == 1, "a boss slain did not raise its feat");
+        Assert.True(SlayRaisesFeat(boss: false).Count == 0, "a common monster raised a feat");
         return Task.CompletedTask;
+    }
+
+    // A monster slain by an archer's evade shots, and the feats the field raised for it.
+    private static List<PristonTale.Application.World.FieldFeat> SlayRaisesFeat(bool boss)
+    {
+        var definition = SkillFixtures.Monster(life: 1);
+        definition = boss ? definition with { Class = MonsterClass.Boss } : definition;
+        var field = SkillFixtures.Field(23, definition);
+        var feats = new List<PristonTale.Application.World.FieldFeat>();
+        field.FeatRaised = feats.Add;
+        var archer = SkillFixtures.Player(field, 1, PlayerClass.Archer, 90, Vector3.Zero, SkillFixtures.Weapon(ItemKind.Bow));
+        WithMana(archer);
+        archer.Character.Skills.Restore(EvadeShot, 1);
+        var monster = SkillFixtures.Spawn(field, definition, new Vector3(150, 0, 0));
+        SkillFixtures.Wait(field, 3f);
+        for (var attempt = 0; attempt < 10 && monster.IsAlive; attempt++)
+        {
+            SkillFixtures.Accept("Evade Shot", field, archer, EvadeShot, monster.EntityId);
+            SkillFixtures.Finish(field, archer);
+            SkillFixtures.Wait(field, 18f);
+        }
+
+        Assert.True(!monster.IsAlive, "the evade shots never slew the monster");
+        return feats;
     }
 
     private static bool Stuns(bool boss)

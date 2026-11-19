@@ -81,6 +81,9 @@ internal static class GameLogTests
         public Task<IReadOnlyList<PristonTale.Persistence.Abstractions.GameMasters.GmAuditRecord>> RecentAuditAsync(int limit, CancellationToken ct = default) =>
             Task.FromResult<IReadOnlyList<PristonTale.Persistence.Abstractions.GameMasters.GmAuditRecord>>([]);
 
+        public Task<IReadOnlyList<PristonTale.Persistence.Abstractions.GameMasters.GmAuditRecord>> AuditAfterAsync(long afterId, int limit,
+            CancellationToken ct = default) => Task.FromResult<IReadOnlyList<PristonTale.Persistence.Abstractions.GameMasters.GmAuditRecord>>([]);
+
         public Task<PristonTale.Persistence.Abstractions.GameMasters.CharacterTransfer> MoveCharacterAsync(string characterName, string targetUserId, int maxSlots,
             CancellationToken ct = default) => Task.FromResult(PristonTale.Persistence.Abstractions.GameMasters.CharacterTransfer.NoAccount);
     }

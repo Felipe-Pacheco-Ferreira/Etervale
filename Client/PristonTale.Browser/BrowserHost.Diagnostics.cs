@@ -44,7 +44,8 @@ internal readonly record struct BrowserFrameProfile(
     int CanvasWidth,
     int CanvasHeight,
     FrameTimingSample Timing,
-    ClientWeatherDiagnosticSample WeatherDiagnostic);
+    ClientWeatherDiagnosticSample WeatherDiagnostic,
+    AnimationPoseSample AnimationPoses);
 
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
 [JsonSerializable(typeof(BrowserFrameProfile))]

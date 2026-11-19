@@ -1,5 +1,11 @@
 using PristonTale.Tests;
 
+if (args.Length == 2 && args[0] == "--benchmark-pose-memoization")
+{
+    PoseMemoizationBenchmark.Run(args[1]);
+    return 0;
+}
+
 if (args.Length == 2 && args[0] == "--benchmark-parsing")
 {
     BinaryReadBenchmark.Run(args[1]);

@@ -20,7 +20,8 @@ public readonly record struct HudWorldView(
     bool Running,
     bool MapHidden = false,
     string NeighbourFieldId = null,
-    PristonIntRectangle NeighbourMapRectangle = default);
+    PristonIntRectangle NeighbourMapRectangle = default,
+    int FieldCode = 0);
 
 // Original field minimap: 128x128 box at (656,426), right and bottom anchored, black 50% backdrop, the
 // field\map\<id>.tga region around the player (the neighbouring field's map first), NPC dots, the heading arrow,
@@ -130,6 +131,18 @@ public sealed class HudMinimap
     public static Vector2 MarkerOffset(Vector3 player, Vector3 marker, float size) =>
         new((marker.X - player.X) * 64 / size, (marker.Z - player.Z) * 64 / size);
 
+    // The guide marker's offset: the destination's, or on the same bearing GuideEdge pixels from the centre when farther.
+    public static Vector2 GuideOffset(Vector3 player, Vector3 destination, float size)
+    {
+        var offset = MarkerOffset(player, destination, size);
+        var far = MathF.Max(MathF.Abs(offset.X), MathF.Abs(offset.Y));
+        return far > GuideEdge ? offset * (GuideEdge / far) : offset;
+    }
+
+    private const float GuideEdge = 58f;
+    private static readonly Color GuideRim = new(60, 30, 0);
+    private static readonly Color GuideColor = new(255, 208, 64);
+
     public static float EaseViewSize(float current, float target, double elapsedSeconds)
     {
         var step = (float)(ZoomSpeed * Math.Max(0, elapsedSeconds));
@@ -162,7 +175,10 @@ public sealed class HudMinimap
     }
 
     // party: the other members' places, marked red past PartyLimits.NearRange, as the original marks them.
-    public void Draw(HudPainter painter, HudLayout layout, HudWorldView world, IReadOnlyList<Vector3> npcs, IReadOnlyList<Vector3> party, bool hovered)
+    // guide: the quest destination the minimap guide points at (ClientSettings.MinimapGuide), held to the box's edge while
+    // it lies beyond the view.
+    public void Draw(HudPainter painter, HudLayout layout, HudWorldView world, IReadOnlyList<Vector3> npcs, IReadOnlyList<Vector3> party, bool hovered,
+        Vector3? guide = null)
     {
         var box = Box(layout);
         painter.ColorBox(box, 0, 0, 0, 128);
@@ -199,6 +215,14 @@ public sealed class HudMinimap
                 painter.Stretch(Parties.HudPartyArt.MapMark, new Rectangle((int)(center.X + offset.X) - 3, (int)(center.Y + offset.Y) - 3, 8, 8), null,
                     near ? Color.White : Color.Red);
             }
+        }
+
+        if (guide is { } destination)
+        {
+            var offset = GuideOffset(world.PlayerPosition, destination, _viewSize);
+            var at = new Point((int)(center.X + offset.X), (int)(center.Y + offset.Y));
+            painter.Fill(new Rectangle(at.X - 3, at.Y - 3, 7, 7), GuideRim);
+            painter.Fill(new Rectangle(at.X - 2, at.Y - 2, 5, 5), GuideColor);
         }
 
         painter.Rotated(HudArt.MapArrow, center, ArrowRotation(world.PlayerForward));

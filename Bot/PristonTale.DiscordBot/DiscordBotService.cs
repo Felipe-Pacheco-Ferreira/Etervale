@@ -10,7 +10,7 @@ namespace PristonTale.DiscordBot;
 
 // The bot on Discord: the slash commands, the chat relays both ways, the announcements and the support tickets. Discord's
 // handlers hand their work to the thread pool at once, so the gateway is never held by storage or the game server.
-public sealed partial class DiscordBotService(BotSettings settings, BotQueries queries, SiteClient site, SiteData data, ClassTitles titles, GameLinkClient link,
+public sealed partial class DiscordBotService(BotSettings settings, BotQueries queries, SiteClient site, SiteData data, ClassTitles titles, GameLinks links,
     IGameMasterRepository gameMasters, IServiceProvider services, TimeProvider time, ILogger<DiscordBotService> logger) : BackgroundService
 {
     // Discord's upload limit for a server without boosts.
@@ -97,6 +97,24 @@ public sealed partial class DiscordBotService(BotSettings settings, BotQueries q
 
     private async Task HandleCommandAsync(SocketSlashCommand command, CancellationToken ct)
     {
+        if (command.Data.Name == SlashCommands.DevNote)
+        {
+            await DevNoteAsync(command, ct);
+            return;
+        }
+
+        if (command.Data.Name == SlashCommands.Maintenance)
+        {
+            await MaintenanceAsync(command, ct);
+            return;
+        }
+
+        if (command.Data.Name == SlashCommands.Purge)
+        {
+            await AskPurgeAsync(command);
+            return;
+        }
+
         var gameMaster = command.Data.Name == SlashCommands.GameMaster;
         await command.DeferAsync(ephemeral: gameMaster);
         string answer;
@@ -149,25 +167,31 @@ public sealed partial class DiscordBotService(BotSettings settings, BotQueries q
 
     private async Task RelayToGameAsync(SocketMessage message, CancellationToken ct)
     {
-        if (!settings.Watch.RelayToGame || !link.Enabled || message.Channel.Id != settings.Discord.Channels.PublicChat
+        if (!settings.Watch.RelayToGame || !links.AnyEnabled || message.Channel.Id != settings.Discord.Channels.TradeChat
             || message.Author.IsBot || message.Author.IsWebhook || message is not SocketUserMessage || string.IsNullOrWhiteSpace(message.Content))
         {
             return;
         }
 
-        bool sent;
+        // Discord's trade channel reaches the trade channel of every server; ⚠️ when any of them refused or did not answer.
+        var author = DisplayName(message.Author);
+        var sent = await Task.WhenAll(links.All.Where(static link => link.Enabled).Select(link => SayAsync(link, author, message.CleanContent, ct)));
+        if (sent.Contains(false))
+        {
+            await message.AddReactionAsync(new Emoji("⚠️"));
+        }
+    }
+
+    private async Task<bool> SayAsync(GameLinkClient link, string author, string text, CancellationToken ct)
+    {
         try
         {
-            sent = await link.SayAsync(DisplayName(message.Author), message.CleanContent, ct);
+            return await link.SayAsync(author, text, ct);
         }
         catch (Exception exception) when (exception is HttpRequestException || (exception is TaskCanceledException && !ct.IsCancellationRequested))
         {
-            sent = false;
-        }
-
-        if (!sent)
-        {
-            await message.AddReactionAsync(new Emoji("⚠️"));
+            logger.LogWarning("Discord line not delivered to the game server {Server}: {Error}", link.Server, exception.Message);
+            return false;
         }
     }
 
@@ -183,18 +207,29 @@ public sealed partial class DiscordBotService(BotSettings settings, BotQueries q
     private static string? Option(IEnumerable<SocketSlashCommandDataOption> options, string name) =>
         options.FirstOrDefault(option => option.Name == name)?.Value?.ToString();
 
-    private async Task SendAsync(ulong channelId, IEnumerable<string> lines)
+    private async Task SendAsync(ulong channelId, IEnumerable<string> lines, bool ping = false)
     {
         if (channelId == 0 || _client.GetChannel(channelId) is not IMessageChannel channel)
         {
             return;
         }
 
-        foreach (var message in BotTexts.Pack(lines))
+        // A ping is the first line of the batch, so it stays within Discord's limit and rings once.
+        var messages = BotTexts.Pack(lines);
+        ping &= settings.Discord.PingEveryone && messages.Count > 0;
+        await SendMessagesAsync(channel, ping ? BotTexts.Pack(lines.Prepend(BotTexts.Everyone)) : messages, ping);
+    }
+
+    private async Task SendMessagesAsync(IMessageChannel channel, IEnumerable<string> messages, bool ping = false)
+    {
+        foreach (var message in messages)
         {
-            await channel.SendMessageAsync(message, allowedMentions: AllowedMentions.None);
+            await channel.SendMessageAsync(message, allowedMentions: Mentions(ping));
         }
     }
+
+    // Only the bot's own @everyone ever pings: the game's words are escaped and mentions stay off otherwise.
+    private static AllowedMentions Mentions(bool ping) => ping ? new AllowedMentions(AllowedMentionTypes.Everyone) : AllowedMentions.None;
 
     private Task LogAsync(LogMessage message)
     {

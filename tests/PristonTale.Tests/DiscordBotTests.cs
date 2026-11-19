@@ -9,6 +9,7 @@ using PristonTale.Application.Support;
 using PristonTale.Contracts.Social;
 using PristonTale.DiscordBot;
 using PristonTale.DiscordBot.Sources;
+using PristonTale.Persistence.Abstractions.GameMasters;
 using PristonTale.Server.Net;
 using PristonTale.Simulation.Social;
 using PristonTale.Simulation.World.Calendar;
@@ -94,6 +95,15 @@ internal static class DiscordBotTests
             "another author is not held by it");
         Assert.True(ExternalChat.Compose(ExternalChat.DiscordSource, "Ana", new string('a', ChatRules.InputLimit - 1) + "😀").EndsWith('a'),
             "a character is never cut in half");
+
+        var feat = new GameFeat(GameFeat.Pvp, "Castelo", "Bia", 90, [new FeatPlayer("Ana", 95, PristonTale.Contracts.Characters.PlayerClass.Knight, 0, "")], null, []);
+        fixture.Directory.RecordFeat(feat);
+        Assert.True(fixture.Directory.RecentPublicMessages().Last() is { Channel: GameFeat.Pvp, Text: "Bia morto por Ana em Castelo" } recorded && recorded.Feat == feat,
+            "a feat enters the public activity with its details and a readable line");
+
+        ServerNotices.Broadcast(fixture.Directory, "Manutenção às 20h");
+        Assert.True(fixture.Directory.RecentPublicMessages().Last() is { Channel: "notice", Text: "Manutenção às 20h" },
+            "a game master's notice enters the public activity stream without its prefix");
     }
 
     private static async Task BotLinkAsync()
@@ -244,8 +254,28 @@ internal static class DiscordBotTests
     private static Task TextsAsync()
     {
         var line = BotTexts.ChatLine(new PublicGameMessage(1, DateTimeOffset.UnixEpoch, "clan", "Ana> **vende** @everyone"));
-        Assert.True(line == @"**[Clã]** Ana\> \*\*vende\*\* @everyone", $"the game's words are escaped and the channel is named ({line})");
+        Assert.True(line == "[Clã] Ana> **vende** @everyone", $"the channel is named and the game's words are kept as written ({line})");
+        var named = BotTexts.ChatLine(new PublicGameMessage(1, DateTimeOffset.UnixEpoch, "local", "Ana: oi ```x"), "Avalon");
+        Assert.True(named == "[Avalon · Local] Ana: oi '''x", $"a line of one of several servers names its server and cannot close its block ({named})");
+        var blocks = BotTexts.ChatBlocks(Enumerable.Repeat(new string('c', 900), 3).Prepend(line));
+        Assert.True(blocks.Count == 2 && blocks.All(static block => block.StartsWith("```\n", StringComparison.Ordinal) && block.EndsWith("\n```", StringComparison.Ordinal)
+            && block.Length <= BotTexts.MessageLimit), "chat lines go to Discord as code blocks within the message limit, where nothing formats or pings");
 
+        Assert.True(new BotSettings().Discord.PingEveryone && BotTexts.Pack([BotTexts.Everyone, "🟢 O mundo **Avalon** está no ar."]).Single().StartsWith("@everyone\n", StringComparison.Ordinal),
+            "announcements ping everyone by default, once, before the batch");
+        var titles = new ClassTitles(new Dictionary<string, string> { ["Class.Knight.0"] = "Cavaleiro" });
+        var strong = new FeatPlayer("DEV Strong", 120, PristonTale.Contracts.Characters.PlayerClass.Knight, 0, "Noxius");
+        var bia = new FeatPlayer("Bia", 118, PristonTale.Contracts.Characters.PlayerClass.Priestess, 0, "");
+        var boss = FeatCards.For(new GameFeat(GameFeat.Boss, "Vale", "Valento", 100, [strong, bia], null, ["Espada x2", "1.000 de ouro"]), "", titles, 1);
+        Assert.True(boss.Title == "☠️ Valento foi derrotado!" && boss.Description.Contains("o grupo de **DEV Strong**", StringComparison.Ordinal)
+            && boss.Fields.Any(static field => field.Name == "🛡️ Grupo (2)" && field.Value.Contains("Bia", StringComparison.Ordinal))
+            && boss.Fields.Any(static field => field.Name == "💰 Drops" && field.Value == @"• Espada x2" + "\n" + @"• 1\.000 de ouro")
+            && boss.Fields[0].Value == "**DEV Strong**\nCavaleiro · nv. 120\n🏰 Noxius", $"a boss card names the killer, the party and the drops ({boss.Description})");
+        var duel = FeatCards.For(new GameFeat(GameFeat.Pvp, "Castelo", "Bia", 118, [strong with { Level = 100 }], bia, []), "Avalon", titles, 0);
+        Assert.True(duel.Title == "⚔️ DEV Strong abateu Bia" && duel.Description.Contains("18 níveis", StringComparison.Ordinal) && duel.Footer == "Avalon · PvP",
+            $"a PvP card names both sides and calls out a kill against the odds ({duel.Description})");
+        Assert.True(new ChannelSettings { BossKills = 5, PvpKills = 6 }.FeatChannel(GameFeat.Boss) == 5 && new ChannelSettings { PvpKills = 6 }.FeatChannel(GameFeat.Pvp) == 6,
+            "each feat has its feed");
         var packed = BotTexts.Pack(Enumerable.Repeat(new string('a', 900), 5).Append(new string('b', 2500)));
         Assert.True(packed.All(static message => message.Length <= BotTexts.MessageLimit) && packed.Count == 4,
             "lines are joined into messages within the limit and a long line is cut");
@@ -268,11 +298,55 @@ internal static class DiscordBotTests
             && transcript.Contains("Equipe — GM Bia\nDevolvida", StringComparison.Ordinal), "the transcript holds the whole conversation");
         Assert.True(BotTexts.TicketThreadName(ticket with { Subject = new string('s', 200) }).Length <= BotTexts.ThreadNameLimit, "a thread name fits Discord");
 
+        Assert.True(BotTexts.DevNoteTitle("  Chat do Discord ") == "🛠️ Chat do Discord" && BotTexts.DevNoteText(@"Linha 1\nLinha 2") == "Linha 1\nLinha 2",
+            "a development note's title is marked and \\n breaks its text's lines");
+        Assert.True(BotTexts.DevNoteSignature("DEV Strong", new DateTimeOffset(2026, 11, 18, 12, 0, 0, TimeSpan.Zero), TimeZoneInfo.Utc) == "DEV Strong · 18/11/2026",
+            "a development note is signed with the member's name and the day");
+        Assert.True(SlashCommands.ImageOptions.SequenceEqual(["imagem1", "imagem2", "imagem3", "imagem4"]), "a development note takes up to four images");
+        var note = DevNote.Parse("2026-11-18-chat", "\n# Novo sistema: Chat\n\nResumo em\nduas linhas.\n\nCanais:\n- Troca\n- Clã\n\nFim.", DateTime.UnixEpoch)!;
+        Assert.True(note.Date == new DateOnly(2026, 11, 18) && note.Title == "Novo sistema: Chat" && note.Summary == "Resumo em\nduas linhas."
+            && note.Body.SequenceEqual(["Canais:\n- Troca\n- Clã", "Fim."]), "a note's folder gives its day, its first line the title and its paragraphs the text");
+        Assert.True(DevNote.Parse("sem-data", "Sem título", DateTime.UnixEpoch) is null && DevNote.Parse("x", "# T", DateTime.UnixEpoch)!.Date == new DateOnly(1970, 1, 1),
+            "a note needs a title; without a day in its name it takes its file's");
+        Assert.True(note.Kind == DevNoteKind.System && DevNote.Parse("2026-11-19-x", "# Chat mais rápido\nTipo: melhoria\n\nResumo.", DateTime.UnixEpoch) is { Kind: DevNoteKind.Improvement, Summary: "Resumo." }
+            && DevNote.Parse("2026-11-19-y", "# Painel\nTipo: Equipe\n\nResumo.", DateTime.UnixEpoch) is { Kind: DevNoteKind.Staff }
+            && BotTexts.DevNoteTitle("Chat", DevNoteKind.Improvement) == "✨ Nova melhoria: Chat" && BotTexts.DevNoteTitle("Painel", DevNoteKind.Staff) == "🧰 Ferramenta da equipe: Painel",
+            "an improvement and a staff tool are marked by their line, which stays out of the text");
+        var improvement = DevNote.Parse("2026-11-19-x", "# Chat mais rápido\nTipo: melhoria\n\nResumo.", DateTime.UnixEpoch)!;
+        var staff = DevNote.Parse("2026-11-19-y", "# Painel\nTipo: equipe\n\nResumo.", DateTime.UnixEpoch)!;
+        Assert.True(BotTexts.InNews(note) && BotTexts.InNews(improvement) && !BotTexts.InNews(staff)
+            && BotTexts.DevNoteNews(improvement, "DEV Strong").Kind == NewsKind.Improvement && BotTexts.DevNoteNews(note, "DEV Strong").Kind == NewsKind.News,
+            "new systems and improvements reach the game's news with their badge, staff tools never");
+        var state = new BotState { News = [] };
+        Assert.True(NewsWatch.Fresh(state, [BotTexts.DevNoteNews(improvement, ""), BotTexts.DevNoteNews(note, "")]).Single().Kind == NewsKind.News,
+            "an improvement in the news is not announced in the announcements channel");
+        var post = BotTexts.DevNoteNews(note, "DEV Strong");
+        Assert.True(post.Summary == "Resumo em duas linhas." && post.Body.SequenceEqual(["Canais:", "- Troca", "- Clã", "", "Fim."]) && post.Author == "DEV Strong",
+            "a note becomes a signed news post with a line per note line");
+
         Assert.True(BotTexts.GameMasterResult(new BotCommandResponse("Done", [])) == "✅ Feito.", "a silent command is done");
         Assert.True(BotTexts.GameMasterResult(new BotCommandResponse("Done", ["> a ```b"])).Contains("'''", StringComparison.Ordinal),
             "replies cannot close their code block");
         Assert.True(BotTexts.GameMasterResult(new BotCommandResponse("NeedsWorld", [])).StartsWith('⛔'), "a command that needs the game is refused");
         Assert.True(BotTexts.Status([]) == "Nenhum mundo configurado no site.", "no world has its own text");
+        var world = new WorldInfo("Noxius", "Brasil", "Normal", "wss://localhost:11010/game", "https://localhost:11010/status");
+        var up = BotTexts.StatusPanel([new WorldReport(world, new WorldLoad(12, 6000))]);
+        var down = BotTexts.StatusPanel([new WorldReport(world, null)]);
+        Assert.True(up.Color == BotTexts.StatusUpColor && up.Fields.Single() is { Name: "🟢 Noxius · Brasil", Value: "No ar · 12 de 6.000 online" }
+            && down.Color == BotTexts.StatusDownColor && down.Fields.Single().Value == "Fora do ar", "the status panel shows each world up or down with its players");
+        var at = new DateTime(2026, 11, 19, 3, 30, 0, DateTimeKind.Unspecified);
+        var kick = BotTexts.AuditLine(new GmAuditRecord(7, 1, "strong", "DEV Strong", 4, "/kick Fulano", 2, true, "Kicked Fulano", at), TimeZoneInfo.Utc);
+        var refused = BotTexts.AuditLine(new GmAuditRecord(8, 0, "discord:42", "Bia", 1, "discord: ticket close x", 1, false, "", at), TimeZoneInfo.Utc);
+        var site = BotTexts.AuditLine(new GmAuditRecord(9, 1, "strong", "", 4, "web: correio", 4, true, "#3 · Todos", at), TimeZoneInfo.Utc);
+        Assert.True(BotTexts.AuditLine(new GmAuditRecord(10, 0, "discord:42", "Bia", 2, "/kick Ana", 2, true, "", at), TimeZoneInfo.Utc).StartsWith("💬", StringComparison.Ordinal),
+            "a game command sent from Discord is marked as Discord's");
+        Assert.True(kick == "🎮 `19/11 03:30` **DEV Strong** (nv. 4) · `/kick Fulano` ✅ — Kicked Fulano" && refused.StartsWith("💬", StringComparison.Ordinal)
+            && refused.EndsWith("⛔", StringComparison.Ordinal) && site.StartsWith("🌐", StringComparison.Ordinal) && site.Contains("**strong**", StringComparison.Ordinal),
+            $"an audit line shows where, when, who, the command and its outcome ({kick} | {refused} | {site})");
+        var updating = BotTexts.StatusPanel([new WorldReport(world, null)], maintenance: true, "Nova versão");
+        Assert.True(updating.Color == BotTexts.StatusMaintenanceColor && updating.Fields.Single() is { Name: "🟡 Noxius · Brasil", Value: "Em atualização" }
+            && updating.Description.Contains("Nova versão", StringComparison.Ordinal) && BotTexts.MaintenanceChanged(false, "").StartsWith("🟢", StringComparison.Ordinal),
+            "maintenance turns the panel yellow with its reason, and its end is announced");
         Assert.True(BotTexts.Online(new WorldLoad(1234, 0)) == "1.234 online", "numbers use the Portuguese grouping");
         Assert.True(BotTexts.Cut("ab😀c", 4) == "ab…" && BotTexts.Cut("abc", 3) == "abc", "a cut never splits a character");
         var reply = BotTexts.GameMasterResult(new BotCommandResponse("Done", Enumerable.Repeat(new string('r', 100), 40).ToArray()));
@@ -297,6 +371,9 @@ internal static class DiscordBotTests
         Assert.True(GameMasterActions.LevelOf([10UL, 20UL, 30UL], roles) == 3 && GameMasterActions.LevelOf([30UL], roles) == 0,
             "a member acts with its highest role's level");
 
+        Assert.True(DiscordBotService.ParsePurge(DiscordBotService.PurgeId(1572815838598135818, 50)) == (1572815838598135818UL, 50)
+            && DiscordBotService.ParsePurge("purge:1:0") is null && DiscordBotService.ParsePurge("purge:1:" + (SlashCommands.PurgeLimit + 1)) is null
+            && BotTexts.PurgeQuestion(5, 1000, all: true).Contains("todas as mensagens", StringComparison.Ordinal), "a purge button keeps its channel and a count within the limit");
         var id = Guid.NewGuid();
         Assert.True(DiscordBotService.ParseTicket("ticket-reply:12:" + id.ToString("N"), "ticket-reply") == (12L, id), "a ticket button keeps its ids");
         Assert.True(DiscordBotService.ParseTicket("ticket-reply:-1:" + id.ToString("N"), "ticket-reply") is null
@@ -316,6 +393,21 @@ internal static class DiscordBotTests
             Discord = new DiscordSettings { GameMasterRoles = new Dictionary<string, int> { ["admins"] = 9 } }
         }.Problems(connecting: false);
         Assert.True(wrong.Count == 4, $"plain http, a remote link without key and a bad role are refused ({string.Join(" ", wrong)})");
+
+        var single = new BotSettings { GameLink = new GameLinkSettings { Url = "http://127.0.0.1:10011", Key = Key } };
+        Assert.True(single.GameServers.Single() is { Name: "" } only && only.GameLink.Url == single.GameLink.Url,
+            "without Servers the bot follows the one server of GameLink and Activity");
+        var unnamed = new BotSettings { Servers = [new GameServerSettings { Name = "Avalon" }, new GameServerSettings { Name = "avalon " }, new GameServerSettings()] };
+        Assert.True(unnamed.Problems(connecting: false).Count == 1, "every server needs a name of its own");
+        var badLink = new BotSettings { Servers = [new GameServerSettings { Name = "Avalon", GameLink = new GameLinkSettings { Url = "http://127.0.0.1:1" } }] };
+        Assert.True(badLink.Problems(connecting: false).Single().Contains("Avalon", StringComparison.Ordinal), "each server's link is checked");
+        Assert.True(new ChannelSettings { Announcements = 1, WorldStatus = 2 }.WorldStatusChannel == 2 && new ChannelSettings { Announcements = 1 }.WorldStatusChannel == 1,
+            "worlds going down and up have their own channel, else the announcements");
+        var channels = new ChannelSettings { PrivateChat = 1, ClanChat = 2 };
+        Assert.True(channels.PrivateChannel("clan") == 2 && channels.PrivateChannel("whisper") == 1 && channels.PrivateChannel("party") == 1
+            && new ChannelSettings { PrivateChat = 1 }.PrivateChannel("clan") == 1, "clan lines have their own channel, else the private one");
+        Assert.True(DiscordBotService.StreamKey("public", "") == "public" && DiscordBotService.StreamKey("public", "Avalon") == "public:Avalon",
+            "the only server keeps its relay position; named servers have their own");
 
         var line = BotCommandLine.Parse(["--settings", "bot.json", "--Discord:GuildId=5", "--check", "ranking", "mago"]);
         Assert.True(line.Error is null && line.SettingsPath == Path.GetFullPath("bot.json") && line.Check.SequenceEqual(["ranking", "mago"])

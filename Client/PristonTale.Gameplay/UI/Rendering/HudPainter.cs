@@ -32,6 +32,8 @@ public sealed class HudPainter : IDisposable
     private readonly float _capCropping;
     private (float Capitals, float Descent)? _letterHeights;
     private Matrix _transform = Matrix.Identity;
+    private float _scale = 1f;
+    private SamplerState _sampler = SamplerState.PointClamp;
     private bool _active;
 
     public HudPainter(SpriteBatch batch, SpriteFont font, HudSprites sprites)
@@ -51,7 +53,23 @@ public sealed class HudPainter : IDisposable
     public void Begin(HudLayout layout)
     {
         _text.Clear();
-        _transform = Matrix.CreateScale(Math.Max(1, layout.Scale));
+        _scale = layout.Scale;
+        _sampler = layout.WholeScale ? SamplerState.PointClamp : SamplerState.LinearClamp;
+        _transform = Matrix.CreateScale(_scale);
+        BeginSprites();
+    }
+
+    // Draws what follows moved by offset HUD pixels, until the next Shift (Point.Zero returns to the layout): a window
+    // the player dragged keeps its own coordinates. What was queued before draws where it was.
+    public void Shift(Point offset)
+    {
+        if (_active)
+        {
+            Flush();
+            _batch.End();
+        }
+
+        _transform = Matrix.CreateTranslation(offset.X, offset.Y, 0f) * Matrix.CreateScale(_scale);
         BeginSprites();
     }
 
@@ -554,7 +572,7 @@ public sealed class HudPainter : IDisposable
 
     private void BeginSprites()
     {
-        _batch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.None,
+        _batch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, _sampler, DepthStencilState.None,
             RasterizerState.CullNone, transformMatrix: _transform);
         _active = true;
     }

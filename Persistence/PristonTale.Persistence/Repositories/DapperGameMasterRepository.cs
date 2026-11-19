@@ -50,6 +50,18 @@ public sealed class DapperGameMasterRepository(IDbConnectionFactory connectionFa
         return rows.ToList();
     }
 
+    public async Task<IReadOnlyList<GmAuditRecord>> AuditAfterAsync(long afterId, int limit, CancellationToken ct = default)
+    {
+        await using var connection = await connectionFactory.OpenAsync(ct);
+        var rows = await connection.QueryAsync<GmAuditRecord>(new CommandDefinition(
+            """
+            SELECT id, account_id, user_id, character_name, gm_level, command, required_level, accepted, result, created_at
+            FROM gm_audit WHERE id > @afterId ORDER BY id LIMIT @limit
+            """,
+            new { afterId, limit = Math.Max(1, limit) }, cancellationToken: ct));
+        return rows.ToList();
+    }
+
     public async Task<CharacterTransfer> MoveCharacterAsync(string characterName, string targetUserId, int maxSlots, CancellationToken ct = default)
     {
         await using var connection = await connectionFactory.OpenAsync(ct);

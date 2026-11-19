@@ -46,7 +46,7 @@ public sealed class GameClient : IDisposable
         ClientText.Use(_presentation.Requested.Language);
     }
 
-    public Func<Task> PrepareWorldAssetsAsync { get; init; }
+    public Func<PlayerClass, Task> PrepareWorldAssetsAsync { get; init; }
     public Func<IReadOnlyList<PlayerClass>, CancellationToken, Task> PrepareCharacterAssetsAsync { get; init; }
     public Func<PlayerClass, bool> CharacterAssetsReady { get; init; }
     public PristonTale.Gameplay.Weather.ClientWeatherDiagnostic WeatherDiagnostic { get; } = new();

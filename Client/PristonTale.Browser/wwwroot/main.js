@@ -6,6 +6,7 @@
 
 import { createHeroes } from "./heroes.js";
 import { createSettings } from "./settings.js";
+import { createNews } from "./news.js";
 import { createWorldHud } from "./world-hud.js";
 import { createPackedImports } from "./three-bridge.js";
 import { createWorkerGraphics, createWorkerPackedImports } from "./three-worker.js";
@@ -85,7 +86,6 @@ const texts = {
             password: { label: 'ID ou e-mail', placeholder: 'Sua ID ou e-mail', submit: 'Enviar código',
                 info: 'Digite sua ID ou o e-mail da conta. Enviaremos um código de 6 dígitos para o e-mail cadastrado.' }
         },
-        community: 'Abrir página do Noxius',
         accountLine: name => `Conta ${name}`,
         worldsFailed: 'Não foi possível carregar a lista de mundos.',
         checking: 'Verificando…',
@@ -124,7 +124,6 @@ const texts = {
             password: { label: 'ID or email', placeholder: 'Your ID or email', submit: 'Send code',
                 info: 'Enter your ID or account email. We’ll send a 6-digit code to your registered email.' }
         },
-        community: 'Open Noxius page',
         accountLine: name => `Account ${name}`,
         worldsFailed: 'The world list did not load.',
         checking: 'Checking…',
@@ -373,18 +372,29 @@ const heroes = createHeroes(root, new URL('./', import.meta.url).href,
     () => selectedLanguage, () => accountName);
 // The gear's Settings panel (settings.js).
 const settings = createSettings(root, () => host, () => selectedLanguage, setLanguage, () => worldHud.updateQuality());
+const news = createNews(root, () => host, () => selectedLanguage);
 const worldHud = createWorldHud(root, () => host, () => selectedLanguage, () => settings.qualityLabel,
-    () => activeGraphics?.workerRendering ? activeGraphics.workerStats.completedFrames : activeGraphics?.stats.frames ?? null);
+    () => activeGraphics?.workerRendering ? activeGraphics.workerStats.completedFrames : activeGraphics?.stats.frames ?? null,
+    { get mode() { return settings.interfaceMode; }, choose: mode => settings.setInterfaceMode(mode) });
 const adaptiveResolution = createAdaptiveResolution();
 let adaptiveChangePending = false;
 let nextAdaptiveLabelTime = 0;
+
+// The runtime sizes the canvas at min(devicePixelRatio, graphics.maxPixelRatio) drawing pixels per CSS pixel and
+// refits it on a window resize event.
+function applyMaxPixelRatio(graphics) {
+    const cap = settings.maxPixelRatio;
+    if (graphics.maxPixelRatio === cap) return;
+    graphics.maxPixelRatio = cap;
+    window.dispatchEvent(new Event('resize'));
+}
 
 function updateAdaptiveResolution(graphics, time, frames, onError) {
     const sceneReady = frames >= 4 && loading.hidden && !adaptiveWorldLoading && !pendingWorldReady;
     const revision = settings.appliedRevision * 2 + Number(adaptiveWorldReady);
     const eligible = document.visibilityState === 'visible' && !settingsPanel?.open;
     if (!adaptiveChangePending && adaptiveResolution.update(time, frames, settings.dynamicResolutionEnabled,
-        settings.renderScale, settings.maxFps, canvas.width, canvas.height, sceneReady, eligible, revision)) {
+        settings.renderScale, settings.maxFps, canvas.width, canvas.height, sceneReady, eligible, revision, settings.classicLighting)) {
         adaptiveChangePending = true;
         Promise.resolve(graphics.setDynamicResolutionScale(adaptiveResolution.scale, adaptiveResolution.shadowHz)).then(() => {
             adaptiveChangePending = false;
@@ -1357,19 +1367,13 @@ try {
             openWorldSettings() {
                 queueMicrotask(() => part('settings-open')?.click());
             },
+            openNews() {
+                queueMicrotask(() => news.open());
+            },
             showCommunityLink(address) {
-                let link = root.querySelector('[data-community-link]');
-                if (!link) {
-                    link = document.createElement('a');
-                    link.className = 'game-community';
-                    link.dataset.communityLink = '';
-                    link.target = '_blank';
-                    link.rel = 'noopener noreferrer';
-                    root.append(link);
-                }
-                link.textContent = text.community;
-                link.href = address;
-                link.focus();
+                // The game asks on the click that confirms it, within the browser's user activation, so the tab opens at once.
+                const opened = window.open(address, '_blank');
+                if (opened) opened.opener = null;
             }
         });
         const exports = await runtime.getAssemblyExports(runtime.getConfig().mainAssemblyName);
@@ -1488,6 +1492,7 @@ try {
                 }
                 if (graphics.workerRendering) drawn = graphics.workerStats.completedFrames;
                 else drawn = graphics.stats.frames;
+                applyMaxPixelRatio(graphics);
                 updateAdaptiveResolution(graphics, time, drawn, stopFrames);
                 showOpening();
                 requestFrame();

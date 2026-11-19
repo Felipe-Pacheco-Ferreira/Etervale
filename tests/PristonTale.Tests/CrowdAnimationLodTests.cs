@@ -10,7 +10,7 @@ internal static class CrowdAnimationLodTests
 {
     public static IEnumerable<(string, Func<Task>)> Cases()
     {
-        yield return ("an actor samples its pose every frame near the camera or in the portrait, less often farther and off screen, each on its own frames", PolicyAsync);
+        yield return ("an actor samples its pose every frame near the camera or in the portrait, less often farther, off screen and at lower character qualities, each on its own frames", PolicyAsync);
         yield return ("a kept pose is a copy the animator cannot overwrite, sampled again for a new motion or a refresh that moved on", PoseAsync);
     }
 
@@ -25,6 +25,15 @@ internal static class CrowdAnimationLodTests
         Assert.True(CrowdAnimationLod.Interval(CrowdAnimationLod.FarDistance * 3f, true, portrait: true) == 1
             && CrowdAnimationLod.Interval(CrowdAnimationLod.FarDistance * 3f, false, portrait: true) == 1,
             "the portrait's actor did not sample every frame far away");
+        var far = CrowdAnimationLod.FarDistance * 2f;
+        Assert.True(CrowdAnimationLod.Interval(far, true, quality: CharacterQuality.VeryHigh) == 1
+            && CrowdAnimationLod.Interval(far, false, quality: CharacterQuality.VeryHigh) == CrowdAnimationLod.OffScreenInterval
+            && CrowdAnimationLod.Interval(far, true) == CrowdAnimationLod.FarInterval
+            && CrowdAnimationLod.Interval(CrowdAnimationLod.NearDistance - 1f, true, quality: CharacterQuality.Medium) == 2
+            && CrowdAnimationLod.Interval(far, true, quality: CharacterQuality.Low) == CrowdAnimationLod.FarInterval * 2
+            && CrowdAnimationLod.Interval(far, false, quality: CharacterQuality.Low) == CrowdAnimationLod.OffScreenInterval * 2
+            && CrowdAnimationLod.Interval(far, true, portrait: true, quality: CharacterQuality.Low) == 1,
+            "the character qualities do not order the sampling from every frame to the slowest");
 
         for (var interval = 1; interval <= CrowdAnimationLod.OffScreenInterval; interval++)
         {

@@ -320,7 +320,7 @@ public sealed partial class GameScene
         {
             return false;
         }
-        if (!_remote.TryPick(ray, _remote.SelfEntityId, out var entityId, out var kind))
+        if (!_remote.TryPick(ray, _remote.SelfEntityId, out var entityId, out var kind, _filteredPlayers, PreferPlayers))
         {
             return false;
         }
@@ -412,7 +412,7 @@ public sealed partial class GameScene
         ulong hovered = 0;
         var hoveredKind = EntityKind.None;
         if (_remote is not null && _camera is not null && !PointerCaptured && CameraInputEnabled && TryCursorRay(Mouse.GetState(), out var ray)
-            && _remote.TryPick(ray, _remote.SelfEntityId, out var entityId, out var kind))
+            && _remote.TryPick(ray, _remote.SelfEntityId, out var entityId, out var kind, _filteredPlayers, PreferPlayers))
         {
             hovered = entityId;
             hoveredKind = kind;

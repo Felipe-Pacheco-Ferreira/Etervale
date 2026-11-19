@@ -58,7 +58,7 @@ test('the world quality badge shares HUD visibility and updates directly without
         const hud = node(), realm = node(), fps = node(), ping = node();
         const parts = { 'world-hud': hud, 'world-realm': realm, 'world-fps': fps, 'world-ping': ping };
         const root = { querySelector(selector) { return parts[selector.match(/data-role="([^"]+)"/)?.[1]] ?? null; },
-            querySelectorAll() { return []; }, addEventListener() {} };
+            querySelectorAll() { return []; }, addEventListener() {}, append() {} };
         let label = 'Alto';
         const api = createWorldHud(root, () => null, () => 'pt-BR', () => label);
         const badge = hud.children[0];

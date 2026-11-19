@@ -92,7 +92,8 @@ internal static class ClientSettingsTests
         Assert.True(swapped is not null && HudSettingsPanel.PageShortcutLabel(swapped, 0) == character && HudSettingsPanel.PageShortcutLabel(swapped, 1) == inventory,
             "a key another shortcut held did not swap");
         Assert.True(HudSettingsPanel.Rebind(defaults, 0, Microsoft.Xna.Framework.Input.Keys.I, shift: false, alt: false) is null, "a key shortcuts cannot take was accepted");
-        Assert.True(HudSettingsPanel.PageShortcutCount == HudSettingsPanel.VoiceShortcut, "the page's list does not stop before push-to-talk");
+        Assert.True(!HudSettingsPanel.OnPage(HudSettingsPanel.VoiceShortcut) && HudSettingsPanel.OnPage(HudSettingsPanel.HideHudShortcut)
+            && HudSettingsPanel.OnPage(HudSettingsPanel.PersistentInfoShortcut), "the page lists push-to-talk or misses the HUD shortcuts");
         return Task.CompletedTask;
     }
 
@@ -118,6 +119,34 @@ internal static class ClientSettingsTests
             "a blank server address was kept");
         Assert.True(new ClientSettings { MultiSampleCount = 8 }.Validate(NullClientLog.Instance).MultiSampleCount == new ClientSettings().MultiSampleCount,
             "eight MSAA samples, which the renderer cannot run, were kept");
+        Assert.True(new ClientSettings { AnisotropicFilter = 3 }.Validate(NullClientLog.Instance).AnisotropicFilter == ClientSettings.MostAnisotropy,
+            "an anisotropic filter that is not a power of two up to 16 was kept");
+        Assert.True(new ClientSettings { AnisotropicFilter = 1 }.Validate(NullClientLog.Instance).AnisotropicFilter == 1, "the disabled anisotropic filter was lost");
+        Assert.True(new ClientSettings().WithQuality(GraphicsQuality.Low).AnisotropicFilter == 4
+            && new ClientSettings().WithQuality(GraphicsQuality.Medium).AnisotropicFilter == 8
+            && new ClientSettings().WithQuality(GraphicsQuality.High).AnisotropicFilter == ClientSettings.MostAnisotropy,
+            "the presets do not sharpen slanted textures in the documented steps");
+        Assert.True(!new ClientSettings().HasSameRendering(new ClientSettings { AnisotropicFilter = 2 }), "an anisotropic filter change did not reach the renderer");
+        Assert.True(new ClientSettings { MaxPixelRatio = 3f }.Validate(NullClientLog.Instance).MaxPixelRatio == ClientSettings.MostPixelRatio,
+            "a pixel ratio cap other than 1, 1.5 or 2 was kept");
+        Assert.True(new ClientSettings().WithQuality(GraphicsQuality.Low).MaxPixelRatio == 1f
+            && new ClientSettings().WithQuality(GraphicsQuality.Medium).MaxPixelRatio == 1.5f
+            && new ClientSettings().WithQuality(GraphicsQuality.High).MaxPixelRatio == ClientSettings.MostPixelRatio,
+            "the presets do not cap the canvas density in the documented steps");
+        Assert.True(new ClientSettings { CharacterQuality = (CharacterQuality)9 }.Validate(NullClientLog.Instance).CharacterQuality == CharacterQuality.High,
+            "an unknown character quality was kept");
+        Assert.True(new ClientSettings().WithQuality(GraphicsQuality.Low).CharacterQuality == CharacterQuality.Low
+            && new ClientSettings().WithQuality(GraphicsQuality.Medium).CharacterQuality == CharacterQuality.Medium
+            && new ClientSettings().WithQuality(GraphicsQuality.High).CharacterQuality == CharacterQuality.High
+            && new ClientSettings().WithQuality(GraphicsQuality.Ultra).CharacterQuality == CharacterQuality.VeryHigh,
+            "the presets do not set the documented character quality");
+        Assert.True(!new ClientSettings().HasSameRendering(new ClientSettings { CharacterQuality = CharacterQuality.Low })
+            && !new ClientSettings().HasSameRendering(new ClientSettings { SceneryOnlyReflections = true })
+            && !new ClientSettings().HasSameRendering(new ClientSettings { ReflectionsEveryOtherFrame = false }),
+            "a character quality or reflection mode change did not reach the renderer");
+        var initial = new ClientSettings();
+        Assert.True(initial.OutlineGlow && initial.AgingMixGlow && initial.LimitOtherPlayerEffects && initial.ReflectionsEveryOtherFrame
+            && !initial.SceneryOnlyReflections, "the glow, effect limit and reflection defaults changed");
         Assert.True(new ClientSettings { Language = "fr" }.Validate(NullClientLog.Instance).Language == ClientSettings.EnglishLanguage,
             "unsupported language was kept");
         Assert.True(new ClientSettings { Language = ClientSettings.BrazilianPortugueseLanguage }.Validate(NullClientLog.Instance).Language == ClientSettings.BrazilianPortugueseLanguage,

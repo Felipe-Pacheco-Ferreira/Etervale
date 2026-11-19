@@ -19,16 +19,18 @@ The runtime gets a browser build next to the Vulkan one, with the same exports a
   the window handle names (a swapchain on a canvas surface, presented when control returns to the browser).
   `MGG_GraphicsDevice_GetNativeHandles` reports the device and its queue.
 - `src/web/MGP_web.cpp`: the platform, in place of SDL2. The window is the page's canvas (`#canvas`), its native handle
-  the canvas selector. The canvas's drawing size follows its laid-out size in device pixels; a change is queued as
-  `WindowResized`, and window focus as `WindowGainedFocus` / `WindowLostFocus`. Keys, mouse buttons, moves and the wheel
-  reach the canvas (keys while it has the focus, which the page gives it with a tabindex): a key event's `keyCode` is the
-  Windows virtual-key code the XNA keys share, apart from the two-sided modifiers (told apart by the location) and the
-  punctuation codes Firefox numbers differently; the one character a key types (its `key`, without Control or Meta, AltGr
-  allowed) is queued as `TextInput`; Backspace, Tab, Enter, Escape and Delete carry their control character as the
+  the canvas selector. The canvas's drawing size follows its laid-out size times the device pixel ratio, capped by
+  the page's `maxPixelRatio` on `Module.noxiusThreeGraphics` when set (a window resize event refits it); a change is
+  queued as `WindowResized`, and window focus as `WindowGainedFocus` / `WindowLostFocus`. Keys, mouse buttons, moves
+  and the wheel reach the canvas (keys while it has the focus, which the page gives it with a tabindex): a key event's
+  `keyCode` is the Windows virtual-key code the XNA keys share, apart from the two-sided modifiers (told apart by the
+  location) and the punctuation codes Firefox numbers differently; the one character a key types (its `key`, without
+  Control or Meta, AltGr allowed) is queued as `TextInput`; Backspace, Tab, Enter, Escape and Delete carry their control character as the
   desktop platform's do; coordinates are scaled from CSS to drawing pixels; a button still held when the pointer leaves
   the canvas is released. The keys the game takes (typed characters, those control keys, Space, the arrows) keep their
-  browser action from running; shortcuts with Control or Meta and the function keys keep theirs. Touch and text
-  composition (IME) are not handled yet. `MGP_Platform_Create` asks for the
+  browser action from running; shortcuts with Control or Meta and the function keys keep theirs. Text composition
+  (IME) is not handled yet. Touch is not the platform's: the page reads the canvas's touches and hands them to the
+  game itself, as the Android client reads SDL's (Etervale's `ITouchFingers`). `MGP_Platform_Create` asks for the
   asynchronous run behaviour, `MGP_Platform_GetPlatform` reports `WebGL` (MonoGame's browser platform) and
   `MGP_Platform_GetGraphicsBackend` the new `MGGraphicsBackend::WebGPU` (`include/api_enums.h`; `GraphicsBackend.WebGPU`
   in the framework).

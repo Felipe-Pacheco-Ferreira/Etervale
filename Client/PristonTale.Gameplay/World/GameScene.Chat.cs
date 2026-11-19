@@ -42,10 +42,10 @@ public sealed partial class GameScene
     }
 
     // The screen point over an entity's head and its depth from the camera, or null when it is behind the camera or not
-    // drawn.
+    // drawn (a player "hide other players" hides has no name box, bubble or shop sign).
     public HudOverheadPoint? Overhead(ulong entityId)
     {
-        if (_camera is null)
+        if (_camera is null || _filteredPlayers.Contains(entityId))
         {
             return null;
         }

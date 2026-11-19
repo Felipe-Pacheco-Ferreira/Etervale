@@ -1,3 +1,4 @@
+using PristonTale.Gameplay.Input;
 using PristonTale.Gameplay.World;
 using PristonTale.Gameplay.UI;
 using PristonTale.Gameplay.UI.Widgets;
@@ -42,7 +43,7 @@ internal sealed class RicartenProbe : Game
     private const float SelectionUiHeight = 620f;
     private const float SelectionButtonScale = 1.3f;
     private readonly GraphicsDeviceManager graphics;
-    private readonly TouchOrbit orbit = new();
+    private readonly TouchOrbit orbit = new(new SdlTouchFingers());
     private GameScene scene;
     private EffectLibrary effects;
     private PristonSkyLibrary sky;
@@ -58,7 +59,7 @@ internal sealed class RicartenProbe : Game
     private HudChat chat;
     private Func<ulong, HudOverheadPoint?> overhead;
     private Func<ulong, Color> speakerColor;
-    private Texture2D joystickCircle;
+    private TouchJoystick joystick;
     private int frames;
     private GameServerConnection connection;
     private readonly string animatedLoginEndpoint;
@@ -270,18 +271,7 @@ internal sealed class RicartenProbe : Game
         portrait = new HudTargetPortrait(GraphicsDevice);
         npcPortrait = new HudTargetPortrait(GraphicsDevice);
         targetPortrait = new HudTargetPortrait(GraphicsDevice);
-        const int size = 64;
-        joystickCircle = new Texture2D(GraphicsDevice, size, size);
-        var pixels = new Color[size * size];
-        for (var y = 0; y < size; y++)
-        {
-            for (var x = 0; x < size; x++)
-            {
-                var distance = Vector2.Distance(new Vector2(x + .5f, y + .5f), new Vector2(size / 2f));
-                pixels[y * size + x] = Color.White * Math.Clamp(size / 2f - distance, 0f, 1f);
-            }
-        }
-        joystickCircle.SetData(pixels);
+        joystick = new TouchJoystick(GraphicsDevice);
     }
 
     protected override void Update(GameTime gameTime)
@@ -509,12 +499,8 @@ internal sealed class RicartenProbe : Game
 
         if (orbit.JoystickActive)
         {
-            var center = orbit.JoystickOrigin * new Vector2(viewport.Width, viewport.Height);
-            var radius = viewport.Height * .095f;
             joystickBatch.Begin();
-            DrawJoystickDisc(center, radius, new Color(193, 204, 212) * .62f);
-            DrawJoystickDisc(center, radius * .94f, new Color(19, 25, 33) * .75f);
-            DrawJoystickDisc(center + orbit.Movement * (radius * .65f), radius * .31f, new Color(222, 206, 162) * .86f);
+            joystick.Draw(joystickBatch, orbit, viewport);
             joystickBatch.End();
         }
         if (++frames == 2)
@@ -525,12 +511,6 @@ internal sealed class RicartenProbe : Game
 
     // Exposure compensation, in stops, the world is drawn with on the phone.
     private const float WorldExposure = .45f;
-
-    private void DrawJoystickDisc(Vector2 center, float radius, Color tint)
-    {
-        var bounds = new Rectangle((int)(center.X - radius), (int)(center.Y - radius), (int)(radius * 2f), (int)(radius * 2f));
-        joystickBatch.Draw(joystickCircle, bounds, tint);
-    }
 
     // Back to the character selection on the same connection: the scene goes (closing its play channel, which leaves
     // the world on the server and saves the character), with what was made for it; the HUD sees the world gone.
@@ -552,8 +532,8 @@ internal sealed class RicartenProbe : Game
         nameSprites = null;
         joystickBatch.Dispose();
         joystickBatch = null;
-        joystickCircle.Dispose();
-        joystickCircle = null;
+        joystick.Dispose();
+        joystick = null;
         portrait.Dispose();
         portrait = null;
         npcPortrait.Dispose();
@@ -571,7 +551,7 @@ internal sealed class RicartenProbe : Game
         namePainter?.Dispose();
         nameSprites?.Dispose();
         selectionBatch?.Dispose();
-        joystickCircle?.Dispose();
+        joystick?.Dispose();
         joystickBatch?.Dispose();
         portrait?.Dispose();
         npcPortrait?.Dispose();

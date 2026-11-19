@@ -11,10 +11,13 @@ using Microsoft.Xna.Framework.Audio;
 namespace PristonTale.Gameplay.UI.Widgets;
 
 // Display and audio settings are applied only when the player saves the draft.
-// The interface scale is not listed: the in-game HUD always uses the largest integer scale that fits.
+// The interface scale (uiScale) cycles through UiScales; the browser's page panel takes any step between them.
 internal sealed partial class HudSettingsPanel
 {
     private const int FirstSpecOption = 214;
+    // The HUD scale's row, between the voice rows and the loot level rows.
+    private const int UiScaleOption = 115;
+    private static readonly float[] UiScales = [0.75f, 0.9f, 1f, 1.1f, 1.25f, 1.5f];
     private static readonly int[] MouseActions = Enum.GetValues<CameraMouseAction>().Select(action => (int)action).ToArray();
     private static readonly (JobBitCode Job, string Portuguese, string English)[] LootJobs =
     [
@@ -29,7 +32,7 @@ internal sealed partial class HudSettingsPanel
     private const int RowHeight = 22;
     private static readonly int[][] Tabs =
     [
-        Columns([11, -2, 9, 13, 10, 12, 21, -3, 24, 25, 26, 23, 22, -4, 0, 1, 2, 3, 4, 7, 8],
+        Columns([11, -2, 9, 13, 10, 12, 21, -3, 24, 25, 26, 23, 22, -4, 0, 1, 2, 3, 4, 7, 8, UiScaleOption],
             [209, 210, 211, 17, 18]),
         [5, 6, 100, 101, 110, 111, 103, 108, 102, 109, 104, 112, 105, 113, 106, 114, 107, 114],
         [],
@@ -64,6 +67,8 @@ internal sealed partial class HudSettingsPanel
     private const int FirstCameraShortcut = GroundLabelsShortcut + 1;
     public const int FirstActionBarShortcut = FirstCameraShortcut + 6;
     public const int VoiceShortcut = FirstActionBarShortcut + HudSkillBindings.ShortcutCount;
+    public const int HideHudShortcut = VoiceShortcut + 1;
+    public const int PersistentInfoShortcut = HideHudShortcut + 1;
     private static readonly Keys[] ActionBarKeys = [Keys.D4, Keys.D5, Keys.D6, Keys.D7, Keys.D8, Keys.D9, Keys.D0, Keys.OemMinus];
     internal static Keys CameraKey(ClientSettings settings, Keys action) => action switch
     {
@@ -90,11 +95,14 @@ internal sealed partial class HudSettingsPanel
         ("Aproximar câmera", "Zoom in", Keys.Up), ("Afastar câmera", "Zoom out", Keys.Down),
         ("Inclinar câmera para cima", "Tilt camera up", Keys.PageUp), ("Inclinar câmera para baixo", "Tilt camera down", Keys.PageDown),
         .. ActionBarKeys.Select((key, index) => ($"Barra de ações: espaço {index + 1}", $"Action bar: slot {index + 1}", key)),
-        ("Pressionar para falar", "Push to talk", Keys.G)
+        ("Pressionar para falar", "Push to talk", Keys.G),
+        ("Esconder todo o HUD (para prints)", "Hide the whole HUD (for screenshots)", Keys.F12),
+        ("Informações fixas sobre os personagens", "Persistent character information", Keys.Back)
     ];
 
     private static readonly int[] ShortcutRows = Columns(
-        [1, 0, 2, 3, 4, 5, 7, NewsShortcut, -9, MinimapShortcut, GroundLabelsShortcut, -10, 6, 8, 9, -11, VoiceShortcut],
+        [1, 0, 2, 3, 4, 5, 7, NewsShortcut, -9, MinimapShortcut, GroundLabelsShortcut, PersistentInfoShortcut, HideHudShortcut, -10, 6, 8, 9, -11,
+            VoiceShortcut],
         [.. Enumerable.Range(FirstSkillShortcut, HudSkillBindings.ShortcutCount),
          .. Enumerable.Range(FirstActionBarShortcut, ActionBarKeys.Length), -12, 10, 11, 12,
          -7, .. Enumerable.Range(FirstCameraShortcut, 6)]);
@@ -254,7 +262,8 @@ internal sealed partial class HudSettingsPanel
 
     private static bool ValidKey(Keys key) => key is Keys.V or Keys.C or Keys.S or Keys.Q or Keys.D or Keys.X or Keys.R
         or Keys.Left or Keys.Right or Keys.Up or Keys.Down or Keys.PageUp or Keys.PageDown
-        or (>= Keys.D0 and <= Keys.D9) or Keys.OemMinus or Keys.G or Keys.A or Keys.Tab or Keys.H or Keys.E or Keys.W or Keys.D1 or Keys.D2 or Keys.D3 or (>= Keys.F1 and <= Keys.F8) or Keys.F10 or Keys.F11 or Keys.F12 or Keys.OemOpenBrackets or Keys.OemCloseBrackets or Keys.OemSemicolon;
+        or (>= Keys.D0 and <= Keys.D9) or Keys.OemMinus or Keys.G or Keys.A or Keys.Tab or Keys.H or Keys.E or Keys.W or Keys.D1 or Keys.D2 or Keys.D3
+        or (>= Keys.F1 and <= Keys.F8) or Keys.F10 or Keys.F11 or Keys.F12 or Keys.Back or Keys.OemOpenBrackets or Keys.OemCloseBrackets or Keys.OemSemicolon;
 
     public void CaptureKey(KeyboardState keyboard, KeyboardState previous)
     {
@@ -290,7 +299,7 @@ internal sealed partial class HudSettingsPanel
     private enum ShortcutGroup { Windows, Interface, Character, Voice, Skills, Potions, Camera }
 
     // Push-to-talk is shown as unavailable on the page; the browser has no voice chat.
-    internal static int PageShortcutCount => VoiceShortcut;
+    internal static bool OnPage(int slot) => slot >= 0 && slot < Shortcuts.Length && slot != VoiceShortcut;
 
     internal static IReadOnlyList<(int Slot, string Group)> PageShortcutRows { get; } = ShortcutRows
         .Where(static slot => slot >= 0)
@@ -301,7 +310,7 @@ internal sealed partial class HudSettingsPanel
 
     private static ShortcutGroup GroupOfShortcut(int slot) => slot switch
     {
-        MinimapShortcut or GroundLabelsShortcut => ShortcutGroup.Interface,
+        MinimapShortcut or GroundLabelsShortcut or HideHudShortcut or PersistentInfoShortcut => ShortcutGroup.Interface,
         6 or 8 or 9 => ShortcutGroup.Character,
         VoiceShortcut => ShortcutGroup.Voice,
         (>= FirstSkillShortcut and < MinimapShortcut) or (>= FirstActionBarShortcut and < VoiceShortcut) => ShortcutGroup.Skills,
@@ -332,6 +341,7 @@ internal sealed partial class HudSettingsPanel
             Keys.Down => "↓",
             Keys.PageUp => "Page Up",
             Keys.PageDown => "Page Down",
+            Keys.Back => "Backspace",
             _ => key.ToString()
         };
         return BindingLabel(binding, label);
@@ -555,6 +565,7 @@ internal sealed partial class HudSettingsPanel
                 211 => current with { AlwaysShowGroundLabels = !current.AlwaysShowGroundLabels },
                 212 => current with { InvertCameraOrbit = !current.InvertCameraOrbit },
                 213 => current with { InvertCameraScroll = !current.InvertCameraScroll },
+                UiScaleOption => current with { UiScale = NextUiScale(current.UiScale, direction) },
                 >= FirstSpecOption and var spec => current with { HiddenGroundSpecJobs =
                     current.HiddenGroundSpecJobs ^ (uint)LootJobs[spec - FirstSpecOption].Job },
                 >= 34 and var category => current with { HiddenGroundCategories = current.HiddenGroundCategories ^ (1UL << (category - 34)) },
@@ -562,6 +573,21 @@ internal sealed partial class HudSettingsPanel
             };
             return;
         }
+    }
+
+    // The next HUD scale of the list; a scale between two steps moves to the nearer one first.
+    internal static float NextUiScale(float current, int direction)
+    {
+        var index = 0;
+        for (var at = 1; at < UiScales.Length; at++)
+        {
+            if (MathF.Abs(UiScales[at] - current) < MathF.Abs(UiScales[index] - current))
+            {
+                index = at;
+            }
+        }
+
+        return UiScales[(index + direction + UiScales.Length) % UiScales.Length];
     }
 
     private static string NextMicrophone(string current, int direction)
@@ -747,6 +773,7 @@ internal sealed partial class HudSettingsPanel
         _labels[211] = Toggle(portuguese ? "Nomes de todos os itens no chão" : "Always show ground item names", settings.AlwaysShowGroundLabels);
         _labels[212] = Toggle(portuguese ? "Inverter giro da câmera" : "Invert camera rotation", settings.InvertCameraOrbit);
         _labels[213] = Toggle(portuguese ? "Inverter rolagem da câmera" : "Invert camera scroll", settings.InvertCameraScroll);
+        _labels[UiScaleOption] = (portuguese ? "Escala do HUD: " : "HUD scale: ") + Math.Round(settings.UiScale * 100) + "%";
         _labels[208] = Toggle(portuguese ? "Bônus globais" : "Global bonus notices", !settings.HideGlobalBuffNotices);
         _labels[204] = Toggle(portuguese ? "EXP ganha" : "EXP gained", settings.ShowExperienceNotices);
         _labels[202] = Toggle(portuguese ? "Bellatra: avisos de resultado" : "Bellatra result notices", !settings.HideBellatraResults);

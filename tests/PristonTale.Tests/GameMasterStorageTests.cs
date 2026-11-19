@@ -44,6 +44,9 @@ internal static class GameMasterStorageTests
             var audit = await gameMasters.RecentAuditAsync(10);
             Assert.True(audit.Count == 2 && audit[0].Command == "/@get WA101" && !audit[0].Accepted && audit[0].RequiredLevel == 4
                 && audit[1].Result == "kicked" && audit[1].CreatedAt.Year >= 2026, "the audit trail is not stored newest first");
+            var after = await gameMasters.AuditAfterAsync(audit[1].Id, 10);
+            Assert.True(after.Count == 1 && after[0].Id == audit[0].Id && (await gameMasters.AuditAfterAsync(0, 10))[0].Command == "/kick Ann"
+                && (await gameMasters.AuditAfterAsync(audit[0].Id, 10)).Count == 0, "the entries after an id are not read oldest first");
             var classes = new CharacterClassRegistry();
             var characters = provider.GetRequiredService<ICharacterRepository>();
             var other = await accounts.CreateAsync("banker", PasswordHasher.Hash("x"));

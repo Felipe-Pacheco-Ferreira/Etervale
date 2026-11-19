@@ -369,8 +369,8 @@ internal sealed class ItemHudCaptureProbe : Game
 
     private void Click(HudLayout layout, Point logical, OwnerState? owner = null)
     {
-        var x = logical.X * layout.Scale;
-        var y = logical.Y * layout.Scale;
+        var x = (int)(logical.X * layout.Scale);
+        var y = (int)(logical.Y * layout.Scale);
         owner ??= _owner;
         _hud.Update(owner, default, new MouseState(x, y, 0, ButtonState.Pressed, ButtonState.Released, ButtonState.Released, ButtonState.Released,
             ButtonState.Released));
@@ -402,7 +402,7 @@ internal sealed class ItemHudCaptureProbe : Game
             Scene.QuestBox => HudInventoryLayout.QuestBoxButton(origin).Center,
             _ => new Point(layout.Width - 200, layout.Height / 2)
         };
-        return new MouseState(point.X * layout.Scale, point.Y * layout.Scale, 0, ButtonState.Released, ButtonState.Released, ButtonState.Released,
+        return new MouseState((int)(point.X * layout.Scale), (int)(point.Y * layout.Scale), 0, ButtonState.Released, ButtonState.Released, ButtonState.Released,
             ButtonState.Released, ButtonState.Released);
     }
 

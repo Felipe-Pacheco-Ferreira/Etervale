@@ -19,24 +19,27 @@ function fixture(cap = 1, maxFps = 0) {
     } };
 }
 
-test('completed-frame rate needs warmup and two slow windows before reducing a saved cap', () => {
+test('a five-second warmup and three slow windows come before the first step, which slows shadows and keeps the scale', () => {
     const { controller, run } = fixture();
-    run(3, 30);
+    run(7, 30);
     assert.equal(controller.scale, 1);
+    assert.equal(controller.shadowHz, 0);
     run(1, 30);
-    assert.equal(controller.scale, 0.85);
+    assert.equal(controller.scale, 1);
+    assert.equal(controller.shadowHz, 30);
     assert.equal(controller.cap, 1);
     assert.equal(controller.target, 60);
 });
 
-test('sustained 58.9 completed FPS reduces the budget after two windows instead of remaining below the 60 FPS target indefinitely', () => {
+test('sustained 58.9 completed FPS slows both shadow steps before lowering the scale', () => {
     const { controller, run } = fixture(0.85);
+    run(8, 58.9);
+    assert.deepEqual([controller.scale, controller.shadowHz], [0.85, 30]);
     run(3, 58.9);
-    assert.equal(controller.scale, 0.85, 'one slow window cannot lower the saved budget');
-    run(1, 58.9);
-    assert.equal(controller.scale, 0.8);
+    assert.deepEqual([controller.scale, controller.shadowHz], [0.85, 15]);
+    run(3, 58.9);
+    assert.deepEqual([controller.scale, controller.shadowHz], [0.8, 15]);
     assert.equal(controller.cap, 0.85);
-    assert.equal(controller.shadowHz, 0);
 });
 
 test('real 59.94 completed FPS and a deliberate 30 FPS limit retain the selected budget', () => {
@@ -48,29 +51,58 @@ test('real 59.94 completed FPS and a deliberate 30 FPS limit retain the selected
     }
 });
 
-test('persistent pressure may request visible30Hz shadows but never disables effects or crosses the scale floor', () => {
+test('persistent pressure reaches 15 Hz shadows and the scale floor but never crosses it', () => {
     const { controller, run } = fixture();
-    run(30, 40);
+    run(40, 40);
     assert.equal(controller.scale, 0.5);
-    assert.equal(controller.shadowHz, 30);
+    assert.equal(controller.shadowHz, 15);
     run(10, 0);
     assert.equal(controller.scale, 0.5);
     assert.equal(controller.cap, 1);
 });
 
+test('both shadow steps come before any scale step, and recovery restores the scale before the shadows', () => {
+    const { controller, run } = fixture();
+    const seen = [];
+    for (let second = 0; second < 30; second++) {
+        run(1, 40);
+        const last = seen.at(-1);
+        if (!last || last[0] !== controller.scale || last[1] !== controller.shadowHz) seen.push([controller.scale, controller.shadowHz]);
+    }
+    assert.deepEqual(seen.slice(0, 3), [[1, 0], [1, 30], [1, 15]]);
+    assert.ok(seen.at(-1)[0] < 1, 'the scale never dropped');
+    while (controller.scale < 1) {
+        run(6, 60);
+        assert.equal(controller.shadowHz, 15, 'shadows recovered while the scale was still reduced');
+    }
+    run(6, 60);
+    assert.equal(controller.shadowHz, 30);
+    run(6, 60);
+    assert.equal(controller.shadowHz, 0);
+});
+
+test('a throttled page (window behind another one) is not measured as a slow GPU', () => {
+    const { controller, run } = fixture();
+    run(60, 1);
+    assert.equal(controller.scale, 1);
+    assert.equal(controller.shadowHz, 0);
+    run(6, 60);
+    assert.equal(controller.scale, 1);
+});
+
 test('hidden/loading windows freeze quality and require warmup again', () => {
     const { controller, run } = fixture();
-    run(8, 40);
-    const scale = controller.scale;
+    run(20, 40);
+    const budget = [controller.scale, controller.shadowHz];
     run(20, 1, false);
-    assert.equal(controller.scale, scale);
-    run(2, 30);
-    assert.equal(controller.scale, scale);
+    assert.deepEqual([controller.scale, controller.shadowHz], budget);
+    run(4, 30);
+    assert.deepEqual([controller.scale, controller.shadowHz], budget);
 });
 
 test('disabling adaptation or returning to the courtyard restores the saved cap without persisting any effective value', () => {
     const { controller, run, change } = fixture(0.9);
-    run(12, 30);
+    run(16, 30);
     assert.ok(controller.scale < 0.9);
     assert.equal(change(false), true);
     assert.equal(controller.scale, null);
@@ -82,7 +114,7 @@ test('disabling adaptation or returning to the courtyard restores the saved cap 
     assert.equal(controller.scale, null);
 });
 
-test('a deliberate30FPS limit is the target rather than a signal to degrade quality', () => {
+test('a deliberate 30 FPS limit is the target rather than a signal to degrade quality', () => {
     const { controller, run } = fixture(1, 30);
     run(30, 29.9);
     assert.equal(controller.scale, 1);
@@ -102,22 +134,41 @@ test('a suspended animation callback is discarded rather than measured as sustai
 
 test('applying another preset at the same scale starts a fresh budget rather than retaining the old degradation', () => {
     const { controller, run } = fixture();
-    run(20, 30);
-    assert.equal(controller.scale, 0.5);
-    assert.equal(controller.update(20100, 603, true, 1, 0, 1280, 720, true, true, 1), true);
+    run(30, 30);
+    assert.ok(controller.scale < 1);
+    assert.equal(controller.update(30100, 903, true, 1, 0, 1280, 720, true, true, 1), true);
     assert.equal(controller.scale, 1);
     assert.equal(controller.shadowHz, 0);
 });
 
 test('recovery probes are gradual and bounded by the saved cap', () => {
     const { controller, run } = fixture(0.75);
-    run(8, 40);
+    run(20, 40);
     const reduced = controller.scale;
-    run(10, 59.9);
+    assert.ok(reduced < 0.75);
+    run(5, 59.9);
     assert.equal(controller.scale, reduced);
-    run(8, 59.9);
+    run(2, 59.9);
     assert.equal(controller.scale, Math.min(0.75, Math.round((reduced + 0.05) * 20) / 20));
     run(180, 59.9);
     assert.equal(controller.scale, 0.75);
     assert.equal(controller.shadowHz, 0);
+});
+
+test('the classic light holds the saved scale under pressure and only slows the shadows', () => {
+    const controller = createAdaptiveResolution();
+    let time = 0, frames = 0;
+    const step = (seconds, fps) => {
+        for (let index = 0; index < seconds * 10; index++) {
+            time += 100; frames += fps / 10;
+            controller.update(time, frames, true, 1, 0, 1280, 720, true, true, 0, true);
+        }
+    };
+    controller.update(time, frames, true, 1, 0, 1280, 720, true, true, 0, true);
+    step(30, 40);
+    assert.equal(controller.scale, 1, 'the classic light lowered the 3D resolution');
+    assert.equal(controller.shadowHz, 15);
+    step(40, 60);
+    assert.equal(controller.scale, 1);
+    assert.equal(controller.shadowHz, 0, 'shadows did not recover once frames had room');
 });

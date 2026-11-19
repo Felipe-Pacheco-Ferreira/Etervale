@@ -177,7 +177,14 @@ public sealed partial class GameplayHud
         var portuguese = ClientText.Language == "pt-BR";
         if (!WebWorldHud.Enabled)
         {
-            Plaque(NewsBounds(layout), portuguese ? "Novidades & Suporte" : "News & Support");
+            var news = NewsBounds(layout);
+            Plaque(news, portuguese ? "Novidades & Suporte" : "News & Support");
+            if (_news.Unread > 0)
+            {
+                _painter.Disc(news.Right - 4, news.Y + 4, 7, new Color(196, 52, 40));
+                _painter.TextCentered("!", news.Right - 11, news.Right + 3, news.Y - 1, Color.White);
+            }
+
             var huntLabel = portuguese ? "Auto-caça" : "Auto-hunt";
             Plaque(HuntBounds(layout), huntLabel + (AutoHuntEnabled ? "  II" : "  >"));
             Plaque(QuickMenuBounds(layout), _quickMenuOpen ? (portuguese ? "Mais  ^" : "More  ^") : (portuguese ? "Mais  v" : "More  v"));

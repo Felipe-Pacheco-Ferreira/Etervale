@@ -144,28 +144,8 @@ public sealed partial class GameplayHud : IDisposable
         _news.Send = command => _chat.Send?.Invoke(command, false);
         _chat.GlobalBonusLine = ReceiveGlobalBonuses;
         _chat.TicketLine = _news.ReceiveTicket;
-        _chat.HideLine = line =>
-        {
-            var settings = _context.Presentation.Requested;
-            return (settings.HideTradeChat && line.Kind == PristonTale.Contracts.Social.ChatKind.Trade) ||
-                (settings.HideCalendarNotices && line.Kind == PristonTale.Contracts.Social.ChatKind.CalendarEvent) ||
-                (settings.HideGlobalBuffNotices && line.Kind == PristonTale.Contracts.Social.ChatKind.GlobalBuff) ||
-                (settings.HideEventRewardNotices && line.Line.Id == GameTextId.RewardClaimed) ||
-                (settings.HideClanMembershipNotices && line.Line.Id is GameTextId.ClanJoined or GameTextId.ClanLeft) ||
-                (settings.HideBellatraResults && line.Line.Id is GameTextId.BellatraOut or GameTextId.BellatraCleared) ||
-                (settings.HideBellatraBossNotices && line.Line.Id == GameTextId.BellatraBossDown) ||
-                (settings.HideBellatraTeamNotices && line.Line.Id is GameTextId.BellatraQuake or GameTextId.BellatraStun
-                    or GameTextId.BellatraFreeze or GameTextId.BellatraRabbit or GameTextId.BellatraStygian
-                    or GameTextId.BellatraGuardian or GameTextId.BellatraPoints or GameTextId.BellatraSealIdle) ||
-                (settings.HideCastleNotices && line.Kind == PristonTale.Contracts.Social.ChatKind.Notice &&
-                 line.Line.Id is PristonTale.Contracts.Texts.GameTextId.CastleTaken
-                     or PristonTale.Contracts.Texts.GameTextId.SiegeInAnHour
-                     or PristonTale.Contracts.Texts.GameTextId.SiegeInHalfAnHour
-                     or PristonTale.Contracts.Texts.GameTextId.SiegeLeague
-                     or PristonTale.Contracts.Texts.GameTextId.SiegeOver
-                     or PristonTale.Contracts.Texts.GameTextId.SiegeRestartsSoon
-                     or PristonTale.Contracts.Texts.GameTextId.SiegeStarted);
-        };
+        _chat.HideLine = line => ChatLineFilter.Hides(_context.Presentation.Requested, line);
+        _chat.CensorEnabled = () => _context.Presentation.Requested.ChatFilter;
         _clanWindow = new HudClanWindow(context.Log);
         _castleWindow.AskAmount = AskWithdrawal;
         _bellatraWindow.AskAmount = AskRedemption;
@@ -567,8 +547,14 @@ public sealed partial class GameplayHud : IDisposable
         HudMessageBox.Place(layout);
         var pointer = layout.ToLogical(mouse.Position);
         _mail.UpdateDrag(layout, pointer, mouse.LeftButton == ButtonState.Pressed);
+        _news.UpdateDrag(layout, pointer, mouse.LeftButton == ButtonState.Pressed);
         _mail.RefreshInbox(_chat);
         _news.UpdateTickets();
+        if (_news.UpdateNotices(_context.Presentation.Requested) is { } seen)
+        {
+            _context.Presentation.Requested = seen;
+        }
+
         RefreshGlobalBonuses();
         var design = layout.ToBottomBarDesign(pointer);
         UpdateTeleportPrefetch(pointer);
@@ -640,6 +626,16 @@ public sealed partial class GameplayHud : IDisposable
             return;
         }
 
+        // F12 hid the HUD: nothing of it takes a click or a key, except the switch that shows it again.
+        if (HudHidden)
+        {
+            UpdateSettingsShortcuts(keyboard);
+            PointerCaptured = false;
+            _previousKeyboard = keyboard;
+            _previousMouse = mouse;
+            return;
+        }
+
         _hoveredButton = ButtonAt(design);
         _hoveredToggle = ToggleAt(design);
         UpdateHelpPet(state, layout, pointer, design, mouse, _clock.Elapsed.TotalMilliseconds);
@@ -673,6 +669,11 @@ public sealed partial class GameplayHud : IDisposable
         else if (_partyWindow.KeyboardCaptured)
         {
             _partyWindow.Type(typedText, Pressed(keyboard, Keys.Back), Pressed(keyboard, Keys.Enter));
+        }
+        else if (_news.LinkPrompt && !_chat.Window.Focused && Pressed(keyboard, Keys.Enter))
+        {
+            // Enter opens the link the News & Support window asks about instead of opening the chat input.
+            _news.ConfirmLink();
         }
         else if (_crystalDismiss.Confirming && !_chat.Window.Focused && Pressed(keyboard, Keys.Enter))
         {
@@ -806,13 +807,19 @@ public sealed partial class GameplayHud : IDisposable
 
     public void Draw()
     {
+        if (HudHidden)
+        {
+            return;
+        }
+
         var layout = Layout();
         HudMessageBox.Place(layout);
         var pointer = layout.ToLogical(_previousMouse.Position);
         var pressed = _previousMouse.LeftButton == ButtonState.Pressed;
         _painter.Begin(layout);
         _dropNames.Draw(_painter, layout, GroundLabels, GroundLabelPlaced);
-        Combat.DrawNamePlates(_painter, layout, Overhead, HoveredId, TracedId, _context.Presentation.Requested.ClassicNamePlates, _context.Presentation.Requested.HideUnfocusedNames);
+        Combat.DrawNamePlates(_painter, layout, Overhead, HoveredId, TracedId, _context.Presentation.Requested.ClassicNamePlates,
+            NamePlateFilter.From(_context.Presentation.Requested));
         _chat.Bubbles.Signs = ShopSigns;
         _chat.Bubbles.Draw(_painter, layout, _clock.Elapsed.TotalMilliseconds, Overhead, _nameColor ??= id => _chat.NameColor(id, TargetId), TargetId);
         if (_helpPet.Bubble is { } petLine && HelperPet.Point is { } petPoint)
@@ -824,11 +831,11 @@ public sealed partial class GameplayHud : IDisposable
         if (MinimapShown)
         {
             Combat.CollectNpcPositions(_minimapNpcs);
-            _minimap.Draw(_painter, layout, World, _minimapNpcs, MinimapParty(), HudMinimap.Box(layout).Contains(pointer));
+            _minimap.Draw(_painter, layout, World, _minimapNpcs, MinimapParty(), HudMinimap.Box(layout).Contains(pointer), MinimapGuide());
         }
 
         Combat.DrawTarget(_painter, layout, TargetId, _context.Presentation.Requested.ClassicTargetHealthBar, _portrait.Texture(TargetId),
-            ShowsPlayerButtons);
+            ShowsPlayerButtons, _context.Presentation.Requested.ShowPartyDps);
         if (ShowsPlayerButtons)
         {
             HudPlayerButtons.Draw(_painter, HudCombat.TargetFrame(layout), pointer, ClanButton);
@@ -898,17 +905,18 @@ public sealed partial class GameplayHud : IDisposable
         _skillHud.DrawQuestTimer(_painter, _questView, QuestTimeLeftMs);
 
         StringEffect.Draw(_painter, layout);
-        if (!_context.Presentation.Requested.HideOnlineCount && _context.Backend.OnlinePlayers is >= 0 and var online)
+        // The browser page draws its own counter (world-hud.js).
+        if (!WebWorldHud.Enabled && OnlinePlayers is >= 0 and var online)
         {
             var text = online.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo(ClientText.Language)) + " online";
-            var counterWidth = _painter.Measure(text) + 28;
-            var counter = new Rectangle((layout.Width - counterWidth) / 2, 3, counterWidth, 20);
-            _painter.ColorBox(new Rectangle(counter.X + 5, counter.Y, counter.Width - 10, 20), 18, 36, 34, 224);
-            _painter.ColorBox(new Rectangle(counter.X + 2, counter.Y + 3, 3, 14), 18, 36, 34, 224);
-            _painter.ColorBox(new Rectangle(counter.Right - 5, counter.Y + 3, 3, 14), 18, 36, 34, 224);
-            _painter.ColorBox(new Rectangle(counter.X + 10, counter.Y + 6, 9, 9), 52, 112, 70, 210);
-            _painter.ColorBox(new Rectangle(counter.X + 11, counter.Y + 7, 7, 7), 117, 220, 101, 255);
-            _painter.TextCentered(text, counter.X + 20, counter.Right - 5, counter.Y + 3, Color.Wheat);
+            var counterWidth = _painter.Measure(text) + 34;
+            var counter = new Rectangle((layout.Width - counterWidth) / 2, 4, counterWidth, 22);
+            _painter.RoundedFill(counter, Color.FromNonPremultiplied(70, 70, 70, 150), 10);
+            _painter.RoundedFill(new Rectangle(counter.X + 1, counter.Y + 1, counter.Width - 2, counter.Height - 2), Color.FromNonPremultiplied(22, 22, 22, 205), 10);
+            _painter.Disc(counter.X + 14, counter.Center.Y, 5, Color.FromNonPremultiplied(40, 120, 60, 120));
+            _painter.Disc(counter.X + 14, counter.Center.Y, 3, new Color(92, 222, 110));
+            _painter.Text(text, counter.X + 24, counter.Y + 4, Color.White);
+            _painter.Text(text, counter.X + 25, counter.Y + 4, Color.White, shadow: false);
         }
 
         _bar.DrawHoverText(_painter, layout, _state, pointer);
@@ -1058,9 +1066,10 @@ public sealed partial class GameplayHud : IDisposable
         DrawBellatraShow();
     }
 
-    private HudLayout Layout() => HudLayout.Of(_context.GraphicsDevice.Viewport) with
+    private HudLayout Layout() => HudLayout.Of(_context.GraphicsDevice.Viewport, _context.Presentation.Requested.UiScale) with
     {
         Browser = OperatingSystem.IsBrowser(),
+        CenteredBar = _context.Presentation.Requested.CenteredInterface,
         SidePanelOpen = SideWindowOpen
     };
 

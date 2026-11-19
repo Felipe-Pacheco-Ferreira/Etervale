@@ -20,6 +20,8 @@ public readonly record struct FrameTimingSample(
     long SceneBridgeCalls = 0,
     double SceneBridgeTotalMs = 0);
 
+public readonly record struct AnimationPoseSample(long RootPoses, long RootReuses, long CacheHits, long CacheMisses);
+
 public sealed class FrameTiming
 {
     public const int TargetHz = 120;
@@ -44,6 +46,30 @@ public sealed class FrameTiming
     private long _pendingSceneBridgeCalls;
     private long _totalSceneBridgeTicks;
     private long _totalSceneBridgeCalls;
+    private long _rootPoses;
+    private long _rootReuses;
+    private long _poseCacheHits;
+    private long _poseCacheMisses;
+
+    public AnimationPoseSample AnimationPoses => new(_rootPoses, _rootReuses, _poseCacheHits, _poseCacheMisses);
+
+    internal void RecordActorPoses(int posed, int reused)
+    {
+        _rootPoses += posed;
+        _rootReuses += reused;
+    }
+
+    internal void RecordPoseMemoization(bool hit)
+    {
+        if (hit)
+        {
+            _poseCacheHits++;
+        }
+        else
+        {
+            _poseCacheMisses++;
+        }
+    }
 
     // Synchronous scene interop only. This is part of Update/Draw work, not additional frame time
     // or asynchronous GPU execution; the native HUD adapter has its own interop outside this scope.

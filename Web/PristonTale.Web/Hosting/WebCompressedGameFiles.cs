@@ -1,6 +1,8 @@
 using System.Text.Json;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
+using PristonTale.Assets;
 using PristonTale.Web.Services;
 
 namespace PristonTale.Web.Hosting;
@@ -11,6 +13,7 @@ internal sealed class WebCompressedGameFiles
     private readonly string _root;
     private readonly Dictionary<string, Entry> _entries = new(StringComparer.OrdinalIgnoreCase);
     private static readonly JsonSerializerOptions Json = new() { PropertyNameCaseInsensitive = true };
+    private static readonly FileExtensionContentTypeProvider FrameworkTypes = BrowserClient.ContentTypes();
 
     public WebCompressedGameFiles(BrowserClient client, ILogger<WebCompressedGameFiles> logger)
     {
@@ -33,8 +36,8 @@ internal sealed class WebCompressedGameFiles
             var types = BrowserClient.ContentTypes();
             foreach (var file in document.Files)
             {
-                if (file is null || !SafeRelative(file.Path) || !IsEligible(new PathString(BrowserClient.RequestPath + "/" + file.Path))
-                    || !ValidHash(file.RawSha256) || file.RawBytes < 0 || !types.TryGetContentType(file.Path, out var contentType))
+                if (file is null || !WebAssetPacks.IsSafePath(file.Path) || !IsEligible(new PathString(BrowserClient.RequestPath + "/" + file.Path))
+                    || !WebAssetPacks.IsHash(file.RawSha256) || file.RawBytes < 0 || !types.TryGetContentType(file.Path, out var contentType))
                 {
                     continue;
                 }
@@ -57,7 +60,7 @@ internal sealed class WebCompressedGameFiles
             return false;
         }
 
-        if (!SafeRelative(path.Value![(BrowserClient.RequestPath.Length + 1)..]))
+        if (!WebAssetPacks.IsSafePath(path.Value![(BrowserClient.RequestPath.Length + 1)..]))
         {
             return false;
         }
@@ -68,10 +71,23 @@ internal sealed class WebCompressedGameFiles
             || extension.Equals(".xnb", StringComparison.OrdinalIgnoreCase);
     }
 
+    // Responses that may come out encoded and so vary by Accept-Encoding, sent compressed or not.
+    internal static bool Varies(PathString path) => IsEligible(path) || BrowserClient.IsFingerprinted(path.Value ?? string.Empty);
+
     internal async Task<bool> TryServeAsync(HttpContext context)
     {
         var request = context.Request;
-        if ((!HttpMethods.IsGet(request.Method) && !HttpMethods.IsHead(request.Method)) || !IsEligible(request.Path))
+        if (!HttpMethods.IsGet(request.Method) && !HttpMethods.IsHead(request.Method))
+        {
+            return false;
+        }
+
+        if (BrowserClient.IsFingerprinted(request.Path.Value ?? string.Empty))
+        {
+            return await TryServeFrameworkAsync(context);
+        }
+
+        if (!IsEligible(request.Path))
         {
             return false;
         }
@@ -79,7 +95,7 @@ internal sealed class WebCompressedGameFiles
         ApplyVary(context.Response.Headers);
 
         var relative = request.Path.Value![(BrowserClient.RequestPath.Length + 1)..];
-        if (!SafeRelative(relative) || request.Headers.ContainsKey(HeaderNames.Range) || request.Headers.ContainsKey(HeaderNames.IfRange)
+        if (!WebAssetPacks.IsSafePath(relative) || request.Headers.ContainsKey(HeaderNames.Range) || request.Headers.ContainsKey(HeaderNames.IfRange)
             || !request.Query.TryGetValue(BrowserClient.VersionQuery, out var version) || version.Count != 1
             || !_entries.TryGetValue(relative, out var entry) || !string.Equals(version[0], entry.RawSha256, StringComparison.OrdinalIgnoreCase))
         {
@@ -103,6 +119,42 @@ internal sealed class WebCompressedGameFiles
         context.Response.Headers.ContentEncoding = encoding;
         context.Response.Headers.CacheControl = "public, max-age=31536000, immutable";
         await Results.File(variant.Path, entry.ContentType, lastModified: entry.LastModifiedUtc, entityTag: variant.Tag).ExecuteAsync(context);
+        return true;
+    }
+
+    // The browser publish writes .br and .gz beside each runtime file. A fingerprinted name never changes content, so its
+    // sidecars belong to it and share its immutable cache; the name and encoding make a strong validator.
+    private async Task<bool> TryServeFrameworkAsync(HttpContext context)
+    {
+        var request = context.Request;
+        ApplyVary(context.Response.Headers);
+        var relative = request.Path.Value![(BrowserClient.RequestPath.Length + 1)..];
+        if (!WebAssetPacks.IsSafePath(relative) || request.Headers.ContainsKey(HeaderNames.Range) || request.Headers.ContainsKey(HeaderNames.IfRange)
+            || !FrameworkTypes.TryGetContentType(relative, out var contentType))
+        {
+            return false;
+        }
+
+        var raw = WebAssetPacks.LocalPath(_root, relative);
+        var brotli = new FileInfo(raw + ".br");
+        var gzip = new FileInfo(raw + ".gz");
+        if (!File.Exists(raw))
+        {
+            return false;
+        }
+
+        var encoding = Negotiate(request.Headers.AcceptEncoding, brotli.Exists, gzip.Exists,
+            brotli.Exists ? brotli.Length : long.MaxValue, gzip.Exists ? gzip.Length : long.MaxValue);
+        var variant = encoding == "br" ? brotli : encoding == "gzip" ? gzip : null;
+        if (variant is null)
+        {
+            return false;
+        }
+
+        context.Response.Headers.ContentEncoding = encoding;
+        context.Response.Headers.CacheControl = "public, max-age=31536000, immutable";
+        var tag = new EntityTagHeaderValue('"' + Path.GetFileName(relative) + "." + encoding + '"');
+        await Results.File(variant.FullName, contentType, lastModified: variant.LastWriteTimeUtc, entityTag: tag).ExecuteAsync(context);
         return true;
     }
 
@@ -157,13 +209,10 @@ internal sealed class WebCompressedGameFiles
         }
     }
 
-    private Variant? VariantOf(CompressedVariant? value, string relative) => value is { Bytes: > 0 } && ValidHash(value.Sha256)
+    private Variant? VariantOf(CompressedVariant? value, string relative) => value is { Bytes: > 0 } && WebAssetPacks.IsHash(value.Sha256)
         ? new Variant(Path.Combine(_root, relative.Replace('/', Path.DirectorySeparatorChar)), value.Bytes, new EntityTagHeaderValue('"' + value.Sha256 + '"')) : null;
 
-    private static bool SafeRelative(string? path) => !string.IsNullOrEmpty(path) && !Path.IsPathRooted(path) && !path.Contains('\\') && !path.Contains(':')
-        && !path.Contains('%') && !path.Split('/').Any(static part => part is ".." or "." or "");
 
-    private static bool ValidHash(string? value) => value is { Length: 64 } && value.All(static character => char.IsAsciiHexDigit(character));
     private sealed record Variant(string Path, long Bytes, EntityTagHeaderValue Tag);
     private sealed record Entry(string RawSha256, string ContentType, DateTimeOffset LastModifiedUtc, Variant? Br, Variant? Gzip);
     internal sealed record CompressedVariant(string Sha256, long Bytes);

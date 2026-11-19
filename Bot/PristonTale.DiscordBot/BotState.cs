@@ -13,6 +13,19 @@ public sealed class BotState
 
     public Dictionary<string, ActivityPosition> Activity { get; init; } = [];
     public List<string>? News { get; set; }
+
+    // The world status channel's standing card, edited in place (0 until posted).
+    public ulong StatusPanel { get; set; }
+
+    // The last gm_audit id posted to the audit channel; null until the first read, which posts nothing older.
+    public long? GmAudit { get; set; }
+
+    // /manutencao: the servers are being updated (the panel is yellow and worlds going down or up are not announced).
+    public bool Maintenance { get; set; }
+    public string MaintenanceReason { get; set; } = "";
+
+    // The development notes already published (their folder names).
+    public HashSet<string> DevNotes { get; init; } = [];
     public Dictionary<Guid, TicketPost> Tickets { get; init; } = [];
 
     public static async Task<BotState> LoadAsync(string path, CancellationToken ct)

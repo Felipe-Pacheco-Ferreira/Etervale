@@ -157,7 +157,7 @@ public sealed class HudTargetPortrait : IDisposable
         }
 
         var camera = Camera(anchor, world, subject, frame, layout.Height);
-        EnsureTarget(frame.Width * layout.Scale, frame.Height * layout.Scale);
+        EnsureTarget((int)(frame.Width * layout.Scale), (int)(frame.Height * layout.Scale));
         var view = Matrix.CreateLookAt(camera.Position, camera.Target, camera.Up);
         var projection = PristonDepth.Perspective(camera.FieldOfView, camera.AspectRatio, camera.Near, camera.Far);
         var light = Lighting(camera);

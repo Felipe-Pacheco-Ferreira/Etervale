@@ -107,6 +107,9 @@ public readonly record struct PristonDistanceFog(
         _ => Disabled
     };
 
+    // The fog of a mode starting at the settings' distance (ClientSettings.FogDistance).
+    public static PristonDistanceFog For(DistanceFogMode mode, float startDistance) => For(mode) with { StartDistance = startDistance };
+
     public bool Enabled => Mode != DistanceFogMode.Off;
 
     // Mirrors FogOpacity in Shaders/Atmosphere/Fog.hlsli.

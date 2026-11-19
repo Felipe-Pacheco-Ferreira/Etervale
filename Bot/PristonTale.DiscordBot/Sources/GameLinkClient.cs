@@ -4,9 +4,11 @@ using PristonTale.Contracts.Social;
 
 namespace PristonTale.DiscordBot.Sources;
 
-// The game server's bot link (BotLinkService): Discord lines for the trade channel and remote game-master commands.
-public sealed class GameLinkClient(HttpClient http, GameLinkSettings settings)
+// One game server's bot link (BotLinkService): Discord lines for the trade channel and remote game-master commands.
+public sealed class GameLinkClient(HttpClient http, GameLinkSettings settings, string server = "")
 {
+    public string Server => server;
+
     public bool Enabled => settings.Url.Length > 0;
 
     public async Task<bool> SayAsync(string author, string text, CancellationToken ct)
@@ -30,4 +32,15 @@ public sealed class GameLinkClient(HttpClient http, GameLinkSettings settings)
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", settings.Key);
         return request;
     }
+}
+
+// The bot links of every game server the bot follows (BotSettings.GameServers, in order). Discord's public chat goes to
+// all of them; /gm goes to the first one with a link.
+public sealed class GameLinks(IReadOnlyList<GameLinkClient> all)
+{
+    public IReadOnlyList<GameLinkClient> All => all;
+
+    public GameLinkClient? Commands => all.FirstOrDefault(static link => link.Enabled);
+
+    public bool AnyEnabled => Commands is not null;
 }

@@ -4,10 +4,20 @@
     "GuildId": 0,
     "Channels": {
       "Announcements": 0,
+      "WorldStatus": 0,
       "PublicChat": 0,
+      "TradeChat": 0,
       "PrivateChat": 0,
-      "Tickets": 0
+      "ClanChat": 0,
+      "BossKills": 0,
+      "PvpKills": 0,
+      "Tickets": 0,
+      "Development": 0,
+      "StaffDevelopment": 0,
+      "GmAudit": 0
     },
+    "DevNoteMinGmLevel": 4,
+    "PingEveryone": true,
     "GameMasterRoles": {
     }
   },

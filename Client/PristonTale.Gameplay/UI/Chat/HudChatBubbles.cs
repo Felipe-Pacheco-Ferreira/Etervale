@@ -93,7 +93,7 @@ public sealed class HudChatBubbles
         _visible.Sort(_backToFront ??= (left, right) => (left.Id == _selected) != (right.Id == _selected)
             ? (left.Id == _selected ? 1 : -1)
             : right.Point.Depth.CompareTo(left.Point.Depth));
-        var scale = Math.Max(1, layout.Scale);
+        var scale = layout.Scale;
         foreach (var (id, point, sign) in _visible)
         {
             painter.Flush();
@@ -105,7 +105,7 @@ public sealed class HudChatBubbles
     // One line over a point that is no entity (the helper pet's speech), as an unselected speaker's.
     public void DrawAt(HudPainter painter, HudLayout layout, string text, HudOverheadPoint point)
     {
-        var scale = Math.Max(1, layout.Scale);
+        var scale = layout.Scale;
         painter.Flush();
         DrawBubble(painter, layout, text, (int)(point.Screen.X / scale), (int)(point.Screen.Y / scale), default, false, false);
     }

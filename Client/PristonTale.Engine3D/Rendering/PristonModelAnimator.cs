@@ -14,6 +14,8 @@ public sealed class PristonModelAnimator : IActorAnimator
     private readonly int[] _rotationSegments;
     private readonly int[] _positionSegments;
     private readonly int[] _scaleSegments;
+    private PristonPoseMemoization _memoization;
+    private PristonPoseMemoization.Entry _memoizedPose;
 
     public PristonModelAnimator(PristonModel model)
     {
@@ -28,10 +30,28 @@ public sealed class PristonModelAnimator : IActorAnimator
 
     public int ObjectCount => _transforms.Length;
 
+    internal void SetMemoization(PristonPoseMemoization memoization)
+    {
+        if (ReferenceEquals(_memoization, memoization))
+        {
+            return;
+        }
+        if (_memoizedPose is not null)
+        {
+            _memoization.Release(_memoizedPose);
+        }
+        _memoization = memoization;
+        _memoizedPose = memoization?.Retain(_model);
+    }
+
     // rotationEnd is the playing motion's last tick: a rotation key past it is not interpolated toward, the key before it
     // holds, so a motion never turns toward the first pose of the motion stored after it. Position and scale keep sampling.
     public Matrix[] Evaluate(float frame, float rotationEnd = float.PositiveInfinity)
     {
+        if (_memoizedPose?.Copy(frame, rotationEnd, _transforms) == true)
+        {
+            return _transforms;
+        }
         for (var orderIndex = 0; orderIndex < _rig.EvaluationOrder.Length; orderIndex++)
         {
             var index = _rig.EvaluationOrder[orderIndex];
@@ -47,6 +67,8 @@ public sealed class PristonModelAnimator : IActorAnimator
             _transforms[index] = parent < 0 ? local : local * _transforms[parent];
         }
 
+        // A rider modifies its animator buffer after sampling. Retain the raw pose, never that actor's seated result.
+        _memoizedPose?.Store(frame, rotationEnd, _transforms);
         return _transforms;
     }
 
