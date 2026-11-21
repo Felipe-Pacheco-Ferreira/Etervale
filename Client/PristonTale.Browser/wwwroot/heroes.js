@@ -2,6 +2,8 @@
 // steps. CharacterSelectScreen.Web.cs reports its state as JSON (report below) whenever it changes; the panels are drawn
 // again from it, and the player's choices go back as BrowserHost.CharacterCommand(kind, index, text).
 
+import { table } from './page-language.js';
+
 const classTexts = {
     'pt-BR': {
         Fighter: ['Corpo a corpo · Dano', 'Guerreiro de força bruta, mestre de machados e espadas pesadas. Aguenta a linha de frente e esmaga quem cruzar o seu caminho.'],
@@ -316,8 +318,8 @@ export function createHeroes(root, base, send, language, accountName) {
         appearance: [appearancePanel]
     };
 
-    const text = () => texts[language()] ?? texts['pt-BR'];
-    const classText = cls => (classTexts[language()] ?? classTexts['pt-BR'])[cls] ?? ['', ''];
+    const text = () => table(texts, 'heroes', language());
+    const classText = cls => table(classTexts, 'heroClasses', language())[cls] ?? ['', ''];
     const busy = () => Boolean(state?.busy);
 
     function browseRoster(direction) {
@@ -615,3 +617,6 @@ export function createHeroes(root, base, send, language, accountName) {
         }
     };
 }
+
+// The language tables, for the catalogs of the other languages and their test.
+export const heroTables = { heroes: texts, heroClasses: classTexts };

@@ -102,6 +102,7 @@ internal sealed partial class FieldSkills
         var rank = companion.Rank;
         var character = holder.Character;
         int dealt;
+        Element element;
         if (rules.Choices.Length > 0)
         {
             // A drawn element (spirit or phantom weapon): its range with the weapon and spirit terms, resisted by its element.
@@ -113,6 +114,7 @@ internal sealed partial class FieldSkills
             damage = CombatResolver.ApplyAbsorbMonster(damage, target.Def.Combat.Absorption + target.Effects.Totals.Flat(StatKind.Absorption));
             dealt = ModifierRules.ScaleDamage(damage, character.Effects.Totals, target.Effects.Totals);
             Slow(holder, target, rule.Code, choice, rank);
+            element = choice.Element;
         }
         else
         {
@@ -129,11 +131,12 @@ internal sealed partial class FieldSkills
             var power = _rng.Range(low, Math.Max(low, high)) + character.Effects.Totals.Flat(StatKind.CompanionDamage);
             var damageRule = new SkillDamageRule { Element = rules.Element, BonusBroods = rules.BonusBroods, BonusPercent = rules.BonusPercent };
             dealt = SkillFormulas.PowerAgainst(Math.Max(1, power), damageRule, target.Def, character.Effects.Totals, target.Effects.Totals, rank);
+            element = rules.Element;
         }
 
         _skillEvents.Add(new SkillEventView(holder.EntityId, target.EntityId, rule.Code, SkillEventPhase.Impact, rank, SkillEventFlags.Companion,
             0f, 0f, target.Position, holder.Facing, 1, 0f));
-        Pay(holder, target, dealt, false);
+        Pay(holder, target, dealt, false, element: element);
     }
 
     private void OnEffectEnded(in EffectChange change)

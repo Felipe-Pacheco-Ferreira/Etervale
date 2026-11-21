@@ -121,6 +121,7 @@ internal sealed class HudCaptureProbe : Game
     private static HudOverheadPoint? PlateAnchor(ulong id) => id switch
     {
         4 => new HudOverheadPoint(new Vector2(300, 300), 1f),
+        5 => new HudOverheadPoint(new Vector2(420, 220), 1f),
         2 => new HudOverheadPoint(new Vector2(500, 300), 1f),
         _ => null
     };
@@ -132,7 +133,9 @@ internal sealed class HudCaptureProbe : Game
         ProbeQuest Quest = ProbeQuest.None, bool Dead = false, bool FieldOpen = true, ProbeCarry Carry = ProbeCarry.None,
         ProbeHelp Help = ProbeHelp.None, bool TrainingEnter = false, bool FifthTier = false, bool SecondPage = false, bool Clan = false, ProbePlates Plates = ProbePlates.None, bool ClanPage = false,
         bool Siege = false, int CastleButton = -1, bool CastleChief = true, bool Bellatra = false, int BellatraButton = -1,
-        ProbeBellatraResult BellatraResult = ProbeBellatraResult.None, ProbeBellatraShow BellatraShow = ProbeBellatraShow.None, ProbeSiegeEnd SiegeEnd = ProbeSiegeEnd.None, bool Portuguese = false);
+        ProbeBellatraResult BellatraResult = ProbeBellatraResult.None, ProbeBellatraShow BellatraShow = ProbeBellatraShow.None, ProbeSiegeEnd SiegeEnd = ProbeSiegeEnd.None, bool Portuguese = false,
+        bool Tip = false, Point ChatOffset = default, string? Language = null, bool Pvp = false, bool Duel = false, bool Arena = false, bool Royale = false,
+        bool Titles = false, bool Roulette = false, bool Vietnamese = false);
 
     private static readonly Scenario[] Scenarios =
     [
@@ -145,6 +148,15 @@ internal sealed class HudCaptureProbe : Game
         new("buffs-summon-tooltip-800", 800, 600, Hover: Hover.Buff, Buffs: true),
         new("buffs-1600x1200-scale2", 1600, 1200, Buffs: true),
         new("bar-1024", 1024, 768),
+        new("tutorial-tip-800", 800, 600, Tip: true),
+        new("tutorial-tip-pt-1280", 1280, 720, Tip: true, Portuguese: true),
+        new("tutorial-tip-es-1280", 1280, 720, Tip: true, Language: Engine3D.Rendering.ClientSettings.SpanishLanguage),
+        new("tutorial-tip-fil-1280", 1280, 720, Tip: true, Language: Engine3D.Rendering.ClientSettings.FilipinoLanguage),
+        new("tutorial-tip-vi-1280", 1280, 720, Tip: true, Language: Engine3D.Rendering.ClientSettings.VietnameseLanguage),
+        new("tutorial-tip-zh-CN-1280", 1280, 720, Tip: true, Language: Engine3D.Rendering.ClientSettings.SimplifiedChineseLanguage),
+        new("tutorial-tip-ja-1280", 1280, 720, Tip: true, Language: Engine3D.Rendering.ClientSettings.JapaneseLanguage),
+        new("chat-moved-es-1280", 1280, 720, ChatOffset: new Point(420, -180), Language: Engine3D.Rendering.ClientSettings.SpanishLanguage),
+        new("chat-moved-pt-1280", 1280, 720, ChatOffset: new Point(420, -180), Portuguese: true),
         new("bar-1280", 1280, 720),
         new("bar-1600x1200-scale2", 1600, 1200),
         new("bar-3440-scale2", 3440, 1440),
@@ -168,6 +180,7 @@ internal sealed class HudCaptureProbe : Game
         new("status-clan-800", 800, 600, Keys.C, Clan: true),
         new("plates-clan-800", 800, 600, Clan: true, Plates: ProbePlates.Compact),
         new("plates-clan-classic-800", 800, 600, Clan: true, Plates: ProbePlates.Classic),
+        new("plates-pvp-pt-1280", 1280, 720, Clan: true, Plates: ProbePlates.Compact, Portuguese: true, Pvp: true),
         new("siege-board-800", 800, 600, Clan: true, Siege: true),
         new("siege-board-1280x720", 1280, 720, Clan: true, Siege: true),
         new("siege-won-800", 800, 600, Clan: true, Siege: true, SiegeEnd: ProbeSiegeEnd.Won),
@@ -245,6 +258,15 @@ internal sealed class HudCaptureProbe : Game
         new("system-menu-800", 800, 600, SystemMenu: true),
         new("settings-800", 800, 600, Hover: Hover.SettingsRow, Settings: true),
         new("settings-1600x1200-scale2", 1600, 1200, Settings: true),
+        new("settings-es-1280", 1280, 720, Settings: true, Language: Engine3D.Rendering.ClientSettings.SpanishLanguage),
+        new("settings-fil-1280", 1280, 720, Settings: true, Language: Engine3D.Rendering.ClientSettings.FilipinoLanguage),
+        new("status-fil-1280", 1280, 720, Keys.C, Language: Engine3D.Rendering.ClientSettings.FilipinoLanguage),
+        new("settings-vi-1280", 1280, 720, Settings: true, Language: Engine3D.Rendering.ClientSettings.VietnameseLanguage),
+        new("status-vi-1280", 1280, 720, Keys.C, Language: Engine3D.Rendering.ClientSettings.VietnameseLanguage),
+        new("settings-zh-CN-1280", 1280, 720, Settings: true, Language: Engine3D.Rendering.ClientSettings.SimplifiedChineseLanguage),
+        new("status-zh-CN-1280", 1280, 720, Keys.C, Language: Engine3D.Rendering.ClientSettings.SimplifiedChineseLanguage),
+        new("settings-ja-1280", 1280, 720, Settings: true, Language: Engine3D.Rendering.ClientSettings.JapaneseLanguage),
+        new("status-ja-1280", 1280, 720, Keys.C, Language: Engine3D.Rendering.ClientSettings.JapaneseLanguage),
         new("quest-dialog-800", 800, 600, Hover: Hover.QuestOk, Npc: true, Quest: ProbeQuest.Dialog),
         new("quest-confirm-800", 800, 600, Npc: true, Quest: ProbeQuest.Confirm),
         new("quest-reward-list-800", 800, 600, Npc: true, Quest: ProbeQuest.RewardList),
@@ -261,9 +283,18 @@ internal sealed class HudCaptureProbe : Game
         new("help-guide-page-800", 800, 600, Learned: true, Help: ProbeHelp.GuidePage),
         new("help-guide-page-1600x1200-scale2", 1600, 1200, Learned: true, Help: ProbeHelp.GuidePage),
         new("help-level-notice-800", 800, 600, Help: ProbeHelp.Notice),
-        new("help-level-summary-800", 800, 600, Help: ProbeHelp.Summary)
+        new("help-level-summary-800", 800, 600, Help: ProbeHelp.Summary),
+        // Late: the titles stay once shown (on plates and the status window, which the scenarios after show neither).
+        new("titles-pt-1280", 1280, 720, Keys.C, Clan: true, Plates: ProbePlates.Compact, Portuguese: true, Titles: true),
+        new("roulette-pt-1280", 1280, 720, Portuguese: true, Roulette: true),
+        new("font-vi-1280", 1280, 720, Vietnamese: true),
+        // Last: the arena's line and the duel's box stay once shown.
+        new("arena-pt-1280", 1280, 720, Portuguese: true, Arena: true),
+        new("royale-pt-1280", 1280, 720, Portuguese: true, Royale: true),
+        new("duel-pt-1280", 1280, 720, Target: 4, Portuguese: true, Duel: true)
     ];
 
+    private Gameplay.UI.Rendering.UiFonts _fonts = null!;
     private readonly string _assetRoot;
     private readonly string _output;
     private readonly string? _backgroundPath;
@@ -281,6 +312,8 @@ internal sealed class HudCaptureProbe : Game
     // The help scenario's window page or notice is up (they wait for the guide's files).
     private bool _helpReady;
     private readonly PresentationSettings _presentation = new();
+    private bool _chatRevealed;
+    private bool _pvpShown;
 
     public HudCaptureProbe(string assetRoot, string contentRoot, string output, string? background)
     {
@@ -302,8 +335,9 @@ internal sealed class HudCaptureProbe : Game
     {
         Directory.CreateDirectory(_output);
         _batch = new SpriteBatch(GraphicsDevice);
-        var font = Content.Load<SpriteFont>("Fonts/UI");
-        Console.WriteLine($"HUD font: {font.Texture.Width}x{font.Texture.Height}; format={font.Texture.Format}; glyphs={font.Characters.Count}; lineSpacing={font.LineSpacing}; M={font.MeasureString("M")}");
+        var font = new Gameplay.UI.Rendering.UiFonts(Content);
+        _fonts = font;
+        Console.WriteLine($"HUD font: {font.Current.Texture.Width}x{font.Current.Texture.Height}; format={font.Current.Texture.Format}; glyphs={font.Current.Characters.Count}; lineSpacing={font.Current.LineSpacing}; M={font.Current.MeasureString("M")}");
         var context = new ScreenContext(GraphicsDevice, Content, _batch, font,
             _assetRoot, null!, ConsoleClientLog.Instance, _ => { }, _presentation);
         _hud = new GameplayHud(context,
@@ -413,8 +447,44 @@ internal sealed class HudCaptureProbe : Game
             _presentation.Requested = _presentation.Requested with
             {
                 ClassicTargetHealthBar = scenario.ClassicTarget,
-                ClassicNamePlates = scenario.Plates == ProbePlates.Classic
+                ClassicNamePlates = scenario.Plates == ProbePlates.Classic,
+                TutorialTips = scenario.Tip,
+                TutorialTipsClosed = [],
+                ChatOffsetX = scenario.ChatOffset.X,
+                ChatOffsetY = scenario.ChatOffset.Y
             };
+            if (scenario.ChatOffset != Point.Zero)
+            {
+                _hud.Chat.Receive(new ChatLineInfo(Contracts.Social.ChatKind.Player, 0, "Ann: o chat fica onde você o deixou"), 0);
+                _hud.Chat.Window.Reveal();
+                _chatRevealed = true;
+            }
+            else if (_chatRevealed)
+            {
+                _hud.Chat.Window.Close();
+                _chatRevealed = false;
+            }
+
+            if (scenario.Vietnamese)
+            {
+                // Vietnamese letters the interface font bakes (Latin Extended-B's horned O and U, Latin Extended Additional).
+                _hud.Chat.Receive(new ChatLineInfo(Contracts.Social.ChatKind.Player, 0, "Lan: Xin chào các chiến binh! Ơ ơ Ư ư Đ đ Ă ă Â â Ê ê Ô ô"), 0);
+                _hud.Chat.Receive(new ChatLineInfo(Contracts.Social.ChatKind.Player, 0, "Lan: ạ ả ấ ầ ẩ ẫ ậ ắ ằ ẳ ẵ ặ ẹ ẻ ẽ ế ề ể ễ ệ ỉ ị ọ ỏ ố ồ ổ ỗ ộ ớ ờ ở ỡ ợ"), 0);
+                _hud.Chat.Receive(new ChatLineInfo(Contracts.Social.ChatKind.Player, 0, "Lan: ụ ủ ứ ừ ử ữ ự ỳ ỵ ỷ ỹ Ạ Ả Ấ Ầ Ẩ Ẫ Ậ Ắ Ằ Ẳ Ẵ Ặ Ỳ Ỵ Ỷ Ỹ"), 0);
+                _hud.Chat.Window.Reveal();
+                _chatRevealed = true;
+            }
+
+            if (scenario.Roulette)
+            {
+                // The boss roulette's winner as every player reads it, and the line the winner reads.
+                _hud.Chat.Receive(new ChatLineInfo(Contracts.Social.ChatKind.Notice, 0, "",
+                    GameText.Of(GameTextId.BossRouletteWinner, "Panzer", "Super Aging Stone", "Valento")), 0);
+                _hud.Chat.Receive(new ChatLineInfo(Contracts.Social.ChatKind.System, 0, "", GameText.Of(GameTextId.BossRouletteWon, "Super Aging Stone", "Valento")), 0);
+                _hud.Chat.Window.Reveal();
+                _chatRevealed = true;
+            }
+
             _hud.Overhead = scenario.Plates == ProbePlates.None ? static _ => null : PlateAnchor;
             var state = ScenarioState(scenario);
             var layout = HudLayout.Create(scenario.Width, scenario.Height);
@@ -446,6 +516,35 @@ internal sealed class HudCaptureProbe : Game
                 Click(state, layout, layout.Bottom(HudSystemMenu.Button(HudSystemEntry.Settings, browser: false)).Center);
             }
 
+            if (scenario.Pvp != _pvpShown)
+            {
+                // The clan mate turns its PvP mode on and a murderer stands by it; the other scenarios see neither.
+                _pvpShown = scenario.Pvp;
+                var mate = new PlayerAppearanceInfo("Panzer", PlayerClass.Mechanician, 0, 0, 0, "", "", 175) { ClanId = 7, ClanName = "GM", Pvp = _pvpShown };
+                var murderer = new PlayerAppearanceInfo("Kaz", PlayerClass.Assassin, 0, 0, 0, "", "", 120) { Pvp = true, Murderer = true };
+                _hud.Combat.Observe(new PresenceUpdate(1,
+                [
+                    new(4, EntityKind.Player, false, default, 0, MotionState.Stand, 64, 64, mate, 0),
+                    .. _pvpShown ? new EntitySpawnInfo[] { new(5, EntityKind.Player, false, default, 0, MotionState.Stand, 64, 64, murderer, 0) } : []
+                ], [], _pvpShown ? [] : [5UL], []));
+            }
+
+            if (scenario.Titles)
+            {
+                // The clan mate shows the Survivor's title; the player owns three titles and shows the Castle Lord's. Only the last
+                // scenario sees them.
+                var titled = new PlayerAppearanceInfo("Panzer", PlayerClass.Mechanician, 0, 0, 0, "", "", 175)
+                {
+                    ClanId = 7, ClanName = "GM", Title = (int)Simulation.Titles.TitleCode.Survivor
+                };
+                _hud.Combat.Observe(new PresenceUpdate(1, [new(4, EntityKind.Player, false, default, 0, MotionState.Stand, 64, 64, titled, 0)], [], [], []));
+                _hud.ObserveTitles(new PresenceUpdate(1, [], [], [], [])
+                {
+                    Titles = new TitlesInfo((byte)Simulation.Titles.TitleCode.CastleLord, Simulation.Titles.TitleRules.Bit(Simulation.Titles.TitleCode.Veteran)
+                        | Simulation.Titles.TitleRules.Bit(Simulation.Titles.TitleCode.Hunter) | Simulation.Titles.TitleRules.Bit(Simulation.Titles.TitleCode.CastleLord))
+                });
+            }
+
             if (scenario.Clan)
             {
                 _hud.ObserveClan(new PresenceUpdate(1, [], [], [], [])
@@ -460,7 +559,48 @@ internal sealed class HudCaptureProbe : Game
                 });
             }
 
-            Gameplay.Localization.ClientText.Use(scenario.Portuguese ? Engine3D.Rendering.ClientSettings.BrazilianPortugueseLanguage : Engine3D.Rendering.ClientSettings.EnglishLanguage);
+            var language = scenario.Language
+                ?? (scenario.Portuguese ? Engine3D.Rendering.ClientSettings.BrazilianPortugueseLanguage : Engine3D.Rendering.ClientSettings.EnglishLanguage);
+            Gameplay.Localization.ClientText.Use(language);
+            _fonts.Use(language);
+            if (scenario.Arena || scenario.Duel || scenario.Royale || scenario.Titles)
+            {
+                // An earlier scenario's level guide notice would cover the line at the top.
+                _hud.LevelGuide.Dismiss();
+            }
+
+            // A Battle Royale with 12 of 30 standing, the zone at 660 shrinking in 1:20 and 9:40 left; the player stands near
+            // the zone's edge so the minimap shows it (the stage's map is Ricarten's, so the box around the dots is empty).
+            // The next scenario ends it.
+            _hud.ObserveRoyale(new PresenceUpdate(1, [], [], [], [])
+            {
+                Royale = scenario.Royale
+                    ? new RoyaleInfo(Protocol.Packets.RoyaleStatePacket.FightingState, 12, 30, 660, 80, 580)
+                    : new RoyaleInfo(Protocol.Packets.RoyaleStatePacket.NoneState, 0, 0, 0, 0, 0)
+            });
+            if (scenario.Royale)
+            {
+                _hud.World = _hud.World with
+                {
+                    PlayerPosition = new Vector3(Simulation.Combat.RoyaleRules.Center.X + 560f, 0f, Simulation.Combat.RoyaleRules.Center.Z + 220f)
+                };
+            }
+
+            // A 3x3 match two against one with 3:12 left; the next scenario ends it.
+            _hud.ObserveArena(new PresenceUpdate(1, [], [], [], [])
+            {
+                Arena = scenario.Arena ? new ArenaInfo(Simulation.Combat.ArenaMode.Trio, false, false, 2, 1, 192) : new ArenaInfo(0, false, false, 0, 0, 0)
+            });
+            if (scenario.Duel)
+            {
+                // The reached player's Duel button, a challenge from another and the running duel's line.
+                _hud.ButtonsPlayerId = 4;
+                _hud.ObserveDuel(new PresenceUpdate(1, [], [], [], [])
+                {
+                    Duel = new DuelInfo(4, "Panzer", default, 151, 0),
+                    DuelRequest = new DuelRequestInfo(6, "Kaz")
+                });
+            }
 
             // Boards of an earlier scenario stay on the shared HUD otherwise.
             _hud.InCastleField = false;

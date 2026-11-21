@@ -251,6 +251,18 @@
       <Output TaskParameter="Items" ItemName="_EtervaleBootstrapHashed" />
     </GetFileHash>
     <WriteLinesToFile File="$(PublishDir)wwwroot/bootstrap.txt" Lines="@(_EtervaleBootstrapHashed->'%(Path)%09%(FileHash)')" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <!-- The sound files, listed in audio.txt in bootstrap.txt's form. The client downloads each one the first time the
+         game reads it (BrowserSoundFiles), never in a wave or a world pack. -->
+    <ItemGroup>
+      <_EtervaleSounds Include="$(EtervaleAssets)wav/**/*.wav;$(EtervaleAssets)wav/**/*.WAV;$(EtervaleAssets)wav/**/*.bgm;$(EtervaleAssets)image/Sinimage/Sound/*.wav;$(EtervaleAssets)StartImage/**/*.wav"
+                       Root="$(EtervaleAssets)../" />
+      <_EtervaleSounds Update="@(_EtervaleSounds)" Path="$([MSBuild]::MakeRelative('%(Root)', '%(FullPath)').Replace('\', '/'))" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_EtervaleSounds)" DestinationFiles="@(_EtervaleSounds->'$(PublishDir)wwwroot/%(Path)')" SkipUnchangedFiles="true" />
+    <GetFileHash Files="@(_EtervaleSounds)" Algorithm="SHA256" HashEncoding="hex">
+      <Output TaskParameter="Items" ItemName="_EtervaleSoundsHashed" />
+    </GetFileHash>
+    <WriteLinesToFile File="$(PublishDir)wwwroot/audio.txt" Lines="@(_EtervaleSoundsHashed->'%(Path)%09%(FileHash)')" Overwrite="true" WriteOnlyWhenDifferent="true" />
     <!-- Each class needs its base body, three faces, their materials, and its compact preview skeleton. The full
          gameplay skeletons stay in bootstrap.txt in the world wave. -->
     <ItemGroup>

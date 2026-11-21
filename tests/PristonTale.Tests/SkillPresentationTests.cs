@@ -296,8 +296,9 @@ internal static class SkillPresentationTests
         var cooldowns = new SkillCooldownBook();
         cooldowns.Apply(new SkillCastResultInfo(1, 0x08010002, SkillCastVerdict.Accepted, 1, 10000, 10000, 0, 0), 1000);
         Assert.True(!cooldowns.Ready(0x08010002, 5000) && Math.Abs(cooldowns.Fraction(0x08010002, 6000) - 0.5f) < 0.001f, "cooldown sweep");
+        Assert.True(cooldowns.DurationMs(0x08010002) == 10000 && cooldowns.DurationMs(0x08010001) == 0, "cooldown length for the touch HUD");
         cooldowns.Apply(new SkillCooldownSnapshot(0, []), 6000);
-        Assert.True(cooldowns.Ready(0x08010002, 6000), "snapshot without the skill did not clear it");
+        Assert.True(cooldowns.Ready(0x08010002, 6000) && cooldowns.DurationMs(0x08010002) == 0, "snapshot without the skill did not clear it");
         var statuses = new StatusBook();
         var added = 0;
         var removed = 0;

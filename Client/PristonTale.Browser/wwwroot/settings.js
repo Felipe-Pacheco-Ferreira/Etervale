@@ -7,6 +7,7 @@ import { makeDraggable, resetDraggables } from './draggable.js';
 import { dynamicResolutionLabel, normalizeRendererSettings, originalTextures, qualityChoices, qualityLabel, rowDisabled, say, setRendererOptions,
     shadowChoice, shadowSettings, shortcutColumns, shortcutGroups, tabs, textureQualityFor, unavailableShortcuts } from './settings-options.js';
 import { createSettingsEffects } from './settings-effects.js';
+import { word as phraseIn } from './page-language.js';
 
 const storageKey = 'avalon.settings';
 const profileKey = 'avalon.settings.quality';
@@ -45,7 +46,9 @@ const texts = {
     needsDefaultLight: say('Vale só com a iluminação Padrão (novo).', 'Applies only with the Default (new) lighting.'),
     needsFog: say('Ligue a névoa para escolher a distância.', 'Turn the fog on to choose its distance.'),
     died: say('Seu personagem morreu.', 'Your character died.'),
-    windowsReset: say('As janelas voltaram ao lugar.', 'Windows are back in place.')
+    windowsReset: say('As janelas voltaram ao lugar.', 'Windows are back in place.'),
+    pvpAsked: say('Pedido enviado ao servidor: a resposta aparece no chat.', 'Sent to the server: the answer shows in the chat.'),
+    pvpOutside: say('Entre no jogo para ligar ou desligar o PvP.', 'Enter the game to turn PvP on or off.')
 };
 
 
@@ -88,7 +91,7 @@ export function createSettings(root, getHost, getLanguage, setLanguage, onApplie
     const site = part('settings-site');
     const music = root.querySelector('[data-role="opening-music"]');
     const openingSound = root.querySelector('[data-role="opening-sound"]');
-    const word = value => typeof value === 'string' ? value : value[getLanguage()] ?? value['pt-BR'];
+    const word = value => phraseIn(value, getLanguage());
     let tab = 'video';
     let draft = null;
     let active = parse(load()) ?? {};
@@ -102,7 +105,8 @@ export function createSettings(root, getHost, getLanguage, setLanguage, onApplie
     const dynamicResolutionState = { enabled: false, scale: 0, width: 0, height: 0, shadowUpdateRate: 0 };
     let sessionTextures = 'Original';
     const effects = createSettingsEffects(root, getHost, () => active, () => word(texts.died));
-    // The panel's reset buttons: the page's windows back to their places, and the HUD scale with them.
+    // The panel's reset buttons: the page's windows back to their places, and with them the HUD scale, the chat's place
+    // and the interface options (ClientSettings.WithInterfaceReset).
     const actions = {
         'reset-windows': () => {
             resetDraggables();
@@ -110,8 +114,11 @@ export function createSettings(root, getHost, getLanguage, setLanguage, onApplie
         },
         'reset-interface': () => {
             resetDraggables();
-            draft.uiScale = 1;
+            draft = JSON.parse(getHost().ResetInterface(JSON.stringify(draft)));
             render();
+        },
+        'switch-pvp': () => {
+            note.textContent = word(getHost()?.SwitchPvp?.() ? texts.pvpAsked : texts.pvpOutside);
         }
     };
 
@@ -219,7 +226,7 @@ export function createSettings(root, getHost, getLanguage, setLanguage, onApplie
     }
 
     function rowFor(row) {
-        if (row.hidden) return null;
+        if (row.hidden || row.serverTranslation && !getHost()?.ChatTranslationAvailable?.()) return null;
         if (row.caption) return element('p', 'settings-group-caption', word(row.caption));
         if (row.pair) {
             const pair = element('div', 'settings-option-pair');

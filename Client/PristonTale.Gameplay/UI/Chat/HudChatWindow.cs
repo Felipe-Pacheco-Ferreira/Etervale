@@ -8,15 +8,15 @@ namespace PristonTale.Gameplay.UI.Chat;
 // The chat window in the bottom-left corner, in 800x600 design units with the bottom offset added. Enter opens it with
 // the input line focused; with a status, skill or inventory window open it shrinks to a small box above them. Its tab
 // buttons filter the log (All, Clan, Party, Trade, Whisper); the notice button cycles the assistant's page: off, three
-// assistant lines over eight chat lines, or the assistant's page alone.
+// assistant lines over eight chat lines, or the assistant's page alone. The whole window, buttons included, is drawn and
+// hit-tested moved by Offset, the place the player dragged it to.
 public sealed class HudChatWindow
 {
     // The most messages a frame walks back through the log, and the painter's delegates and the input's visible tail,
     // made once instead of every frame.
     private const int MostMessages = 32;
     private const float BrowserTextScale = 11f / HudPainter.BakePixels;
-    private static readonly string[] PortugueseTabs = ["Todos", "Clã", "Grupo", "Troca", "Msg.P"];
-    private static readonly string[] EnglishTabs = ["All", "Clan", "Party", "Trade", "Whisper"];
+    private static readonly string[] TabKeys = ["Chat.Tab.All", "Chat.Tab.Clan", "Chat.Tab.Party", "Chat.Tab.Trade", "Chat.Tab.Whisper"];
     private Func<char, bool> _canDraw;
     private Func<string, int> _measure;
     private Func<string, int> _browserMeasure;
@@ -72,6 +72,13 @@ public sealed class HudChatWindow
 
     // Messages drawn in the last frame; Page Up and Page Down scroll by this many.
     public int ShownMessages { get; private set; }
+
+    // Where the window sits, in design pixels from its own place (ClientSettings.ChatOffsetX/Y); while Movable, a press
+    // on the open window's log starts a drag.
+    public Point Offset { get; set; }
+    public bool Movable { get; set; }
+    public bool Dragging => _dragAnchor.HasValue;
+    private Point? _dragAnchor;
 
     public void OpenInput()
     {
@@ -132,12 +139,45 @@ public sealed class HudChatWindow
         return side ? new Rectangle(0, 294 + layout.BottomOffset, 300, 116) : new Rectangle(0, 408 + layout.BottomOffset, 305, 192);
     }
 
-    public bool Contains(HudLayout layout, Point pointer, bool side) =>
-        Open && (Box(layout, side).Contains(pointer) || InputBox(layout, side).Contains(pointer)) || Toggle(layout, side).Contains(pointer);
+    public bool Contains(HudLayout layout, Point pointer, bool side)
+    {
+        pointer -= Offset;
+        return Dragging || Open && (Box(layout, side).Contains(pointer) || InputBox(layout, side).Contains(pointer)) || Toggle(layout, side).Contains(pointer);
+    }
 
-    // Tabs, the notice button, the toggle and a whisper line; true when the click belonged to the chat.
+    // Moves the window while the button is held; true once, when it is let go, with the place to keep.
+    public bool UpdateDrag(HudLayout layout, Point pointer, bool pressed)
+    {
+        if (_dragAnchor is not { } anchor)
+        {
+            return false;
+        }
+
+        Offset = ClampOffset(layout, pointer - anchor);
+        if (pressed)
+        {
+            return false;
+        }
+
+        _dragAnchor = null;
+        return true;
+    }
+
+    // The nearest offset that keeps the whole window on the screen, in both of its places (with and without a side window).
+    public static Point ClampOffset(HudLayout layout, Point offset)
+    {
+        var extent = Rectangle.Union(Rectangle.Union(Box(layout, false), Box(layout, true)), Rectangle.Union(InputBox(layout, false), InputBox(layout, true)));
+        extent = Rectangle.Union(extent, Rectangle.Union(Toggle(layout, false), Toggle(layout, true)));
+        return new Point(
+            Math.Clamp(offset.X, -extent.Left, Math.Max(-extent.Left, layout.Width - extent.Right)),
+            Math.Clamp(offset.Y, -extent.Top, Math.Max(-extent.Top, layout.Height - extent.Bottom)));
+    }
+
+    // Tabs, the notice button, the toggle and a whisper line; true when the click belonged to the chat. While Movable, a
+    // press on the log elsewhere picks the window up.
     public bool Click(HudLayout layout, Point pointer, bool side)
     {
+        pointer -= Offset;
         if (Toggle(layout, side).Contains(pointer))
         {
             Open = !Open;
@@ -187,6 +227,12 @@ public sealed class HudChatWindow
             }
         }
 
+        if (Movable && Box(layout, side).Contains(pointer))
+        {
+            _dragAnchor = pointer;
+            return true;
+        }
+
         return Box(layout, side).Contains(pointer) || InputBox(layout, side).Contains(pointer);
     }
 
@@ -206,6 +252,19 @@ public sealed class HudChatWindow
     }
 
     public void Draw(HudPainter painter, HudLayout layout, bool side)
+    {
+        if (Offset == Point.Zero)
+        {
+            DrawPlaced(painter, layout, side);
+            return;
+        }
+
+        painter.Shift(Offset);
+        DrawPlaced(painter, layout, side);
+        painter.Shift(Point.Zero);
+    }
+
+    private void DrawPlaced(HudPainter painter, HudLayout layout, bool side)
     {
         Input.CanDraw = _canDraw ??= painter.CanDraw;
         _measure ??= painter.Measure;
@@ -265,7 +324,6 @@ public sealed class HudChatWindow
     {
         _browserMeasure ??= text => painter.MeasureAt(text, BrowserTextScale);
         var toggle = Toggle(layout, side);
-        var portuguese = ClientText.Language == "pt-BR";
         if (Open)
         {
             var box = Box(layout, side);
@@ -273,11 +331,10 @@ public sealed class HudChatWindow
             box.Inflate(-1, -1);
             painter.ColorBox(box, 13, 14, 19, 199);
 
-            DrawBrowserTab(painter, NoticeButton(layout, side), portuguese ? "Alerta" : "Alert", NoticeMode != 0);
-            var labels = portuguese ? PortugueseTabs : EnglishTabs;
-            for (var tab = 0; tab < labels.Length; tab++)
+            DrawBrowserTab(painter, NoticeButton(layout, side), ClientText.Get("Chat.Alert"), NoticeMode != 0);
+            for (var tab = 0; tab < TabKeys.Length; tab++)
             {
-                DrawBrowserTab(painter, TabButton(layout, tab, side), labels[tab], (int)Log.Tab == tab);
+                DrawBrowserTab(painter, TabButton(layout, tab, side), ClientText.Get(TabKeys[tab]), (int)Log.Tab == tab);
             }
 
             if (NoticeMode == 1)

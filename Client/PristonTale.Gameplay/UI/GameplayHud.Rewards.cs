@@ -84,11 +84,10 @@ public sealed partial class GameplayHud
         }
 
         var box = RewardsBounds(layout);
-        var portuguese = ClientText.Language == "pt-BR";
         Panel(box, 25, 20);
         Panel(RewardClose(box), 55, 41);
         _painter.Text("X", box.Right - 27, box.Y + 13, Color.Wheat);
-        _painter.Text(portuguese ? "Eventos e Recompensas" : "Events and Rewards", box.X + 15, box.Y + 15, Color.Gold);
+        _painter.Text(ClientText.Get("Rewards.Title"), box.X + 15, box.Y + 15, Color.Gold);
         for (var index = 0; index < Math.Min(6, _rewardBoard.Tracks.Count); index++)
         {
             var track = _rewardBoard.Tracks[index];
@@ -97,7 +96,7 @@ public sealed partial class GameplayHud
             _painter.Text($"{track.Track}  {track.Reached}/{track.Entries.Count}", row.X + 8, row.Y + 8, Color.Wheat);
             if (track.Ready > 0)
             {
-                var claim = portuguese ? $"Resgatar ({track.Ready})" : $"Claim ({track.Ready})";
+                var claim = ClientText.Format("Rewards.Claim", track.Ready);
                 _painter.TextCentered(claim, row.Right - 113, row.Right - 5, row.Y + 8, Color.Gold);
             }
         }

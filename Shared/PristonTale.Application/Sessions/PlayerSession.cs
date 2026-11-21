@@ -35,6 +35,7 @@ public sealed class PlayerSession
         Warehouse = null;
         MobileShopOpen = false;
         LeftDead = false;
+        LeftSlainByPlayer = false;
         InVillage = false;
         FieldId = 0;
         SpawnPosition = default;
@@ -63,6 +64,9 @@ public sealed class PlayerSession
     // The character left the world dead while a durable operation held its save gate: the save after it stores the town
     // restart with its costs (WorldServer.CaptureLeftAsync).
     public bool LeftDead { get; set; }
+
+    // That death came from another player: its town restart costs nothing (PvpRules).
+    public bool LeftSlainByPlayer { get; set; }
 
     public CharacterRecord? Loaded { get; set; }
 

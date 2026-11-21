@@ -33,6 +33,8 @@ use scalar updates. Scene disposal releases its JS meshes, materials and texture
 | `Client/PristonTale.Browser/wwwroot/three-scene.js`, `three-bridge.js`, `three-native.js`, `three-rain.js`, `three-display.js`, `three-camera.js`, `three-post.js`, `three-batching.js`, `three-profile.js` | Scene, packed bridge, native and rain batches, explicit display encoding, supplied camera projections, HDR/post composition, spatial static batching and opt-in CPU submission diagnostics |
 | `Client/PristonTale.Browser/package.json`, `pnpm-lock.yaml`, `vendor-three.mjs`, `wwwroot/vendor/three/` | Pinned Three release and self-hosted official ES bundles with MIT license |
 | `Client/PristonTale.Browser/BootstrapFiles.cs` | Fetches the files `bootstrap.txt` lists into the runtime's in-memory file system, where `ContentManager` and `AssetFiles` read them; the world wave comes from the world packs when they are valid |
+| `Client/PristonTale.Browser/BrowserSoundFiles.cs`, `Shared/PristonTale.Assets/WebSoundIndex.cs` | The sound files listed by `audio.txt`, downloaded one at a time when the game first reads each ([Sound](#sound)) |
+| `Client/PristonTale.Browser/wwwroot/web-audio.js` | Web Audio behind the runtime's audio voices (`noxiusAudio`): buffers, voices, the context started by the first gesture ([Sound](#sound)) |
 | `Shared/PristonTale.Assets/WebAssetPacks*.cs` | World pack format, bootstrap parsing, index and archive checks, and the browser's pack reader ([World packs](#world-packs)) |
 | `Client/PristonTale.Browser/Content/Content.mgcb` | UI font and compatible effect metadata built for MGCB's Web platform; actual scene shaders are Three node materials |
 | `Client/PristonTale.Browser/Program.cs` | Empty entry point; marks the assembly browser-only |
@@ -41,6 +43,7 @@ use scalar updates. Scene disposal releases its JS meshes, materials and texture
 | `Client/PristonTale.Browser/wwwroot/settings-options.js` | The panel's rows (each bound to a `client-settings.json` field), presets, shadow and texture choices |
 | `Client/PristonTale.Browser/wwwroot/settings-effects.js` | What settings do on the page: full screen, leave prompt, grey screen while dead, low-life border, death notification, hidden HUD icons |
 | `Client/PristonTale.Browser/wwwroot/news.js` | News & Support in the Settings panel's style: the feed's posts, the tickets the game keeps, the community links |
+| `Client/PristonTale.Browser/wwwroot/touch-hud.js`, `hud-art.js`, `BrowserHost.Touch.cs`, `Client/PristonTale.Gameplay/UI/GameplayHud.Touch.cs`, `TouchPortraitPlacement.cs`, `Screens/Gameplay/GameplayScreen.Touch.cs` | The touch HUD of phones and tablets: the Android client's player frame, bottom HUD and art on page canvases, fed by the game's touch state, with the player's 3D head drawn by the game ([Entry page](#entry-page)) |
 | `Client/PristonTale.Browser/wwwroot/draggable.js` | Drags a page window by its header within the viewport; a double click on the header or Settings' reset puts it back |
 | `Client/PristonTale.Browser/publish.ps1`, `publish.sh` | Release publish into the website's `Play:ClientPath` folder, replacing the previous build and its world packs |
 | `Shared/PristonTale.Protocol/Transport/WebSocketTransport.cs` | Frames over a WebSocket, client and server side ([protocol.md](protocol.md#websocket-transport)) |
@@ -48,7 +51,7 @@ use scalar updates. Scene disposal releases its JS meshes, materials and texture
 | `Web/PristonTale.Web/Pages/Jogar.cshtml`, `wwwroot/css/play.css`, `Services/BrowserClient.cs` | The entry page (`/`) and the `/play` files ([website.md](website.md)) |
 | `monogame/runtime/src/webgpu/MGG_WebGPU.cpp` | The fork's WebGPU graphics backend: the same exports as the Vulkan one ([monogame/issues/021](../monogame/issues/021-webgpu-backend.md)) |
 | `monogame/runtime/src/web/MGG_Three.cpp` | CPU MonoGame resource and HUD/effect adapter for the browser; forwards rendering to Three instead of owning a second graphics device |
-| `monogame/runtime/src/web/` | The browser platform (the page's canvas as the window, its events), silent audio, storage without a device, `mgruntime.cpp` (the browser runtime as one translation unit) and `BrowserRuntime.props` (links it into a WebAssembly project) |
+| `monogame/runtime/src/web/` | The browser platform (the page's canvas as the window, its events), audio over the page's Web Audio (`MGA_web.cpp`), storage without a device, `mgruntime.cpp` (the browser runtime as one translation unit) and `BrowserRuntime.props` (links it into a WebAssembly project) |
 | `monogame/runtime/repro/WebGpuRepro/` | Verification program: the fork's framework and the browser runtime clearing a canvas through WebGPU, drawing a texture with `SpriteBatch` and running a compute check (`Content/ComputeCheck.fx`), with its checks and canvas samples on the page |
 | `monogame/pipeline/MonoGame.Effect.Compiler/Effect/ShaderProfile.WebGpu.cs`, `fetch-slang.sh`/`.ps1`, `StockEffects/` | The effect processor's WebGPU profile (WGSL by Slang over the Vulkan build's reflection, MGCB platform `Web`), the pinned Slang it needs, and the browser runtime's stock effects ([monogame/issues/022](../monogame/issues/022-webgpu-effects.md)) |
 
@@ -70,7 +73,10 @@ browser ──https──▶ website  / (page, canvas, CSP) + /play/* (main.js, 
 
    Bootstrap downloads retry transient network and server errors up to twice.
 
-3. `BrowserHost.PrepareAsync` fetches the opening's files from `bootstrap.txt` into the in-memory file system.
+3. `BrowserHost.PrepareAsync` fetches the opening's files from `bootstrap.txt` into the in-memory file system; of the
+   languages' own interface fonts (`Content/Fonts/UI-<code>.xnb`, `UiFonts`, each in a world-pack chunk of its own:
+   `WebAssetPacks.IsLanguageFont`) only the page language's, as the game
+   draws that language only.
    `Start` installs the external renderer strategy and creates `BrowserGame`; the page calls `Frame` from its paced
    animation callback. The host disables fixed-step catch-up and inactive sleeping because the browser owns pacing.
 4. The login screen runs the desktop `OpeningScreen` and `OpeningLoginController` behind the page's form
@@ -90,7 +96,8 @@ The site's address (`/`) is the game: the canvas fills the window, and the page'
   and `[Opening]` from the game).
 - The HTML login leaves the desktop login atlas out of the browser build and startup. The page tries to play the
   original `Intro.wav` through HTML audio during loading. The speaker button starts playback when autoplay is blocked
-  and also toggles the music. Entering character selection stops the opening music.
+  and also toggles the music. Entering character selection stops the opening music; the game's own sound starts there
+  ([Sound](#sound)).
 - The roster's models and arrival effect begin fetching one second after the live scene starts, four at a time. Other
   assets are fetched when entering the world; the scene's own files carry their hash in `bootstrap.txt`
   and are asked for as `?v=<hash>`, which the site caches for good, so a reload reads them from the browser.
@@ -168,15 +175,68 @@ The site's address (`/`) is the game: the canvas fills the window, and the page'
     (`GameScene.TouchMovement`), drawn on the canvas where it landed (`TouchJoystick`); one finger dragged elsewhere
     turns the camera and two pinch its distance (`GameScene.TouchCameraOffset`). A tap selects a monster instead of
     attacking it (`GameScene.SelectCombatTargetOnTap`), as on the phone.
-  - The page draws the action wheel over the canvas (`touch-hud.js`, markup in `Jogar.cshtml`, styles in `play.css`)
-    at the Android client's places, in hundredths of the screen's short side: the attack button at the lower right,
-    four skill buttons on an arc around it, the potion belt above and a dock with Personagem, Bolsa, Habilidades and
-    Missões on the left. Its buttons call `RunWorldAction`: `touch-attack` attacks the selected monster or else the
-    nearest one, `touch-skill:<n>` casts that button's skill at the same target (`GameScene.CastSkillAt`; a self or
-    ally skill needs none), `touch-belt:<n>` drinks that belt box's potion. Every half second the page reads
-    `TouchState` (each skill button's skill and name, each belt box's potion and count). A skill on the action bar's
-    first four slots holds that button; the others fill with the learned skills in order (`TouchSkillSlots`, the
-    Android action wheel's rule).
+  - The page draws the Android client's bottom HUD over the canvas (`touch-hud.js`, markup in `Jogar.cshtml`, styles
+    in `play.css`) with its art: `hud-art.js` draws on 2D canvases what the Android HUD draws (`VulkanHudArt`,
+    `VulkanSkillBorder`, the glyphs of `HudIcon`), so the orbs, the attack button's crossed swords, the tier borders,
+    the gauge and the badges are the phone's. The places are the Android client's, in hundredths of the screen's short
+    side from the wheel's corner (8 px from the right, 20 px from the bottom): the attack button, four skill buttons on
+    an arc around it and the potion belt stacked at the wheel's left; Menu and Bolsa as 58 px orbs at the lower left;
+    the experience bar (18 px, a tick every tenth of the level, the level and percentage) along the bottom edge.
+    The buttons call `RunWorldAction`: `touch-attack` attacks the selected monster or else the nearest one,
+    `touch-skill:<n>` casts that button's skill at the same target (`GameScene.CastSkillAt`; a self or ally skill
+    needs none), `touch-belt:<n>` drinks that belt box's potion, `touch-run` switches running. Every 250 ms the page
+    reads `TouchState`: the player frame's values, the share of the level's experience, each skill button's skill
+    (name, picture file, tier, rank against `SkillLearning.MaxRank`, cooldown left and its length), each belt box's
+    potion (name, count, picture file), the items that came into the bag since it was last open and the rewards ready
+    to claim. The pictures are the original skill buttons and item sprites: the page asks for each file once with
+    `TouchPicture` (only files the state named), which the game decodes from the downloaded assets, and asks again
+    after 3 s while the file is not there yet. A skill shows its picture (its abbreviated name while there is none),
+    its tier's border with ten rank marks and the gold orbit at the highest rank; a recovering skill shows its seconds
+    under a shade that turns away, counted on the page's clock between two states. A skill on the action bar's first
+    four slots holds that button; the others fill with the learned skills in order (`TouchSkillSlots`, the Android
+    action wheel's rule).
+  - The player frame (the Android client's `VulkanPlayerFrame`) sits at the top-left corner, 0.66 by 0.241 of the
+    short side: the plate with the crest, the breathing aura and a round window, the level medallion (its stone
+    climbing with the level against `ExperienceTable.MaximumLevel`, burning at the highest), a red dot while there are
+    attribute points, the name with the title the player shows at its right on a plaque edged and lettered in its
+    rarity's colour, a gold diamond at each end and a passing highlight (`titlePlaque`, from the HUD's `Titles`), the
+    life, mana and stamina gauges with their values (eased, with a trail and a sweeping
+    light) and, at the highest level, the class title (`DataText.ClassTitle`). The game draws the player's 3D head in
+    the window (`GameplayScreen.Touch.cs`: a `HudTargetPortrait` of the player rendered before the world and drawn
+    after the HUD at `TouchPortraitPlacement`, whose fractions the touch state hands to the page). A tap opens the
+    character's status. The server, FPS and ping line moves under the shortcuts at the top right as the Android
+    client's small monospace readout, without the server's name, the ping green under 80 ms, yellow under 200 and red
+    above (`latencyGrade`).
+  - The target frame (the Android client's `VulkanTargetFrame`) is centred at the top, 0.7 of the short side wide:
+    the plate with a round window at its left end (crimson gems for what can be fought, blue for an NPC), the name
+    and level, and for what can be fought the life gauge with the percentage left (eased, with a trail; a new target
+    starts full). Its target is the monster the player attacks, or else the one picked (`GameplayScreen.Touch.cs` sets
+    `TouchTargetId`; `HudCombat.TryGetTargetState` gives its name, level and life). The game draws the target's 3D head
+    in the window (`TouchPortraits.Target`, framed by `HudCombat.TryGetPortraitSubject`, at
+    `TouchPortraitPlacement.TargetBounds`, whose fractions the touch state hands to the page). The online count and
+    the shortcuts sit under it, so a phone lying down keeps them apart.
+  - The chat is the Android client's: a 44 px orb 4 px under the player frame and the last five lines 52 px under the
+    frame, each in its channel's colour with the speaker's name brighter and bold (`chatLineParts`, the Android
+    `VulkanChatText` colours). The orb opens the chat window on a HUD plate: "Mensagens na tela" with Mostrando/Ocultas
+    (kept in `localStorage` as `avalon.touchChatFeed`), every line the chat keeps in a recessed well, and a field with
+    Enviar. The page reads the newest lines of the All tab with `BrowserHost.TouchChat` (5, or 64 while the window is
+    open) when the log's `Added` count grows, and sends a line with `TouchChatSend`, which goes through the chat
+    window's own Enter (`HudChat.SubmitText`: commands, whispers, the flood rule, the input limit). The window keeps
+    the game's keys while it has the keyboard.
+  - Auto-caça is the third orb beside Menu and Bolsa, as in the Android client (the top shortcut is hidden with the
+    touch HUD): a tap opens the auto-hunt panel, or pauses the hunt while it runs; a 500 ms press opens the panel.
+    While hunting the orb reads Pausar in gold and a green "Auto-caça · Ligado" chip stands above the orbs (both read
+    `WorldAutoHuntActive` with the touch state). The panel takes the Android panel's look (`VulkanPanel`,
+    `VulkanFreeHuntPanel`): a centred HUD plate over a dimmed world, the serif gold title, a round close orb, the
+    status bar with the blue AUTO-CAÇA chip and the start/pause button tinted green or gold. The Android free hunt's
+    own engine and its tabs (hunt radius, monster filters, skills, potions, safety, loot, gains, group, log) are not
+    in the browser; its auto-hunt is the quest hunt.
+  - Menu opens the Android client's menu plate above it: the character's name, Inventário, Missões, Eventos (with the
+    rewards to claim, also counted on the Menu orb), Habilidades, Corrida, Correios, Personagem, Calendário,
+    Configurações (the gear's panel), then every shortcut that the PC layout keeps under Mais (Mais is hidden with the
+    touch HUD) and Trocar personagem. The Bolsa orb counts the items new in the bag. The Android menu's Editar HUD,
+    Mapas baixados and Sair do jogo have no browser counterpart. The quality line is hidden with the touch HUD, since
+    it would cover the experience bar.
   - The Settings, News & Support and auto-hunt windows drag by their headers with a finger (`draggable.js`).
   - A phone or tablet plays lying down, as a mobile game (`touch-hud.js`, `root.dataset.mobile`): the first touch on
     the page asks for full screen and locks landscape (`enterLandscape`; browsers that refuse either, such as iOS
@@ -187,9 +247,15 @@ The site's address (`/`) is the game: the canvas fills the window, and the page'
     (`settings.setInterfaceMode`), so the question does not return; Escape leaves it for the next entry.
   - The page installs as an app ("Adicionar à tela inicial") from the site's manifest (`/manifest.webmanifest`,
     [website.md](website.md)): it opens full screen in landscape.
-  - Not ported yet: the Android HUD's own frames and windows (player and target frames, quest card, minimap and map,
-    bag, status, chat, NPC dialog, combat feed, HUD editor, tutorials); the browser keeps the desktop HUD on the canvas
-    for those, at its own scale. Canvas windows take taps but not drags.
+  - Not ported yet: the Android HUD's own frames and windows (quest card, minimap and map,
+    bag, status, NPC dialog, combat feed, HUD editor, tutorials, a long press to choose a skill button's skill);
+    the browser keeps the desktop HUD on the canvas for those, at its own scale. What the touch HUD replaces is left
+    out of the canvas while it is in use (`WebWorldHud.TouchActive`: the page reports fingers and the interface type
+    asks for it): the bottom bar with its orbs, menu buttons and toggles, the action bar, the belt, the skill sockets,
+    the chat window and the target frame, both drawn and taking clicks, so a tap there reaches the world. The player
+    buttons (party, clan, duel) still show for a player target. The canvas minimap moves to the upper right corner,
+    as on the Android HUD, since the skill wheel holds the lower right one (`HudLayout.Touch`, `HudMinimap.Box`).
+    Canvas windows take taps but not drags.
 - The login panel ("Bem-vindo") is HTML, not `LoginPanel`: real form fields, so paste, password managers and phone
   keyboards work. `BrowserHost.Start` sets `WebLoginOverlay.Report`; while it is set, `OpeningScreen` takes the login at
   once and `OpeningLoginController` neither updates nor draws `LoginPanel`. The controller reports `form` (ready, or
@@ -223,12 +289,20 @@ The site's address (`/`) is the game: the canvas fills the window, and the page'
 - "Lembrar conta" keeps the account name (never the password) in the browser's `localStorage` (`avalon.account`); the
   language picker keeps `avalon.language`. The game takes its language at `Start`, so changing it afterwards reloads the
   page.
+- The page's words: `page-language.js` lists the languages (`pageLanguages`, each named in itself; the picker is built
+  from it). Portuguese and English are written beside each phrase, as `say(pt, en)` or as a table per language
+  (`login-texts.js`, `heroes.js`, `touch-hud.js`, `world-hud.js`); every other language is a catalog in
+  `languages/<code>.js` with its phrases keyed by their English words and its tables by name. `word` and `table` pick
+  the shown language, then the catalog, then English. `page-language.test.mjs` checks that each catalog words every
+  phrase the page makes and has every table in the English shape. A new language: add its catalog to `catalogs` and
+  `pageLanguages`, beside `ClientSettings.SupportedLanguages`; the page's own fonts draw every script, so Chinese needs
+  nothing more here.
 - The gear opens the Settings panel (`settings.js`, with rows in `settings-options.js` and styling in the site's
   `css/settings.css`). Vídeo includes the texture quality, quality presets, WebGPU adapter details, scene render scale,
   the FPS cap, the window mode, effects and interface, name and damage-number options. The cap paces the browser's
-  animation callbacks after the first four frames. Áudio holds the music, which in the browser applies to the opening
-  music only. Teclas groups the game bindings with per-row and global reset. Outros includes language, game, camera,
-  streamer mode, window resets, chat notifications, ground items and Noxius-specific settings.
+  animation callbacks after the first four frames. Áudio holds the music and the sound effects, each with its switch
+  and volume ([Sound](#sound)). Teclas groups the game bindings with per-row and global reset. Outros includes
+  language, game, camera, streamer mode, window resets, chat notifications, ground items and Noxius-specific settings.
   Every row edits a `client-settings.json` field (checked by `SettingsOptionsTests`) or runs an action; a row the
   renderer cannot draw (`getCapabilities().unsupported`) is not shown, and a card left without rows is not either. The
   finishing effects of "Gráficos aprimorados" are disabled under the classic light and the fog distance without fog.
@@ -237,13 +311,16 @@ The site's address (`/`) is the game: the canvas fills the window, and the page'
   `client-settings.json` document ([client-settings.md](client-settings.md)) and leaves the rules to the game:
   `BrowserHost.Settings` hands out the current document, `SettingsWithQuality` applies a preset (`WithQuality`),
   `Shortcuts`, `BindShortcut`, `ResetShortcut` and `RestoreShortcuts` use `HudSettingsPanel`'s shortcut list and rebinding (a refused
-  key returns an empty string), and `SaveSettings` validates the document, sets `PresentationSettings.Requested` and
+  key returns an empty string), "Redefinir interface" puts the page's windows back and takes the draft from
+  `ResetInterface` (`ClientSettings.WithInterfaceReset`: HUD scale, the chat's place, classic interface, move chat and
+  tutorial tips), "Modo PvP: ligar / desligar" asks the server to switch the PvP mode as K does (`SwitchPvp`,
+  false outside the game; the answer comes in the chat, [application.md](application.md#pvp-mode)), and `SaveSettings` validates the document, sets `PresentationSettings.Requested` and
   applies its rendering fields at once, keeping the page's language. Changing a preset field in the panel sets the
   quality to Custom, as the game's own panel does. The page keeps the selected browser preset label under
   `avalon.settings.quality`. The saved document is kept in `localStorage` (`avalon.settings`)
   and handed to the game with `LoadSettings` before `Start`; without one the game starts at the Low preset. Leaving the
-  page stores the game's current document, so changes made in the game's own panel are kept. Game audio is still
-  silent in the browser; the music settings apply to the opening music only.
+  page stores the game's current document, so changes made in the game's own panel are kept. The music settings
+  also apply to the page's opening music.
   `settings-effects.js` applies what the page itself does: "Modo janela" off enters the browser's full screen on Save
   (a user gesture); "Confirmar antes de fechar" asks before leaving while `BrowserHost.PlayerLife` reports the world;
   every 250 ms it reads the life (-1 outside the world, 0 dead, else the fraction) to grey the canvas while dead,
@@ -265,6 +342,36 @@ The site's address (`/`) is the game: the canvas fills the window, and the page'
   to its cap. An absent/zero cadence or the preset's existing cadence adds nothing. These reports do not save settings
   or mark the preset Custom, and repeated identical labels do not refresh the HUD.
 - The desktop and Android clients never set `WebLoginOverlay.Report` and keep `LoginPanel`.
+
+## Sound
+
+The game plays its music and sound effects in the browser as on the desktop, through the same `PristonAudioLibrary`,
+`FieldAudioController`, `NpcAudioController`, `CombatSounds`, `SkillSoundBank` and `LoginAudio`
+([client.md](client.md#audio)). Only the files' arrival and the output differ.
+
+- Output: the fork's browser runtime implements MonoGame's audio voices over the page's Web Audio
+  ([monogame/issues/025](../monogame/issues/025-web-audio.md)). `main.js` passes `createWebAudio()` (`web-audio.js`)
+  to the .NET module as `noxiusAudio`: sound buffers become `AudioBuffer`s, voices are a buffer source through a gain
+  and a stereo panner. The `AudioContext` starts at the page's first pointer, key or touch (the autoplay policy); the
+  login form needs one, so the game's sound is running by character selection. Until then a one-shot sound is dropped
+  and a loop waits.
+- Files: the sound files (about 2 600 `.wav` and `.bgm`, 300 MB) are not in `bootstrap.txt`, a download wave or a
+  world pack. The publish lists them in `audio.txt` (`WebSoundIndex`, same "path, tab, SHA-256" lines, all under
+  `assets/`), which `BootstrapFiles.FetchAsync` reads beside the opening's files and hands to `BrowserSoundFiles`
+  (`SoundFiles.Use`). Folder listings come from that index, and each file is downloaded the first time the game reads
+  it, four at a time, as `path?v=<hash>` (cached for good like the other assets). Without `audio.txt` the game runs
+  silent.
+- Loading: with that on-demand source `PristonAudioLibrary` decodes nothing at start. It starts downloading the short
+  cues (item, quest, portal, whisper, rain, thunder and character-screen cues); music, ambience, Bellatra and NPC sounds
+  are fetched when first asked for, and the controllers ask again on each update until the file is there, so a field's
+  music starts a few seconds after the field. The page keeps playing the opening music (`Intro.wav`) itself, so the
+  game's library leaves it out. Skill, weapon, footstep and monster sounds use `SkillSoundBank`'s background read as
+  on the desktop, with the download before the read.
+- Settings: "Ativar música", its volume, "Ativar efeitos sonoros" and its volume act on Save, without a reload. The
+  login and character screens ignore them, as the original's did.
+- Measured cost: a sound decodes once into float samples in the page's memory (an 8-bit stereo music file takes four
+  times its size). The first play of a field's music converts it on the game thread, a hitch of a few tens of
+  milliseconds once per music.
 
 ## World packs
 
@@ -680,7 +787,7 @@ This retained backend does not supply a WebGL2 fallback or run concurrently behi
   manager's fill, the soft keyboard of a phone, an IME) does not reach the game's own text fields (chat) yet; the login is
   the page's HTML form, so it is not affected.
 - The browser runtime's songs decode on a `std::thread` (`common/MGM.cpp`), which a single-threaded WebAssembly build
-  cannot start: `Song` playback waits for the Web Audio stage (phase 4).
+  cannot start, so `Song` and `MediaPlayer` do not play there; the game plays its music as `SoundEffect`s.
 - The page installs `noxiusThreeGraphics` and the `noxius-three-scene` imports before creating the C# game. The direct
   WebGPU repro uses its separate preinitialized device contract. A hidden tab may receive no animation callbacks.
 - Effects for the browser are built for MGCB's `Web` platform, which needs Slang: `monogame/pipeline/fetch-slang.sh`

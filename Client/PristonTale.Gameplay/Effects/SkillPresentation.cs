@@ -600,7 +600,7 @@ public sealed class SkillPresentation : IVfxServices, IDisposable
 
         var kind = !own ? FloatingTextKind.OtherDamage
             : combat.TargetId == self ? FloatingTextKind.DamageTaken : combat.Critical ? FloatingTextKind.Critical : FloatingTextKind.DamageDealt;
-        Text.Add(position, combat.Damage, kind);
+        Text.Add(position, combat.Damage, kind, combat.Element);
     }
 
     private bool TryAbove(ulong entityId, out Vector3 position)

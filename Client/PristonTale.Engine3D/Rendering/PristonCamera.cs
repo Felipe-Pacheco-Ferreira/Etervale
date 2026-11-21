@@ -16,6 +16,7 @@ public sealed class PristonCamera
     private MouseState _lastMouse;
     private bool _hasMouse;
     private float _distance;
+    private float _topDownDistance;
     private int _projectionWidth = -1;
     private int _projectionHeight = -1;
     private float _projectionFieldOfView = float.NaN;
@@ -35,9 +36,14 @@ public sealed class PristonCamera
     public Vector3 FlatForward { get; private set; } = Vector3.Forward;
     public Vector3 Target { get; private set; }
 
+    // Looks down from the settings' top-down pitch, never orbits or tilts, and zooms with the wheel and the zoom keys; the
+    // free view's own tilt and distance are kept for when it is switched off. The follow eases between the two arms.
+    public bool TopDown { get; set; }
+
     public void Reset(Vector3 target, Vector3 forward)
     {
         _distance = _settings.DefaultDistance;
+        _topDownDistance = _settings.TopDownDistance;
         _pitch = _settings.DefaultPitch;
         var normalized = NormalizedForward(forward);
         _yaw = WorldSpace.RenderYaw(normalized);
@@ -112,6 +118,25 @@ public sealed class PristonCamera
             return;
         }
 
+        var scrollSign = invertScroll ? -1f : 1f;
+        if (TopDown)
+        {
+            var wheel = pointerCaptured ? 0 : mouse.ScrollWheelValue - _lastMouse.ScrollWheelValue;
+            var change = -wheel * _settings.MouseZoomSensitivity * scrollSign;
+            if (float.IsFinite(deltaSeconds) && deltaSeconds > 0f)
+            {
+                var step = _settings.KeyboardZoomUnitsPerSecond * deltaSeconds;
+                if (Down(Keys.Up, CameraMouseAction.ZoomIn))
+                    change -= step;
+                else if (Down(Keys.Down, CameraMouseAction.ZoomOut))
+                    change += step;
+            }
+
+            _topDownDistance = MathHelper.Clamp(_topDownDistance + change, _settings.MinDistance, _settings.MaxDistance);
+            _lastMouse = mouse;
+            return;
+        }
+
         var orbitSign = invertOrbit ? -1f : 1f;
         if (!pointerCaptured && mouse.MiddleButton == ButtonState.Pressed && _lastMouse.MiddleButton == ButtonState.Pressed)
         {
@@ -162,7 +187,7 @@ public sealed class PristonCamera
         var scroll = mouse.ScrollWheelValue - _lastMouse.ScrollWheelValue;
         if (!pointerCaptured && scroll != 0)
         {
-            _pitch = MathHelper.Clamp(_pitch - scroll * _settings.MouseTiltSensitivity * (invertScroll ? -1f : 1f), _settings.MinPitch, _settings.MaxPitch);
+            _pitch = MathHelper.Clamp(_pitch - scroll * _settings.MouseTiltSensitivity * scrollSign, _settings.MinPitch, _settings.MaxPitch);
         }
 
         _lastMouse = mouse;
@@ -225,7 +250,7 @@ public sealed class PristonCamera
             lookAt = Vector3.Lerp(Target, lookAt, alpha);
         }
 
-        var arm = lookAt - CameraForward() * MathF.Max(0f, _distance + _wave.Advance(deltaSeconds));
+        var arm = lookAt - CameraForward() * MathF.Max(0f, (TopDown ? _topDownDistance : _distance) + _wave.Advance(deltaSeconds));
         var desired = arm;
         if (_hasPosition)
         {
@@ -287,10 +312,11 @@ public sealed class PristonCamera
 
     private Vector3 CameraForward()
     {
-        var horizontal = MathF.Cos(_pitch);
+        var pitch = TopDown ? _settings.TopDownPitch : _pitch;
+        var horizontal = MathF.Cos(pitch);
         return new Vector3(
             MathF.Sin(_yaw) * horizontal,
-            -MathF.Sin(_pitch),
+            -MathF.Sin(pitch),
             MathF.Cos(_yaw) * horizontal);
     }
 }

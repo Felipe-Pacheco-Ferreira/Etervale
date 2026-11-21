@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace PristonTale.Gameplay.UI.Rendering;
 
-public sealed class HudCanvas(SpriteBatch batch, SpriteFont font, HudAtlas atlas)
+public sealed class HudCanvas(SpriteBatch batch, UiFonts fonts, HudAtlas atlas)
 {
     private readonly record struct TextRun(string Value, Vector2 Position, Color Color, float Scale);
     private readonly List<TextRun> _text = new(128);
@@ -28,9 +28,9 @@ public sealed class HudCanvas(SpriteBatch batch, SpriteFont font, HudAtlas atlas
     {
         foreach (var run in _text)
         {
-            batch.DrawString(font, run.Value, run.Position + Vector2.One, Color.Black * 0.8f,
+            batch.DrawString(fonts.Current, run.Value, run.Position + Vector2.One, Color.Black * 0.8f,
                 0f, Vector2.Zero, run.Scale, SpriteEffects.None, 0f);
-            batch.DrawString(font, run.Value, run.Position, run.Color,
+            batch.DrawString(fonts.Current, run.Value, run.Position, run.Color,
                 0f, Vector2.Zero, run.Scale, SpriteEffects.None, 0f);
         }
 
@@ -120,7 +120,7 @@ public sealed class HudCanvas(SpriteBatch batch, SpriteFont font, HudAtlas atlas
             return;
         }
 
-        var size = font.MeasureString(value);
+        var size = fonts.Current.MeasureString(value);
         var fitted = Math.Min(pixels / HudPainter.BakePixels, Math.Min(bounds.Width / Math.Max(1, size.X), bounds.Height / Math.Max(1, size.Y)));
         var x = centered ? bounds.X + (bounds.Width - size.X * fitted) / 2 : bounds.X;
         var y = bounds.Y + (bounds.Height - size.Y * fitted) / 2;

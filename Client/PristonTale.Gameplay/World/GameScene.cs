@@ -32,15 +32,45 @@ namespace PristonTale.Gameplay.World;
 public sealed partial class GameScene : IDisposable, IHudPortraitScene
 {
     // The player's clan (0 for none): players of another clan may be fought in the castle's battle zone, never while the
-    // server runs the castle league.
+    // server runs the castle league, and clan mates never in the PvP mode.
     public long OwnClanId { get; set; }
 
     public bool CastleLeague { get; set; }
 
-    // Positions are mirrored to the server's space, where the battle line lies.
-    private bool Fights(ulong entityId) =>
-        _activeField?.Definition.State == FieldState.Castle && !CastleLeague && _remote.TryGetLivingPlayer(entityId, out var at, out var clanId)
-        && Simulation.Social.Castle.CastleSiegeRules.MayFight(WorldSpace.Mirror(_playerBody.Position.ToNumerics()), OwnClanId, WorldSpace.Mirror(at.ToNumerics()), clanId);
+    // Any player seen while fighting in the Battle Royale, else the castle's battle zone (positions mirrored to the server's
+    // space, where the battle line lies) or the PvP mode in
+    // a hunting field (GameScene.Pvp).
+    private bool Fights(ulong entityId)
+    {
+        if (_activeField is not { } field || !_remote.TryGetLivingPlayer(entityId, out var at, out var player))
+        {
+            return false;
+        }
+
+        if (RoyaleFighting)
+        {
+            return true;
+        }
+
+        // An arena player fights the other side of its match alone, and nobody else fights it (ArenaRules).
+        if (ArenaSide != 0 || player.ArenaSide != 0)
+        {
+            return ArenaSide != 0 && player.ArenaSide != 0 && player.ArenaSide != ArenaSide;
+        }
+
+        // A duellist fights its opponent alone and nobody else fights a duellist (DuelRules), whatever the field's rules.
+        if (DuelOpponent != 0 || player.Duelling)
+        {
+            return entityId == DuelOpponent;
+        }
+
+        var state = field.Definition.State;
+        return state == FieldState.Castle
+            ? !CastleLeague && Simulation.Social.Castle.CastleSiegeRules.MayFight(WorldSpace.Mirror(_playerBody.Position.ToNumerics()), OwnClanId,
+                WorldSpace.Mirror(at.ToNumerics()), player.ClanId)
+            : Simulation.Combat.PvpRules.MayFight(state, PvpOn, player.Pvp, player.Murderer, IsPartyMember(entityId),
+                Simulation.Combat.PvpRules.SameClan(OwnClanId, player.ClanId));
+    }
 
     private ActorHandle _playerBodyActor = ActorHandle.None;
     private ActorHandle _playerHeadActor = ActorHandle.None;
@@ -632,6 +662,8 @@ public sealed partial class GameScene : IDisposable, IHudPortraitScene
         _skillFx?.Dispose();
         _targetRing?.Dispose();
         _targetRingHighlight?.Dispose();
+        _duelRing?.Dispose();
+        _duelRingHighlight?.Dispose();
         _rain?.Dispose();
         _mounts?.Dispose();
         _renderer?.Dispose();

@@ -70,18 +70,13 @@ public sealed class NpcAudioController(PristonAudioLibrary library) : IDisposabl
         }
 
         var lookupMotion = motion == MotionCode.Run ? MotionCode.Walk : motion;
-        if (!library.TryGetNpcSound(soundCode, lookupMotion, out var variants))
-        {
-            return;
-        }
-
         var volume = ProximityVolume(sourcePosition, listenerPosition);
         if (volume <= 0f || lookupMotion == MotionCode.Walk && volume < 0.75f)
         {
             return;
         }
 
-        variants[Random.Shared.Next(variants.Length)].Play(volume * library.SoundGain, 0f, 0f);
+        library.NpcSound(soundCode, lookupMotion)?.Play(volume * library.SoundGain, 0f, 0f);
     }
 
     public void Dispose()

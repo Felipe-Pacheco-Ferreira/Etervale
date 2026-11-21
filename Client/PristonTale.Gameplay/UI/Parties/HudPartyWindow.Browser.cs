@@ -17,23 +17,14 @@ public sealed partial class HudPartyWindow
     private static readonly Color SocialGold = new(205, 181, 126);
     private static readonly Color SocialMuted = new(152, 141, 113);
     private static readonly Color SocialBorder = Color.FromNonPremultiplied(134, 111, 62, 170);
-    private static readonly string[] SocialPortugueseTabs = ["Grupo", "Amigos", "Clã", "Bloqueados", "Recentes"];
-    private static readonly string[] SocialEnglishTabs = ["Party", "Friends", "Clan", "Blocked", "Recent"];
-    private static readonly string[][] SocialPortugueseActions =
+    private static readonly string[] SocialTabs = ["Party.Tab.Party", "Party.Tab.Friends", "Party.Tab.Clan", "Party.Tab.Blocked", "Party.Tab.Recent"];
+    private static readonly string[][] SocialActions =
     [
-        ["Sussurrar", "Procurar", "Perfil"],
-        ["Sussurrar", "Grupo", "Perfil", "Remover"],
-        ["Sussurrar", "Grupo", "Perfil", "Chat clã"],
-        ["Desbloquear"],
-        ["Sussurrar", "Amigo", "Grupo", "Perfil", "Bloquear", "Remover"]
-    ];
-    private static readonly string[][] SocialEnglishActions =
-    [
-        ["Whisper", "Find", "Profile"],
-        ["Whisper", "Party", "Profile", "Remove"],
-        ["Whisper", "Party", "Profile", "Clan chat"],
-        ["Unblock"],
-        ["Whisper", "Friend", "Party", "Profile", "Block", "Remove"]
+        ["Party.Action.Whisper", "Party.Action.Find", "Party.Action.Profile"],
+        ["Party.Action.Whisper", "Party.Action.Party", "Party.Action.Profile", "Party.Action.Remove"],
+        ["Party.Action.Whisper", "Party.Action.Party", "Party.Action.Profile", "Party.Action.ClanChat"],
+        ["Party.Action.Unblock"],
+        ["Party.Action.Whisper", "Party.Action.Friend", "Party.Action.Party", "Party.Action.Profile", "Party.Action.Block", "Party.Action.Remove"]
     ];
     private static readonly int[][] SocialActionWidths = [[76, 70, 52], [76, 62, 51, 74], [76, 62, 51, 74], [90], [76, 58, 57, 51, 80, 74]];
     private readonly StringBuilder _socialName = new();
@@ -57,7 +48,7 @@ public sealed partial class HudPartyWindow
     public bool CreatingParty { get; set; }
     public Action<ulong> JoinPartyRequested { get; set; }
     public IReadOnlyList<PartyDirectoryEntry> Directory { get; private set; } = [];
-    public Func<int, string> FieldName { get; set; } = code => (ClientText.Language == "pt-BR" ? "Mapa " : "Map ") + code;
+    public Func<int, string> FieldName { get; set; } = code => ClientText.Format("Party.Map", code);
     public Func<string, HudSocialProfile> ProfileOf { get; set; }
     public bool KeyboardCaptured => Open && _socialTyping;
 
@@ -382,7 +373,7 @@ public sealed partial class HudPartyWindow
         _socialName.Clear();
         _socialNameText = "";
         _socialTyping = false;
-        _socialMessage = ClientText.Language == "pt-BR" ? "Solicitação enviada." : "Request sent.";
+        _socialMessage = ClientText.Get("Party.RequestSent");
     }
 
     private void RunSocialAction(int action, PartyInfo party, ulong self)
@@ -536,8 +527,6 @@ public sealed partial class HudPartyWindow
             return;
         }
 
-        var portuguese = ClientText.Language == "pt-BR";
-        var labels = portuguese ? SocialPortugueseTabs : SocialEnglishTabs;
         for (var index = 0; index < 5; index++)
         {
             var tab = BrowserTab(box, index);
@@ -545,7 +534,7 @@ public sealed partial class HudPartyWindow
             painter.FramedBox(tab, selected ? new Color(125, 157, 112) : SocialBorder,
                 selected ? Color.FromNonPremultiplied(48, 67, 40, 213) : Color.FromNonPremultiplied(27, 23, 14, 190), 3);
             DrawSocialIcon(painter, index, tab.Center.X, tab.Y + 15, selected);
-            var label = FitSocial(painter, labels[index], tab.Width - 3, 10f / HudPainter.BakePixels);
+            var label = FitSocial(painter, ClientText.Get(SocialTabs[index]), tab.Width - 3, 10f / HudPainter.BakePixels);
             var textX = tab.Center.X - painter.MeasureAt(label, 10f / HudPainter.BakePixels) / 2;
             painter.Text(label, textX, tab.Bottom - 12, SocialGold, 10f / HudPainter.BakePixels);
         }
@@ -561,15 +550,14 @@ public sealed partial class HudPartyWindow
 
     private void DrawBrowserPartyControls(HudPainter painter, Rectangle box, PartyInfo party, ulong self, Point pointer)
     {
-        var portuguese = ClientText.Language == "pt-BR";
         if (party.Members.Count == 0)
         {
             var card = BrowserGroupCard(box);
             painter.FramedBox(card, SocialBorder, Color.FromNonPremultiplied(31, 26, 13, 185), 3);
             painter.ColorBox(new Rectangle(card.X + 1, card.Y + 6, 3, card.Height - 12), 102, 163, 92, 220);
-            var label = CreatingParty ? portuguese ? "CRIANDO..." : "CREATING..." : portuguese ? "CRIAR GRUPO" : "CREATE PARTY";
+            var label = CreatingParty ? ClientText.Get("Party.Creating") : ClientText.Get("Party.Create");
             SocialButton(painter, BrowserCreateGroup(box), label, !CreatingParty, pointer, true);
-            var hint = FitSocial(painter, portuguese ? "Aberto: outros entram sem convite" : "Open: players can join freely",
+            var hint = FitSocial(painter, ClientText.Get("Party.OpenHint"),
                 card.Width - 165, 9f / HudPainter.BakePixels);
             SocialText(painter, hint,
                 card.X + 125, card.Y + 15, SocialMuted, 9f / HudPainter.BakePixels);
@@ -579,13 +567,12 @@ public sealed partial class HudPartyWindow
 
         SocialText(painter, SocialPartyTitle(party.Members.Count),
             box.X + 24, box.Y + 107, SocialGold);
-        SocialText(painter, portuguese ? "Aberto" : "Open", box.Right - 100, box.Y + 107, SocialMuted);
+        SocialText(painter, ClientText.Get("Party.Open"), box.Right - 100, box.Y + 107, SocialMuted);
         DrawPartyOpenToggle(painter, BrowserPartyOpen(box), party.Leads(self));
-        var labels = portuguese ? PortuguesePartyCommands : EnglishPartyCommands;
         for (var command = 0; command < 4; command++)
         {
             var enabled = (command == 3 || party.Leads(self)) && (command is 1 or 3 || Picked != 0 && Picked != self);
-            SocialButton(painter, BrowserPartyCommand(box, command), labels[command], enabled, pointer);
+            SocialButton(painter, BrowserPartyCommand(box, command), ClientText.Get(PartyCommands[command]), enabled, pointer);
         }
     }
 
@@ -643,8 +630,7 @@ public sealed partial class HudPartyWindow
 
     private void DrawPartyDirectory(HudPainter painter, Rectangle box, Point pointer)
     {
-        var portuguese = ClientText.Language == "pt-BR";
-        SocialText(painter, portuguese ? "Procurar grupo" : "Find party", box.X + 24, box.Y + 59, SocialGold);
+        SocialText(painter, ClientText.Get("Party.FindParty"), box.X + 24, box.Y + 59, SocialGold);
         var visible = Math.Max(1, (box.Height - 192) / 52);
         _directoryFirst = Math.Clamp(_directoryFirst, 0, Math.Max(0, Directory.Count - visible));
         for (var row = 0; row < visible && row + _directoryFirst < Directory.Count; row++)
@@ -658,14 +644,14 @@ public sealed partial class HudPartyWindow
             SocialText(painter, text.Count, bounds.Right - 40, bounds.Y + 7, SocialMuted);
             SocialText(painter, FitSocial(painter, text.Detail, bounds.Width - 85, SocialTextScale),
                 bounds.X + 10, bounds.Y + 25, SocialMuted);
-            SocialText(painter, entry.IsOpen ? portuguese ? "Aberto" : "Open" : portuguese ? "Fechado" : "Closed",
+            SocialText(painter, entry.IsOpen ? ClientText.Get("Party.Open") : ClientText.Get("Party.Closed"),
                 bounds.Right - 55, bounds.Y + 25, entry.IsOpen ? new Color(120, 181, 107) : SocialMuted);
         }
 
         if (Directory.Count == 0)
         {
-            SocialCentered(painter, _directoryLoading ? portuguese ? "Buscando grupos..." : "Searching for parties..."
-                : portuguese ? "Nenhum grupo aberto no momento." : "No open parties right now.",
+            SocialCentered(painter, _directoryLoading ? ClientText.Get("Party.Searching")
+                : ClientText.Get("Party.NoOpenParties"),
                 BrowserList(box), box.Y + 180, SocialMuted);
         }
 
@@ -674,11 +660,11 @@ public sealed partial class HudPartyWindow
             painter.ScrollBar(box.Right - 15, box.Y + 104, visible * 52, _directoryFirst, Directory.Count - visible);
         }
 
-        SocialButton(painter, DirectoryRefresh(box), portuguese ? "ATUALIZAR" : "REFRESH", true, pointer);
-        SocialButton(painter, DirectoryBack(box), portuguese ? "VOLTAR" : "BACK", true, pointer);
+        SocialButton(painter, DirectoryRefresh(box), ClientText.Get("Party.Refresh"), true, pointer);
+        SocialButton(painter, DirectoryBack(box), ClientText.Get("Party.Back"), true, pointer);
         var selected = SelectedDirectoryEntry();
         var canJoin = selected is not null && selected.MemberCount < PartyLimits.MaxMembers;
-        var action = selected?.IsOpen == false ? portuguese ? "PEDIR" : "REQUEST" : portuguese ? "ENTRAR" : "JOIN";
+        var action = selected?.IsOpen == false ? ClientText.Get("Party.Request") : ClientText.Get("Party.Join");
         SocialButton(painter, DirectoryJoin(box), action, canJoin, pointer, true);
     }
 
@@ -688,29 +674,28 @@ public sealed partial class HudPartyWindow
         var list = BrowserList(box);
         if (count == 0)
         {
-            var portuguese = ClientText.Language == "pt-BR";
             var title = BrowserTabIndex switch
             {
-                0 => portuguese ? "Você não está em um grupo." : "You are not in a party.",
-                1 => portuguese ? "Nenhum amigo ainda." : "No friends yet.",
-                2 => portuguese ? "Você ainda não faz parte de um clã." : "You are not a clan member.",
-                3 => portuguese ? "Ninguém bloqueado." : "Nobody blocked.",
-                _ => portuguese ? "Nenhuma conversa recente." : "No recent conversations."
+                0 => ClientText.Get("Party.Empty.Party"),
+                1 => ClientText.Get("Party.Empty.Friends"),
+                2 => ClientText.Get("Party.Empty.Clan"),
+                3 => ClientText.Get("Party.Empty.Blocked"),
+                _ => ClientText.Get("Party.Empty.Recent")
             };
             var hint = BrowserTabIndex == 1
-                ? portuguese ? "Adicione pelo nome abaixo ou pelo botão Amigo do alvo." : "Add a name below or use the target's Friend button."
+                ? ClientText.Get("Party.Empty.FriendsHint")
                 : BrowserTabIndex == 0
-                    ? portuguese ? "Use Procurar para achar um, ou convide alguém pelo nome" : "Use Find to join one, or invite a player by name."
+                    ? ClientText.Get("Party.Empty.PartyHint")
                     : BrowserTabIndex == 3
-                        ? portuguese ? "Sussurros de quem você bloquear não chegam até você." : "Blocked players cannot send you whispers."
-                        : BrowserTabIndex == 4 ? portuguese ? "Quem trocar sussurros com você aparece aqui." : "Your recent whisper contacts appear here." : "";
+                        ? ClientText.Get("Party.Empty.BlockedHint")
+                        : BrowserTabIndex == 4 ? ClientText.Get("Party.Empty.RecentHint") : "";
             var middle = list.Y + Math.Min(50, list.Height / 3);
             DrawSocialIcon(painter, BrowserTabIndex, box.Center.X, middle, true, 16);
             SocialCentered(painter, title, list, middle + 26, SocialGold);
             SocialCentered(painter, hint, list, middle + 43, SocialMuted, 10f / HudPainter.BakePixels);
             if (BrowserTabIndex == 0)
             {
-                SocialCentered(painter, portuguese ? "abaixo." : "", list, middle + 57, SocialMuted, 10f / HudPainter.BakePixels);
+                SocialCentered(painter, ClientText.Get("Party.Empty.PartyHintEnd"), list, middle + 57, SocialMuted, 10f / HudPainter.BakePixels);
             }
 
             return;
@@ -764,17 +749,16 @@ public sealed partial class HudPartyWindow
     {
         var footer = BrowserFooter(box);
         painter.FramedBox(footer, Color.FromNonPremultiplied(112, 93, 53, 120), Color.FromNonPremultiplied(24, 20, 11, 145), 4);
-        var portuguese = ClientText.Language == "pt-BR";
-        var hint = _socialMessage.Length > 0 ? _socialMessage : portuguese ? "Clique em um nome da lista para ver as ações." : "Select a name in the list to see actions.";
+        var hint = _socialMessage.Length > 0 ? _socialMessage : ClientText.Get("Party.SelectName");
         SocialText(painter, hint, footer.X + 12, footer.Y + 15, SocialMuted, 10f / HudPainter.BakePixels);
-        var actions = portuguese ? SocialPortugueseActions[BrowserTabIndex] : SocialEnglishActions[BrowserTabIndex];
+        var actions = SocialActions[BrowserTabIndex];
         for (var action = 0; action < actions.Length; action++)
         {
             var enabled = Page == HudPartyPage.Party
                 ? action == 1 || _socialPicked.Length > 0
                 : Page == HudPartyPage.Clan && action == 3 ? Clan.HasClan
                 : _socialPicked.Length > 0;
-            SocialButton(painter, BrowserAction(box, action), actions[action], enabled, pointer);
+            SocialButton(painter, BrowserAction(box, action), ClientText.Get(actions[action]), enabled, pointer);
         }
 
         if (BrowserTabIndex == 4)
@@ -784,14 +768,14 @@ public sealed partial class HudPartyWindow
 
         if (Page == HudPartyPage.Clan)
         {
-            SocialText(painter, Clan.HasClan ? Clan.Info.Name : portuguese ? "Encontre o Mestre de Clãs na cidade." : "Visit the Clan Master in town.",
+            SocialText(painter, Clan.HasClan ? Clan.Info.Name : ClientText.Get("Party.VisitClanMaster"),
                 footer.X + 12, footer.Bottom - 30, SocialGold);
             return;
         }
 
         var name = BrowserName(box);
         painter.FramedBox(name, _socialTyping ? new Color(182, 158, 89) : SocialBorder, new Color(14, 13, 8), 2);
-        var text = _socialName.Length > 0 ? _socialNameText : portuguese ? "Nome do personagem" : "Character name";
+        var text = _socialName.Length > 0 ? _socialNameText : ClientText.Get("Party.CharacterName");
         text = FitSocial(painter, text, name.Width - 12, SocialTextScale);
         SocialText(painter, text, name.X + 8, name.Y + 7,
             _socialName.Length > 0 ? SocialGold : SocialMuted);
@@ -800,8 +784,8 @@ public sealed partial class HudPartyWindow
             SocialText(painter, "|", name.X + 8 + painter.MeasureAt(text, SocialTextScale), name.Y + 7,
                 _socialName.Length > 0 ? SocialGold : SocialMuted);
         }
-        var submit = Page == HudPartyPage.Party ? portuguese ? "CONVIDAR" : "INVITE"
-            : BrowserTabIndex == 3 ? portuguese ? "BLOQUEAR" : "BLOCK" : portuguese ? "ADICIONAR" : "ADD";
+        var submit = Page == HudPartyPage.Party ? ClientText.Get("Party.Invite")
+            : BrowserTabIndex == 3 ? ClientText.Get("Party.Block") : ClientText.Get("Party.Add");
         SocialButton(painter, BrowserSubmit(box), submit, true, pointer, BrowserTabIndex != 3, BrowserTabIndex == 3);
     }
 
@@ -810,8 +794,7 @@ public sealed partial class HudPartyWindow
     private void DrawSocialProfile(HudPainter painter, Rectangle box, Point pointer)
     {
         RefreshProfileText();
-        var portuguese = ClientText.Language == "pt-BR";
-        SocialText(painter, portuguese ? "Perfil do personagem" : "Character profile", box.X + 24, box.Y + 59, SocialGold);
+        SocialText(painter, ClientText.Get("Party.Profile"), box.X + 24, box.Y + 59, SocialGold);
         SocialText(painter, _socialProfile.Name, box.X + 24, box.Y + 99, Color.Wheat, 17f / HudPainter.BakePixels);
         var y = box.Y + 140;
         if (_socialProfile.Online is { } online)
@@ -837,7 +820,7 @@ public sealed partial class HudPartyWindow
             SocialText(painter, _profileClanLine, box.X + 24, y, SocialGold);
         }
 
-        SocialButton(painter, ProfileBack(box), portuguese ? "VOLTAR" : "BACK", true, pointer);
+        SocialButton(painter, ProfileBack(box), ClientText.Get("Party.Back"), true, pointer);
     }
 
     private static void DrawSocialIcon(HudPainter painter, int index, int x, int y, bool active, int radius = 9)

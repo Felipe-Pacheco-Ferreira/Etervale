@@ -1,5 +1,6 @@
 using System.Numerics;
 using PristonTale.Contracts.Combat;
+using PristonTale.Simulation.Combat;
 
 namespace PristonTale.Client.Net.Presence;
 
@@ -22,4 +23,7 @@ public sealed record CombatEventInfo(
 
     // A monster's skill swing, or a hit dealt by a skill or a pet's strike rather than the attacker's basic attack.
     public bool Skill { get; init; }
+
+    // A hit: the element its damage number shows (Bionic: a physical hit, none).
+    public Element Element { get; init; }
 }

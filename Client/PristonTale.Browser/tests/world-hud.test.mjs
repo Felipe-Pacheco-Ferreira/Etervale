@@ -1,6 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createWorldHud } from '../wwwroot/world-hud.js';
+import { createWorldHud, latencyGrade } from '../wwwroot/world-hud.js';
+
+test('the ping is good under 80 ms, fair under 200 and poor from there, and unknown without a sample', () => {
+    assert.equal(latencyGrade(79), 'good');
+    assert.equal(latencyGrade(80), 'fair');
+    assert.equal(latencyGrade(199), 'fair');
+    assert.equal(latencyGrade(200), 'poor');
+    assert.equal(latencyGrade(undefined), '');
+});
 
 class Element {
     constructor() { this.style = {}; this.dataset = {}; this.handlers = new Map(); this.textContent = ''; this.open = false; }

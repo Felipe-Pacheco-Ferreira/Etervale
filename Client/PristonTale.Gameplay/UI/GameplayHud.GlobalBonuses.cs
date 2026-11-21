@@ -5,6 +5,7 @@ namespace PristonTale.Gameplay.UI;
 
 public sealed partial class GameplayHud
 {
+    private static readonly string[] GlobalBonusLabels = ["GlobalBonuses.ExpRate", "GlobalBonuses.ExpEvent", "GlobalBonuses.AgingCost", "GlobalBonuses.MixCost"];
     private bool _globalBonusesOpen;
     private long _nextBonusRefresh;
     private string[] _globalBonusValues = [];
@@ -70,26 +71,23 @@ public sealed partial class GameplayHud
         }
 
         var box = GlobalBonusesBox(layout);
-        var portuguese = ClientText.Language == "pt-BR";
         _painter.ColorBox(box, 155, 114, 52, 255);
         var interior = box;
         interior.Inflate(-1, -1);
         _painter.ColorBox(interior, 30, 23, 15, 250);
-        _painter.Text(portuguese ? "Bônus globais" : "Global bonuses", box.X + 12, box.Y + 11, Color.Gold);
+        _painter.Text(ClientText.Get("GlobalBonuses.Title"), box.X + 12, box.Y + 11, Color.Gold);
         _painter.Text("X", box.Right - 25, box.Y + 11, Color.Wheat);
-        string[] labels = portuguese ? ["Taxa de EXP", "Evento de EXP", "Custo de Aging", "Custo de Mix"]
-            : ["EXP rate", "EXP event", "Aging cost", "Mixing cost"];
         if (_globalBonusValues.Length == 0)
         {
-            _painter.Text(portuguese ? "Consultando o servidor..." : "Contacting the server...", box.X + 12, box.Y + 50, Color.Wheat);
+            _painter.Text(ClientText.Get("GlobalBonuses.Contacting"), box.X + 12, box.Y + 50, Color.Wheat);
             return;
         }
 
-        for (var index = 0; index < labels.Length; index++)
+        for (var index = 0; index < GlobalBonusLabels.Length; index++)
         {
             var value = _globalBonusValues[index] + (index == 0 ? "x" : "%");
             var y = box.Y + 44 + index * 26;
-            _painter.Text(labels[index], box.X + 12, y, Color.Wheat);
+            _painter.Text(ClientText.Get(GlobalBonusLabels[index]), box.X + 12, y, Color.Wheat);
             _painter.TextCentered(value, box.Right - 102, box.Right - 10, y, Color.Gold);
         }
     }

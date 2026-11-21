@@ -199,15 +199,23 @@ public static class AgingRules
     public static int SheltomOrdinal(string key) =>
         ItemCodes.FamilyOf(key) == "OS1" && int.TryParse(key.AsSpan(3), out var ordinal) && ordinal is >= 1 and <= 14 ? ordinal : 0;
 
-    public static AgingStone StoneOf(string key) => key.ToUpperInvariant() switch
+    // Each stone's catalog key, by AgingStone.
+    private static readonly string[] StoneKeys = ["", "BI110", "BI111", "BI160", "BI161", "BI185"];
+
+    public static AgingStone StoneOf(string key)
     {
-        "BI110" => AgingStone.AgingStone,
-        "BI111" => AgingStone.CopperOre,
-        "BI160" => AgingStone.ElderCopperOre,
-        "BI161" => AgingStone.SuperAgingStone,
-        "BI185" => AgingStone.SuperiorCopperOre,
-        _ => AgingStone.None
-    };
+        for (var stone = 1; stone < StoneKeys.Length; stone++)
+        {
+            if (string.Equals(StoneKeys[stone], key, StringComparison.OrdinalIgnoreCase))
+            {
+                return (AgingStone)stone;
+            }
+        }
+
+        return AgingStone.None;
+    }
+
+    public static string KeyOf(AgingStone stone) => StoneKeys[(int)stone];
 
     public static long Price(ItemInstance item, AgingSettings settings = null) =>
         Price(item.UpgradeLevel, item.Roll.Price, settings?.PricePercent ?? 100, settings?.Tax ?? 0);
@@ -286,6 +294,9 @@ public static class AgingRules
 
     public static AgingCounter CounterOf(ItemInstance item) =>
         FamilyOf(item)?.Counter ?? (IsRing(item.Definition.CatalogKey) ? AgingCounter.Time : AgingCounter.None);
+
+    // The level a copy reaches once its maturity runs out; its level when it is not maturing.
+    public static int MaturingTo(ItemInstance item) => item.Maturity is { Goal: > 0 } ? item.UpgradeLevel + 1 : item.UpgradeLevel;
 
     public static bool Matured(ItemInstance item) => item.Maturity is { Goal: > 0 } maturity && maturity.Count >= maturity.Goal;
 

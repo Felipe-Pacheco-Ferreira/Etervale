@@ -23,7 +23,7 @@ The Android prototype (`Client/PristonTale.Android`) follows these screens with 
 | [`Client/PristonTale/Program.cs`](../Client/PristonTale/Program.cs) | Entry: no arguments, `--settings PATH`, or `--validate-display REPORT.json` (runs `DisplayValidationProbe`) |
 | [`Client/PristonTale/Game1.cs`](../Client/PristonTale/Game1.cs) | MonoGame `Game`: device setup, variable timestep, asset root discovery, server address, Escape/exit, window-title stats, shutdown gating |
 | `Client/PristonTale/Display/` | `PresentationController` (settings at the frame boundary, display confirmation, pacing, save), `DisplayController` (window mode, size, VSync; primary monitor only), `DisplayValidationProbe` |
-| `Client/PristonTale/Content/Content.mgcb` | Content build: the shader library (see [shaders.md](shaders.md)) and `Fonts/UI.spritefont` |
+| `Client/PristonTale/Content/Content.mgcb` | Content build: the shader library (see [shaders.md](shaders.md)), `Fonts/UI.spritefont` and a language's own `Fonts/UI-<code>.spritefont` (`UiFonts`, [client-settings.md](client-settings.md)) |
 | `Client/PristonTale/PristonTale.csproj`, `Client/MonoGameRuntime.targets` | References the MonoGame Vulkan fork in `monogame/`; copies the native runtime next to the executable |
 | `Client/PristonTale.Gameplay/Screens/Framework/` | `GameClient` (owns bootstrap libraries, backend and the current screen), `GameScreen` (base), `ScreenContext` (shared services) |
 | `Client/PristonTale.Gameplay/Screens/Opening/` | Opening cinematic, login form overlay and login polling |
@@ -35,18 +35,18 @@ The Android prototype (`Client/PristonTale.Android`) follows these screens with 
 | `Client/PristonTale.Gameplay/World/Remote/` | Remote actors: `RemoteEntityManager`, `RemoteSnapshotBuffer`, `RemoteServerClock`, actor composers, equipment visuals, ground loot, picking |
 | `Client/PristonTale.Gameplay/World/*.cs` (other) | `TargetSelection` (target frame owner), `NpcApproach`, `GroundTraversal`, `FieldCollisionQuery`, `LoadedField`, `EnteredCharacter` |
 | `Client/PristonTale.Gameplay/Combat/` | `ActorMotionController` (local motion state machine), `AttackInputController` (attack press/release and server reconcile) |
-| [`Client/PristonTale.Gameplay/UI/GameplayHud.cs`](../Client/PristonTale.Gameplay/UI/GameplayHud.cs) | In-game HUD root: windows, state, update and draw order. Partials: `.Input` (keys, click routing by priority, menu buttons and toggles, captures), `.Services` (NPC service windows and their actions, drops from the bag, icons), `.Quests` (dialog, boxes, quest window), `.Parties` (party window, request box, buttons under a player's portrait), `.PersonalShops`, `.Messages` (completed requests to the chat or the notice strip), `.HelpPet` (what the helper pet speaks of), `.Help` (the help window, the level guide and its switch) |
+| [`Client/PristonTale.Gameplay/UI/GameplayHud.cs`](../Client/PristonTale.Gameplay/UI/GameplayHud.cs) | In-game HUD root: windows, state, update and draw order. Partials: `.Input` (keys, click routing by priority, menu buttons and toggles, captures), `.Services` (NPC service windows and their actions, drops from the bag, icons), `.Quests` (dialog, boxes, quest window), `.Parties` (party window, request box, buttons under a player's portrait), `.PersonalShops`, `.Messages` (completed requests to the chat or the notice strip), `.HelpPet` (what the helper pet speaks of), `.Help` (the help window, the level guide and its switch, the tutorial tips) |
 | `Client/PristonTale.Gameplay/UI/` (root) | `HudLayout` (800x600 design space), `LoginPanel`/`LoginLayout`/`TextInputField`, `DisplayConfirmation` |
 | `Client/PristonTale.Gameplay/UI/Widgets/` | Bottom bar, status window, skill tree and sockets, minimap, target frame and combat history (`HudCombat`), 3D target portrait, NPC dialog, settings panel, system menu, notices |
 | `Client/PristonTale.Gameplay/UI/Chat/` | Chat window, tabs, input line and speech bubbles (see [chat-and-gm.md](chat-and-gm.md)) |
-| `Client/PristonTale.Gameplay/UI/Help/` | The help window and the game guide: `HudHelpWindow` (help, guide list, guide page), `LevelGuideBook` (the guide's data), `HudLevelGuide` (the level guide's notice and summary), `HudHelpArt` |
+| `Client/PristonTale.Gameplay/UI/Help/` | The help window and the game guide: `HudHelpWindow` (help, guide list, guide page), `LevelGuideBook` (the guide's data), `HudLevelGuide` (the level guide's notice and summary), `HudTutorialTips` (the tutorial's tips), `HudHelpArt` |
 | `Client/PristonTale.Gameplay/UI/HelpPet/` | The beginner's helper pet's talk: `HelpPetMessages` (its texts) and `HudHelpPet` (help boxes and speech) |
 | `Client/PristonTale.Gameplay/UI/Inventory/` | Inventory window layout, drag/drop and equip commands |
 | `Client/PristonTale.Gameplay/UI/Npc/` | NPC service controller, shop and warehouse windows, store layout, NPC art |
 | `Client/PristonTale.Gameplay/UI/Quests/` | Quest controller, quest dialog and yes/no boxes, quest window, quest texts and art (see [quests.md](quests.md#client)) |
 | `Client/PristonTale.Gameplay/UI/Rendering/` | `HudSprites` (original UI images), `HudIconCache` (item icons), `HudAtlas` (login atlas), `HudCursor` (mouse pointer), `HudPainter`/`HudCanvas`, `HudTextColors` (text colours several windows share) |
 | `Client/PristonTale.Gameplay/Weather/` | `WeatherPresentation`: the server's weather eased in, lightning and thunder timing; `FieldSnow`: the snow skies' falling snow |
-| `Client/PristonTale.Gameplay/Audio/` | `PristonAudioLibrary` (bootstrap sound load), `FieldAudioController` (music, field and positional ambience, the rain loop and thunder), `NpcAudioController`, `TalkSound`, `CombatSounds` and `CharacterSoundBanks` (character, weapon and footstep sounds), `MonsterSoundCues`, `ItemSoundRules` (item sounds) |
+| `Client/PristonTale.Gameplay/Audio/` | `PristonAudioLibrary` (bootstrap sound load), `SoundFiles` and `SoundLoader` (where sound files come from, sounds made as their files arrive), `FieldAudioController` (music, field and positional ambience, the rain loop and thunder), `NpcAudioController`, `TalkSound`, `CombatSounds` and `CharacterSoundBanks` (character, weapon and footstep sounds), `MonsterSoundCues`, `ItemSoundRules` (item sounds) |
 | `Client/PristonTale.Gameplay/Effects/` | Effect glue: `EffectLibrary`, `VfxContent` (effect data from `<assetRoot>/Effect/Vfx`, loaded off the game thread), `SkillPresentation`, `ScriptEffects`, `SkillSoundBank`, `SkillState`, combat text, meteor, monster mesh and return effects ([effects.md](effects.md)) |
 | [`Client/PristonTale.Client.Net/GameServerConnection.cs`](../Client/PristonTale.Client.Net/GameServerConnection.cs) | TCP session: connect, login, characters, world entry, request correlation, heartbeat, receive dispatch |
 | `Client/PristonTale.Client.Net/IGameBackend.cs`, `IPlayChannel.cs` | Contracts the screens use: account and character requests; in-world commands and the presence stream |
@@ -386,6 +386,33 @@ The client owns its own locomotion; the server validates and corrects.
   it opens again only after the player left the stone. Choosing a destination plays the return sparkle and the portal
   sound on the stone, and the request leaves two seconds later, as the original's wing trip does. The
   server learns the new field code from the next report, which a field change sends at once.
+- Arena (`GameplayHud.Arena.cs`, [application.md](application.md#arena)): the quick menu's "Arena 1x1" and "Arena 3x3"
+  entries (desktop and the browser page's "Mais") send the chat lines `/arena 1x1` and `/arena 3x3`. While
+  `PresenceUpdate.Arena` is active, the duel's line at the top of the screen says the player is in the queue, or shows
+  the mode, the players standing on each side and the time left (grey once the player is out). A click takes as an
+  attack target only a player of the other side of the local player's match (`PlayerAppearanceInfo.ArenaSide`, the
+  local player's own in `GameScene.ArenaSide`), never an arena player for anyone else.
+- Battle Royale (`GameplayHud.Royale.cs`, [application.md](application.md#battle-royale)): the quick menu's "Battle
+  Royale" entry (desktop and the browser page's "Mais") sends the chat line `/royale`. While `PresenceUpdate.Royale` is
+  active, the line at the top of the screen says the player is registered (with how many are), or shows the players
+  standing of all, when the zone shrinks and the time left (grey once the player is out and watching), and the minimap
+  draws the safe zone as a dotted circle around `RoyaleRules.Center` (`HudMinimap.Draw`'s zone). While the local player
+  fights in the event (`GameScene.RoyaleFighting`), a click takes any player it sees as an attack target: the server
+  shows it only the event's players still standing.
+- Titles (`GameplayHud.Titles.cs`, [application.md](application.md#titles)): while the status window is open and the
+  server sent the player's titles (`PresenceUpdate.Titles`), a plaque on its top edge shows the title shown (in its
+  rarity's colour, or "Sem título") between two arrows that step through the titles owned and none; a click sends the
+  choice (`IPlayChannel.ChooseTitleAsync`, `ChooseTitle`) and the server's answer moves the plaque. A title the player
+  gets is told in a system line; other players' legendary titles are notices the settings may hide (`hideTitleNotices`).
+- Duels (`GameplayHud.Duels.cs`, `GameScene.Duels.cs`, [application.md](application.md#duels)): a reached player's
+  button box carries a Duel button under it (`HudPlayerButtons.DuelButton`, a name box in the HUD's style), which sends
+  the chat line `/duelo name`. A challenge (`PresenceUpdate.DuelRequest`) opens the party request's box with "wants to
+  duel"; OK or cancel answer it (`IDuelClient.AnswerDuelAsync`, `DuelAnswer`). While `PresenceUpdate.Duel`
+  runs, a line at the top of the screen names the opponent and the time left, red with the seconds before the player
+  loses while it stands out of the arena; the scene draws the arena's edge as a thin gold ring of `DuelRules.ArenaRadius`
+  with a turning bright arc (the target ring's ground quads, `GameScene.DuelArena`), and a click takes only the
+  opponent as an attack target and never another player's duellist (`GameScene.DuelOpponent`, `PlayerAppearanceInfo.Duelling`
+  in `Fights`). A challenge that comes while a service window is open waits for it to close, within its 20 s.
 - Travel mount (`GameScene.Mount.cs`): `TryMount()` checks `MountRules.MayMount` (alive, not swinging, casting or
   frozen, out of combat, not in an action field), predicts the mount at once and sends `MountRequest`; `Dismount()`
   sends the leave. `Mounted` is the predicted state, set back to the Mounted flag of the player's own description when
@@ -436,7 +463,7 @@ destination. Renderer side of stage publication: [rendering.md](rendering.md).
 
 | Input | Where | Effect |
 |---|---|---|
-| Left click | `GameScene.UpdatePlayerInput` | In order: pick ground loot, cast the left socket skill, pick a monster (attack), a player of another clan where both stand in the castle's battle zone (attack; the server decides, `CastleSiegeRules.MayFight`), or an NPC or another player (approach), move. Holding on the ground keeps updating the move target under the cursor; while the button remains pressed, a point within the player's body radius extends movement in the current facing direction, and releasing continues to the last target. A skill motion is never cut: a click during it casts nothing; a picked monster or NPC is kept and approached once the motion ends, and a ground point is walked to then (`SelfCasting` holds the attack approach, the NPC approach and the walk, and `StopPredictedMovement` leaves the skill clip playing) |
+| Left click | `GameScene.UpdatePlayerInput` | In order: pick ground loot, cast the left socket skill, pick a monster (attack), a player of another clan where both stand in the castle's battle zone or one the PvP mode lets the player fight in a hunting field (attack; the server decides, `CastleSiegeRules.MayFight`, `PvpRules.MayFight`), or an NPC or another player (approach), move. Holding on the ground keeps updating the move target under the cursor; while the button remains pressed, a point within the player's body radius extends movement in the current facing direction, and releasing continues to the last target. A skill motion is never cut: a click during it casts nothing; a picked monster or NPC is kept and approached once the motion ends, and a ground point is walked to then (`SelfCasting` holds the attack approach, the NPC approach and the walk, and `StopPredictedMovement` leaves the skill clip playing) |
 | Double left click (350 ms) on the ground | same | Keep walking toward the cursor without holding the button, until blocked or the next click |
 | `R`, or the bar's walk/run button | `GameplayHud.RunToggleRequested` -> `GameScene.ToggleRun` | Walk/run setting (running at first unless `runByDefault` is off) for every move: clicks, monster, NPC and item approaches. A player tracing a target or holding the button keeps its pace while its stamina is at a quarter or less and walks once it runs out; overweight only walks |
 | Shift held while running (game masters) | `GameScene.MovementSpeed` | Dash at 3000/256 units per original tick; `WorldJoined` carries the game master level and the server allows game masters that speed |
@@ -448,8 +475,10 @@ destination. Renderer side of stage publication: [rendering.md](rendering.md).
 | `F1`-`F8` (remappable) | `HudSkillBindings` | Select a skill shortcut; while pressing a skill in the tree, bind it ([skills.md](skills.md)) |
 | `Enter`, `Page Up`/`Page Down`, `Up`/`Down` | `HudChat.Update` | Open the chat input or send its line, scroll the chat, recall commands; while typing, HUD, binding, debug and motion keys and the `A` labels are suppressed |
 | `Esc` | `Game1` | Close the chat window first, then HUD panels, else quit |
-| `F12` (remappable) | `GameplayHud.UpdateSettingsShortcuts` | Hide or show the whole HUD for screenshots (`HudHidden`, not saved): while hidden the HUD takes no click or key but this one; the browser page hides its world HUD with it and keeps F12 from opening the developer tools |
+| `F12` (remappable) | `GameplayHud.UpdateSettingsShortcuts` | Hide or show the whole HUD for screenshots (`HudHidden`, not saved): while hidden the HUD takes no click or key but this one, Backspace and Shift+Z; the browser page hides its world HUD with it and keeps F12 from opening the developer tools |
 | `Backspace` (remappable) | same | Flip `persistentCharacterInfo`: every player's name box, or only the hovered one's ([client-settings.md](client-settings.md)) |
+| `Shift+Z` (remappable) | same | Flip `dungeonCamera` between the free camera and the dungeon top-down view ([Camera in dungeons](#camera-in-dungeons)) |
+| `K` (remappable) | same | Ask the server to turn the PvP mode on or off (`GameplayHud.PvpToggleRequested`, `GameScene.TogglePvp` sends `PvpSwitch` with the other state than the own description's Pvp flag); the answer comes as a system line ([application.md](application.md#pvp-mode)). The browser panel's "Modo PvP" button asks the same (`BrowserHost.SwitchPvp`) |
 | `F9` | `Game1.Update` | Show or hide the diagnostics overlay (frame rate and timing, the screen's status; `GameClient.Diagnostics`) |
 | `Ctrl+F3` / `Ctrl+F5` / `Ctrl+F10` | `GameplayScreen.UpdateDebugKeys` | Add the render stats to the F9 diagnostics / toggle shadows / cycle `PristonDebugView` |
 | `Ctrl+1`..`Ctrl+7` | `GameplayScreen.UpdateMotionKeys` | Force Stand, Walk, Run, Attack, Damage, Dead, Skill on the local avatar |
@@ -463,6 +492,17 @@ along +z at the player's height through a vertical angle of pi / 4.4 (`FieldActi
 than the follow camera's, so the ground strip fills the bottom of the screen), with no orbit or zoom; every actor, the player's own included, is drawn facing left or
 right (`ActionFieldView.Facing`, `RemoteEntityManager.SideView`). Leaving the field snaps the follow camera back. The mouse
 keeps its usual clicks there.
+
+### Camera in dungeons
+
+With `dungeonCamera` at `TopDown` ([client-settings.md](client-settings.md)), an underground field
+(`GameScene.UsesTopDownCamera`) sets `PristonCamera.TopDown`: the follow camera looks down at
+`PristonCameraSettings.TopDownPitch` (80 degrees) from `TopDownDistance` (600 units) and keeps the yaw it had, so it
+never turns; drag, screen edge, Left/Right and tilt do nothing, and the wheel (`MouseZoomSensitivity`) and the zoom keys
+move it nearer or farther. The free camera's own tilt and distance are kept and return when the view is switched off,
+the follow easing between the two arms. Camera collision applies as usual, so a low ceiling holds the camera under it.
+The touch camera (`TouchCameraOffset`) and action fields keep their own views. Clicks and picking use the camera's view
+and projection as always.
 
 `GameplayHud.PointerCaptured` (pointer over a HUD element or dragging, or any of the NPC and quest dialogs, message
 boxes, the wing warp map, the Teleport Core list, the warehouse, aging and mixing windows open, as the original stops the
@@ -480,6 +520,10 @@ come from the window's text input (`Game1` to `GameClient.TypeCharacter` to `Scr
   elements move down by `BottomOffset`, right-anchored ones right by `RightOffset`. Convert the mouse with
   `HudLayout.ToLogical`. The browser centers the original bottom HUD using `BottomBarOrigin` (unless
   `centeredInterface` is off), with the chat immediately to its left. Browser-only Social and Quests windows use their own paired drawing and input bounds.
+  `HudLayout.Browser` selects the browser's own look; it is set only in the browser and only while `classicInterface`
+  is off (`HudLayout.BrowserLook`), so the classic interface draws the browser's HUD exactly as the desktop does.
+- The chat window can be dragged while `moveChat` is on and keeps its place (`chatOffsetX`/`chatOffsetY`): it draws
+  through `HudPainter.Shift` and hit-tests with the pointer moved back by the same offset ([chat-and-gm.md](chat-and-gm.md#client-chat-window)).
 - `HudPainter` draws original sprites at the layout's scale, with point sampling at a whole scale and linear filtering
   at a fractional one, and queues text into a linear-filtered pass; call `Flush` before drawing a layer that must cover earlier text.
 - Draw order (`GameplayHud.Draw`): drop names, name plates, speech bubbles, minimap, target frame, chat window (shrunk while a side window is
@@ -760,7 +804,13 @@ come from the window's text input (`Game1` to `GameClient.TypeCharacter` to `Scr
   or (255, 230, 200) when clicked. Another player's box shows while hovered or clicked, a clan mate's always
   (`HudCombat.OwnClan`, the player's `ClanId` in its looks); a player's clan is a "[Clan]" line over its name in
   (150, 255, 200) (`HudNameColors.Clan`) after its 16x16 mark (`ClanMarks`: every clan shows the default crest until
-  marks can be uploaded), for another clan only while hovered or clicked, as in the original. A summon or crystal pet's box shows within the NPC range in (220, 255, 160), with
+  marks can be uploaded), for another clan only while hovered or clicked, as in the original. A player's title
+  (`PlayerAppearanceInfo.Title`, [application.md](application.md#titles)) is a line over its clan and name in its
+  rarity's colour (`HudNameColors.Title`: common light grey, rare blue, epic purple, legendary gold), worded by
+  `ClientText.TitleName`; a change of title reloads no model. A player with the PvP
+  mode on (`PlayerAppearanceInfo.Pvp`, the local player too) shows its box always within the NPC range, its name in
+  (255, 150, 110) (`HudNameColors.Pvp`), a murderer's in (255, 60, 50) (`HudNameColors.Murderer`); a change of either
+  flag reloads no model (`RemoteEntityManager`). A summon or crystal pet's box shows within the NPC range in (220, 255, 160), with
   its owner's name in parentheses on a second line in (255, 255, 200) (the box grows upwards); the viewer's own also
   carries the life bar. Farther boxes draw first, the hovered and clicked ones last; a box that would leave
   the screen is skipped. Every box is `HudPainter.NameBox`: the speech bubble's dark translucent fill and gold rim (its
@@ -813,6 +863,12 @@ come from the window's text input (`Game1` to `GameClient.TypeCharacter` to `Scr
   ([application.md](application.md#starter-gifts)), so this opening does not happen.
   The window and the notice sit under the dialogs, the settings and the restart window, which take their clicks. The notice waits while the helper pet's box holds the
   corner; a later offer replaces an earlier one.
+- Tutorial tips (`HudTutorialTips`, `ClientSettings.TutorialTips`): up to level 20, the first tip of the table a
+  character has not closed shows in a guide box centred at y 74, under the notice strip, with its title, up to four
+  lines (`ClientText` `Tutorial.<id>.Title` and `.Text`, the bound keys of its shortcuts as `{0}`, `{1}`, ...), "Turn off
+  tips" and "Got it". Got it records `character/tip` in `tutorialTipsClosed`, and the next tip follows. The box draws
+  under the level guide's notice and the help window and waits under dialogs, the settings, the restart window and the
+  guide's summary; its text is wrapped again only when the tip, the settings or the language change.
 - Helper pet (`UI/HelpPet/`, `GameplayHud.HelpPet.cs`; the scene's `SelfHelperPet` gives the pet beside the player
   and the screen point over it): the texts are the client's `image/Sinimage/PetData/PetMessage.txt` (code page 949,
   `*Topic` sections closed by `end`). Below level 10, while the pet is shown, it speaks over itself in a chat bubble
@@ -879,10 +935,16 @@ come from the window's text input (`Game1` to `GameClient.TypeCharacter` to `Scr
 
 ## Audio
 
-- `PristonAudioLibrary.LoadBootstrap` decodes every sound at startup through `PristonWaveDecoder`: opening and
-  character-select music (`StartImage/...`), field music by BGM code (`wav/BGM`, `wav/Sod/BGM`), field ambience loops
-  and positional ambience (`wav/Ambient`), NPC motion banks per sound code, and hashed NPC talk lines
-  (`wav/Talk/<code>.wav`; optional, playback disabled when absent).
+- Sound files come through `SoundFiles` (`ISoundFileSource`): from disk on the desktop and Android, where every read
+  completes at once; the browser installs a source that downloads each file when first read
+  ([web-client.md](web-client.md#sound)). Folder listings (NPC and character banks, weapons, talk lines) go through it
+  too.
+- `PristonAudioLibrary.LoadBootstrap` catalogues every sound by path and, from disk, decodes them all at startup through
+  `PristonWaveDecoder` (`SoundLoader`): opening and character-select music (`StartImage/...`), field music by BGM code
+  (`wav/BGM`, `wav/Sod/BGM`), field ambience loops and positional ambience (`wav/Ambient`), NPC motion banks per sound
+  code, and hashed NPC talk lines (`wav/Talk/<code>.wav`; optional, playback disabled when absent). With an on-demand
+  source it decodes nothing at start: a sound is null until its file has arrived, asking starts the download, and the
+  controllers ask again until it is there (`FieldAudioController` for music and ambience, `LoginAudio` for its loops).
 - `LoginAudio` plays the opening and character-select music, the character screen's three loops (`NewChar`, `Fire`,
   `Thunder`) and the screens' cues (`LoginCue`: button, back, new character, pick, delete, game start, login), with a
   0.5 s fade-in of the loops. The music and sound options do not mute them, as in the original.
@@ -895,7 +957,9 @@ come from the window's text input (`Game1` to `GameClient.TypeCharacter` to `Scr
   sanctuary, Endless Tower 6 to 9 the dungeon, Mine 1 and Sea of Abyss the cave, Ancient Weapons and Stemple the
   temple, Secret Laboratory the iron works, Crystal Nest and Land of Nurwn the ice wind, Swamp the forest night.
 - `NpcAudioController` plays the dialog line or a motion sound of the NPC at its position relative to the listener.
-- `MusicEnabled`/`SoundEnabled` come from client settings each frame (`ApplySettings`) and apply in the world.
+- `MusicEnabled`/`SoundEnabled` and both volumes come from client settings each frame (`ApplySettings`) and apply in
+  the world: the effects switch and volume also reach skill, character, weapon and footstep sounds
+  (`SkillSoundBank.Enabled` and `Gain`, set by `GameScene` each update).
 - Skill sounds: `SkillSoundBank` ([skills.md](skills.md)).
 - Character sounds (`CombatSounds`): `CharacterSoundBanks` maps every character sound code to its folder (monsters and
   summons by sound code, NPCs, player classes 1 to 11 by class code); a file plays for the motion its name starts with

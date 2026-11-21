@@ -21,7 +21,7 @@ internal sealed class GroundLootCaptureProbe : Game
     private GroundLootPresentation _ground = null!;
     private PristonCamera _camera = null!;
     private SpriteBatch _batch = null!;
-    private SpriteFont _font = null!;
+    private Gameplay.UI.Rendering.UiFonts _font = null!;
     private GroundDropView[] _drops = [];
     private int _frames;
     private HudSprites _sprites = null!;
@@ -50,7 +50,7 @@ internal sealed class GroundLootCaptureProbe : Game
         _ground = new GroundLootPresentation(new RendererActorScene(_renderer), new PristonActorLoader(), _root, ConsoleClientLog.Instance);
         _camera = new PristonCamera(Vector3.Zero, Vector3.Forward, new PristonCameraSettings());
         _batch = new SpriteBatch(GraphicsDevice);
-        _font = Content.Load<SpriteFont>("Fonts/UI");
+        _font = new Gameplay.UI.Rendering.UiFonts(Content);
         _sprites = new HudSprites(GraphicsDevice, _root, ConsoleClientLog.Instance);
         _painter = new HudPainter(_batch, _font, _sprites);
         _drops =

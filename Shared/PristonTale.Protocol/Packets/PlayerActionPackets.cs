@@ -179,6 +179,40 @@ public readonly record struct MountRequestPacket(bool Mount) : IFramePacket
     }
 }
 
+// C->S {header, uint16 Version = 1, uint8 Flags (1 PvP on, 0 off), uint8 0}: the player asks to turn its PvP mode on or
+// off. The server checks PvpRules itself, tells the player the answer in a system line, and every viewer sees the mode in
+// the player's description (EntityDescription flags).
+public readonly record struct PvpSwitchPacket(bool On) : IFramePacket
+{
+    public const ushort CurrentVersion = 1;
+    public const int Size = 8 + 4;
+    private const byte OnFlag = 1;
+
+    public int Write(Span<byte> destination)
+    {
+        var writer = new PacketWriter(destination, EtervaleOpcodes.PvpSwitch);
+        writer.UInt16(CurrentVersion);
+        writer.Byte(On ? OnFlag : (byte)0);
+        writer.Byte(0);
+        return writer.Finish();
+    }
+
+    public static PvpSwitchPacket Read(ReadOnlySpan<byte> packet)
+    {
+        var reader = new PacketReader(packet, Size);
+        WireHeader.ReadVersion(ref reader, "PvP switch");
+
+        var flags = reader.Byte();
+        reader.Skip(1);
+        if (flags > OnFlag)
+        {
+            throw new InvalidDataException("PvP switch has unknown flags.");
+        }
+
+        return new PvpSwitchPacket(flags == OnFlag);
+    }
+}
+
 // C->S {header, uint16 Version = 1, uint16 0}: Space with nothing ahead in an action field. The server swings at nothing
 // when the player stands free there; the swing shows on the presence timeline.
 public readonly record struct SwingRequestPacket : IFramePacket

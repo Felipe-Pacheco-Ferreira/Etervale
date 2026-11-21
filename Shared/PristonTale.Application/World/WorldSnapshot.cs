@@ -1,6 +1,7 @@
 using PristonTale.Simulation.World.Loot;
 using System.Numerics;
 using PristonTale.Simulation.Characters;
+using PristonTale.Simulation.Combat;
 using PristonTale.Contracts.Motion;
 using PristonTale.Contracts.World;
 using PristonTale.Contracts.Combat;
@@ -49,6 +50,17 @@ public readonly struct PlayerAppearanceView
     public string ClanName { get; init; } = "";
     public int ClanMark { get; init; }
 
+    // The PvP mode is on, the player is a murderer (PvpRules), and it fights a duel (DuelRules: nobody else may fight it).
+    public bool Pvp { get; init; }
+    public bool Murderer { get; init; }
+    public bool Duelling { get; init; }
+
+    // The player's side in an arena match while it still fights there: 1 or 2, 0 for none (or out of its match).
+    public int ArenaSide { get; init; }
+
+    // The title shown over the name (TitleRules), 0 for none.
+    public int Title { get; init; }
+
     public string Name { get; }
     public PlayerClass Class { get; }
     public int Tier { get; init; }
@@ -92,6 +104,14 @@ public readonly struct EntityView
 
     // The player a quest duel opponent was opened for; only that player sees it in the arena.
     public ulong DuelPlayerId { get; init; }
+
+    // The arena match a player plays (ArenaRules), 0 for none: in the arena's field a viewer sees only its own match's players.
+    public long ArenaMatch { get; init; }
+
+    // The Battle Royale a player fights (RoyaleRules), 0 for none, and whether it is out and watching: in the arena's
+    // field a viewer of the event sees its players, and only a viewer out sees those out.
+    public long Royale { get; init; }
+    public bool RoyaleOut { get; init; }
 
     // The field's descriptor revision of the entity (1..255), the same for every viewer; 0 for a view built outside a field.
     public byte Revision { get; init; }
@@ -187,6 +207,9 @@ public readonly struct CombatEventView
     // its skill. A hit: whether a skill (or a pet's strike) dealt it rather than the attacker's basic attack.
     public int Clip { get; init; } = -1;
     public bool Skill { get; init; }
+
+    // A hit: the element its damage number shows (Bionic: a physical hit, none).
+    public Element Element { get; init; }
 }
 
 // The number of each kind of event that belongs to one tick, in the order of the joined arrays.
@@ -273,6 +296,19 @@ public readonly struct WorldSnapshot
     public TradeView? Trade { get; init; }
     public TradeRequest? TradeRequest { get; init; }
 
+    // The receiver's duel (null outside one) and the challenge it has not answered (DuelRules).
+    public DuelView? Duel { get; init; }
+    public DuelRequest? DuelRequest { get; init; }
+
+    // The receiver's arena queue or match (ArenaRules), null for neither.
+    public ArenaView? Arena { get; init; }
+
+    // The receiver's Battle Royale registration or event (RoyaleRules), null for neither.
+    public RoyaleView? Royale { get; init; }
+
+    // The receiver's titles; the same instance until they change (WorldServer.StepTitles).
+    public TitleView? Titles { get; init; }
+
     public WorldSnapshot WithOwner(OwnerState? owner, SkillCooldownView[]? cooldowns = null) => new(ServerTick, Entities, Events, FieldId, owner, GroundDrops)
     {
         Grid = Grid,
@@ -308,8 +344,13 @@ public readonly struct WorldSnapshot
         PartyDirectory = PartyDirectory,
         Trade = Trade,
         TradeRequest = TradeRequest,
+        Duel = Duel,
+        DuelRequest = DuelRequest,
+        Arena = Arena,
+        Royale = Royale,
         Bellatra = Bellatra,
         Rewards = Rewards,
+        Titles = Titles,
         Pinned = Pinned,
         PinKey = PinKey
     };
@@ -329,7 +370,12 @@ public readonly struct WorldSnapshot
         PartyDirectory = PartyDirectory,
         Trade = Trade,
         TradeRequest = TradeRequest,
+        Duel = Duel,
+        DuelRequest = DuelRequest,
+        Arena = Arena,
+        Royale = Royale,
         Bellatra = Bellatra,
-        Rewards = Rewards
+        Rewards = Rewards,
+        Titles = Titles
     };
 }

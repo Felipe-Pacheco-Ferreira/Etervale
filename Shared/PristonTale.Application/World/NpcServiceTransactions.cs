@@ -225,8 +225,15 @@ internal static class NpcServiceTransactions
         var reply = State(command, candidate, storage, outcome) with { Arrival = arrival, Work = work };
         return new PreparedNpcOperation(original, candidate, snapshot, reply, candidate.Money - original.Money, storage,
             session.Warehouse?.Revision ?? 0, field.CastleTax,
-            command.Action == NpcServiceAction.EnterBellatra ? Simulation.World.Bellatra.BellatraRules.TeamOfBooth(service.Value) : -1);
+            command.Action == NpcServiceAction.EnterBellatra ? Simulation.World.Bellatra.BellatraRules.TeamOfBooth(service.Value) : -1,
+            RaisedByAging(candidate, command, work));
     }
+
+    // The item an aging raised (a success or a double), for the notice of a high aging; null for any other outcome.
+    private static ItemInstance? RaisedByAging(PlayerCharacter candidate, NpcServiceCommand command, ItemWorkResult? work) =>
+        command.Action == NpcServiceAction.Age && work is { Result: (byte)Simulation.Items.Aging.AgingResult.Success or (byte)Simulation.Items.Aging.AgingResult.Double }
+            ? candidate.FindOwnedItem(work.ItemId)
+            : null;
 
     private static NpcServiceStatus TryTeleport(PlayerCharacter candidate, NpcService service, int index, WorldCatalog world, int tax, out TeleportArrival? arrival)
     {

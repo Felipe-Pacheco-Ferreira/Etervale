@@ -157,7 +157,7 @@ internal sealed partial class FieldSkills
         var reach = radius * (float)radius;
         foreach (var player in _host.Players)
         {
-            if (ReferenceEquals(player, caster) || player.IsDead || player.EntityId == caster.EntityId || allies.Party && !caster.SharesPartyWith(player)
+            if (ReferenceEquals(player, caster) || player.IsDead || player.EntityId == caster.EntityId || allies.Party && !caster.SharesPartyWith(player) || !caster.MaySupport(player)
                 || MathF.Abs(player.Position.Y - caster.Position.Y) > allies.Height || SupportBlocked(player, rule))
             {
                 continue;

@@ -94,19 +94,19 @@ public sealed partial class GameplayHud
             }
         }
 
-        if (_settings.ShortcutPressed(keyboard, _previousKeyboard, 0) || (_settings.DefaultInventoryKey && Pressed(keyboard, Keys.I)))
+        if (_settings.ShortcutPressed(keyboard, _previousKeyboard, HudSettingsPanel.InventoryShortcut) || (_settings.DefaultInventoryKey && Pressed(keyboard, Keys.I)))
         {
             TogglePanel(_inventorySlide);
             HelpPetKey("InvenTory");
         }
 
-        if (_settings.ShortcutPressed(keyboard, _previousKeyboard, 1))
+        if (_settings.ShortcutPressed(keyboard, _previousKeyboard, HudSettingsPanel.CharacterShortcut))
         {
             TogglePanel(_statusSlide);
             HelpPetKey("CarStatus");
         }
 
-        if (_settings.ShortcutPressed(keyboard, _previousKeyboard, 2))
+        if (_settings.ShortcutPressed(keyboard, _previousKeyboard, HudSettingsPanel.SkillsShortcut))
         {
             TogglePanel(_skillSlide);
             HelpPetKey("Skill");
@@ -136,7 +136,7 @@ public sealed partial class GameplayHud
             HelpPetKey("RunAndWalk");
         }
 
-        if (_settings.ShortcutPressed(keyboard, _previousKeyboard, 7))
+        if (_settings.ShortcutPressed(keyboard, _previousKeyboard, HudSettingsPanel.SettingsShortcut))
         {
             OpenSettingsPanel();
             return;
@@ -178,7 +178,7 @@ public sealed partial class GameplayHud
         var shift = keyboard.IsKeyDown(Keys.LeftShift) || keyboard.IsKeyDown(Keys.RightShift);
         for (var box = 0; box < BeltSlotCount; box++)
         {
-            if (_settings.ShortcutPressed(keyboard, _previousKeyboard, 10 + box))
+            if (_settings.ShortcutPressed(keyboard, _previousKeyboard, HudSettingsPanel.FirstBeltShortcut + box))
             {
                 _inventory.BeltKey(box, shift);
                 HelpPetKey("Potion_ShortKey", KeyIndex + box);
@@ -197,7 +197,8 @@ public sealed partial class GameplayHud
 
     private void Click(OwnerState state, HudLayout layout, Point pointer, Point design, KeyboardState keyboard)
     {
-        if (ClickGlobalBonuses(layout, pointer) || ClickShopDirectory(layout, pointer) || ClickRecentDrops(layout, pointer) || ClickRewards(layout, pointer) || _news.Click(pointer) || ClickActionBar(layout, pointer))
+        if (ClickGlobalBonuses(layout, pointer) || ClickShopDirectory(layout, pointer) || ClickRecentDrops(layout, pointer) || ClickRewards(layout, pointer) || _news.Click(pointer)
+            || !TouchHudShown && ClickActionBar(layout, pointer))
         {
             return;
         }
@@ -256,7 +257,7 @@ public sealed partial class GameplayHud
             return;
         }
 
-        if (_chat.Window.Click(layout, pointer, SideWindowOpen))
+        if (!TouchHudShown && _chat.Window.Click(layout, pointer, SideWindowOpen))
         {
             return;
         }
@@ -278,7 +279,7 @@ public sealed partial class GameplayHud
             return;
         }
 
-        if (ClickClan(pointer) || ClickCastle(pointer) || ClickBellatra(pointer) || ClickQuests(layout, pointer) || ClickTrade(pointer) || ClickParty(layout, pointer))
+        if (ClickClan(pointer) || ClickCastle(pointer) || ClickBellatra(pointer) || ClickQuests(layout, pointer) || ClickDuel(layout, pointer) || ClickTrade(pointer) || ClickParty(layout, pointer))
         {
             return;
         }
@@ -441,6 +442,11 @@ public sealed partial class GameplayHud
                 return;
             }
 
+            if (ClickTitlePlaque(origin, pointer))
+            {
+                return;
+            }
+
             if (state is not null && state.StatPoints > 0 && !_progression.Pending)
             {
                 for (var index = 0; index < 5; index++)
@@ -515,14 +521,17 @@ public sealed partial class GameplayHud
             return true;
         }
 
-        if (_helpPet.Captures(pointer) || CapturesHelp(pointer) || CapturesParty(layout, pointer) || CapturesClan(pointer) || CapturesCastle(pointer) || CapturesBellatra(pointer) || _tradeRequest.Captures(pointer) || _personalShop.Captures(pointer)
+        if (_helpPet.Captures(pointer) || CapturesHelp(pointer) || CapturesParty(layout, pointer) || CapturesClan(pointer) || CapturesCastle(pointer)
+            || CapturesBellatra(pointer) || _tradeRequest.Captures(pointer) || CapturesDuel(layout, pointer) || _personalShop.Captures(pointer)
             || _itemUse.Captures(pointer) || _wingGate.Captures(pointer) || _puzzle.Captures(pointer) || _crystalDismiss.Captures(pointer) || _premium.Contains(pointer))
         {
             return true;
         }
 
-        if (GlobalBonusesCapture(layout, pointer) || ShopDirectoryCaptures(layout, pointer) || RecentDropsCapture(layout, pointer) || RewardsCapture(layout, pointer) || ActionBarCaptures(layout, pointer) || QuickMenuCaptures(layout, pointer) || HudBar.Captures(design) || MinimapShown && HudMinimap.Box(layout).Contains(pointer) || _skillHud.BuffAt(pointer) != 0
-            || WindowContains(layout, _inventorySlide, pointer) || WindowContains(layout, _statusSlide, pointer) || WindowContains(layout, _skillSlide, pointer)
+        if (GlobalBonusesCapture(layout, pointer) || ShopDirectoryCaptures(layout, pointer) || RecentDropsCapture(layout, pointer) || RewardsCapture(layout, pointer) || QuickMenuCaptures(layout, pointer)
+            || !TouchHudShown && (ActionBarCaptures(layout, pointer) || HudBar.Captures(design)) || MinimapShown && HudMinimap.Box(layout).Contains(pointer) || _skillHud.BuffAt(pointer) != 0
+            || WindowContains(layout, _inventorySlide, pointer) || WindowContains(layout, _statusSlide, pointer) || TitlePlaqueCaptures(layout, pointer)
+            || WindowContains(layout, _skillSlide, pointer)
             || _skills.MasterBoxShown && HudSkillTreeLayout.MasterBox.Contains(pointer))
         {
             return true;

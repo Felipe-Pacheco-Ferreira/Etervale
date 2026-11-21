@@ -10,8 +10,9 @@ public sealed partial class GameplayHud
     // What waits on the News & Support shortcut: 1 for a news post not seen, plus each answered ticket not read.
     internal int NewsUnread => _news.Unread;
 
-    // The players online for the browser page's counter: -1 while the server has not said or Settings hide it.
-    internal int OnlinePlayers => _context.Presentation.Requested.HideOnlineCount ? -1 : Math.Max(-1, _context.Backend.OnlinePlayers);
+    // The players online for the counter: -1 while the server has not said, without a server (the capture probes) or when
+    // Settings hide it.
+    internal int OnlinePlayers => _context.Presentation.Requested.HideOnlineCount || _context.Backend is null ? -1 : Math.Max(-1, _context.Backend.OnlinePlayers);
 
     internal string WorldActions()
     {

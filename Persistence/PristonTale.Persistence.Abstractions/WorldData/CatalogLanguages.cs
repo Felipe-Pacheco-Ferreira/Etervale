@@ -6,7 +6,12 @@ public static class CatalogLanguages
 {
     public const string English = "en";
     public const string BrazilianPortuguese = "pt-BR";
-    public static IReadOnlyList<string> Supported { get; } = [English, BrazilianPortuguese];
+    public const string Spanish = "es";
+    public const string Filipino = "fil";
+    public const string Vietnamese = "vi";
+    public const string SimplifiedChinese = "zh-CN";
+    public const string Japanese = "ja";
+    public static IReadOnlyList<string> Supported { get; } = [English, BrazilianPortuguese, Spanish, Filipino, Vietnamese, SimplifiedChinese, Japanese];
 
     public static string Normalize(string? language)
     {

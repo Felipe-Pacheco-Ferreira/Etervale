@@ -35,7 +35,7 @@ internal sealed class OpeningLoginController : IDisposable
         }
         else
         {
-            _login = new LoginPanel(context.SpriteBatch, context.Font, context.UiAtlas) { TouchLayout = touchLayout };
+            _login = new LoginPanel(context.SpriteBatch, context.Fonts, context.UiAtlas) { TouchLayout = touchLayout };
         }
     }
 

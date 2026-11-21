@@ -73,6 +73,16 @@ registration order. An exception from any `StartAsync` stops the host before the
 With `BotLink:Enabled`, `BotLinkService` starts after the world tick and binds `BotLink:Url`; a port in use stops the
 host.
 
+`ArenaScoreService` starts after the world tick too: it stores each arena match's results off the tick and every 5 minutes
+pays the past week's arena prizes once per level band ([application.md](application.md#arena)); a failed write is logged.
+`RoyalePrizeService` starts beside it: it mails each finished Battle Royale's prizes off the tick, once per event
+([application.md](application.md#battle-royale)); a failed payment is logged.
+`TitleService` starts beside them: it hands the stored holders of the position titles to the world, every 5 minutes reads
+the arena's past week, the castle's owner and the level ranking for the positions' firsts, and stores each title the
+world passes off the tick ([application.md](application.md#titles)); a failed read or write is logged.
+`BossRouletteService` keeps each boss roulette draw and mails its prize off the tick
+([application.md](application.md#boss-roulette)); a failure is logged.
+
 Shutdown runs the services in reverse: the game server closes every connection and awaits their leave saves while the
 tick still runs, and the character store stops last. Once the host is stopping, the first write storage refuses sends
 everything the store holds, and every later capture, to the save journal without another attempt; one failed attempt
@@ -147,6 +157,9 @@ that limit; negative values stop startup. The game settings live in the database
 | `Database:SaveJournalPath` | `save-journal` | `CharacterSaveService` | Directory of the save journal, relative to the executable. |
 | `Assets:Root` | auto-detected `assets` | `FieldTerrainLoadService` | Directory holding the original asset tree with the field stages. |
 | `Assets:AllowMissingTerrain` | `false` | `FieldTerrainLoadService` | Start without an assets directory or with missing/unreadable stages. |
+| `ChatTranslation:Provider` | `None` | `ChatTranslationSettings` | `None`, `DeepL` or `Google`: the paid service that translates the chat ([chat-and-gm.md](chat-and-gm.md#chat-translation)); anything else stops startup. |
+| `ChatTranslation:ApiKey` | empty | `ChatTranslationSettings` | The owner's key for that service; empty, the chat is not translated and the clients hide the option. Never commit a real key. |
+| `ChatTranslation:CharactersPerMinute` | 1000 | `ChatTranslation` | The most characters one player's translations may ask for a minute (cached texts are free); at least 1. |
 | `World:MaxPendingCommandsPerPlayer` | 16 | `WorldServerOptions` | Commands one player may have waiting for the tick; at least 1. The queue holds 4096 players' default quota. |
 | `Logs:CurrencyMinutes` | 10 | `GameLogOptions` | Period of the currency sink rows, 1 to 1440. |
 | `Logs:RetentionDays` | 180 | `GameLogOptions` | Game log rows older than this are deleted once a day; 0 keeps them, negative stops startup. |
@@ -221,11 +234,19 @@ show or write one row with `/setting name [value]` ([chat-and-gm.md](chat-and-gm
 | `mixing.price_percent` | 100 | Price of a mix or a reconstruction in percent of the item's price; carried to the client in the mixer's offer. |
 | `alchemy.price_percent` | 100 | Price of turning sheltoms into force orbs, in percent of the price per sheltom. |
 | `castle.mode` | 1 | Bless Castle siege: 0 off, 1 weekly, 2 league, during which players never fight each other in the castle ([application.md](application.md#bless-castle)). |
+| `pvp.damage_percent` | 50 | PvP mode: percent of a blow's damage players take from each other in the hunting fields, 1 to 1000; the castle is not changed ([application.md](application.md#pvp-mode)). |
+| `arena.hours` | 13,19,22 | Arena: the server's local hours (0 to 23, comma separated) it opens at for 30 minutes each; empty never opens ([application.md](application.md#arena)). |
+| `arena.prize_first`, `arena.prize_second`, `arena.prize_third` | 10000000, 5000000, 2000000 | Arena: the gold mailed each Monday to the past week's first, second and third of each level band; 0 sends none. |
+| `royale.hours` | 16,21 | Battle Royale: the server's local hours (0 to 23, comma separated) it starts at, registration opening 10 minutes before; empty never runs; no hour may be the arena's ([application.md](application.md#battle-royale)). |
+| `royale.prize_first`, `royale.prize_second`, `royale.prize_third` | 5000000, 2000000, 1000000 | Battle Royale: the gold mailed to each event's first, second and third; 0 sends none. |
 | `castle.siege_day` | 0 | Day of the scheduled siege, 0 Sunday to 6 Saturday, server local time. |
 | `castle.siege_hour` | 20 | Hour of the scheduled siege, 0 to 23, server local time. |
 | `bellatra.mode` | 1 | Bellatra: 0 closed, 1 open while the server's hour is 0 to 5 or 12 to 17, 2 always open ([application.md](application.md#bellatra)). |
 | `bellatra.tax` | 5 | Percent of each Bellatra prize kept for the operating clan. |
 | `bellatra.score_divisor` | 35 | A Bellatra kill scores the monster's experience divided by this (a boss's times twice the round); the score is the prize in gold. |
+| `notices.aging_from` | 10 | Every player is told when somebody's aging rises to this level or above, 0 to 20; 0 tells none ([application.md](application.md#server-notices)). |
+| `notices.level_from` | 100 | Every player is told when somebody reaches a level from this one on that is a multiple of `notices.level_every`, 0 to 1000; 0 tells none. |
+| `notices.level_every` | 10 | The told levels are multiples of this, 1 to 1000. |
 
 Settings apply on the tick (`WorldServer.ApplyOptionsAsync`): every open field and the fields opened later take the
 experience, item event and aging values.
@@ -351,7 +372,8 @@ twice the entities the receiver knows, the encoder collects them from the frame'
 sorted by the entity ids they name; one binary search per known entity) instead of scanning every event of the field;
 both ways give the same events in the field's order. A pump that fell behind gets merged copies of several ticks'
 events and scans them.
-In the quest arena (field 32) the encoder leaves out other players and monsters of other players' duels. View ranges,
+In the quest arena (field 32) the encoder leaves out other players (but those of the receiver's own arena match) and
+monsters of other players' duels. View ranges,
 rates and the movement budget are in [protocol.md](protocol.md#server-capacity). A reader 4096 events behind loses the
 events it has not read, never its connection: its next snapshot has `EventsLost`, and the encoder sends again the
 statuses running on every entity the receiver shows. A status removed early (dispelled, cancelled) among the lost

@@ -1,0 +1,1514 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Aging.CannotAge" xml:space="preserve"><value>Hindi ma-age ang item</value></data>
+  <data name="Aging.DownOne" xml:space="preserve"><value>Bumaba ang aging level ng -1</value></data>
+  <data name="Aging.DownTwo" xml:space="preserve"><value>Bumaba ang aging level ng -2</value></data>
+  <data name="Aging.Failed" xml:space="preserve"><value>Pumalya ang aging ng item</value></data>
+  <data name="Aging.UpOne" xml:space="preserve"><value>Tumaas ang aging level ng +1</value></data>
+  <data name="Aging.UpTwo" xml:space="preserve"><value>Tumaas ang aging level ng +2</value></data>
+  <data name="Attribute.Agility" xml:space="preserve"><value>Agility</value></data>
+  <data name="Attribute.Health" xml:space="preserve"><value>Health</value></data>
+  <data name="Attribute.Spirit" xml:space="preserve"><value>Spirit</value></data>
+  <data name="Attribute.Strength" xml:space="preserve"><value>Strength</value></data>
+  <data name="Attribute.Talent" xml:space="preserve"><value>Talent</value></data>
+  <data name="Bellatra.AdvanceOne" xml:space="preserve"><value>{0}
+ay uusad sa high tower.</value></data>
+  <data name="Bellatra.AdvanceTwo" xml:space="preserve"><value>{0} at {1}
+ay uusad sa high tower.</value></data>
+  <data name="Bellatra.Back" xml:space="preserve"><value>Bumalik</value></data>
+  <data name="Bellatra.Chief" xml:space="preserve"><value>Chief: {0}</value></data>
+  <data name="Bellatra.ChiefOnly" xml:space="preserve"><value>Ang chief lang ng clan ang puwedeng kumuha ng kita nito.</value></data>
+  <data name="Bellatra.ChiefRedeems" xml:space="preserve"><value>Bilang chief nito, puwede mo itong kunin.</value></data>
+  <data name="Bellatra.HowMuch" xml:space="preserve"><value>Magkano?</value></data>
+  <data name="Bellatra.Income" xml:space="preserve"><value>Kita ng clan mo: {0} gold</value></data>
+  <data name="Bellatra.MyScore" xml:space="preserve"><value>Score mo</value></data>
+  <data name="Bellatra.NoOperator" xml:space="preserve"><value>Walang clan na nagpapatakbo ng Bellatra ngayon.</value></data>
+  <data name="Bellatra.NoRanking" xml:space="preserve"><value>Walang clan na naglaro ng Bellatra kahapon.</value></data>
+  <data name="Bellatra.Operator" xml:space="preserve"><value>Clan na nagpapatakbo: {0}</value></data>
+  <data name="Bellatra.Outcome.Cleared" xml:space="preserve"><value>Congratulations! Tapos na ang Bellatra.</value></data>
+  <data name="Bellatra.Outcome.GoesOn" xml:space="preserve"><value>Tapos na ang stage! Uusad ang team mo.</value></data>
+  <data name="Bellatra.Outcome.Out" xml:space="preserve"><value>Talo na ang team mo.</value></data>
+  <data name="Bellatra.Over" xml:space="preserve"><value>Tapos na ang laro</value></data>
+  <data name="Bellatra.RankLine" xml:space="preserve"><value>{0}. {1} - {2} points</value></data>
+  <data name="Bellatra.Ranking" xml:space="preserve"><value>Ranking</value></data>
+  <data name="Bellatra.Redeem" xml:space="preserve"><value>Kunin</value></data>
+  <data name="Bellatra.Round" xml:space="preserve"><value>Round {0}</value></data>
+  <data name="Bellatra.Seal.Freeze" xml:space="preserve"><value>Freeze Seal</value></data>
+  <data name="Bellatra.Seal.Guardian" xml:space="preserve"><value>Guardian Seal</value></data>
+  <data name="Bellatra.Seal.Points" xml:space="preserve"><value>{0} Points Up</value></data>
+  <data name="Bellatra.Seal.Quake" xml:space="preserve"><value>Quake Seal</value></data>
+  <data name="Bellatra.Seal.Rabbit" xml:space="preserve"><value>Rabbit Seal</value></data>
+  <data name="Bellatra.Seal.Stun" xml:space="preserve"><value>Stun Seal</value></data>
+  <data name="Bellatra.Seal.Stygian" xml:space="preserve"><value>Stygian Seal</value></data>
+  <data name="Bellatra.Secretary" xml:space="preserve"><value>Sekretarya ni Bellatra</value></data>
+  <data name="Bellatra.Status.Busy" xml:space="preserve"><value>May ginagawa ka pang iba.</value></data>
+  <data name="Bellatra.Status.NotChief" xml:space="preserve"><value>Ang chief lang ng clan ang puwedeng kumuha ng kita nito.</value></data>
+  <data name="Bellatra.Status.NotEnoughBalance" xml:space="preserve"><value>Hindi ganoon karami ang kita ng clan mo.</value></data>
+  <data name="Bellatra.Status.OutOfReach" xml:space="preserve"><value>Masyado kang malayo sa sekretarya.</value></data>
+  <data name="Bellatra.Status.TooMuchGold" xml:space="preserve"><value>Hindi mo kayang buhatin ang ganoon karaming gold.</value></data>
+  <data name="Bellatra.Status.Unavailable" xml:space="preserve"><value>Hindi available ang sekretarya ni Bellatra ngayon.</value></data>
+  <data name="Bellatra.Tax" xml:space="preserve"><value>Tax sa mga premyo: {0}</value></data>
+  <data name="Bellatra.Team" xml:space="preserve"><value>Team {0}</value></data>
+  <data name="Bellatra.Title" xml:space="preserve"><value>Bellatra</value></data>
+  <data name="Bellatra.ToRedeem" xml:space="preserve"><value>Gold na kukunin</value></data>
+  <data name="Bellatra.Waiting" xml:space="preserve"><value>Naghihintay sa round</value></data>
+  <data name="Brood.Demon" xml:space="preserve"><value>Demon</value></data>
+  <data name="Brood.Mechanic" xml:space="preserve"><value>Mechanic</value></data>
+  <data name="Brood.Mutant" xml:space="preserve"><value>Mutant</value></data>
+  <data name="Brood.Normal" xml:space="preserve"><value>Normal</value></data>
+  <data name="Brood.Undead" xml:space="preserve"><value>Undead</value></data>
+  <data name="Brood.User" xml:space="preserve"><value>Player</value></data>
+  <data name="Browser.Characters" xml:space="preserve"><value>Mga character mo</value></data>
+  <data name="Browser.NoCharacters" xml:space="preserve"><value>Wala pang character ang account na ito.</value></data>
+  <data name="Castle.AbsorbEffect" xml:space="preserve"><value>absorption +{0}</value></data>
+  <data name="Castle.Back" xml:space="preserve"><value>Bumalik</value></data>
+  <data name="Castle.ChiefOnly" xml:space="preserve"><value>Ang clan chief lang ang puwedeng magbago ng castle.</value></data>
+  <data name="Castle.Cost" xml:space="preserve"><value>Halaga: {0} gold</value></data>
+  <data name="Castle.DamageEffect" xml:space="preserve"><value>damage +{0}%</value></data>
+  <data name="Castle.EvasionEffect" xml:space="preserve"><value>naiiwasan ang {0}% ng mga atake</value></data>
+  <data name="Castle.Fire" xml:space="preserve"><value>Fire</value></data>
+  <data name="Castle.HowMuch" xml:space="preserve"><value>Magkano ang gold</value></data>
+  <data name="Castle.Ice" xml:space="preserve"><value>Ice</value></data>
+  <data name="Castle.Lightning" xml:space="preserve"><value>Lightning</value></data>
+  <data name="Castle.Mercenaries" xml:space="preserve"><value>Mga Mercenary</value></data>
+  <data name="Castle.MercenariesLine" xml:space="preserve"><value>Mga Mercenary: {0} (hanggang {1} bawat isa)</value></data>
+  <data name="Castle.MercenaryA" xml:space="preserve"><value>Ricarten militia</value></data>
+  <data name="Castle.MercenaryB" xml:space="preserve"><value>Ricarten guard</value></data>
+  <data name="Castle.MercenaryC" xml:space="preserve"><value>Bless royal guard</value></data>
+  <data name="Castle.MercenaryLine" xml:space="preserve"><value>{0}: {1}/{2} ({3} bawat isa)</value></data>
+  <data name="Castle.NoSkill" xml:space="preserve"><value>wala</value></data>
+  <data name="Castle.NoTower" xml:space="preserve"><value>wala</value></data>
+  <data name="Castle.Reset" xml:space="preserve"><value>I-undo</value></data>
+  <data name="Castle.Save" xml:space="preserve"><value>I-save</value></data>
+  <data name="Castle.Skill" xml:space="preserve"><value>Clan skill</value></data>
+  <data name="Castle.SkillLine" xml:space="preserve"><value>{0}: {1}</value></data>
+  <data name="Castle.SkillNow" xml:space="preserve"><value>Clan skill: {0}</value></data>
+  <data name="Castle.SkillTomorrow" xml:space="preserve"><value>Clan skill simula bukas: {0}</value></data>
+  <data name="Castle.Status.Busy" xml:space="preserve"><value>Tapusin mo muna ang ginagawa mo.</value></data>
+  <data name="Castle.Status.DuringSiege" xml:space="preserve"><value>Hindi puwede habang may siege.</value></data>
+  <data name="Castle.Status.InvalidSetup" xml:space="preserve"><value>Hindi puwedeng gawin ang pagbabagong ito.</value></data>
+  <data name="Castle.Status.NotChief" xml:space="preserve"><value>Ang clan chief lang ang puwedeng gumawa niyan.</value></data>
+  <data name="Castle.Status.NotEnoughGold" xml:space="preserve"><value>Kulang ang gold mo.</value></data>
+  <data name="Castle.Status.NotEnoughTreasury" xml:space="preserve"><value>Hindi ganoon karami ang laman ng treasury.</value></data>
+  <data name="Castle.Status.NotOwner" xml:space="preserve"><value>Hindi hawak ng clan mo ang Bless Castle.</value></data>
+  <data name="Castle.Status.OutOfReach" xml:space="preserve"><value>Masyado kang malayo sa butler.</value></data>
+  <data name="Castle.Status.TooMuchGold" xml:space="preserve"><value>Hindi mo kayang buhatin ang ganoon karaming gold.</value></data>
+  <data name="Castle.Status.Unavailable" xml:space="preserve"><value>Hindi mababago ang castle ngayon. Subukan ulit.</value></data>
+  <data name="Castle.Tax" xml:space="preserve"><value>Tax</value></data>
+  <data name="Castle.TaxLine" xml:space="preserve"><value>Tax: {0} (bukas {1})</value></data>
+  <data name="Castle.ToWithdraw" xml:space="preserve"><value>ang kukunin sa treasury?</value></data>
+  <data name="Castle.TowerInnerA" xml:space="preserve"><value>Inner court A</value></data>
+  <data name="Castle.TowerInnerB" xml:space="preserve"><value>Inner court B</value></data>
+  <data name="Castle.TowerInnerC" xml:space="preserve"><value>Inner court C</value></data>
+  <data name="Castle.TowerInnerD" xml:space="preserve"><value>Inner court D</value></data>
+  <data name="Castle.TowerLine" xml:space="preserve"><value>{0}: {1}  {2}</value></data>
+  <data name="Castle.TowerOuterA" xml:space="preserve"><value>Outer gate A</value></data>
+  <data name="Castle.TowerOuterB" xml:space="preserve"><value>Outer gate B</value></data>
+  <data name="Castle.Towers" xml:space="preserve"><value>Crystal tower</value></data>
+  <data name="Castle.TowersLine" xml:space="preserve"><value>Crystal tower: {0} sa {1}</value></data>
+  <data name="Castle.Treasury" xml:space="preserve"><value>Treasury: {0} gold</value></data>
+  <data name="Castle.Withdraw" xml:space="preserve"><value>Kunin</value></data>
+  <data name="CharSelect.ChooseClass" xml:space="preserve"><value>Pumili ng class.</value></data>
+  <data name="CharSelect.ChooseTribe" xml:space="preserve"><value>Pumili ng tribe.</value></data>
+  <data name="CharSelect.ClassModelsFailed" xml:space="preserve"><value>Hindi ma-load ang mga class model.</value></data>
+  <data name="CharSelect.CreateFailure.InvalidFace" xml:space="preserve"><value>Di-wastong mukha.</value></data>
+  <data name="CharSelect.CreateFailure.NameLength" xml:space="preserve"><value>Dapat 3 hanggang 16 na character ang pangalan.</value></data>
+  <data name="CharSelect.CreateFailure.NameTaken" xml:space="preserve"><value>Kinuha na ang pangalang iyon.</value></data>
+  <data name="CharSelect.CreateFailure.NoFreeSlot" xml:space="preserve"><value>Walang libreng character slot.</value></data>
+  <data name="CharSelect.CreateFailure.None" xml:space="preserve"><value>Hindi nagawa ang character.</value></data>
+  <data name="CharSelect.CreateFailure.Rejected" xml:space="preserve"><value>Tinanggihan ang paggawa ng character.</value></data>
+  <data name="CharSelect.CreateFailure.UnknownClass" xml:space="preserve"><value>Hindi kilalang class.</value></data>
+  <data name="CharSelect.DeleteFailed" xml:space="preserve"><value>Hindi nabura ang character.</value></data>
+  <data name="CharSelect.EnterFailure.AlreadyActive" xml:space="preserve"><value>Aktibo na ang character.</value></data>
+  <data name="CharSelect.EnterFailure.AlreadyEntering" xml:space="preserve"><value>Pumapasok na o naglalaro na ang session.</value></data>
+  <data name="CharSelect.EnterFailure.InvalidSavedClassOrField" xml:space="preserve"><value>May di-wastong class o field ang naka-save na character.</value></data>
+  <data name="CharSelect.EnterFailure.InvalidSession" xml:space="preserve"><value>Di-wastong session.</value></data>
+  <data name="CharSelect.EnterFailure.None" xml:space="preserve"><value>Hindi nakapasok sa mundo.</value></data>
+  <data name="CharSelect.EnterFailure.NotFound" xml:space="preserve"><value>Hindi nahanap ang character.</value></data>
+  <data name="CharSelect.EnterFailure.Rejected" xml:space="preserve"><value>Tinanggihan ang pagpasok sa mundo.</value></data>
+  <data name="CharSelect.EnterFailure.SessionClosed" xml:space="preserve"><value>Nagsara ang session habang pumapasok.</value></data>
+  <data name="CharSelect.EnterFailure.UnsupportedSavedState" xml:space="preserve"><value>Di-wasto o hindi suportado ang naka-save na estado ng character; pinanatili ang naka-save na data.</value></data>
+  <data name="CharSelect.EnterName" xml:space="preserve"><value>Maglagay ng pangalan.</value></data>
+  <data name="CharSelect.LoadFailed" xml:space="preserve"><value>Hindi ma-load ang mga character.</value></data>
+  <data name="CharSelect.ModelsFailed" xml:space="preserve"><value>Hindi ma-load ang mga character model.</value></data>
+  <data name="CharSelect.Unreachable" xml:space="preserve"><value>Hindi maabot ang server.</value></data>
+  <data name="Chat.Frozen" xml:space="preserve"><value>{0} : Ang daldal ko kasi, nag-freeze na ang dila ko! WOW -_-;</value></data>
+  <data name="Clan.Appoint" xml:space="preserve"><value>Magtalaga ng vice</value></data>
+  <data name="Clan.Back" xml:space="preserve"><value>Bumalik</value></data>
+  <data name="Clan.BelowSix" xml:space="preserve"><value>Wala pang 6 na miyembro: {0} araw at {1} oras na lang para mag-recruit bago ma-disband ang clan.</value></data>
+  <data name="Clan.Cancel" xml:space="preserve"><value>Kanselahin</value></data>
+  <data name="Clan.ChooseEntrust" xml:space="preserve"><value>Piliin ang bagong clan chief (kapantay o mas mataas ang level sa iyo). Nagkakahalaga ito ng 300,000 gold, at magiging miyembro ka na lang.</value></data>
+  <data name="Clan.ChooseExpel" xml:space="preserve"><value>Piliin ang miyembrong i-e-expel.</value></data>
+  <data name="Clan.ChooseVice" xml:space="preserve"><value>Piliin ang miyembrong itatalagang vice chief.</value></data>
+  <data name="Clan.Confirm" xml:space="preserve"><value>Kumpirmahin</value></data>
+  <data name="Clan.ConfirmAppoint" xml:space="preserve"><value>Gusto mo bang italaga si {0} bilang vice chief?</value></data>
+  <data name="Clan.ConfirmDisband" xml:space="preserve"><value>Kapag na-disband ang clan, mawawala ang lahat ng impormasyon at miyembro nito. Gusto mo bang magpatuloy?</value></data>
+  <data name="Clan.ConfirmDischarge" xml:space="preserve"><value>Gusto mo bang tanggalin si {0} bilang vice chief?</value></data>
+  <data name="Clan.ConfirmEntrust" xml:space="preserve"><value>Ipagkatiwala ang clan kay {0} sa halagang 300,000 gold? Magiging miyembro ka na lang.</value></data>
+  <data name="Clan.ConfirmExpel" xml:space="preserve"><value>Gusto mo bang i-expel si {0} sa clan?</value></data>
+  <data name="Clan.ConfirmLeave" xml:space="preserve"><value>Gusto mo bang umalis sa clan na {0}?</value></data>
+  <data name="Clan.ConfirmMark" xml:space="preserve"><value>Gamitin ang {0} bilang mark ng clan? Ganito ang magiging itsura:</value></data>
+  <data name="Clan.Cost" xml:space="preserve"><value>Ang pagbuo ng clan ay nagkakahalaga ng {0} gold at kailangan ng level {1}.</value></data>
+  <data name="Clan.Count" xml:space="preserve"><value>Mga miyembro: {0} sa {1}</value></data>
+  <data name="Clan.Disband" xml:space="preserve"><value>I-disband</value></data>
+  <data name="Clan.Discharge" xml:space="preserve"><value>Tanggalin ang vice</value></data>
+  <data name="Clan.Entrust" xml:space="preserve"><value>Ipagkatiwala ang clan</value></data>
+  <data name="Clan.Expel" xml:space="preserve"><value>I-expel</value></data>
+  <data name="Clan.Found" xml:space="preserve"><value>Bumuo ng clan</value></data>
+  <data name="Clan.Intro" xml:space="preserve"><value>Maraming mandirigma na may iisang layunin ang nagtitipon at bumubuo ng grupo sa buong mundo. Tinatawag itong clan. Binabantayan at pinoprotektahan ng mga clan ang kanilang mga kasama. Para makabuo ng clan, kailangan mong magbayad ng bayad para opisyal itong marehistro. Gusto mo bang bumuo ng clan?</value></data>
+  <data name="Clan.InviteLine" xml:space="preserve"><value>ay nag-iimbita sa iyo sa clan na {0}.</value></data>
+  <data name="Clan.Leave" xml:space="preserve"><value>Umalis sa clan</value></data>
+  <data name="Clan.Mark" xml:space="preserve"><value>Clan mark</value></data>
+  <data name="Clan.MarkFolder" xml:space="preserve"><value>Maglagay ng larawan (PNG, JPG o BMP) sa folder na ClanMarks katabi ng laro at piliin ito sa ibaba. Ang gitna nito ang magiging {0}x{0} na mark.</value></data>
+  <data name="Clan.MarkLoading" xml:space="preserve"><value>Binabasa ang larawan...</value></data>
+  <data name="Clan.MarkLooking" xml:space="preserve"><value>Naghahanap ng mga larawan...</value></data>
+  <data name="Clan.MarkUnreadable" xml:space="preserve"><value>Hindi mabasa ang {0} bilang larawan.</value></data>
+  <data name="Clan.No" xml:space="preserve"><value>Hindi</value></data>
+  <data name="Clan.NoMarkFiles" xml:space="preserve"><value>Walang larawan sa folder na ClanMarks.</value></data>
+  <data name="Clan.RankChief" xml:space="preserve"><value>(chief)</value></data>
+  <data name="Clan.RankVice" xml:space="preserve"><value>(vice)</value></data>
+  <data name="Clan.Registered" xml:space="preserve"><value>Opisyal nang rehistrado ang clan.</value></data>
+  <data name="Clan.Registering" xml:space="preserve"><value>Nagpaparehistro: {0} araw at {1} oras na lang para umabot sa 6 na miyembro.</value></data>
+  <data name="Clan.Requirements" xml:space="preserve"><value>Para opisyal na marehistro, kailangan ng clan ng {0} miyembro (kasama ang chief) sa loob ng {1} araw, o made-cancel ito. Ang rehistradong clan na bumaba sa {0} miyembro ay may {1} araw para mag-recruit ulit bago ma-disband.</value></data>
+  <data name="Clan.Title" xml:space="preserve"><value>Clan Master</value></data>
+  <data name="Clan.TypeName" xml:space="preserve"><value>I-type ang pangalan ng clan mo (2 hanggang 16 na letra, numero, space, '-' o '_') at pindutin ang Enter.</value></data>
+  <data name="Clan.Yes" xml:space="preserve"><value>Oo</value></data>
+  <data name="Combat.Evade" xml:space="preserve"><value>Evade</value></data>
+  <data name="Combat.Miss" xml:space="preserve"><value>Miss</value></data>
+  <data name="Count.DoYouWant" xml:space="preserve"><value>Gusto mo bang</value></data>
+  <data name="Count.HowManyItems" xml:space="preserve"><value>Ilang item</value></data>
+  <data name="Count.HowMuchGold" xml:space="preserve"><value>Magkanong gold</value></data>
+  <data name="Count.ToBuy" xml:space="preserve"><value>ang gusto mong bilhin?</value></data>
+  <data name="Count.ToDrop" xml:space="preserve"><value>ang gusto mong i-drop?</value></data>
+  <data name="Count.ToSell" xml:space="preserve"><value>ang gusto mong ibenta?</value></data>
+  <data name="Count.ToStore" xml:space="preserve"><value>ang gusto mong i-store?</value></data>
+  <data name="Count.ToTakeOut" xml:space="preserve"><value>ang gusto mong kunin?</value></data>
+  <data name="Crystal.Dismiss" xml:space="preserve"><value>pakawalan ang pet na ito?</value></data>
+  <data name="Crystal.Title" xml:space="preserve"><value>Monster Crystal</value></data>
+  <data name="Display.Keep" xml:space="preserve"><value>Panatilihin ang mga display setting na ito?</value></data>
+  <data name="Display.KeepButton" xml:space="preserve"><value>Panatilihin (Enter)</value></data>
+  <data name="Display.RevertButton" xml:space="preserve"><value>Ibalik (Esc)</value></data>
+  <data name="Display.Reverting" xml:space="preserve"><value>Ibabalik sa {0} segundo</value></data>
+  <data name="Element.Bionic" xml:space="preserve"><value>organic</value></data>
+  <data name="Element.Earth" xml:space="preserve"><value>earth</value></data>
+  <data name="Element.Fire" xml:space="preserve"><value>fire</value></data>
+  <data name="Element.Ice" xml:space="preserve"><value>ice</value></data>
+  <data name="Element.Lighting" xml:space="preserve"><value>lightning</value></data>
+  <data name="Element.Poison" xml:space="preserve"><value>poison</value></data>
+  <data name="Element.Water" xml:space="preserve"><value>water</value></data>
+  <data name="Element.Wind" xml:space="preserve"><value>wind</value></data>
+  <data name="Friends.Friends" xml:space="preserve"><value>[Friends] {0}/{1}</value></data>
+  <data name="Friends.Ignored" xml:space="preserve"><value>[Ignored] {0}/{1}</value></data>
+  <data name="Friends.Recent" xml:space="preserve"><value>[Recent]</value></data>
+  <data name="Game.ActionPending" xml:space="preserve"><value>May isa pang aksyon na nakabinbin; subukan ulit</value></data>
+  <data name="Game.AgedItemMatured" xml:space="preserve"><value>Hinog na ang aged na item</value></data>
+  <data name="Game.AgingNotice" xml:space="preserve"><value>In-age ni {0} ang {1} hanggang +{2}!</value></data>
+  <data name="Game.AlreadyApplied" xml:space="preserve"><value>Nagawa na</value></data>
+  <data name="Game.AlreadyTalking" xml:space="preserve"><value>Kausap mo na ang NPC na ito</value></data>
+  <data name="Game.BellatraBossDown" xml:space="preserve"><value>Natalo ang isang boss ({0} points).</value></data>
+  <data name="Game.BellatraCleared" xml:space="preserve"><value>Congratulations! Tapos na ang Bellatra. Nakakuha ka ng {0} gold.</value></data>
+  <data name="Game.BellatraClosed" xml:space="preserve"><value>Hindi ka makakapasok sa Bellatra ngayon. Bumalik ka mamaya.</value></data>
+  <data name="Game.BellatraEntered" xml:space="preserve"><value>Nasa Bellatra game na ito ka na.</value></data>
+  <data name="Game.BellatraFreeze" xml:space="preserve"><value>Sinira ni {0} ang Freeze Seal: na-freeze ang mga monster sa kuwarto.</value></data>
+  <data name="Game.BellatraGuardian" xml:space="preserve"><value>Sinira ni {0} ang Guardian Seal: may Guardian Saint na lumalaban para sa kanila.</value></data>
+  <data name="Game.BellatraLevel" xml:space="preserve"><value>Hindi ka pa sapat na malakas para pumasok sa Bellatra (level {0}). Mag-train pa at bumalik.</value></data>
+  <data name="Game.BellatraNoTickets" xml:space="preserve"><value>Ibinebenta ang mga ticket ng Bellatra tuwing madaling-araw (game hours {0} at {1}), bago ang laro. Bumalik ka sa oras na iyon.</value></data>
+  <data name="Game.BellatraOpening" xml:space="preserve"><value>Bukas na ang Bellatra: ibinebenta na ang mga ticket nito sa Navisko.</value></data>
+  <data name="Game.ChatTranslated" xml:space="preserve"><value>{0} (isinalin)</value></data>
+  <data name="Game.PvpOn" xml:space="preserve"><value>PvP mode on: sa mga hunting field, puwede kang makipaglaban sa mga player na naka-on ang PvP, maliban sa party at clan mo.</value></data>
+  <data name="Game.ArenaOpen" xml:space="preserve"><value>Bukas ang arena sa loob ng {0} minuto: /arena 1x1 o /arena 3x3 para sumali sa queue.</value></data>
+  <data name="Game.ArenaQueued" xml:space="preserve"><value>Sumali ka sa {0} arena queue.</value></data>
+  <data name="Game.ArenaLeft" xml:space="preserve"><value>Umalis ka sa arena queue.</value></data>
+  <data name="Game.ArenaClosed" xml:space="preserve"><value>Sarado ang arena. Magbubukas ito ng {0}.</value></data>
+  <data name="Game.ArenaLevel" xml:space="preserve"><value>Magbubukas ang arena sa level {0}.</value></data>
+  <data name="Game.ArenaParty" xml:space="preserve"><value>Para sa 3x3, ang leader ng party na eksaktong {0} player ang sasali sa queue.</value></data>
+  <data name="Game.ArenaBusy" xml:space="preserve"><value>Hindi ka o ang isa sa party mo makakasali sa arena ngayon.</value></data>
+  <data name="Game.ArenaNotQueued" xml:space="preserve"><value>Wala ka sa arena queue.</value></data>
+  <data name="Game.ArenaQueueClosed" xml:space="preserve"><value>Nagsara ang arena at natapos ang queue nito.</value></data>
+  <data name="Game.ArenaStarted" xml:space="preserve"><value>Magsisimula na ang {0} arena match mo laban kay {1}! Ang matitirang may 1 life ay talo; walang mamamatay.</value></data>
+  <data name="Game.ArenaOut" xml:space="preserve"><value>Talo ka na sa match. Hintayin itong matapos para makabalik.</value></data>
+  <data name="Game.ArenaWon" xml:space="preserve"><value>Panalo sa arena! +{0} points ngayong linggo.</value></data>
+  <data name="Game.ArenaLost" xml:space="preserve"><value>Talo sa arena: -{0} points ngayong linggo.</value></data>
+  <data name="Game.ArenaDraw" xml:space="preserve"><value>Tabla ang arena match.</value></data>
+  <data name="Game.ArenaNotice" xml:space="preserve"><value>Arena {0}: tinalo ni {1} si {2}.</value></data>
+  <data name="Game.ArenaDrawNotice" xml:space="preserve"><value>Arena {0}: tabla sina {1} at {2}.</value></data>
+  <data name="Arena.Queued" xml:space="preserve"><value>Nasa {0} arena queue</value></data>
+  <data name="Arena.Status" xml:space="preserve"><value>Arena {0}: ang side mo {1} x {2}, {3}:{4} ang natitira</value></data>
+  <data name="Arena.Out" xml:space="preserve"><value>Talo ka na. Arena {0}: ang side mo {1} x {2}, {3}:{4} ang natitira</value></data>
+  <data name="QuickMenu.ArenaSolo" xml:space="preserve"><value>Arena 1x1</value></data>
+  <data name="QuickMenu.ArenaTrio" xml:space="preserve"><value>Arena 3x3</value></data>
+  <data name="Game.RoyaleOpen" xml:space="preserve"><value>Bukas na ang registration ng Battle Royale: magsisimula ito sa {0} minuto, mula level {1}. /royale para mag-register.</value></data>
+  <data name="Game.RoyaleRegistered" xml:space="preserve"><value>Nag-register ka sa Battle Royale ({0} ang nakarehistro).</value></data>
+  <data name="Game.RoyaleLeft" xml:space="preserve"><value>Umalis ka sa registration ng Battle Royale.</value></data>
+  <data name="Game.RoyaleClosed" xml:space="preserve"><value>Magbubukas ang registration ng Battle Royale 10 minuto bago ang {0}.</value></data>
+  <data name="Game.RoyaleLevel" xml:space="preserve"><value>Kailangan ng level {0} para sa Battle Royale.</value></data>
+  <data name="Game.RoyaleFull" xml:space="preserve"><value>Puno na ang Battle Royale ({0} player).</value></data>
+  <data name="Game.RoyaleBusy" xml:space="preserve"><value>Hindi ka makakapag-register ngayon: umalis muna sa duel, arena, Bellatra o quest arena.</value></data>
+  <data name="Game.RoyaleNotRegistered" xml:space="preserve"><value>Hindi ka nakarehistro sa Battle Royale.</value></data>
+  <data name="Game.RoyaleCancelled" xml:space="preserve"><value>Na-cancel ang Battle Royale: {0} ang nakarehistro, kailangan ng {1}.</value></data>
+  <data name="Game.RoyaleStarted" xml:space="preserve"><value>Nagsimula ang Battle Royale na may {0} player!</value></data>
+  <data name="Game.RoyaleOut" xml:space="preserve"><value>Talo ka na sa Battle Royale at nanonood ka na: {0} ang natitirang nakatayo.</value></data>
+  <data name="Game.RoyalePlace" xml:space="preserve"><value>Battle Royale: nasa puwesto {0} ka at nakakuha ng {1} experience.</value></data>
+  <data name="Game.RoyaleWinner" xml:space="preserve"><value>Nanalo si {0} sa Battle Royale!</value></data>
+  <data name="Game.RoyaleSkipped" xml:space="preserve"><value>Naiwan ka sa Battle Royale: abala ka nang magsimula ito.</value></data>
+  <data name="Royale.Registered" xml:space="preserve"><value>Nakarehistro sa Battle Royale ({0} ang nakarehistro)</value></data>
+  <data name="Royale.Status" xml:space="preserve"><value>Battle Royale: {0} sa {1} ang natitira, lumiliit ang zone sa {2}, {3} ang natitira</value></data>
+  <data name="Game.TitleGained" xml:space="preserve"><value>Nakuha ni {0} ang title na {1}!</value></data>
+  <data name="Game.TitleLost" xml:space="preserve"><value>Nawala kay {0} ang title na {1} dahil kay {2}!</value></data>
+  <data name="Game.TitleEarned" xml:space="preserve"><value>Nakuha mo ang title na {0}. Piliin ito sa status window para ipakita sa itaas ng pangalan mo.</value></data>
+  <data name="Game.TitleTaken" xml:space="preserve"><value>Nawala sa iyo ang title na {0} dahil kay {1}.</value></data>
+  <data name="Game.BossRouletteWinner" xml:space="preserve"><value>Nanalo si {0} ng {1} sa {2} boss roulette!</value></data>
+  <data name="Game.BossRouletteWon" xml:space="preserve"><value>Nanalo ka ng {0} sa {1} boss roulette! Naghihintay ito sa Item Distributor (More).</value></data>
+  <data name="Title.None" xml:space="preserve"><value>Walang title</value></data>
+  <data name="Title.Veteran" xml:space="preserve"><value>Veteran</value></data>
+  <data name="Title.Master" xml:space="preserve"><value>Master</value></data>
+  <data name="Title.Legend" xml:space="preserve"><value>Legend</value></data>
+  <data name="Title.Immortal" xml:space="preserve"><value>Immortal</value></data>
+  <data name="Title.Artisan" xml:space="preserve"><value>Artisan</value></data>
+  <data name="Title.MasterArtisan" xml:space="preserve"><value>Master Artisan</value></data>
+  <data name="Title.Adventurer" xml:space="preserve"><value>Adventurer</value></data>
+  <data name="Title.Hunter" xml:space="preserve"><value>Hunter</value></data>
+  <data name="Title.Exterminator" xml:space="preserve"><value>Exterminator</value></data>
+  <data name="Title.BossHunter" xml:space="preserve"><value>Boss Hunter</value></data>
+  <data name="Title.ArenaKingLow" xml:space="preserve"><value>Arena King 100-119</value></data>
+  <data name="Title.ArenaKingMiddle" xml:space="preserve"><value>Arena King 120-139</value></data>
+  <data name="Title.ArenaKingHigh" xml:space="preserve"><value>Arena King 140+</value></data>
+  <data name="Title.Survivor" xml:space="preserve"><value>Survivor</value></data>
+  <data name="Title.CastleLord" xml:space="preserve"><value>Castle Lord</value></data>
+  <data name="Title.Strongest" xml:space="preserve"><value>Ang Pinakamalakas</value></data>
+  <data name="Royale.Closing" xml:space="preserve"><value>Battle Royale: {0} sa {1} ang natitira, {3} ang natitira</value></data>
+  <data name="Royale.Out" xml:space="preserve"><value>Talo ka na, nanonood. Battle Royale: {0} sa {1} ang natitira, {3} ang natitira</value></data>
+  <data name="QuickMenu.Royale" xml:space="preserve"><value>Battle Royale</value></data>
+  <data name="Game.DuelChallenged" xml:space="preserve"><value>Hinamon mo si {0} sa duel.</value></data>
+  <data name="Game.DuelNotFound" xml:space="preserve"><value>Hindi naglalaro si {0} ngayon.</value></data>
+  <data name="Game.DuelTooFar" xml:space="preserve"><value>Masyadong malayo si {0} para sa duel.</value></data>
+  <data name="Game.DuelField" xml:space="preserve"><value>Sa mga hunting field lang puwede ang duel.</value></data>
+  <data name="Game.DuelBusy" xml:space="preserve"><value>Hindi makakapag-duel si {0} ngayon.</value></data>
+  <data name="Game.DuelSelf" xml:space="preserve"><value>Hindi mo madu-duel ang sarili mo.</value></data>
+  <data name="Game.DuelRefused" xml:space="preserve"><value>Tinanggihan ni {0} ang duel mo.</value></data>
+  <data name="Game.DuelStarted" xml:space="preserve"><value>Magsisimula na ang duel kay {0}: manatili sa loob ng gold circle. Ang matitirang may 1 life ay talo; walang mamamatay.</value></data>
+  <data name="Game.DuelWon" xml:space="preserve"><value>Nanalo ka sa duel laban kay {0}!</value></data>
+  <data name="Game.DuelLost" xml:space="preserve"><value>Natalo ka sa duel kay {0}.</value></data>
+  <data name="Game.DuelDraw" xml:space="preserve"><value>Tabla ang duel mo kay {0}.</value></data>
+  <data name="Game.DuelNotice" xml:space="preserve"><value>Tinalo ni {0} si {1} sa duel.</value></data>
+  <data name="Game.DuelDrawNotice" xml:space="preserve"><value>Nag-tabla sina {0} at {1} sa duel.</value></data>
+  <data name="Duel.Button" xml:space="preserve"><value>Duel</value></data>
+  <data name="Duel.Request" xml:space="preserve"><value>gustong makipag-duel</value></data>
+  <data name="Duel.Status" xml:space="preserve"><value>Duel kay {0}: {1}:{2}</value></data>
+  <data name="Duel.Outside" xml:space="preserve"><value>Bumalik sa arena: matatalo ka sa duel kay {0} sa {1} s</value></data>
+  <data name="Game.PvpOff" xml:space="preserve"><value>PvP mode off.</value></data>
+  <data name="Game.PvpLevel" xml:space="preserve"><value>Magbubukas ang PvP mode sa level {0}.</value></data>
+  <data name="Game.PvpInCombat" xml:space="preserve"><value>Nakipaglaban ka sa isang player kamakailan: puwede mong i-off ang PvP sa {0} segundo.</value></data>
+  <data name="Game.PvpMurderer" xml:space="preserve"><value>Isa kang murderer: mananatiling naka-on ang PvP mo sa loob pa ng {0} segundo.</value></data>
+  <data name="Game.PvpMurder" xml:space="preserve"><value>Pinatay mo si {0}: murderer ka sa loob ng {1} minuto. Puwede kang atakihin ng kahit anong player na naka-on ang PvP, at mananatiling naka-on ang PvP mo.</value></data>
+  <data name="Game.BellatraOut" xml:space="preserve"><value>Talo na ang team mo (rank {0}). Nakakuha ka ng {1} gold.</value></data>
+  <data name="Game.BellatraPoints" xml:space="preserve"><value>Sinira ni {0} ang Point Seal: {1} pang points.</value></data>
+  <data name="Game.BellatraQuake" xml:space="preserve"><value>Sinira ni {0} ang Quake Seal: nayayanig ang mga monster sa kuwarto.</value></data>
+  <data name="Game.BellatraRabbit" xml:space="preserve"><value>Sinira ni {0} ang Rabbit Seal: nagiging Rabies ang mga monster.</value></data>
+  <data name="Game.BellatraSealIdle" xml:space="preserve"><value>Nasisira lang ang seal sa isa sa mga kuwarto ng arena habang may nilalarong round.</value></data>
+  <data name="Game.BellatraStun" xml:space="preserve"><value>Sinira ni {0} ang Stun Seal: na-stun ang mga monster sa kuwarto.</value></data>
+  <data name="Game.BellatraStygian" xml:space="preserve"><value>Sinira ni {0} ang Stygian Seal: may Stygian Lord na lumalaban para sa kanila.</value></data>
+  <data name="Game.BellatraTeamFull" xml:space="preserve"><value>Ubos na ang lahat ng ticket ng team na ito.</value></data>
+  <data name="Game.BellatraTicket" xml:space="preserve"><value>Ibinebenta ang mga ticket ng Bellatra: {0} gold.</value></data>
+  <data name="Game.BossTime" xml:space="preserve"><value>Boss Time: XX:{0}</value></data>
+  <data name="Game.CannotDrop" xml:space="preserve"><value>Hindi puwedeng i-drop ang item na ito</value></data>
+  <data name="Game.CannotUseYet" xml:space="preserve"><value>Hindi pa magagamit ang item</value></data>
+  <data name="Game.CastleTaken" xml:space="preserve"><value>Nakuha ng clan na {0} ang Bless Castle.</value></data>
+  <data name="Game.CharacterBusy" xml:space="preserve"><value>May nakabinbing save o ibang operasyon ng character; subukan ulit</value></data>
+  <data name="Game.CharacterUnchanged" xml:space="preserve"><value>Tinanggihan ng storage ang operasyon; walang pagbabago sa character</value></data>
+  <data name="Game.ClanAlreadyInClan" xml:space="preserve"><value>Nasa clan ka na.</value></data>
+  <data name="Game.ClanBelowSix" xml:space="preserve"><value>Wala pang {1} miyembro ang clan. Mag-recruit pa sa loob ng {0} araw o ma-didisband ito.</value></data>
+  <data name="Game.ClanBusy" xml:space="preserve"><value>Isara muna ang trade o ang personal shop mo.</value></data>
+  <data name="Game.ClanCapacityTooLow" xml:space="preserve"><value>Sa level na iyon, hindi mapapanatili ng bagong chief ang lahat ng miyembro.</value></data>
+  <data name="Game.ClanChiefCannotLeave" xml:space="preserve"><value>Hindi puwedeng umalis ang clan chief: ipagkatiwala ang clan o i-disband ito.</value></data>
+  <data name="Game.ClanChiefChanged" xml:space="preserve"><value>Napalitan ang clan chief mula kay {0} papunta kay {1}.</value></data>
+  <data name="Game.ClanChiefOnAccount" xml:space="preserve"><value>May clan chief ka na sa account na ito. Isang clan chief lang ang puwede kada account.</value></data>
+  <data name="Game.ClanDisbanded" xml:space="preserve"><value>Na-disband ang clan na {0}.</value></data>
+  <data name="Game.ClanExpelled" xml:space="preserve"><value>Na-expel si {0} sa clan.</value></data>
+  <data name="Game.ClanFounded" xml:space="preserve"><value>Nabuo ang clan na [{0}]. Mag-recruit ng {1} miyembro (kasama ang chief) sa loob ng {2} araw para marehistro ito.</value></data>
+  <data name="Game.ClanFull" xml:space="preserve"><value>Hindi ka na makakapag-recruit ng iba pang miyembro.</value></data>
+  <data name="Game.ClanInviteRefused" xml:space="preserve"><value>Tinanggihan ni {0} ang pagsali sa clan.</value></data>
+  <data name="Game.ClanInviteSent" xml:space="preserve"><value>Naipadala ang imbitasyon sa clan kay {0}.</value></data>
+  <data name="Game.ClanJoinCooldown" xml:space="preserve"><value>Hindi makakasali sa clan ang isang character sa loob ng {0} araw matapos ma-disband ang clan nito.</value></data>
+  <data name="Game.ClanJoined" xml:space="preserve"><value>Sumali si {0} sa clan.</value></data>
+  <data name="Game.ClanLeft" xml:space="preserve"><value>Umalis si {0} sa clan.</value></data>
+  <data name="Game.ClanLevelTooLow" xml:space="preserve"><value>Kailangan mong maging level {0} para bumuo ng clan.</value></data>
+  <data name="Game.ClanMarkChanged" xml:space="preserve"><value>May bagong mark ang clan na [{0}].</value></data>
+  <data name="Game.ClanMarkUnavailable" xml:space="preserve"><value>Hindi pa puwedeng mag-upload ng clan mark.</value></data>
+  <data name="Game.ClanNameInvalid" xml:space="preserve"><value>Ang pangalan ng clan ay may {0} hanggang {1} letra, numero, space, '-' o '_'.</value></data>
+  <data name="Game.ClanNameTaken" xml:space="preserve"><value>May ganitong pangalan na ng clan. Subukan ang iba.</value></data>
+  <data name="Game.ClanNoInvitation" xml:space="preserve"><value>Hindi na valid ang imbitasyon sa clan.</value></data>
+  <data name="Game.ClanNotChief" xml:space="preserve"><value>Ang clan chief lang ang puwedeng gumawa niyan.</value></data>
+  <data name="Game.ClanNotInClan" xml:space="preserve"><value>Wala ka sa clan.</value></data>
+  <data name="Game.ClanNotMember" xml:space="preserve"><value>Hindi miyembro ng clan ang character na iyon.</value></data>
+  <data name="Game.ClanNotRecruiter" xml:space="preserve"><value>Ang clan chief o vice chief lang ang puwedeng mag-recruit.</value></data>
+  <data name="Game.ClanNotRegistered" xml:space="preserve"><value>Kailangan munang opisyal na marehistro ang clan.</value></data>
+  <data name="Game.ClanNotVice" xml:space="preserve"><value>Hindi vice chief ang miyembrong iyon.</value></data>
+  <data name="Game.ClanOnly" xml:space="preserve"><value>Ang mga miyembro lang ng clan ang puwedeng gumamit ng item na ito</value></data>
+  <data name="Game.ClanPetOwned" xml:space="preserve"><value>Isa lang ang puwede mong i-summon sa isang pagkakataon.</value></data>
+  <data name="Game.ClanPetsNearby" xml:space="preserve"><value>Tatlo na ang mayroon ang clan mo rito.</value></data>
+  <data name="Game.ClanRegistered" xml:space="preserve"><value>Congratulations! Opisyal nang rehistrado ang clan na [{0}].</value></data>
+  <data name="Game.ClanTargetInClan" xml:space="preserve"><value>Nasa clan na ang player na iyon.</value></data>
+  <data name="Game.ClanTargetLevelTooLow" xml:space="preserve"><value>Dapat kapantay o mas mataas ang level ng bagong chief sa iyo.</value></data>
+  <data name="Game.ClanTargetNotFound" xml:space="preserve"><value>Hindi available ang player na iyon.</value></data>
+  <data name="Game.ClanUnavailable" xml:space="preserve"><value>Hindi available ang clan service. Subukan ulit mamaya.</value></data>
+  <data name="Game.ClanViceAppointed" xml:space="preserve"><value>Itinalaga si {0} bilang vice chief.</value></data>
+  <data name="Game.ClanViceDischarged" xml:space="preserve"><value>Tinanggal si {0} bilang vice chief.</value></data>
+  <data name="Game.ClanViceExists" xml:space="preserve"><value>May vice chief na ang clan.</value></data>
+  <data name="Game.ClanYouWereExpelled" xml:space="preserve"><value>Na-expel ka sa clan na {0}.</value></data>
+  <data name="Game.CloseShopFirst" xml:space="preserve"><value>Isara muna ang personal shop mo</value></data>
+  <data name="Game.CloseTradeFirst" xml:space="preserve"><value>Isara muna ang trade window</value></data>
+  <data name="Game.ConfirmAcceptQuest" xml:space="preserve"><value>Tanggapin ang quest,</value></data>
+  <data name="Game.ConfirmBattleZone" xml:space="preserve"><value>pumunta sa Battle Zone?</value></data>
+  <data name="Game.ConfirmCarryOut" xml:space="preserve"><value>gawin ang quest?</value></data>
+  <data name="Game.ConfirmDoYouWanna" xml:space="preserve"><value>Gusto mo bang</value></data>
+  <data name="Game.ConfirmDoYouWantTo" xml:space="preserve"><value>Gusto mo bang</value></data>
+  <data name="Game.ConfirmExchangeItem" xml:space="preserve"><value>ipalit sa item?</value></data>
+  <data name="Game.ConfirmGetQuest" xml:space="preserve"><value>kunin ang Quest?</value></data>
+  <data name="Game.ConfirmProcessQuest" xml:space="preserve"><value>Ituloy ang quest,</value></data>
+  <data name="Game.ConfirmRankUp" xml:space="preserve"><value>mag-rank up?</value></data>
+  <data name="Game.ConfirmRankUpFifth" xml:space="preserve"><value>Rank-Up</value></data>
+  <data name="Game.ConfirmReceiveItem" xml:space="preserve"><value>tanggapin ang item?</value></data>
+  <data name="Game.ConfirmRedistribute" xml:space="preserve"><value>i-redistribute?</value></data>
+  <data name="Game.ConfirmSearchQuest" xml:space="preserve"><value>hanapin ang quest?</value></data>
+  <data name="Game.ConfirmTheQuest" xml:space="preserve"><value>ang quest?</value></data>
+  <data name="Game.ConfirmWantToAccept" xml:space="preserve"><value>gusto mo bang tanggapin?</value></data>
+  <data name="Game.ConfirmWantToDo" xml:space="preserve"><value>gusto mo bang gawin?</value></data>
+  <data name="Game.ConnectionError" xml:space="preserve"><value>Connection error. Subukan ulit.</value></data>
+  <data name="Game.ContactListFull" xml:space="preserve"><value>Puno na ang listahan</value></data>
+  <data name="Game.ContactListed" xml:space="preserve"><value>Nasa listahan na si {0}</value></data>
+  <data name="Game.ContactNotListed" xml:space="preserve"><value>Wala sa listahan si {0}</value></data>
+  <data name="Game.ContactRefused" xml:space="preserve"><value>Hindi puwedeng ilista ang pangalan</value></data>
+  <data name="Game.ContactsUnavailable" xml:space="preserve"><value>Hindi mababago ang mga listahan ngayon</value></data>
+  <data name="Game.CrystalRefused" xml:space="preserve"><value>Hindi mo magagamit ang crystal na ito</value></data>
+  <data name="Game.DeadCannotUse" xml:space="preserve"><value>Hindi makakagamit ng item habang patay</value></data>
+  <data name="Game.DeathPenaltyReduced" xml:space="preserve"><value>Bumaba ng 1 ang Exp na death penalty</value></data>
+  <data name="Game.DropOutOfReach" xml:space="preserve"><value>Wala na ang item o hindi maabot</value></data>
+  <data name="Game.EliteQuestDone" xml:space="preserve"><value>{0} : tapos na</value></data>
+  <data name="Game.EliteQuestExpired" xml:space="preserve"><value>Naubos na ang time limit ng quest.</value></data>
+  <data name="Game.EliteQuestProgress" xml:space="preserve"><value>{0} : {1}/{2}</value></data>
+  <data name="Game.EliteSkillPointsGained" xml:space="preserve"><value>Tumaas ang elite skill points ng +{0}.</value></data>
+  <data name="Game.EnterWorldFirst" xml:space="preserve"><value>Pumasok muna sa mundo</value></data>
+  <data name="Game.FemaleCannotUse" xml:space="preserve"><value>Hindi magagamit ng babaeng character</value></data>
+  <data name="Game.FountainPotion" xml:space="preserve"><value>&gt; Kumuha si {0} ng Mystic Mana Potion mula sa Soul Fountain [Natitira: {1}]</value></data>
+  <data name="Game.FuryLost" xml:space="preserve"><value>Natalo sa laban kay Fury.</value></data>
+  <data name="Game.FuryTitle" xml:space="preserve"><value>Phantasma ni Fury</value></data>
+  <data name="Game.FuryWon" xml:space="preserve"><value>Nanalo sa laban kay Fury.</value></data>
+  <data name="Game.GateNotAtStone" xml:space="preserve"><value>Tumayo muna sa warp gate</value></data>
+  <data name="Game.GateNotReached" xml:space="preserve"><value>Hindi umaabot ang wing mo sa gate na ito</value></data>
+  <data name="Game.GateRefused" xml:space="preserve"><value>Tinanggihan ng warp gate</value></data>
+  <data name="Game.GoldLimit" xml:space="preserve"><value>Lampas na sa maximum na gold na puwedeng hawakan</value></data>
+  <data name="Game.GravityStoneUsed" xml:space="preserve"><value>Gumamit ka ng Gravity Stone</value></data>
+  <data name="Game.HestianLost" xml:space="preserve"><value>Natalo ka kay Hestian.</value></data>
+  <data name="Game.HestianWon" xml:space="preserve"><value>Nanalo ka laban kay Hestian.</value></data>
+  <data name="Game.InvalidQuestRequest" xml:space="preserve"><value>Di-wastong quest request</value></data>
+  <data name="Game.InventoryChanged" xml:space="preserve"><value>Nagbago ang inventory; subukan ulit</value></data>
+  <data name="Game.ItemAlreadyRunning" xml:space="preserve"><value>Ginagamit na ang item na ito</value></data>
+  <data name="Game.ItemInTrade" xml:space="preserve"><value>Nasa trade window ang item</value></data>
+  <data name="Game.ItemNamedUsed" xml:space="preserve"><value>Ginamit ang {0}</value></data>
+  <data name="Game.ItemNotHere" xml:space="preserve"><value>Hindi magagamit ang item na ito rito</value></data>
+  <data name="Game.ItemNotUsable" xml:space="preserve"><value>Hindi magagamit ang item na ito</value></data>
+  <data name="Game.ItemNotUsed" xml:space="preserve"><value>Hindi nagamit ang item</value></data>
+  <data name="Game.ItemReceived" xml:space="preserve"><value>Natanggap mo ang {0}</value></data>
+  <data name="Game.ItemUsed" xml:space="preserve"><value>Nagamit ang item</value></data>
+  <data name="Game.ItemsReceived" xml:space="preserve"><value>Natanggap mo ang {0} x{1}</value></data>
+  <data name="Game.LevelNotice" xml:space="preserve"><value>Umabot si {0} sa level {1}!</value></data>
+  <data name="Game.LevelTooLow" xml:space="preserve"><value>Masyadong mababa ang level mo</value></data>
+  <data name="Game.LifeFifteen" xml:space="preserve"><value>Tumaas ang HP +15</value></data>
+  <data name="Game.LuckyBagHeld" xml:space="preserve"><value>Laman ng lucky bag ang {0}</value></data>
+  <data name="Game.MaleCannotUse" xml:space="preserve"><value>Hindi magagamit ng lalaking character</value></data>
+  <data name="Game.MercenaryLimit" xml:space="preserve"><value>Lampas ka na sa summon limit mo</value></data>
+  <data name="Game.MissionTimedOut" xml:space="preserve"><value>Pumalya ang mission dahil naubusan ng oras.</value></data>
+  <data name="Game.Name" xml:space="preserve"><value>{0}</value></data>
+  <data name="Game.NoClassChange" xml:space="preserve"><value>Wala pang class change para sa iyo ang master ngayon</value></data>
+  <data name="Game.NoQuestWeapon" xml:space="preserve"><value>Hindi makakapag-forge ng quest weapon ang master para sa class na ito</value></data>
+  <data name="Game.NoRoomOnGround" xml:space="preserve"><value>Walang espasyo sa lupa</value></data>
+  <data name="Game.NoSession" xml:space="preserve"><value>Di-wastong session</value></data>
+  <data name="Game.NoShopHere" xml:space="preserve"><value>Walang bukas na shop dito</value></data>
+  <data name="Game.NoSkillRedistribution" xml:space="preserve"><value>Walang iniaalok na skill redistribution</value></data>
+  <data name="Game.NoSpace" xml:space="preserve"><value>Kulang ang espasyo sa inventory</value></data>
+  <data name="Game.NotEnoughGold" xml:space="preserve"><value>Kulang ang gold</value></data>
+  <data name="Game.NotPlaying" xml:space="preserve"><value>Hindi naglalaro ang character</value></data>
+  <data name="Game.NothingToChange" xml:space="preserve"><value>Walang mababago ang item na ito</value></data>
+  <data name="Game.NpcNoSuchService" xml:space="preserve"><value>Hindi iniaalok ng NPC na ito iyon</value></data>
+  <data name="Game.NpcOutOfReach" xml:space="preserve"><value>Lapitan ang NPC na ito habang buhay</value></data>
+  <data name="Game.NpcRefused" xml:space="preserve"><value>Tinanggihan ng NPC</value></data>
+  <data name="Game.OperationConflict" xml:space="preserve"><value>Conflict sa identity ng operasyon</value></data>
+  <data name="Game.OtherTownMaster" xml:space="preserve"><value>Ang master na ito ay nagte-train ng mga class ng ibang bayan</value></data>
+  <data name="Game.OverWeight" xml:space="preserve"><value>Lampas ka na sa weight limit ng inventory</value></data>
+  <data name="Game.PartyAlreadyMember" xml:space="preserve"><value>Miyembro na ng party si {0}</value></data>
+  <data name="Game.PartyCannotEnter" xml:space="preserve"><value>Hindi makapasok sa party</value></data>
+  <data name="Game.PartyDelegated" xml:space="preserve"><value>Itinalaga si {0} bilang bagong party leader</value></data>
+  <data name="Game.PartyDisbanded" xml:space="preserve"><value>Na-disband ang party</value></data>
+  <data name="Game.PartyEntered" xml:space="preserve"><value>Pumasok si {0} sa party</value></data>
+  <data name="Game.PartyExpelled" xml:space="preserve"><value>Na-expel si {0} sa party</value></data>
+  <data name="Game.PartyInOther" xml:space="preserve"><value>Miyembro na ng ibang party si {0}</value></data>
+  <data name="Game.PartyLeaderNow" xml:space="preserve"><value>si {0} na ang party leader</value></data>
+  <data name="Game.PartyLeft" xml:space="preserve"><value>Umalis si {0} sa party</value></data>
+  <data name="Game.PartyLevelGap" xml:space="preserve"><value>Masyadong malaki ang pagkakaiba ng level</value></data>
+  <data name="Game.PartyLoot" xml:space="preserve"><value>Pinulot ni {0} ang {1}.</value></data>
+  <data name="Game.PartyRareLoot" xml:space="preserve"><value>Pumulot si {0} ng rare item: {1}!</value></data>
+  <data name="Game.PartyRecommended" xml:space="preserve"><value>Inirekomenda ni Party Leader {0} si {1} na sumali sa party</value></data>
+  <data name="Game.PartyRecommends" xml:space="preserve"><value>nirerekomenda si {0}</value></data>
+  <data name="Game.PartyReleased" xml:space="preserve"><value>na-disband ang party</value></data>
+  <data name="Game.PartyRequest" xml:space="preserve"><value>ay nagpadala ng party request</value></data>
+  <data name="Game.PartyRequested" xml:space="preserve"><value>nagpadala ng party request kay {0}</value></data>
+  <data name="Game.PartyYouLeft" xml:space="preserve"><value>Umalis ka sa party</value></data>
+  <data name="Game.PersonalShopRefused" xml:space="preserve"><value>Tinanggihan ng personal shop</value></data>
+  <data name="Game.PickupNoRoom" xml:space="preserve"><value>Puno ang inventory o naabot na ang gold limit</value></data>
+  <data name="Game.PlayerNotFound" xml:space="preserve"><value>Offline si {0} ngayon, o hindi mahanap</value></data>
+  <data name="Game.PlayerOnline" xml:space="preserve"><value>Online si {0} ngayon</value></data>
+  <data name="Game.PotionNotNow" xml:space="preserve"><value>Hindi ka makakagamit ng isa pang potion ngayon</value></data>
+  <data name="Game.PotionNotStored" xml:space="preserve"><value>Hindi puwedeng i-store ang mga potion</value></data>
+  <data name="Game.ProgressionRefused" xml:space="preserve"><value>Hindi natugunan ang mga requirement o nagbago ang character; subukan ulit</value></data>
+  <data name="Game.QuestHunt" xml:space="preserve"><value>&lt;Quest&gt; Manghuli ng {0} sa {1}</value></data>
+  <data name="Game.QuestHuntFinished" xml:space="preserve"><value>&lt;Quest&gt;  Tapos nang manghuli ng {0} sa {1}</value></data>
+  <data name="Game.QuestInProgress" xml:space="preserve"><value>May quest ka pang ginagawa</value></data>
+  <data name="Game.QuestItemFrom" xml:space="preserve"><value>&lt;Quest&gt; Kunin ang item mula kay {0}</value></data>
+  <data name="Game.QuestItemGone" xml:space="preserve"><value>Wala na ang quest item na {0}</value></data>
+  <data name="Game.QuestItemLevelUp" xml:space="preserve"><value>Nag-level up ang quest item</value></data>
+  <data name="Game.QuestItemSlowed" xml:space="preserve"><value>Bumaba ang ATK speed ng quest item</value></data>
+  <data name="Game.QuestKillCount" xml:space="preserve"><value>Quest&gt; {0}: kailangan ng {1} na monster</value></data>
+  <data name="Game.QuestMovedOn" xml:space="preserve"><value>Umusad na ang quest; kausapin ulit ang NPC</value></data>
+  <data name="Game.QuestName" xml:space="preserve"><value>{0}</value></data>
+  <data name="Game.QuestTitle" xml:space="preserve"><value> Q U E S T </value></data>
+  <data name="Game.RegisteredClanOnly" xml:space="preserve"><value>Ang mga miyembro lang ng rehistradong clan ang puwedeng gumamit ng item na ito</value></data>
+  <data name="Game.RequestRefused" xml:space="preserve"><value>Tinanggihan ang request</value></data>
+  <data name="Game.RewardAlreadyClaimed" xml:space="preserve"><value>Natanggap na ang reward na ito.</value></data>
+  <data name="Game.RewardBusy" xml:space="preserve"><value>May kasalukuyang aksyon; subukan ulit.</value></data>
+  <data name="Game.RewardClaimed" xml:space="preserve"><value>Natanggap ang reward.</value></data>
+  <data name="Game.RewardExpired" xml:space="preserve"><value>Tapos na ang event na ito.</value></data>
+  <data name="Game.RewardGoldLimit" xml:space="preserve"><value>Hindi mo kayang buhatin ang ganoon karaming gold.</value></data>
+  <data name="Game.RewardLevelTooLow" xml:space="preserve"><value>Masyadong mababa ang level mo para sa reward na ito.</value></data>
+  <data name="Game.RewardNotReady" xml:space="preserve"><value>Hindi pa handa ang reward na ito.</value></data>
+  <data name="Game.RewardReceived" xml:space="preserve"><value>Natanggap ang mga item bilang kompensasyon.</value></data>
+  <data name="Game.SameAttributeRunning" xml:space="preserve"><value>Ginagamit na ang item na may parehong attribute</value></data>
+  <data name="Game.SellerNotFound" xml:space="preserve"><value>Hindi mahanap ang seller</value></data>
+  <data name="Game.SellerShopClosed" xml:space="preserve"><value>Sarado ang pribadong tindahan ng seller</value></data>
+  <data name="Game.ServiceNotAvailable" xml:space="preserve"><value>Hindi pa available ang serbisyong ito</value></data>
+  <data name="Game.ServiceStale" xml:space="preserve"><value>Nagbago ang inventory o ang warehouse; subukan ulit</value></data>
+  <data name="Game.SevenStatPoints" xml:space="preserve"><value>Lampas level 80, makakakuha ka ng 7 stat point sa bawat level.</value></data>
+  <data name="Game.ShopBuysAndRepairs" xml:space="preserve"><value>Bumibili at nag-aayos lang ang shop na ito</value></data>
+  <data name="Game.ShopCountChanged" xml:space="preserve"><value>Mali ang bilang ng mga item</value></data>
+  <data name="Game.ShopNotInTown" xml:space="preserve"><value>Sa bayan lang puwedeng magbukas ng personal shop</value></data>
+  <data name="Game.ShopNotListable" xml:space="preserve"><value>Hindi puwedeng ibenta ang item sa personal shop.</value></data>
+  <data name="Game.ShopPriceChanged" xml:space="preserve"><value>Nagbago ang presyo ng item</value></data>
+  <data name="Game.ShopRefused" xml:space="preserve"><value>Tinanggihan ng shop</value></data>
+  <data name="Game.ShopSold" xml:space="preserve"><value>Binili ng {0} na player ang {1} piraso ng {2} sa halagang {3} Gold</value></data>
+  <data name="Game.ShopSoldOut" xml:space="preserve"><value>Naibenta na ang item</value></data>
+  <data name="Game.ShopTradePending" xml:space="preserve"><value>May trade pang nakabinbin; subukan ulit</value></data>
+  <data name="Game.SiegeInAnHour" xml:space="preserve"><value>Magsisimula ang Bless Castle sa loob ng 1 oras. Maghanda na kayo.</value></data>
+  <data name="Game.SiegeInHalfAnHour" xml:space="preserve"><value>Magsisimula ang Bless Castle sa loob ng 30 minuto. Maghanda na kayo.</value></data>
+  <data name="Game.SiegeLeague" xml:space="preserve"><value>Nagsimula na ang Bless Castle league: magkakasunod ang mga siege sa loob ng dalawang oras.</value></data>
+  <data name="Game.SiegeOver" xml:space="preserve"><value>Tapos na ang Bless Castle. Salamat sa pagsali sa Bless Castle.</value></data>
+  <data name="Game.SiegeRestartsSoon" xml:space="preserve"><value>Malapit nang magsimula ang Bless Castle. Maghanda na para sumali.</value></data>
+  <data name="Game.SiegeStarted" xml:space="preserve"><value>Kasalukuyang nagaganap ang Bless Castle. Good luck sa lahat ng player.</value></data>
+  <data name="Game.SkillMasterAway" xml:space="preserve"><value>Lumapit sa skill master ng iyong bayan habang buhay ka pa</value></data>
+  <data name="Game.SkillPointName" xml:space="preserve"><value>Skill Point</value></data>
+  <data name="Game.SkillPointOne" xml:space="preserve"><value>tumaas ng 1 ang skill point</value></data>
+  <data name="Game.SkillsMastered" xml:space="preserve"><value>Tapos na ang skill training</value></data>
+  <data name="Game.SkillsRedistributed" xml:space="preserve"><value>Na-reset na ang mga statistic</value></data>
+  <data name="Game.SkillsReset" xml:space="preserve"><value>Maaari mo nang ipamahagi ulit ang iyong mga skill point</value></data>
+  <data name="Game.StaleInventory" xml:space="preserve"><value>Hindi tamang operasyon o nagbago ang inventory; subukan ulit</value></data>
+  <data name="Game.StarterGift" xml:space="preserve"><value>Nakatanggap ka ng {0} bilang regalo.</value></data>
+  <data name="Game.StatFiveSkillOne" xml:space="preserve"><value>tumaas ang stat &amp; skill point ng 5 at 1</value></data>
+  <data name="Game.StatFiveSkillTwo" xml:space="preserve"><value>tumaas ang stat &amp; skill point ng 5 at 2</value></data>
+  <data name="Game.StatPointsFive" xml:space="preserve"><value>tumaas ng 5 ang stat point</value></data>
+  <data name="Game.StatPointsGained" xml:space="preserve"><value>Tumaas ng +{0} ang stat points.</value></data>
+  <data name="Game.StatsReset" xml:space="preserve"><value>Maaari mo nang ipamahagi ulit ang iyong mga stat point</value></data>
+  <data name="Game.StorageRejected" xml:space="preserve"><value>Tinanggihan ng storage ang operasyon; walang nagbago</value></data>
+  <data name="Game.SummonLimit" xml:space="preserve"><value>{0} crystal summon lang ang puwede mong magkaroon nang sabay</value></data>
+  <data name="Game.TalkToNpcFirst" xml:space="preserve"><value>Kausapin muna ang NPC</value></data>
+  <data name="Game.TenStatPoints" xml:space="preserve"><value>Pagkatapos ng level 90, makakakuha ka ng 10 stat point sa bawat level.</value></data>
+  <data name="Game.TooManyRequests" xml:space="preserve"><value>Masyadong maraming request; maghintay sandali</value></data>
+  <data name="Game.TradeBusy" xml:space="preserve"><value>Abala ang player</value></data>
+  <data name="Game.TradeCancelled" xml:space="preserve"><value>Kinansela ang transaksyon</value></data>
+  <data name="Game.TradeChanged" xml:space="preserve"><value>Nagbago ang item. Pakisuri</value></data>
+  <data name="Game.TradeNotTradable" xml:space="preserve"><value>Hindi maaaring i-trade ang item na ito</value></data>
+  <data name="Game.TradeOutOfReach" xml:space="preserve"><value>Masyadong malayo ang player</value></data>
+  <data name="Game.TradeRefused" xml:space="preserve"><value>Tinanggihan ang trade</value></data>
+  <data name="Game.TradeRequested" xml:space="preserve"><value>Nagpadala ng trade request kay {0}</value></data>
+  <data name="Game.TradeTooFar" xml:space="preserve"><value>Masyadong malayo si {0} para magpadala ng trade request</value></data>
+  <data name="Game.TradeTooMany" xml:space="preserve"><value>Lumampas sa pinakamaraming item na puwede sa transaksyon</value></data>
+  <data name="Game.TrainingReset" xml:space="preserve"><value>I-reset ang iyong mga numero para sa training.</value></data>
+  <data name="Game.TwentyBargons" xml:space="preserve"><value>Nakapatay ka na ng 20 Bargon.</value></data>
+  <data name="Game.UnionCoreAway" xml:space="preserve"><value>Hindi magagamit ang Union Core: hindi maabot ngayon ang clan member na iyon.</value></data>
+  <data name="Game.UnionCoreBound" xml:space="preserve"><value>Nakarehistro sa iyo ang Union Core: ang clan member na gagamit nito ay pupunta sa iyo.</value></data>
+  <data name="Game.UnionCoreOwn" xml:space="preserve"><value>Hindi mo magagamit ang sarili mong Union Core.</value></data>
+  <data name="Game.UnionCoreWrongClan" xml:space="preserve"><value>Pag-aari ng ibang clan ang Union Core na iyon.</value></data>
+  <data name="Game.UseDelay" xml:space="preserve"><value>Maghintay sandali bago gumamit ng isa pa</value></data>
+  <data name="Game.VitalityForty" xml:space="preserve"><value>Tumaas ng 40 ang Vitality</value></data>
+  <data name="Game.WarehouseChanged" xml:space="preserve"><value>Nagbago ang warehouse sa ibang lugar; buksan ulit</value></data>
+  <data name="Game.WarehouseNotOpen" xml:space="preserve"><value>Buksan muna ang warehouse</value></data>
+  <data name="Game.WarehouseUnreadable" xml:space="preserve"><value>Hindi mabasa ang naka-save na warehouse</value></data>
+  <data name="Game.WhisperRefused" xml:space="preserve"><value>Tinanggihan ang Private Message</value></data>
+  <data name="Game.WhisperUnable" xml:space="preserve"><value>Hindi makapagpadala ng private message</value></data>
+  <data name="Game.WhispersAccepted" xml:space="preserve"><value>Tanggapin ang private message</value></data>
+  <data name="Game.WhispersDenied" xml:space="preserve"><value>Tanggihan ang private message</value></data>
+  <data name="Game.WrongMaterials" xml:space="preserve"><value>Hindi bagay ang mga materyales na ito sa gawaing ito</value></data>
+  <data name="Game.WrongPuzzle" xml:space="preserve"><value>Mali ang puzzle</value></data>
+  <data name="Guide.More" xml:space="preserve"><value>&gt;&gt;higit pa...</value></data>
+  <data name="Hud.AttackAuto" xml:space="preserve"><value>Uri ng atake: Auto</value></data>
+  <data name="Hud.AttackManual" xml:space="preserve"><value>Uri ng atake: Manual</value></data>
+  <data name="Hud.DoubleClickSwitch" xml:space="preserve"><value>I-double-click para magpalit</value></data>
+  <data name="Hud.Effect" xml:space="preserve"><value>Effect {0}</value></data>
+  <data name="Hud.Life" xml:space="preserve"><value>HP : {0}/{1}</value></data>
+  <data name="Hud.Mana" xml:space="preserve"><value>MP : {0}/{1}</value></data>
+  <data name="Hud.Monster" xml:space="preserve"><value>Monster</value></data>
+  <data name="Hud.Npc" xml:space="preserve"><value>NPC</value></data>
+  <data name="Hud.Quest" xml:space="preserve"><value>Quest</value></data>
+  <data name="Hud.RightClickDismiss" xml:space="preserve"><value>Right-click para alisin</value></data>
+  <data name="Hud.Stamina" xml:space="preserve"><value>STM : {0}/{1}</value></data>
+  <data name="Hud.Target" xml:space="preserve"><value>Target</value></data>
+  <data name="Hud.TargetLevel" xml:space="preserve"><value>Lv. {0}</value></data>
+  <data name="Hud.TimeLeft" xml:space="preserve"><value>Natitirang oras: {0}</value></data>
+  <data name="Hud.TimeLeftSeconds" xml:space="preserve"><value>Natitirang oras: {0} s</value></data>
+  <data name="Inventory.HintCarry" xml:space="preserve"><value>Click: buhatin</value></data>
+  <data name="Inventory.HintDrink" xml:space="preserve"><value>Right-click: uminom ng isa</value></data>
+  <data name="Inventory.HintEquip" xml:space="preserve"><value>Click: buhatin  Shift-click: hatiin  Right-click: i-equip</value></data>
+  <data name="Inventory.HintUnequip" xml:space="preserve"><value>Right-click: i-unequip</value></data>
+  <data name="Inventory.HintUse" xml:space="preserve"><value>Right-click: gamitin</value></data>
+  <data name="Inventory.OperationFailed" xml:space="preserve"><value>Nabigo ang operasyon; mag-reconnect para ma-verify ang naka-save na estado.</value></data>
+  <data name="Item.Absorb" xml:space="preserve"><value>Absorb Rating:  </value></data>
+  <data name="Item.AddLife" xml:space="preserve"><value>Dagdag na HP: </value></data>
+  <data name="Item.AddMana" xml:space="preserve"><value>Dagdag na MP:  </value></data>
+  <data name="Item.AddStamina" xml:space="preserve"><value>Dagdag na STM:  </value></data>
+  <data name="Item.AnyClass" xml:space="preserve"><value>Class</value></data>
+  <data name="Item.AttackPower" xml:space="preserve"><value>Attack Power:  </value></data>
+  <data name="Item.AttackRating" xml:space="preserve"><value>Attack Rating:  </value></data>
+  <data name="Item.Block" xml:space="preserve"><value>Block Rating:  </value></data>
+  <data name="Item.Critical" xml:space="preserve"><value>Critical:  </value></data>
+  <data name="Item.Defence" xml:space="preserve"><value>Defense Rating:  </value></data>
+  <data name="Item.Integrity" xml:space="preserve"><value>Integridad:  </value></data>
+  <data name="Item.LifeRegen" xml:space="preserve"><value>HP Regen:  </value></data>
+  <data name="Item.MagicMastery" xml:space="preserve"><value>Magic APT:  </value></data>
+  <data name="Item.ManaRegen" xml:space="preserve"><value>MP Regen: </value></data>
+  <data name="Item.PotionSpace" xml:space="preserve"><value>Lagayan ng Potion:  </value></data>
+  <data name="Item.Range" xml:space="preserve"><value>Range:  </value></data>
+  <data name="Item.RequiredAgility" xml:space="preserve"><value>Kailangang Agility:  </value></data>
+  <data name="Item.RequiredHealth" xml:space="preserve"><value>Kailangang Health:  </value></data>
+  <data name="Item.RequiredLevel" xml:space="preserve"><value>Kailangang Level:  </value></data>
+  <data name="Item.RequiredSpirit" xml:space="preserve"><value>Kailangang Spirit:  </value></data>
+  <data name="Item.RequiredStrength" xml:space="preserve"><value>Kailangang Strength:  </value></data>
+  <data name="Item.RequiredTalent" xml:space="preserve"><value>Kailangang Talent:  </value></data>
+  <data name="Item.ResistFlame" xml:space="preserve"><value>Flame:  </value></data>
+  <data name="Item.ResistFrost" xml:space="preserve"><value>Frost:  </value></data>
+  <data name="Item.ResistLightning" xml:space="preserve"><value>Lightning:  </value></data>
+  <data name="Item.ResistNature" xml:space="preserve"><value>Nature:  </value></data>
+  <data name="Item.ResistOrganic" xml:space="preserve"><value>Organic:  </value></data>
+  <data name="Item.ResistPoison" xml:space="preserve"><value>Poison: </value></data>
+  <data name="Item.ResistWater" xml:space="preserve"><value>Water:  </value></data>
+  <data name="Item.ResistWind" xml:space="preserve"><value>Wind:  </value></data>
+  <data name="Item.SpecAbsorb" xml:space="preserve"><value>Spec. ABS RTG:  </value></data>
+  <data name="Item.SpecAttackPower" xml:space="preserve"><value>Spec. ATK POW:  </value></data>
+  <data name="Item.SpecAttackRating" xml:space="preserve"><value>Spec. ATK RTG:  </value></data>
+  <data name="Item.SpecAttackSpeed" xml:space="preserve"><value>Spec. ATK SPD:  </value></data>
+  <data name="Item.SpecBlock" xml:space="preserve"><value>Spec. BLK RTG:  </value></data>
+  <data name="Item.SpecCritical" xml:space="preserve"><value>Spec. CRIT:  </value></data>
+  <data name="Item.SpecDefence" xml:space="preserve"><value>Spec. DEF RTG:  </value></data>
+  <data name="Item.SpecHeader" xml:space="preserve"><value>{0} Spec. </value></data>
+  <data name="Item.SpecLevelLife" xml:space="preserve"><value>Max HP Boost:  </value></data>
+  <data name="Item.SpecLevelMana" xml:space="preserve"><value>Max MP Boost:  </value></data>
+  <data name="Item.SpecLifeRegen" xml:space="preserve"><value>HP Recovery:  </value></data>
+  <data name="Item.SpecManaRegen" xml:space="preserve"><value>MP Recovery:  </value></data>
+  <data name="Item.SpecRange" xml:space="preserve"><value>Spec. RNG:  </value></data>
+  <data name="Item.SpecSpeed" xml:space="preserve"><value>Spec. SPD:  </value></data>
+  <data name="Item.SpecStaminaRegen" xml:space="preserve"><value>STM Recovery:  </value></data>
+  <data name="Item.Speed" xml:space="preserve"><value>Bilis:  </value></data>
+  <data name="Item.StaminaRegen" xml:space="preserve"><value>STM Regen: </value></data>
+  <data name="Item.WeaponSpeed" xml:space="preserve"><value>Bilis ng Armas:  </value></data>
+  <data name="ItemKind.Amulet" xml:space="preserve"><value>Amulet</value></data>
+  <data name="ItemKind.Armor" xml:space="preserve"><value>Armor</value></data>
+  <data name="ItemKind.Axe" xml:space="preserve"><value>Palakol</value></data>
+  <data name="ItemKind.Boots" xml:space="preserve"><value>Boots</value></data>
+  <data name="ItemKind.Bow" xml:space="preserve"><value>Pana</value></data>
+  <data name="ItemKind.Bracelet" xml:space="preserve"><value>Bracelet</value></data>
+  <data name="ItemKind.Claw" xml:space="preserve"><value>Claw</value></data>
+  <data name="ItemKind.Dagger" xml:space="preserve"><value>Dagger</value></data>
+  <data name="ItemKind.ForceOrb" xml:space="preserve"><value>Force orb</value></data>
+  <data name="ItemKind.Gloves" xml:space="preserve"><value>Gloves</value></data>
+  <data name="ItemKind.Hammer" xml:space="preserve"><value>Martilyo</value></data>
+  <data name="ItemKind.Material" xml:space="preserve"><value>Materyales</value></data>
+  <data name="ItemKind.Misc" xml:space="preserve"><value>Iba pa</value></data>
+  <data name="ItemKind.Orb" xml:space="preserve"><value>Orb</value></data>
+  <data name="ItemKind.Phantom" xml:space="preserve"><value>Phantom</value></data>
+  <data name="ItemKind.Pole" xml:space="preserve"><value>Pole</value></data>
+  <data name="ItemKind.Potion" xml:space="preserve"><value>Potion</value></data>
+  <data name="ItemKind.Quest" xml:space="preserve"><value>Quest item</value></data>
+  <data name="ItemKind.Ring" xml:space="preserve"><value>Singsing</value></data>
+  <data name="ItemKind.Sheltom" xml:space="preserve"><value>Sheltom</value></data>
+  <data name="ItemKind.Shield" xml:space="preserve"><value>Kalasag</value></data>
+  <data name="ItemKind.Staff" xml:space="preserve"><value>Staff</value></data>
+  <data name="ItemKind.Sword" xml:space="preserve"><value>Espada</value></data>
+  <data name="ItemKind.ThrowingWeapon" xml:space="preserve"><value>Throwing weapon</value></data>
+  <data name="ItemKind.Vambrace" xml:space="preserve"><value>Vambrace</value></data>
+  <data name="ItemUse.BindUnionCore" xml:space="preserve"><value>I-rehistro sa iyo ang Union Core?</value></data>
+  <data name="ItemUse.Confirm" xml:space="preserve"><value>Gusto mo bang</value></data>
+  <data name="ItemUse.Confirm2" xml:space="preserve"><value>gamitin ang item na ito?</value></data>
+  <data name="ItemUse.ConnectionError" xml:space="preserve"><value>May error sa koneksyon. Suriin ang iyong inventory bago subukan ulit.</value></data>
+  <data name="ItemUse.Teleport" xml:space="preserve"><value>Mag-teleport?</value></data>
+  <data name="Language.en" xml:space="preserve"><value>English</value></data>
+  <data name="Language.pt-BR" xml:space="preserve"><value>Português (Brasil)</value></data>
+  <data name="Mail.NoAnswer" xml:space="preserve"><value>Walang sagot. Subukan ulit.</value></data>
+  <data name="Mail.Claim.Already" xml:space="preserve"><value>Na-claim na ang reward na ito.</value></data>
+  <data name="Mail.Claim.Space" xml:space="preserve"><value>Hindi kasya ang reward sa inventory.</value></data>
+  <data name="Mail.Claim.Unavailable" xml:space="preserve"><value>Hindi available ang reward.</value></data>
+  <data name="Mail.Claim.Retry" xml:space="preserve"><value>Subukan ulit sa isang sandali.</value></data>
+  <data name="Mail.Title.Distributor" xml:space="preserve"><value>Item Distributor</value></data>
+  <data name="Mail.Title.Inbox" xml:space="preserve"><value>Mail · Inbox</value></data>
+  <data name="Mail.Title.Message" xml:space="preserve"><value>Mail · Mensahe</value></data>
+  <data name="Mail.Loading" xml:space="preserve"><value>Naglo-load…</value></data>
+  <data name="Mail.ServerSilent" xml:space="preserve"><value>Walang sagot mula sa server.</value></data>
+  <data name="Mail.AutoRefresh" xml:space="preserve"><value>Awtomatikong refresh</value></data>
+  <data name="Mail.Attachments" xml:space="preserve"><value>Mga Attachment</value></data>
+  <data name="Mail.AttachmentsGold" xml:space="preserve"><value>Mga Attachment · {0} gold</value></data>
+  <data name="Mail.Claimed" xml:space="preserve"><value>Na-claim na ang reward</value></data>
+  <data name="Mail.Inbox" xml:space="preserve"><value>Inbox</value></data>
+  <data name="Mail.Wait" xml:space="preserve"><value>Pakihintay…</value></data>
+  <data name="Mail.Claim" xml:space="preserve"><value>I-claim</value></data>
+  <data name="Mail.Previous" xml:space="preserve"><value>Nakaraan</value></data>
+  <data name="Mail.Next" xml:space="preserve"><value>Susunod</value></data>
+  <data name="Language.es" xml:space="preserve"><value>Español</value></data>
+  <data name="Language.fil" xml:space="preserve"><value>Filipino</value></data>
+  <data name="Language.vi" xml:space="preserve"><value>Tiếng Việt</value></data>
+  <data name="Language.zh-CN" xml:space="preserve"><value>Chinese (Simplified)</value></data>
+  <data name="Language.ja" xml:space="preserve"><value>Japanese</value></data>
+  <data name="Login.Account" xml:space="preserve"><value>Account</value></data>
+  <data name="Login.Failure.AlreadyLoggedIn" xml:space="preserve"><value>Naka-log in na sa koneksyong ito.</value></data>
+  <data name="Login.Failure.BadCredentials" xml:space="preserve"><value>Hindi tamang account o password.</value></data>
+  <data name="Login.Failure.Busy" xml:space="preserve"><value>Abala ang server, subukan ulit mamaya.</value></data>
+  <data name="Login.Failure.LoginDenied" xml:space="preserve"><value>Naka-block ang account.</value></data>
+  <data name="Login.Failure.None" xml:space="preserve"><value>Nabigo ang pag-log in.</value></data>
+  <data name="Login.Failure.OutdatedClient" xml:space="preserve"><value>Mas luma ang client na ito kaysa sa kinakailangan ng server.</value></data>
+  <data name="Login.Hint" xml:space="preserve"><value>Kumonekta sa game server</value></data>
+  <data name="Login.LogIn" xml:space="preserve"><value>Mag-log in</value></data>
+  <data name="Login.Password" xml:space="preserve"><value>Password</value></data>
+  <data name="Login.Subtitle" xml:space="preserve"><value>Dito nagsisimula ang iyong adventure</value></data>
+  <data name="Login.Unreachable" xml:space="preserve"><value>Hindi maabot ang game server.</value></data>
+  <data name="Loot.Gold" xml:space="preserve"><value>{0} Gold</value></data>
+  <data name="Manufacture.Done" xml:space="preserve"><value>Nagawa na ang item.</value></data>
+  <data name="Manufacture.Failed" xml:space="preserve"><value>Nabigo ang paggawa ng item.</value></data>
+  <data name="Manufacture.Random" xml:space="preserve"><value>Random</value></data>
+  <data name="Manufacture.RunesPlaced" xml:space="preserve"><value>Habang may nakalagay na rune, hindi mapapalitan ang recipe.</value></data>
+  <data name="Manufacture.WrongRune" xml:space="preserve"><value>Hindi ito ang tamang paraan ng paggawa.</value></data>
+  <data name="Mix.Bonus.Absorb" xml:space="preserve"><value>Absorption Rating +{0}</value></data>
+  <data name="Mix.Bonus.AttackRating" xml:space="preserve"><value>Attack Rating +{0}</value></data>
+  <data name="Mix.Bonus.AttackSpeed" xml:space="preserve"><value>Attack Speed +{0}</value></data>
+  <data name="Mix.Bonus.Block" xml:space="preserve"><value>Block Rating +{0}%</value></data>
+  <data name="Mix.Bonus.Critical" xml:space="preserve"><value>Critical +{0}%</value></data>
+  <data name="Mix.Bonus.DamageMax" xml:space="preserve"><value>Maximum Attack Power +{0}</value></data>
+  <data name="Mix.Bonus.DamageMin" xml:space="preserve"><value>Minimum Attack Power +{0}</value></data>
+  <data name="Mix.Bonus.Defence" xml:space="preserve"><value>Defense Rating +{0}</value></data>
+  <data name="Mix.Bonus.Fire" xml:space="preserve"><value>Flame Property +{0}</value></data>
+  <data name="Mix.Bonus.Ice" xml:space="preserve"><value>Frost Property +{0}</value></data>
+  <data name="Mix.Bonus.Life" xml:space="preserve"><value>HP +{0}</value></data>
+  <data name="Mix.Bonus.LifeRegen" xml:space="preserve"><value>HP Regen +{0}</value></data>
+  <data name="Mix.Bonus.Lightning" xml:space="preserve"><value>Lightning Property +{0}</value></data>
+  <data name="Mix.Bonus.Mana" xml:space="preserve"><value>MP +{0}</value></data>
+  <data name="Mix.Bonus.ManaRegen" xml:space="preserve"><value>Mana Regen +{0}</value></data>
+  <data name="Mix.Bonus.MoveSpeed" xml:space="preserve"><value>Move Speed +{0}</value></data>
+  <data name="Mix.Bonus.Organic" xml:space="preserve"><value>Organic Property +{0}</value></data>
+  <data name="Mix.Bonus.Poison" xml:space="preserve"><value>Poison Property +{0}</value></data>
+  <data name="Mix.Bonus.Stamina" xml:space="preserve"><value>STM +{0}</value></data>
+  <data name="Mix.Bonus.StaminaRegen" xml:space="preserve"><value>STM Regen +{0}</value></data>
+  <data name="Mix.CannotMix" xml:space="preserve"><value>Hindi puwedeng i-mix ang item</value></data>
+  <data name="Mix.Failed" xml:space="preserve"><value>Nabigo ang Item Mixture</value></data>
+  <data name="Mix.Reconstructed" xml:space="preserve"><value>Muling ginawa ang item.</value></data>
+  <data name="Mix.Refined" xml:space="preserve"><value>Naging force orb ang mga sheltom matapos i-refine.</value></data>
+  <data name="Mix.Result" xml:space="preserve"><value>Resulta ng Item Mixture: {0}</value></data>
+  <data name="MixReset.CannotReset" xml:space="preserve"><value>Mixed item lang ang puwedeng i-reset.</value></data>
+  <data name="MixReset.Done" xml:space="preserve"><value>Na-reset ang mixture ng item.</value></data>
+  <data name="MixReset.ItemFirst" xml:space="preserve"><value>Ilagay muna ang mixed item.</value></data>
+  <data name="Npc.Bought" xml:space="preserve"><value>Nabili.</value></data>
+  <data name="Npc.Destination" xml:space="preserve"><value>{0}  {1} gold</value></data>
+  <data name="Npc.DestinationLevel" xml:space="preserve"><value>{0}  {1} gold  (Lv {2})</value></data>
+  <data name="Npc.Repaired" xml:space="preserve"><value>Naayos.</value></data>
+  <data name="Npc.Sold" xml:space="preserve"><value>Naibenta.</value></data>
+  <data name="Npc.Teleporting" xml:space="preserve"><value>Nagte-teleport...</value></data>
+  <data name="Npc.WhereTo" xml:space="preserve"><value>Saan mo gustong pumunta?</value></data>
+  <data name="NpcService.Aging" xml:space="preserve"><value>Aging</value></data>
+  <data name="NpcService.Alchemy" xml:space="preserve"><value>Alchemy</value></data>
+  <data name="NpcService.BlessCastle" xml:space="preserve"><value>Bless Castle</value></data>
+  <data name="NpcService.Broadcast" xml:space="preserve"><value>Broadcast</value></data>
+  <data name="NpcService.Clan" xml:space="preserve"><value>Clan</value></data>
+  <data name="NpcService.Crafting" xml:space="preserve"><value>Crafting</value></data>
+  <data name="NpcService.DonationBox" xml:space="preserve"><value>Donation box</value></data>
+  <data name="NpcService.Donations" xml:space="preserve"><value>Mga Donasyon</value></data>
+  <data name="NpcService.Event" xml:space="preserve"><value>Event</value></data>
+  <data name="NpcService.EventQuest" xml:space="preserve"><value>Event quest</value></data>
+  <data name="NpcService.ItemDelivery" xml:space="preserve"><value>Item delivery</value></data>
+  <data name="NpcService.Mixing" xml:space="preserve"><value>Mixing</value></data>
+  <data name="NpcService.MixtureReset" xml:space="preserve"><value>Mixture reset</value></data>
+  <data name="NpcService.PrizeDraw" xml:space="preserve"><value>Prize draw</value></data>
+  <data name="NpcService.PuzzleExchange" xml:space="preserve"><value>Puzzle exchange</value></data>
+  <data name="NpcService.Quest" xml:space="preserve"><value>Quest</value></data>
+  <data name="NpcService.Service" xml:space="preserve"><value>Serbisyo</value></data>
+  <data name="NpcService.Shop" xml:space="preserve"><value>Shop</value></data>
+  <data name="NpcService.SkillMaster" xml:space="preserve"><value>Skill training</value></data>
+  <data name="NpcService.Smelting" xml:space="preserve"><value>Smelting</value></data>
+  <data name="NpcService.StarPoints" xml:space="preserve"><value>Star points</value></data>
+  <data name="NpcService.Survey" xml:space="preserve"><value>Survey</value></data>
+  <data name="NpcService.Teleport" xml:space="preserve"><value>Teleport</value></data>
+  <data name="NpcService.Warehouse" xml:space="preserve"><value>Warehouse</value></data>
+  <data name="NpcService.WarpGate" xml:space="preserve"><value>Warp gate</value></data>
+  <data name="PersonalShop.BuyItem" xml:space="preserve"><value>bilhin ang item?</value></data>
+  <data name="PersonalShop.CancelRegister" xml:space="preserve"><value>kanselahin ang Register?</value></data>
+  <data name="PersonalShop.NoRoom" xml:space="preserve"><value>Wala nang lugar sa shop para sa item na ito</value></data>
+  <data name="PersonalShop.NothingToSell" xml:space="preserve"><value>Wala nang ibang item na maibebenta</value></data>
+  <data name="PersonalShop.OnSale" xml:space="preserve"><value>Ibinebenta</value></data>
+  <data name="PersonalShop.PriceValue" xml:space="preserve"><value>Presyo: {0}</value></data>
+  <data name="PersonalShop.Register" xml:space="preserve"><value>Gusto mo bang i-register</value></data>
+  <data name="PersonalShop.Register2" xml:space="preserve"><value>ang pera para sa iyong item?</value></data>
+  <data name="PersonalShop.SignTitle" xml:space="preserve"><value>Impormasyon ng Shop</value></data>
+  <data name="PersonalShop.TakeBack" xml:space="preserve"><value>Click: bawiin</value></data>
+  <data name="PersonalShop.UnitPrice" xml:space="preserve"><value>Presyo ng bentahan kada piraso</value></data>
+  <data name="PersonalShop.UnitPrice2" xml:space="preserve"><value>ng item?</value></data>
+  <data name="PersonalShop.UnitPriceValue" xml:space="preserve"><value>Presyo ng bentahan kada piraso: {0}</value></data>
+  <data name="Pet.Dismissed" xml:space="preserve"><value>Pinaalis na ang pet</value></data>
+  <data name="Premium.ExperienceUp" xml:space="preserve"><value>{0}% EXP Boost</value></data>
+  <data name="Premium.FightsBeside" xml:space="preserve"><value>Lumalaban sa tabi mo</value></data>
+  <data name="Premium.ManaRecharging" xml:space="preserve"><value>MP Recharge kada hit</value></data>
+  <data name="Premium.ManaReduce" xml:space="preserve"><value>Bawas ng {0}% sa paggamit ng MP</value></data>
+  <data name="Premium.MightOfAwell" xml:space="preserve"><value>Dagdag na {0} sa kapasidad</value></data>
+  <data name="Premium.Mute" xml:space="preserve"><value>Attack power +10%</value></data>
+  <data name="Premium.Phoenix" xml:space="preserve"><value>EXP +20%, drop chance +50%</value></data>
+  <data name="Premium.StaminaReduce" xml:space="preserve"><value>Bawas ng {0}% sa paggamit ng STM</value></data>
+  <data name="Premium.ThirdEyes" xml:space="preserve"><value>{0}% Chance ng Karagdagang Drop</value></data>
+  <data name="Premium.Vampiric" xml:space="preserve"><value>HP Recharge kada hit</value></data>
+  <data name="Progression.ConnectionError" xml:space="preserve"><value>May error sa koneksyon. Suriin ang estado ng iyong character bago subukan ulit.</value></data>
+  <data name="Progression.Saved" xml:space="preserve"><value>Na-save</value></data>
+  <data name="Progression.Saving" xml:space="preserve"><value>Sine-save...</value></data>
+  <data name="Puzzle.Exchange" xml:space="preserve"><value>ipalit sa item?</value></data>
+  <data name="Puzzle.Help" xml:space="preserve"><value>Ilatag ang walong piraso ng isang puzzle sa board ng iyong inventory, tapos dalhin mo sa akin.</value></data>
+  <data name="Puzzle.Title" xml:space="preserve"><value>Kumpletong Puzzle</value></data>
+  <data name="Request.ConnectionError" xml:space="preserve"><value>May error sa koneksyon. Pakisubukan ulit.</value></data>
+  <data name="Resource.Life" xml:space="preserve"><value>buhay</value></data>
+  <data name="Resource.Mana" xml:space="preserve"><value>mana</value></data>
+  <data name="Resource.Stamina" xml:space="preserve"><value>stamina</value></data>
+  <data name="Restart.Field" xml:space="preserve"><value> Mag-restart mula sa field?</value></data>
+  <data name="Restart.NoExperience" xml:space="preserve"><value> Kulang ang XP</value></data>
+  <data name="Restart.NoExperience2" xml:space="preserve"><value> para manatili sa field</value></data>
+  <data name="Restart.Penalty" xml:space="preserve"><value> Penalty(Gold/XP) 1%</value></data>
+  <data name="Restart.Quit" xml:space="preserve"><value> Umalis sa Laro?</value></data>
+  <data name="Restart.Town" xml:space="preserve"><value> Mag-restart mula sa bayan?</value></data>
+  <data name="Settings.AntiAliasing" xml:space="preserve"><value>Anti-aliasing: {0}</value></data>
+  <data name="Settings.AntiAliasingMsaa" xml:space="preserve"><value>Anti-aliasing: MSAA {0}x</value></data>
+  <data name="Settings.AntiAliasingOff" xml:space="preserve"><value>Anti-aliasing: off</value></data>
+  <data name="Settings.BackgroundFps" xml:space="preserve"><value>Background FPS: {0}</value></data>
+  <data name="Settings.BackgroundFpsForeground" xml:space="preserve"><value>Background FPS: limit ng foreground</value></data>
+  <data name="Settings.Clouds" xml:space="preserve"><value>Mga ulap: {0}</value></data>
+  <data name="Settings.Clouds.High" xml:space="preserve"><value>mataas</value></data>
+  <data name="Settings.Clouds.Low" xml:space="preserve"><value>mababa</value></data>
+  <data name="Settings.Clouds.Medium" xml:space="preserve"><value>katamtaman</value></data>
+  <data name="Settings.Clouds.Off" xml:space="preserve"><value>off</value></data>
+  <data name="Settings.Frequency" xml:space="preserve"><value>Frequency: {0} Hz (0 = awtomatiko)</value></data>
+  <data name="Settings.FrequencyDesktop" xml:space="preserve"><value>Frequency: desktop</value></data>
+  <data name="Settings.Hint" xml:space="preserve"><value>Click: susunod   Shift+click: nakaraan</value></data>
+  <data name="Settings.Language" xml:space="preserve"><value>Wika: {0}</value></data>
+  <data name="Settings.MaxFps" xml:space="preserve"><value>Maximum FPS: {0}</value></data>
+  <data name="Settings.MaxFpsUnlimited" xml:space="preserve"><value>Maximum FPS: walang limit</value></data>
+  <data name="Settings.Monitor" xml:space="preserve"><value>Monitor: {0}</value></data>
+  <data name="Settings.MonitorCurrent" xml:space="preserve"><value>Monitor: kasalukuyan</value></data>
+  <data name="Settings.MusicOff" xml:space="preserve"><value>BGM: off</value></data>
+  <data name="Settings.MusicOn" xml:space="preserve"><value>BGM: on</value></data>
+  <data name="Settings.NamePlatesClassic" xml:space="preserve"><value>Name plates: classic</value></data>
+  <data name="Settings.NamePlatesCompact" xml:space="preserve"><value>Name plates: compact</value></data>
+  <data name="Settings.NeedsAttention" xml:space="preserve"><value>Kailangan ng atensyon ang mga setting; tingnan ang client log.</value></data>
+  <data name="Settings.Quality" xml:space="preserve"><value>Kalidad ng graphics: {0}</value></data>
+  <data name="Settings.Quality.Custom" xml:space="preserve"><value>custom</value></data>
+  <data name="Settings.Quality.High" xml:space="preserve"><value>mataas</value></data>
+  <data name="Settings.Quality.Low" xml:space="preserve"><value>mababa</value></data>
+  <data name="Settings.Quality.Medium" xml:space="preserve"><value>katamtaman</value></data>
+  <data name="Settings.Quality.Ultra" xml:space="preserve"><value>ultra</value></data>
+  <data name="Settings.Resolution" xml:space="preserve"><value>Resolution: {0} x {1}</value></data>
+  <data name="Settings.ResolutionDesktop" xml:space="preserve"><value>Resolution: desktop</value></data>
+  <data name="Settings.ShadowAnimation" xml:space="preserve"><value>Shadow animation: {0} Hz</value></data>
+  <data name="Settings.ShadowAnimationEveryFrame" xml:space="preserve"><value>Shadow animation: bawat frame</value></data>
+  <data name="Settings.ShadowsOff" xml:space="preserve"><value>Mga anino: off</value></data>
+  <data name="Settings.ShadowsOn" xml:space="preserve"><value>Mga anino: on</value></data>
+  <data name="Settings.SkyClassic" xml:space="preserve"><value>Langit: classic</value></data>
+  <data name="Settings.SkyRealistic" xml:space="preserve"><value>Langit: realistic</value></data>
+  <data name="Settings.SoundOff" xml:space="preserve"><value>Audio: off</value></data>
+  <data name="Settings.SoundOn" xml:space="preserve"><value>Audio: on</value></data>
+  <data name="Settings.SunShadow" xml:space="preserve"><value>Anino ng araw: {0}</value></data>
+  <data name="Settings.TargetHealthAlways" xml:space="preserve"><value>Target HP: palagi, may porsyento</value></data>
+  <data name="Settings.TargetHealthClassic" xml:space="preserve"><value>Target HP: classic (pagkatapos ng unang hit)</value></data>
+  <data name="Settings.Title" xml:space="preserve"><value>Mga Setting</value></data>
+  <data name="Settings.VSyncOff" xml:space="preserve"><value>VSync: off</value></data>
+  <data name="Settings.VSyncOn" xml:space="preserve"><value>VSync: on</value></data>
+  <data name="Settings.WeatherOff" xml:space="preserve"><value>Panahon: off</value></data>
+  <data name="Settings.WeatherOn" xml:space="preserve"><value>Panahon: on</value></data>
+  <data name="Settings.Window" xml:space="preserve"><value>Window: {0}</value></data>
+  <data name="Settings.WindowMode.Borderless" xml:space="preserve"><value>borderless</value></data>
+  <data name="Settings.WindowMode.Fullscreen" xml:space="preserve"><value>fullscreen</value></data>
+  <data name="Settings.WindowMode.Windowed" xml:space="preserve"><value>windowed</value></data>
+  <data name="Shop.ClickBuy" xml:space="preserve"><value>Click: bumili</value></data>
+  <data name="Shop.DoesNotBuy" xml:space="preserve"><value>Hindi bumibili ng ito ang shop</value></data>
+  <data name="Shop.Mobile" xml:space="preserve"><value>Mobile Shop</value></data>
+  <data name="Shop.NotDamaged" xml:space="preserve"><value>Hindi sira</value></data>
+  <data name="Shop.Price" xml:space="preserve"><value>Presyo: {0} gold</value></data>
+  <data name="Shop.RepairCost" xml:space="preserve"><value>Ayos: {0} gold</value></data>
+  <data name="Shop.SellsFor" xml:space="preserve"><value>Ibinebenta sa halagang {0} gold</value></data>
+  <data name="Siege.Crystals" xml:space="preserve"><value>Mga Crystal tower {0}/{1}</value></data>
+  <data name="Siege.DoorDown" xml:space="preserve"><value>Sira na ang pinto ng kastilyo</value></data>
+  <data name="Siege.DoorStands" xml:space="preserve"><value>Nakatayo pa ang pinto ng kastilyo</value></data>
+  <data name="Siege.Ended" xml:space="preserve"><value>Tapos na ang siege ng Bless Castle.</value></data>
+  <data name="Siege.EndedText" xml:space="preserve"><value>Sa isang sandali, ang lahat ng hindi hawak ng clan nila ang Bless Castle ay ibabalik sa simula ng field ng kastilyo.</value></data>
+  <data name="Siege.HeldBy" xml:space="preserve"><value>Hawak ng {0}</value></data>
+  <data name="Siege.League" xml:space="preserve"><value>BLESS CASTLE LEAGUE</value></data>
+  <data name="Siege.NoOwner" xml:space="preserve"><value>Walang clan na may hawak ng kastilyo</value></data>
+  <data name="Siege.Title" xml:space="preserve"><value>BLESS CASTLE</value></data>
+  <data name="Siege.Won" xml:space="preserve"><value>Hawak ng clan mo ang Bless Castle!</value></data>
+  <data name="Siege.WonText" xml:space="preserve"><value>Congratulations sa panalo ninyo! Sa clan ninyo ang kastilyo hanggang sa susunod na siege. Ang chief ng clan ang magtatakda ng tax at ng clan skill sa butler ng kastilyo.</value></data>
+  <data name="Skill.AlreadyActive" xml:space="preserve"><value>Aktibo pa ang effect na iyon.</value></data>
+  <data name="Skill.CannotUse" xml:space="preserve"><value>Hindi magagamit ang skill ngayon.</value></data>
+  <data name="Skill.InVillage" xml:space="preserve"><value>Hindi magagamit ang mga skill sa bayan.</value></data>
+  <data name="Skill.InvalidTarget" xml:space="preserve"><value>Walang valid na target para sa skill na ito.</value></data>
+  <data name="Skill.LearnFirst" xml:space="preserve"><value>Pag-aralan muna ang skill na ito sa isang skill master.</value></data>
+  <data name="Skill.NotEnoughMana" xml:space="preserve"><value>Kulang ang mana.</value></data>
+  <data name="Skill.NotEnoughStamina" xml:space="preserve"><value>Kulang ang stamina.</value></data>
+  <data name="Skill.NotReady" xml:space="preserve"><value>Hindi pa handa ang skill.</value></data>
+  <data name="Skill.OutOfRange" xml:space="preserve"><value>Wala sa range ang target.</value></data>
+  <data name="Skill.TargetAggressive" xml:space="preserve"><value>{0}: umaatake sa kahit anong kalabang malapit.</value></data>
+  <data name="Skill.TargetFocused" xml:space="preserve"><value>{0}: ang target mo lang ang inaatake.</value></data>
+  <data name="Skill.WeaponNotAllowed" xml:space="preserve"><value>Kailangan ng ibang armas ng skill na ito.</value></data>
+  <data name="SkillInfo.Absorbs" xml:space="preserve"><value>Sumisipsip ng {0}% ng damage gamit ang {1}</value></data>
+  <data name="SkillInfo.AddingRate" xml:space="preserve"><value>Adding rate {0}%</value></data>
+  <data name="SkillInfo.Allies" xml:space="preserve"><value>Mga kakampi sa loob ng {0}</value></data>
+  <data name="SkillInfo.AlliesShare" xml:space="preserve"><value>Mga kakampi sa loob ng {0} ({1}%)</value></data>
+  <data name="SkillInfo.Area" xml:space="preserve"><value>Area {0}{1}</value></data>
+  <data name="SkillInfo.AreaBox" xml:space="preserve"><value>Area {0} x {1}{2}</value></data>
+  <data name="SkillInfo.AttackRating" xml:space="preserve"><value>Attack rating {0}</value></data>
+  <data name="SkillInfo.AttackRatingPercent" xml:space="preserve"><value>Attack rating {0}%</value></data>
+  <data name="SkillInfo.BroodBonus" xml:space="preserve"><value>{0} {1}%</value></data>
+  <data name="SkillInfo.ByRelatedRank" xml:space="preserve"><value>{0} ayon sa rank ng kaugnay na skill</value></data>
+  <data name="SkillInfo.Chain" xml:space="preserve"><value>Chain ng {0}, link {1}</value></data>
+  <data name="SkillInfo.Charm" xml:space="preserve"><value>Tagumpay {0}%, buhay {1}%</value></data>
+  <data name="SkillInfo.Critical" xml:space="preserve"><value>Critical {0}%</value></data>
+  <data name="SkillInfo.Damage" xml:space="preserve"><value>Damage {0}-{1}</value></data>
+  <data name="SkillInfo.DamageElement" xml:space="preserve"><value>Damage {0}-{1} {2}</value></data>
+  <data name="SkillInfo.DamagePercent" xml:space="preserve"><value>Damage {0}%</value></data>
+  <data name="SkillInfo.Drains" xml:space="preserve"><value>Umuubos ng {0}% ng maximum na buhay</value></data>
+  <data name="SkillInfo.Duration" xml:space="preserve"><value>Tagal {0} s</value></data>
+  <data name="SkillInfo.Enchant" xml:space="preserve"><value>{0} +{1}-{2}</value></data>
+  <data name="SkillInfo.Guard" xml:space="preserve"><value>{0}% ng {1} damage sa buhay</value></data>
+  <data name="SkillInfo.GuardBlocked" xml:space="preserve"><value>{0}% ng na-block na {1} damage sa buhay</value></data>
+  <data name="SkillInfo.Heals" xml:space="preserve"><value>Nagpapagaling ng {0}-{1} (+ armas / 3, spirit)</value></data>
+  <data name="SkillInfo.Hits" xml:space="preserve"><value>{0} hit</value></data>
+  <data name="SkillInfo.PlusLevel" xml:space="preserve"><value>{0} + level/{1}</value></data>
+  <data name="SkillInfo.Range" xml:space="preserve"><value>Range {0}</value></data>
+  <data name="SkillInfo.RangeAdded" xml:space="preserve"><value>Range +{0}</value></data>
+  <data name="SkillInfo.Reflects" xml:space="preserve"><value>Nagpapabalik ng {0}% ng {1} na atake</value></data>
+  <data name="SkillInfo.Revive" xml:space="preserve"><value>Chance na mabuhay {0}%, buhay {1}%</value></data>
+  <data name="SkillInfo.ShareChance" xml:space="preserve"><value>{0}% chance: {1}% ng buhay</value></data>
+  <data name="SkillInfo.Shots" xml:space="preserve"><value>{0} shot</value></data>
+  <data name="SkillInfo.Sparks" xml:space="preserve"><value>Hanggang {0} spark</value></data>
+  <data name="SkillInfo.StrikesEvery" xml:space="preserve"><value>Tumatama kada {0} s</value></data>
+  <data name="SkillInfo.Summon" xml:space="preserve"><value>{0}: damage {1}-{2}, buhay {3}</value></data>
+  <data name="SkillInfo.Targets" xml:space="preserve"><value>, {0} target</value></data>
+  <data name="SkillWindow.AnyWeapon" xml:space="preserve"><value>Kahit anong armas</value></data>
+  <data name="SkillWindow.BasicAttack" xml:space="preserve"><value>Basic attack</value></data>
+  <data name="SkillWindow.BasicAttackBind" xml:space="preserve"><value>Pindutin nang matagal ang button + F1-F8 para i-bind.</value></data>
+  <data name="SkillWindow.BasicAttackSelect" xml:space="preserve"><value>Bitawan ang LMB o RMB para pumili.</value></data>
+  <data name="SkillWindow.Cost" xml:space="preserve"><value>Rank {0}: MP {1} | SP {2}</value></data>
+  <data name="SkillWindow.EitherMouse" xml:space="preserve"><value>Kaliwa o kanang mouse</value></data>
+  <data name="SkillWindow.ElitePoints" xml:space="preserve"><value>Elite Skill Points : {0}</value></data>
+  <data name="SkillWindow.Equipment" xml:space="preserve"><value>Equipment: {0}</value></data>
+  <data name="SkillWindow.Learned" xml:space="preserve"><value>Natutunan ang rank {0} / {1}</value></data>
+  <data name="SkillWindow.LeftMouse" xml:space="preserve"><value>Kaliwang mouse</value></data>
+  <data name="SkillWindow.Level" xml:space="preserve"><value>Lv {0}</value></data>
+  <data name="SkillWindow.NoCost" xml:space="preserve"><value>Walang gastos sa pag-activate</value></data>
+  <data name="SkillWindow.NoPoints" xml:space="preserve"><value>Kulang ang Skill Points</value></data>
+  <data name="SkillWindow.NoPoints2" xml:space="preserve"><value>para mag-aral o mag-practice</value></data>
+  <data name="SkillWindow.OnlyLeft" xml:space="preserve"><value>Magagamit lang ang {0} gamit ang kaliwang mouse button.</value></data>
+  <data name="SkillWindow.OnlyRight" xml:space="preserve"><value>Magagamit lang ang {0} gamit ang kanang mouse button.</value></data>
+  <data name="SkillWindow.Passive" xml:space="preserve"><value> | Passive</value></data>
+  <data name="SkillWindow.PassiveSkill" xml:space="preserve"><value>Passive skill</value></data>
+  <data name="SkillWindow.PlaceHint" xml:space="preserve"><value> | I-click para ilagay sa mouse socket, F1-F8 habang hawak para i-bind</value></data>
+  <data name="SkillWindow.Recharge" xml:space="preserve"><value> | Recharge {0} s</value></data>
+  <data name="SkillWindow.RightMouse" xml:space="preserve"><value>Kanang mouse</value></data>
+  <data name="SkillWindow.SelectSkill" xml:space="preserve"><value>Pumili ng Skill o Magic</value></data>
+  <data name="SkillWindow.SkillPoints" xml:space="preserve"><value>Skill Points : {0}</value></data>
+  <data name="SkillWindow.ToLearn" xml:space="preserve"><value>Para mag-aral o mag-train</value></data>
+  <data name="SkillWindow.TrainPrice" xml:space="preserve"><value>Rank {0}: {1} gold</value></data>
+  <data name="SkillWindow.TrainTitle" xml:space="preserve"><value>Mag-train ng Skill/Magic</value></data>
+  <data name="SkillWindow.Unavailable" xml:space="preserve"><value>Hindi available sa bersyong ito</value></data>
+  <data name="SkillWindow.Unlearned" xml:space="preserve"><value>Hindi pa natututunan | Preview ng Rank 1</value></data>
+  <data name="Smelt.CannotSmelt" xml:space="preserve"><value>Tatlong ore o crystal lang na iisang uri at ang sheltom nila ang puwedeng i-smelt.</value></data>
+  <data name="Smelt.Done" xml:space="preserve"><value>Tapos na ang smelting.</value></data>
+  <data name="Smelt.Failed" xml:space="preserve"><value>Nabigo ang item smelting.</value></data>
+  <data name="Smelt.NotSame" xml:space="preserve"><value>Hindi pareho ang uri ng mga ore o crystal na ito.</value></data>
+  <data name="Stat.Absorption" xml:space="preserve"><value>Absorption</value></data>
+  <data name="Stat.AbsorptionVsUndead" xml:space="preserve"><value>Absorption vs undead</value></data>
+  <data name="Stat.Agility" xml:space="preserve"><value>Agility</value></data>
+  <data name="Stat.ArmorDefence" xml:space="preserve"><value>Armor defense</value></data>
+  <data name="Stat.AttackMotionSpeed" xml:space="preserve"><value>Bilis ng attack motion</value></data>
+  <data name="Stat.AttackRange" xml:space="preserve"><value>Range</value></data>
+  <data name="Stat.AttackRating" xml:space="preserve"><value>Attack rating</value></data>
+  <data name="Stat.AttackSpeed" xml:space="preserve"><value>Attack speed</value></data>
+  <data name="Stat.BlockChance" xml:space="preserve"><value>Block chance</value></data>
+  <data name="Stat.CompanionDamage" xml:space="preserve"><value>Damage ng companion</value></data>
+  <data name="Stat.CriticalChance" xml:space="preserve"><value>Critical chance</value></data>
+  <data name="Stat.CriticalChanceTaken" xml:space="preserve"><value>Natanggap na critical chance</value></data>
+  <data name="Stat.CriticalDamage" xml:space="preserve"><value>Critical damage</value></data>
+  <data name="Stat.DamageDealt" xml:space="preserve"><value>Damage na naibigay</value></data>
+  <data name="Stat.DamageMax" xml:space="preserve"><value>Maximum damage</value></data>
+  <data name="Stat.DamageMin" xml:space="preserve"><value>Minimum damage</value></data>
+  <data name="Stat.DamageTaken" xml:space="preserve"><value>Damage na natanggap</value></data>
+  <data name="Stat.DamageVsUndead" xml:space="preserve"><value>Damage vs undead</value></data>
+  <data name="Stat.Defence" xml:space="preserve"><value>Defense</value></data>
+  <data name="Stat.Evasion" xml:space="preserve"><value>Evasion</value></data>
+  <data name="Stat.ForceOrbDamage" xml:space="preserve"><value>Power ng Force Orb</value></data>
+  <data name="Stat.HealingTaken" xml:space="preserve"><value>Natanggap na healing</value></data>
+  <data name="Stat.HitDamage" xml:space="preserve"><value>Hit damage</value></data>
+  <data name="Stat.HitDamageMax" xml:space="preserve"><value>Maximum hit damage</value></data>
+  <data name="Stat.HitDamageMin" xml:space="preserve"><value>Minimum hit damage</value></data>
+  <data name="Stat.LifeCostPerAttack" xml:space="preserve"><value>Gastos na buhay kada atake</value></data>
+  <data name="Stat.LifeLeech" xml:space="preserve"><value>Life leech</value></data>
+  <data name="Stat.LifeRegen" xml:space="preserve"><value>Life regeneration (tenths/s)</value></data>
+  <data name="Stat.ManaLeech" xml:space="preserve"><value>Mana leech</value></data>
+  <data name="Stat.ManaRegen" xml:space="preserve"><value>Mana regeneration (tenths/s)</value></data>
+  <data name="Stat.MaxLife" xml:space="preserve"><value>Maximum na buhay</value></data>
+  <data name="Stat.MaxMana" xml:space="preserve"><value>Maximum na mana</value></data>
+  <data name="Stat.MaxStamina" xml:space="preserve"><value>Maximum na stamina</value></data>
+  <data name="Stat.MonsterSight" xml:space="preserve"><value>Paningin ng monster</value></data>
+  <data name="Stat.MoveSpeed" xml:space="preserve"><value>Bilis</value></data>
+  <data name="Stat.MoveSpeedUnbound" xml:space="preserve"><value>Bilis na walang limit</value></data>
+  <data name="Stat.NextHitDamage" xml:space="preserve"><value>Damage ng susunod na hit</value></data>
+  <data name="Stat.NormalAttackWeaponDamage" xml:space="preserve"><value>Weapon damage ng normal attack</value></data>
+  <data name="Stat.NormalAttackWeaponMax" xml:space="preserve"><value>Maximum na weapon ng normal attack</value></data>
+  <data name="Stat.ResistAll" xml:space="preserve"><value>Lahat ng resistance</value></data>
+  <data name="Stat.ResistBionic" xml:space="preserve"><value>Organic resistance</value></data>
+  <data name="Stat.ResistEarth" xml:space="preserve"><value>Earth resistance</value></data>
+  <data name="Stat.ResistFire" xml:space="preserve"><value>Fire resistance</value></data>
+  <data name="Stat.ResistIce" xml:space="preserve"><value>Ice resistance</value></data>
+  <data name="Stat.ResistLightning" xml:space="preserve"><value>Lightning resistance</value></data>
+  <data name="Stat.ResistPoison" xml:space="preserve"><value>Poison resistance</value></data>
+  <data name="Stat.ResistWater" xml:space="preserve"><value>Water resistance</value></data>
+  <data name="Stat.ResistWind" xml:space="preserve"><value>Wind resistance</value></data>
+  <data name="Stat.SkillDamageTaken" xml:space="preserve"><value>Skill damage na natanggap</value></data>
+  <data name="Stat.SkillManaCost" xml:space="preserve"><value>Mana cost ng skill</value></data>
+  <data name="Stat.SpellDamage" xml:space="preserve"><value>Spell power</value></data>
+  <data name="Stat.SpellPower" xml:space="preserve"><value>Spell damage</value></data>
+  <data name="Stat.Spirit" xml:space="preserve"><value>Spirit</value></data>
+  <data name="Stat.StaminaRegen" xml:space="preserve"><value>Stamina regeneration</value></data>
+  <data name="Stat.Strength" xml:space="preserve"><value>Strength</value></data>
+  <data name="Stat.WeaponDamagePercent" xml:space="preserve"><value>Weapon damage</value></data>
+  <data name="Status.CharacterSelect" xml:space="preserve"><value>Pagpili ng character</value></data>
+  <data name="Status.CrystalPet" xml:space="preserve"><value>Summoned Pet na sumusuporta sa iyo sa Laban</value></data>
+  <data name="Status.LifeBooster" xml:space="preserve"><value>Nagpapataas ng buhay ng {0}%</value></data>
+  <data name="Status.Loading" xml:space="preserve"><value>Naglo-load…</value></data>
+  <data name="Status.ManaBooster" xml:space="preserve"><value>Dinadagdagan ang mana ng {0}%</value></data>
+  <data name="Status.Opening" xml:space="preserve"><value>Binubuksan: {0}</value></data>
+  <data name="Status.SavingAndDisconnecting" xml:space="preserve"><value>Sine-save at dini-disconnect…</value></data>
+  <data name="Status.SkillDelay" xml:space="preserve"><value>Nagre-recharge ang mga skill sa loob ng kalahating segundo</value></data>
+  <data name="Status.StaminaBooster" xml:space="preserve"><value>Dinadagdagan ang stamina ng {0}%</value></data>
+  <data name="TeleportCore.Page" xml:space="preserve"><value>[Teleport Core - Pahina {0}]</value></data>
+  <data name="TeleportCore.Row" xml:space="preserve"><value>{0}. {1} (Lvl {2})</value></data>
+  <data name="TeleportCore.Title" xml:space="preserve"><value>TELEPORT</value></data>
+  <data name="Time.Days" xml:space="preserve"><value>{0} araw</value></data>
+  <data name="Time.Hours" xml:space="preserve"><value>{0} oras</value></data>
+  <data name="Time.OneDay" xml:space="preserve"><value>1 araw</value></data>
+  <data name="Time.OneHour" xml:space="preserve"><value>1 oras</value></data>
+  <data name="Time.Seconds" xml:space="preserve"><value>{0}s</value></data>
+  <data name="Trade.Gold" xml:space="preserve"><value>gusto mo bang mag-trade?</value></data>
+  <data name="Tutorial.Ok" xml:space="preserve"><value>Gets ko na</value></data>
+  <data name="Tutorial.Off" xml:space="preserve"><value>I-off ang mga tip</value></data>
+  <data name="Tutorial.Move.Title" xml:space="preserve"><value>Paggalaw</value></data>
+  <data name="Tutorial.Move.Text" xml:space="preserve"><value>I-click ang lupa para maglakad doon; pindutin nang matagal ang button para sundan ang cursor. I-double-click ang lupa para magpatuloy sa paglalakad.</value></data>
+  <data name="Tutorial.Attack.Title" xml:space="preserve"><value>Pag-atake</value></data>
+  <data name="Tutorial.Attack.Text" xml:space="preserve"><value>I-click ang monster para atakihin ito. Ang Shift + click ay tuloy-tuloy na aatake hanggang mag-click ka sa iba.</value></data>
+  <data name="Tutorial.Inventory.Title" xml:space="preserve"><value>Inventory</value></data>
+  <data name="Tutorial.Inventory.Text" xml:space="preserve"><value>Pindutin ang {0} para buksan ang inventory: ang mga item, equipment at gold mo.</value></data>
+  <data name="Tutorial.Character.Title" xml:space="preserve"><value>Character</value></data>
+  <data name="Tutorial.Character.Text" xml:space="preserve"><value>Pindutin ang {0} para makita ang mga attribute mo at gamitin ang mga point na nakukuha mo sa pag-level up.</value></data>
+  <data name="Tutorial.Skills.Title" xml:space="preserve"><value>Mga Skill</value></data>
+  <data name="Tutorial.Skills.Text" xml:space="preserve"><value>Pindutin ang {0} para buksan ang mga skill mo. Pindutin nang matagal ang click sa isang skill at pindutin ang {1} hanggang {2} para ilagay ito sa shortcut.</value></data>
+  <data name="Tutorial.Potions.Title" xml:space="preserve"><value>Mga Potion</value></data>
+  <data name="Tutorial.Potions.Text" xml:space="preserve"><value>Ang mga potion sa belt mo ay ginagamit gamit ang {0}, {1} at {2}.</value></data>
+  <data name="Tutorial.Chat.Title" xml:space="preserve"><value>Chat</value></data>
+  <data name="Tutorial.Chat.Text" xml:space="preserve"><value>Pindutin ang Enter para magsulat sa chat at Enter ulit para i-send.</value></data>
+  <data name="Tutorial.Settings.Title" xml:space="preserve"><value>Settings</value></data>
+  <data name="Tutorial.Settings.Text" xml:space="preserve"><value>Pindutin ang {0} para buksan ang settings. Ang tab na Keys ang nagpapalit ng kahit anong shortcut.</value></data>
+  <data name="Usable.AgingArmlet" xml:space="preserve"><value>armlet</value></data>
+  <data name="Usable.AgingArmor" xml:space="preserve"><value>armor o robe</value></data>
+  <data name="Usable.AgingBoots" xml:space="preserve"><value>boots</value></data>
+  <data name="Usable.AgingGloves" xml:space="preserve"><value>gloves</value></data>
+  <data name="Usable.AgingShield" xml:space="preserve"><value>shield o orb</value></data>
+  <data name="Usable.AgingWeapon" xml:space="preserve"><value>weapon</value></data>
+  <data name="Usable.BigHead" xml:space="preserve"><value>Nagbibigay sa iyo ng malaking ulo sa loob ng {0} minuto.</value></data>
+  <data name="Usable.CastleOnly" xml:space="preserve"><value>Sa Bless Castle lang</value></data>
+  <data name="Usable.ClanOnly" xml:space="preserve"><value>Para lang sa mga miyembro ng clan</value></data>
+  <data name="Usable.ClanPet" xml:space="preserve"><value>Nagpapatawag ng {0} para sa clan mo.</value></data>
+  <data name="Usable.ClanTeleport" xml:space="preserve"><value>Mag-teleport sa miyembro ng clan</value></data>
+  <data name="Usable.CriticalScroll" xml:space="preserve"><value>{0}% dagdag</value></data>
+  <data name="Usable.CriticalScroll2" xml:space="preserve"><value>sa critical attack.</value></data>
+  <data name="Usable.Duration" xml:space="preserve"><value>Tagal: {0}</value></data>
+  <data name="Usable.EvasionScroll" xml:space="preserve"><value>{0}% dagdag sa</value></data>
+  <data name="Usable.EvasionScroll2" xml:space="preserve"><value>tsansa ng pag-iwas.</value></data>
+  <data name="Usable.FemaleOnly" xml:space="preserve"><value>Para lang sa mga babaeng character</value></data>
+  <data name="Usable.Fireworks" xml:space="preserve"><value>Pinapailawan ng fireworks ang langit sa paligid mo.</value></data>
+  <data name="Usable.Gift" xml:space="preserve"><value>Buksan ito para makatanggap ng regalo.</value></data>
+  <data name="Usable.Gravity" xml:space="preserve"><value>Kapasidad sa pagdadala +{0}</value></data>
+  <data name="Usable.GravityUses" xml:space="preserve"><value>(hanggang {0} gamit)</value></data>
+  <data name="Usable.Hair" xml:space="preserve"><value>Pinapalitan ang buhok mo sa type {0}.</value></data>
+  <data name="Usable.Invulnerability" xml:space="preserve"><value>Nagiging invincible sa itinakdang oras.</value></data>
+  <data name="Usable.Invulnerability2" xml:space="preserve"><value>Bumababa ng 1/2 ang attack power.</value></data>
+  <data name="Usable.LevelFrom" xml:space="preserve"><value>Kailangang Level: {0}+</value></data>
+  <data name="Usable.LevelRange" xml:space="preserve"><value>Kailangang Level: {0}-{1}</value></data>
+  <data name="Usable.MaleOnly" xml:space="preserve"><value>Para lang sa mga lalaking character</value></data>
+  <data name="Usable.Mature" xml:space="preserve"><value>Pinapahinog ang naka-aging na {0} na suot mo.</value></data>
+  <data name="Usable.Mercenary" xml:space="preserve"><value>Nagpapatawag ng {0} na magbabantay</value></data>
+  <data name="Usable.Mercenary2" xml:space="preserve"><value>sa castle habang may siege.</value></data>
+  <data name="Usable.Merchant" xml:space="preserve"><value>Nagbubukas ng shop na bumibili at nag-aayos.</value></data>
+  <data name="Usable.OrbDamage" xml:space="preserve"><value>Dagdag na ATK Power: {0}</value></data>
+  <data name="Usable.OrbPercent" xml:space="preserve"><value>Dagdag na ATK Power%: {0}%</value></data>
+  <data name="Usable.Pet" xml:space="preserve"><value>Nagpapatawag ng {0} na lalaban para sa iyo</value></data>
+  <data name="Usable.Pet2" xml:space="preserve"><value>sa loob ng {0} minuto, mas matagal sa mas mataas na level.</value></data>
+  <data name="Usable.PuzzleBag" xml:space="preserve"><value>Ibunyag ang puzzle piece sa loob sa halagang {0} gold.</value></data>
+  <data name="Usable.PuzzleBoard" xml:space="preserve"><value>Ilatag ang set sa puzzle board.</value></data>
+  <data name="Usable.PuzzlePiece" xml:space="preserve"><value>Puzzle piece {0} sa {1}</value></data>
+  <data name="Usable.Recall" xml:space="preserve"><value>Mag-recall sa {0}</value></data>
+  <data name="Usable.Redistributed" xml:space="preserve"><value>na ipamamahagi muli.</value></data>
+  <data name="Usable.ResetAttribute" xml:space="preserve"><value>Ibinabalik ang {0} sa panimulang halaga</value></data>
+  <data name="Usable.ResetAttribute2" xml:space="preserve"><value>at ibinabalik ang mga stat point nito.</value></data>
+  <data name="Usable.ResetBoth" xml:space="preserve"><value>Ginagawa nitong available ang mga stat/skill point</value></data>
+  <data name="Usable.ResetSkills" xml:space="preserve"><value>Ginagawa nitong available ang mga skill point</value></data>
+  <data name="Usable.ResetStats" xml:space="preserve"><value>Ginagawa nitong available ang mga stat point</value></data>
+  <data name="Usable.Restoration" xml:space="preserve"><value>Binubuhay ka kung saan ka bumagsak</value></data>
+  <data name="Usable.Restoration2" xml:space="preserve"><value>{0} segundo matapos mamatay sa castle.</value></data>
+  <data name="Usable.Restores" xml:space="preserve"><value>Ibinabalik ang life, mana at stamina.</value></data>
+  <data name="Usable.SoccerHead" xml:space="preserve"><value>Nagbibigay sa iyo ng ulong soccer ball sa loob ng {0}.</value></data>
+  <data name="Usable.SoulStone" xml:space="preserve"><value>Nagpapakawala ng kalabang kaluluwa sa loob ng {0} minuto.</value></data>
+  <data name="Usable.TeleportCore" xml:space="preserve"><value>Dinadala ka sa field na pipiliin mo.</value></data>
+  <data name="Usable.TrainTier" xml:space="preserve"><value>Ganap na tine-train ang mga skill ng class tier {0}.</value></data>
+  <data name="Usable.UnionCoreName" xml:space="preserve"><value>Pangalan: {0}</value></data>
+  <data name="Usable.VirtualLife" xml:space="preserve"><value>Virtual Life Lv {0}</value></data>
+  <data name="WingGate.MoveThere" xml:space="preserve"><value>pumunta roon?</value></data>
+  <data name="WingGate.Title" xml:space="preserve"><value>Warp gate</value></data>
+  <data name="Workbench.TakeBack" xml:space="preserve"><value>Right-click: kunin ulit</value></data>
+  <data name="Status.EnteringWorld" xml:space="preserve"><value>Pumapasok sa mundo…</value></data>
+  <data name="CharSelect.Title.Characters" xml:space="preserve"><value>Mga Character</value></data>
+  <data name="CharSelect.Title.Tribe" xml:space="preserve"><value>Tribe</value></data>
+  <data name="CharSelect.Title.Class" xml:space="preserve"><value>Class</value></data>
+  <data name="CharSelect.Title.Face" xml:space="preserve"><value>Mukha</value></data>
+  <data name="CharSelect.NewCharacter" xml:space="preserve"><value>Gumawa ng character</value></data>
+  <data name="CharSelect.Button.Create" xml:space="preserve"><value>Gumawa</value></data>
+  <data name="CharSelect.Button.Select" xml:space="preserve"><value>Piliin</value></data>
+  <data name="CharSelect.Button.Exit" xml:space="preserve"><value>Lumabas</value></data>
+  <data name="CharSelect.Button.Back" xml:space="preserve"><value>Bumalik</value></data>
+  <data name="CharSelect.Button.Delete" xml:space="preserve"><value>Burahin</value></data>
+  <data name="Chat.Tab.All" xml:space="preserve"><value>Lahat</value></data>
+  <data name="Chat.Tab.Clan" xml:space="preserve"><value>Clan</value></data>
+  <data name="Chat.Tab.Party" xml:space="preserve"><value>Party</value></data>
+  <data name="Chat.Tab.Trade" xml:space="preserve"><value>Trade</value></data>
+  <data name="Chat.Tab.Whisper" xml:space="preserve"><value>Whisper</value></data>
+  <data name="Chat.Alert" xml:space="preserve"><value>Alerto</value></data>
+  <data name="ServerSelect.Title" xml:space="preserve"><value>Mga Server</value></data>
+  <data name="ServerSelect.Hint" xml:space="preserve"><value>Arrows: pumili   Enter: kumonekta   Esc: bumalik</value></data>
+  <data name="GlobalBonuses.Title" xml:space="preserve"><value>Mga global bonus</value></data>
+  <data name="GlobalBonuses.ExpRate" xml:space="preserve"><value>EXP rate</value></data>
+  <data name="GlobalBonuses.ExpEvent" xml:space="preserve"><value>EXP event</value></data>
+  <data name="GlobalBonuses.AgingCost" xml:space="preserve"><value>Halaga ng Aging</value></data>
+  <data name="GlobalBonuses.MixCost" xml:space="preserve"><value>Halaga ng Mixing</value></data>
+  <data name="GlobalBonuses.Contacting" xml:space="preserve"><value>Kinokontak ang server...</value></data>
+  <data name="Rewards.UpdateFailed" xml:space="preserve"><value>Hindi ma-update ang mga reward.</value></data>
+  <data name="Rewards.Title" xml:space="preserve"><value>Mga Event at Reward</value></data>
+  <data name="Rewards.Claim" xml:space="preserve"><value>Kunin ({0})</value></data>
+  <data name="RecentDrops.Title" xml:space="preserve"><value>Mga kamakailang nakitang drop</value></data>
+  <data name="RecentDrops.None" xml:space="preserve"><value>Walang nakitang item sa session na ito.</value></data>
+  <data name="ShopDirectory.Title" xml:space="preserve"><value>Mga shop ng player</value></data>
+  <data name="ShopDirectory.None" xml:space="preserve"><value>Walang shop na nakikita.</value></data>
+  <data name="Premium.BuffActivated" xml:space="preserve"><value>Na-activate na ang premium buff.</value></data>
+  <data name="Hud.ExpGained" xml:space="preserve"><value>Nakuhang EXP: {0:N0}</value></data>
+  <data name="QuickMenu.Calendar" xml:space="preserve"><value>Kalendaryo</value></data>
+  <data name="QuickMenu.Auction" xml:space="preserve"><value>Auction</value></data>
+  <data name="QuickMenu.Security" xml:space="preserve"><value>Seguridad</value></data>
+  <data name="QuickMenu.RecentDrops" xml:space="preserve"><value>Mga recent drop</value></data>
+  <data name="QuickMenu.CoinHistory" xml:space="preserve"><value>Kasaysayan ng coin</value></data>
+  <data name="QuickMenu.Events" xml:space="preserve"><value>Mga Event</value></data>
+  <data name="QuickMenu.Eragon" xml:space="preserve"><value>Eragon</value></data>
+  <data name="QuickMenu.Rankings" xml:space="preserve"><value>Mga Ranking</value></data>
+  <data name="QuickMenu.Distributor" xml:space="preserve"><value>Item distributor</value></data>
+  <data name="QuickMenu.ItemShop" xml:space="preserve"><value>Item Shop</value></data>
+  <data name="QuickMenu.Mail" xml:space="preserve"><value>Mail</value></data>
+  <data name="QuickMenu.AutoHuntNeedsQuest" xml:space="preserve"><value>Kailangan ng aktibong hunt quest sa labas ng bayan para sa Auto-hunt.</value></data>
+  <data name="QuickMenu.News" xml:space="preserve"><value>Balita at Suporta</value></data>
+  <data name="QuickMenu.AutoHunt" xml:space="preserve"><value>Auto-hunt</value></data>
+  <data name="QuickMenu.MoreOpen" xml:space="preserve"><value>Iba pa  ^</value></data>
+  <data name="QuickMenu.MoreClosed" xml:space="preserve"><value>Iba pa  v</value></data>
+  <data name="QuickMenu.Quests" xml:space="preserve"><value>Mga Quest</value></data>
+  <data name="SystemMenu.Help" xml:space="preserve"><value>Tulong</value></data>
+  <data name="SystemMenu.Quit" xml:space="preserve"><value>Umalis</value></data>
+  <data name="LootFilter.LifePotions" xml:space="preserve"><value>Life potion</value></data>
+  <data name="LootFilter.ManaPotions" xml:space="preserve"><value>Mana potion</value></data>
+  <data name="LootFilter.StaminaPotions" xml:space="preserve"><value>Stamina potion</value></data>
+  <data name="LootFilter.Armor" xml:space="preserve"><value>Armor at robe</value></data>
+  <data name="LootFilter.Shields" xml:space="preserve"><value>Shield</value></data>
+  <data name="LootFilter.Boots" xml:space="preserve"><value>Boots</value></data>
+  <data name="LootFilter.Gloves" xml:space="preserve"><value>Gloves</value></data>
+  <data name="LootFilter.Bracelets" xml:space="preserve"><value>Bracelet at orb</value></data>
+  <data name="LootFilter.Amulets" xml:space="preserve"><value>Amulet</value></data>
+  <data name="LootFilter.Rings" xml:space="preserve"><value>Ring</value></data>
+  <data name="LootFilter.Sheltoms" xml:space="preserve"><value>Sheltom</value></data>
+  <data name="LootFilter.ForceOrbs" xml:space="preserve"><value>Force orb</value></data>
+  <data name="LootFilter.Other" xml:space="preserve"><value>Iba pang item</value></data>
+  <data name="LootFilter.Crystals" xml:space="preserve"><value>Summoning crystal</value></data>
+  <data name="LootFilter.Cores" xml:space="preserve"><value>Core</value></data>
+  <data name="LootFilter.Job.Mechanician" xml:space="preserve"><value>Mechanician</value></data>
+  <data name="LootFilter.Job.Fighter" xml:space="preserve"><value>Fighter</value></data>
+  <data name="LootFilter.Job.Pikeman" xml:space="preserve"><value>Pikeman</value></data>
+  <data name="LootFilter.Job.Archer" xml:space="preserve"><value>Archer</value></data>
+  <data name="LootFilter.Job.Knight" xml:space="preserve"><value>Knight</value></data>
+  <data name="LootFilter.Job.Atalanta" xml:space="preserve"><value>Atalanta</value></data>
+  <data name="LootFilter.Job.Priestess" xml:space="preserve"><value>Priestess</value></data>
+  <data name="LootFilter.Job.Magician" xml:space="preserve"><value>Magician</value></data>
+  <data name="LootFilter.Job.Assassin" xml:space="preserve"><value>Assassin</value></data>
+  <data name="LootFilter.Job.MartialArtist" xml:space="preserve"><value>Martial Artist</value></data>
+  <data name="LootFilter.Job.Shaman" xml:space="preserve"><value>Shaman</value></data>
+  <data name="Settings.Tab.Video" xml:space="preserve"><value>Video</value></data>
+  <data name="Settings.Tab.Audio" xml:space="preserve"><value>Audio</value></data>
+  <data name="Settings.Tab.Keys" xml:space="preserve"><value>Keys</value></data>
+  <data name="Settings.Tab.Other" xml:space="preserve"><value>Iba pa</value></data>
+  <data name="Settings.Voice.Nearby" xml:space="preserve"><value>Malapit</value></data>
+  <data name="Settings.Voice.Party" xml:space="preserve"><value>Party</value></data>
+  <data name="Settings.Voice.Clan" xml:space="preserve"><value>Clan</value></data>
+  <data name="Settings.Voice.Map" xml:space="preserve"><value>Lahat sa mapa</value></data>
+  <data name="Shortcut.Inventory" xml:space="preserve"><value>Inventory</value></data>
+  <data name="Shortcut.Character" xml:space="preserve"><value>Character</value></data>
+  <data name="Shortcut.Skills" xml:space="preserve"><value>Mga Skill</value></data>
+  <data name="Shortcut.Quests" xml:space="preserve"><value>Mga Quest</value></data>
+  <data name="Shortcut.Social" xml:space="preserve"><value>Social</value></data>
+  <data name="Shortcut.SystemMenu" xml:space="preserve"><value>System menu</value></data>
+  <data name="Shortcut.RunWalk" xml:space="preserve"><value>Tumakbo / maglakad</value></data>
+  <data name="Shortcut.Settings" xml:space="preserve"><value>Settings</value></data>
+  <data name="Shortcut.SwitchBag" xml:space="preserve"><value>Palitan ang bag (A/B)</value></data>
+  <data name="Shortcut.SwitchWeapons" xml:space="preserve"><value>Palitan ang weapon set</value></data>
+  <data name="Shortcut.BeltPotion" xml:space="preserve"><value>Belt potion {0}</value></data>
+  <data name="Shortcut.Skill" xml:space="preserve"><value>Skill shortcut {0}</value></data>
+  <data name="Shortcut.Minimap" xml:space="preserve"><value>Minimap</value></data>
+  <data name="Shortcut.News" xml:space="preserve"><value>Balita</value></data>
+  <data name="Shortcut.GroundNames" xml:space="preserve"><value>Mga pangalan ng item sa lupa</value></data>
+  <data name="Shortcut.RotateLeft" xml:space="preserve"><value>I-rotate ang camera pakaliwa</value></data>
+  <data name="Shortcut.RotateRight" xml:space="preserve"><value>I-rotate ang camera pakanan</value></data>
+  <data name="Shortcut.ZoomIn" xml:space="preserve"><value>Mag-zoom in</value></data>
+  <data name="Shortcut.ZoomOut" xml:space="preserve"><value>Mag-zoom out</value></data>
+  <data name="Shortcut.TiltUp" xml:space="preserve"><value>I-tilt pataas ang camera</value></data>
+  <data name="Shortcut.TiltDown" xml:space="preserve"><value>I-tilt pababa ang camera</value></data>
+  <data name="Shortcut.ActionBar" xml:space="preserve"><value>Action bar: slot {0}</value></data>
+  <data name="Shortcut.PushToTalk" xml:space="preserve"><value>Push to talk</value></data>
+  <data name="Shortcut.HideHud" xml:space="preserve"><value>Itago ang buong HUD (para sa mga screenshot)</value></data>
+  <data name="Shortcut.PersistentInfo" xml:space="preserve"><value>Permanenteng impormasyon ng character</value></data>
+  <data name="Shortcut.DungeonCamera" xml:space="preserve"><value>2D / 3D na camera sa dungeon</value></data>
+  <data name="Shortcut.Pvp" xml:space="preserve"><value>PvP mode: on / off</value></data>
+  <data name="Settings.Toggle.On" xml:space="preserve"><value>{0}: Naka-on</value></data>
+  <data name="Settings.Toggle.Off" xml:space="preserve"><value>{0}: Naka-off</value></data>
+  <data name="Settings.Switch.OnWords" xml:space="preserve"><value>naka-on,on</value></data>
+  <data name="Settings.Switch.OffWords" xml:space="preserve"><value>naka-off,off</value></data>
+  <data name="Settings.Row.ChatTranslateTo" xml:space="preserve"><value>I-translate ang chat sa: {0}</value></data>
+  <data name="Settings.ChatTranslate.Off" xml:space="preserve"><value>Huwag i-translate</value></data>
+  <data name="Settings.ChatTranslate.Game" xml:space="preserve"><value>Wika ng laro</value></data>
+  <data name="Settings.Row.LevelGuide" xml:space="preserve"><value>Level guide</value></data>
+  <data name="Settings.Row.ScreenReflections" xml:space="preserve"><value>Mga reflection sa screen</value></data>
+  <data name="Settings.Row.Fog" xml:space="preserve"><value>Fog</value></data>
+  <data name="Settings.Row.VolumetricLight" xml:space="preserve"><value>Volumetric light</value></data>
+  <data name="Settings.Row.ColorGrading" xml:space="preserve"><value>Color grading</value></data>
+  <data name="Settings.Row.AutoExposure" xml:space="preserve"><value>Auto exposure</value></data>
+  <data name="Settings.Row.Bloom" xml:space="preserve"><value>Bloom</value></data>
+  <data name="Settings.Row.GroundGold" xml:space="preserve"><value>Ipakita ang gold sa lupa</value></data>
+  <data name="Settings.Row.GroundPotions" xml:space="preserve"><value>Ipakita ang mga potion sa lupa</value></data>
+  <data name="Settings.Row.GroundWeapons" xml:space="preserve"><value>Ipakita ang mga weapon sa lupa</value></data>
+  <data name="Settings.Row.TradeChat" xml:space="preserve"><value>Trade chat</value></data>
+  <data name="Settings.Row.CastleNotices" xml:space="preserve"><value>Mga abiso ng Bless Castle</value></data>
+  <data name="Settings.Row.OnlinePlayers" xml:space="preserve"><value>Ipakita ang mga online na player</value></data>
+  <data name="Settings.Row.UseLootFilter" xml:space="preserve"><value>Gamitin ang loot filter</value></data>
+  <data name="Settings.Row.MinimumLevel" xml:space="preserve"><value>Minimum na level: {0}</value></data>
+  <data name="Settings.Row.MaximumLevel" xml:space="preserve"><value>Maximum na level: {0}</value></data>
+  <data name="Settings.Row.Unlimited" xml:space="preserve"><value>Walang limitasyon</value></data>
+  <data name="Settings.Row.RareEquipment" xml:space="preserve"><value>Laging ipakita ang rare equipment</value></data>
+  <data name="Settings.Row.ShowAll" xml:space="preserve"><value>Ipakita lahat (loot filter)</value></data>
+  <data name="Settings.VoiceChat" xml:space="preserve"><value>Voice chat</value></data>
+  <data name="Settings.Microphone" xml:space="preserve"><value>Mikropono</value></data>
+  <data name="Settings.Row.SpeakTo" xml:space="preserve"><value>Magsalita kay/sa: {0}</value></data>
+  <data name="Settings.Row.PushToTalkKey" xml:space="preserve"><value>Push to talk: {0}</value></data>
+  <data name="Settings.Row.Device" xml:space="preserve"><value>Device: {0}</value></data>
+  <data name="Settings.Row.SystemDefault" xml:space="preserve"><value>Default ng system</value></data>
+  <data name="Settings.Row.PushToTalkMode" xml:space="preserve"><value>Mode: Push to talk</value></data>
+  <data name="Settings.Row.AlwaysShow" xml:space="preserve"><value>Laging ipakita: {0}</value></data>
+  <data name="Settings.MouseButtons.Swapped" xml:space="preserve"><value>Pinagpalit</value></data>
+  <data name="Settings.MouseButtons.Off" xml:space="preserve"><value>Naka-off</value></data>
+  <data name="Settings.MouseButtons.Default" xml:space="preserve"><value>Default</value></data>
+  <data name="Settings.Row.CameraSideButtons" xml:space="preserve"><value>Mga side button ng camera: {0}</value></data>
+  <data name="Settings.Row.BellatraBoss" xml:space="preserve"><value>Pagkatalo ng boss sa Bellatra</value></data>
+  <data name="Settings.Row.ClanMembership" xml:space="preserve"><value>Clan: pagsali at pag-alis</value></data>
+  <data name="Settings.Row.EventRewards" xml:space="preserve"><value>Mga reward ng event</value></data>
+  <data name="Settings.Row.PremiumBuffs" xml:space="preserve"><value>Pag-activate ng premium buff</value></data>
+  <data name="Settings.Row.EventCalendar" xml:space="preserve"><value>Mga abiso ng event calendar</value></data>
+  <data name="Settings.Row.CharacterNames" xml:space="preserve"><value>Ipakita ang mga pangalan ng character</value></data>
+  <data name="Settings.Row.Damage" xml:space="preserve"><value>Ipakita ang damage</value></data>
+  <data name="Settings.Row.GroundItemNames" xml:space="preserve"><value>Laging ipakita ang mga pangalan ng item sa lupa</value></data>
+  <data name="Settings.Row.InvertCameraRotation" xml:space="preserve"><value>I-invert ang pag-rotate ng camera</value></data>
+  <data name="Settings.Row.InvertCameraScroll" xml:space="preserve"><value>I-invert ang scroll ng camera</value></data>
+  <data name="Settings.Row.DungeonCameraTopDown" xml:space="preserve"><value>Camera sa dungeon: 2D (top-down)</value></data>
+  <data name="Settings.Row.DungeonCameraNormal" xml:space="preserve"><value>Camera sa dungeon: 3D (normal na camera)</value></data>
+  <data name="Settings.Row.HudScale" xml:space="preserve"><value>Laki ng HUD: {0}%</value></data>
+  <data name="Settings.Row.MoveChat" xml:space="preserve"><value>Ilipat ang chat (i-drag ang chat)</value></data>
+  <data name="Settings.Row.TutorialTips" xml:space="preserve"><value>Mga tutorial tip</value></data>
+  <data name="Settings.Row.ResetInterface" xml:space="preserve"><value>I-reset ang interface (laki at chat)</value></data>
+  <data name="Settings.Row.GlobalBonuses" xml:space="preserve"><value>Mga abiso ng global bonus</value></data>
+  <data name="Settings.Row.ExpGained" xml:space="preserve"><value>Nakuhang EXP</value></data>
+  <data name="Settings.Row.BellatraResults" xml:space="preserve"><value>Mga abiso ng resulta ng Bellatra</value></data>
+  <data name="Settings.Row.BellatraSeals" xml:space="preserve"><value>Mga team seal ng Bellatra</value></data>
+  <data name="Settings.MouseAction.Off" xml:space="preserve"><value>Naka-off</value></data>
+  <data name="Settings.MouseAction.RotateLeft" xml:space="preserve"><value>I-rotate pakaliwa</value></data>
+  <data name="Settings.MouseAction.RotateRight" xml:space="preserve"><value>I-rotate pakanan</value></data>
+  <data name="Settings.MouseAction.ZoomIn" xml:space="preserve"><value>Mag-zoom in</value></data>
+  <data name="Settings.MouseAction.ZoomOut" xml:space="preserve"><value>Mag-zoom out</value></data>
+  <data name="Settings.MouseAction.TiltUp" xml:space="preserve"><value>I-tilt pataas</value></data>
+  <data name="Settings.MouseAction.TiltDown" xml:space="preserve"><value>I-tilt pababa</value></data>
+  <data name="Settings.Row.QuestTracker" xml:space="preserve"><value>Quest tracker</value></data>
+  <data name="Settings.Row.WithoutSpecialization" xml:space="preserve"><value>Walang specialization</value></data>
+  <data name="Settings.Card.Textures" xml:space="preserve"><value>Mga Texture</value></data>
+  <data name="Settings.Card.InterfaceAndNames" xml:space="preserve"><value>Interface at mga pangalan</value></data>
+  <data name="Settings.Card.BackgroundMusic" xml:space="preserve"><value>Background music</value></data>
+  <data name="Settings.Card.SoundEffects" xml:space="preserve"><value>Mga sound effect</value></data>
+  <data name="Settings.Card.Windows" xml:space="preserve"><value>Mga Window</value></data>
+  <data name="Settings.Card.Skills" xml:space="preserve"><value>Mga Skill</value></data>
+  <data name="Settings.Card.Language" xml:space="preserve"><value>Wika</value></data>
+  <data name="Settings.Card.Interface" xml:space="preserve"><value>Interface</value></data>
+  <data name="Settings.Section.Character" xml:space="preserve"><value>Character</value></data>
+  <data name="Settings.Section.Voice" xml:space="preserve"><value>Boses</value></data>
+  <data name="Settings.Section.Potions" xml:space="preserve"><value>Mga Potion</value></data>
+  <data name="Settings.Section.Camera" xml:space="preserve"><value>Camera</value></data>
+  <data name="Settings.Section.GraphicsQuality" xml:space="preserve"><value>Kalidad ng graphics</value></data>
+  <data name="Settings.Section.EnhancedGraphics" xml:space="preserve"><value>Enhanced graphics</value></data>
+  <data name="Settings.Section.Display" xml:space="preserve"><value>Display at resolution</value></data>
+  <data name="Settings.Section.Game" xml:space="preserve"><value>Laro</value></data>
+  <data name="Settings.Section.LootFilter" xml:space="preserve"><value>Loot filter</value></data>
+  <data name="Settings.Section.ChatNotifications" xml:space="preserve"><value>Mga notification ng chat</value></data>
+  <data name="Settings.PressKey" xml:space="preserve"><value>Pumindot ng key</value></data>
+  <data name="Settings.RestoreDefaults" xml:space="preserve"><value>Ibalik ang mga default</value></data>
+  <data name="Settings.Hint.LootNames" xml:space="preserve"><value>Paghiwalayin ang mga pangalan gamit ang kuwit. Kinukumpirma ng Enter, kinakansela ng Esc.</value></data>
+  <data name="Settings.Hint.Rebind" xml:space="preserve"><value>I-click para i-rebind. Ibinabalik ng Shift + click ang shortcut.</value></data>
+  <data name="Settings.Hint.Scroll" xml:space="preserve"><value>Mag-scroll para sa iba pang opsyon.</value></data>
+  <data name="Settings.Cancel" xml:space="preserve"><value>Kanselahin</value></data>
+  <data name="Settings.Save" xml:space="preserve"><value>I-SAVE</value></data>
+  <data name="QuestWindow.ResetsDaily" xml:space="preserve"><value>Nagre-reset araw-araw.</value></data>
+  <data name="QuestWindow.AutoGuide" xml:space="preserve"><value>Auto guide</value></data>
+  <data name="QuestWindow.Tracker" xml:space="preserve"><value>Tracker</value></data>
+  <data name="QuestWindow.MonthlyNotStarted" xml:space="preserve"><value>Hindi pa nagsisimula ang hamon ngayong buwan.</value></data>
+  <data name="QuestWindow.SelectQuest" xml:space="preserve"><value>Pumili ng quest mula sa listahan.</value></data>
+  <data name="QuestWindow.NoQuests" xml:space="preserve"><value>Walang quest.</value></data>
+  <data name="QuestWindow.Completed" xml:space="preserve"><value>Tapos na</value></data>
+  <data name="QuestWindow.InProgress" xml:space="preserve"><value>Ginagawa</value></data>
+  <data name="QuestWindow.Loading" xml:space="preserve"><value>Naglo-load...</value></data>
+  <data name="QuestWindow.Now" xml:space="preserve"><value>Ngayon</value></data>
+  <data name="QuestWindow.QuestCompleted" xml:space="preserve"><value>Tapos na ang quest.</value></data>
+  <data name="QuestWindow.ClickGo" xml:space="preserve"><value>I-click ang Go para sundan ang ruta.</value></data>
+  <data name="QuestWindow.ReadInstructions" xml:space="preserve"><value>Basahin ang mga tagubilin ng quest.</value></data>
+  <data name="QuestWindow.Objectives" xml:space="preserve"><value>Mga Layunin</value></data>
+  <data name="QuestWindow.Done" xml:space="preserve"><value>Tapos</value></data>
+  <data name="QuestWindow.Reward" xml:space="preserve"><value>Reward</value></data>
+  <data name="QuestWindow.Tracking" xml:space="preserve"><value>Tina-track</value></data>
+  <data name="QuestWindow.Track" xml:space="preserve"><value>I-track</value></data>
+  <data name="QuestWindow.Go" xml:space="preserve"><value>GO</value></data>
+  <data name="QuestWindow.LoadingDaily" xml:space="preserve"><value>Nilo-load ang mga daily quest...</value></data>
+  <data name="QuestWindow.Daily" xml:space="preserve"><value>Daily</value></data>
+  <data name="QuestWindow.CompleteToClaim" xml:space="preserve"><value>Tapusin ang goal para makuha.</value></data>
+  <data name="QuestWindow.Claimed" xml:space="preserve"><value>Nakuha na</value></data>
+  <data name="QuestWindow.Waiting" xml:space="preserve"><value>Naghihintay...</value></data>
+  <data name="QuestWindow.Claim" xml:space="preserve"><value>Kunin</value></data>
+  <data name="QuestWindow.HowTo" xml:space="preserve"><value>? Paano</value></data>
+  <data name="QuestWindow.Goal.MonsterKills" xml:space="preserve"><value>Talunin ang mga monster</value></data>
+  <data name="QuestWindow.Goal.Sheltoms" xml:space="preserve"><value>Mag-ipon ng Sheltom</value></data>
+  <data name="QuestWindow.Goal.Potions" xml:space="preserve"><value>Gumamit ng mga potion</value></data>
+  <data name="QuestWindow.Goal.MonsterDrops" xml:space="preserve"><value>Mag-ipon ng mga item</value></data>
+  <data name="QuestWindow.Goal.BellatraEntries" xml:space="preserve"><value>Pumasok sa Bellatra</value></data>
+  <data name="QuestWindow.Goal.Level" xml:space="preserve"><value>Mag-level up</value></data>
+  <data name="QuestWindow.Goal.Login" xml:space="preserve"><value>Mag-log in</value></data>
+  <data name="QuestWindow.Tab.Journey" xml:space="preserve"><value>Journey</value></data>
+  <data name="QuestWindow.Tab.Daily" xml:space="preserve"><value>Daily</value></data>
+  <data name="QuestWindow.Tab.Monthly" xml:space="preserve"><value>Monthly</value></data>
+  <data name="QuestWindow.Tab.Completed" xml:space="preserve"><value>Tapos na</value></data>
+  <data name="QuestWindow.AvailableAtLevel" xml:space="preserve"><value>Available sa level {0}.</value></data>
+  <data name="QuestWindow.CompletedCount" xml:space="preserve"><value>TAPOS NA ({0})</value></data>
+  <data name="QuestWindow.InProgressCount" xml:space="preserve"><value>GINAGAWA ({0})</value></data>
+  <data name="QuestDocument.Avalon.MeetSkadi" xml:space="preserve"><value>Hanapin si Adventurer Skadi sa Ricarten.
+
+Ipapakilala niya ang starter equipment mo at ang unang hunt ng Adventurer Journey.</value></data>
+  <data name="QuestDocument.Avalon.MeetJin" xml:space="preserve"><value>Hanapin si Adventurer Jin sa Pillai.
+
+Ipapakilala niya ang starter equipment mo at ang unang hunt ng Adventurer Journey.</value></data>
+  <data name="QuestDocument.Avalon.Preparation" xml:space="preserve"><value>I-equip ang starter weapon mo at maglagay ng potion sa belt mo.
+
+Bumalik sa guide ng Journey mo para sa mga tagubilin ng unang hunt.
+
+Nagbibigay ang hakbang na ito ng experience, 500 Gold at 15 maliliit na life potion.</value></data>
+  <data name="QuestDocument.Avalon.SkadiHunt" xml:space="preserve"><value>Talunin ang 3 Hopy sa panimulang kagubatan.
+
+Ipagpatuloy ang pag-hunt hanggang makuha mo ang hinihinging crystal, at ihatid ito kay Adventurer Skadi sa Ricarten.
+
+Nagbibigay ang paghahatid ng experience at 300 Gold.</value></data>
+  <data name="QuestDocument.Avalon.JinHunt" xml:space="preserve"><value>Talunin ang 3 Rabies sa kagubatan sa labas ng Pillai.
+
+Ipagpatuloy ang pag-hunt hanggang makuha mo ang hinihinging crystal, at ihatid ito kay Adventurer Jin sa Pillai.
+
+Nagbibigay ang paghahatid ng experience at 300 Gold.</value></data>
+  <data name="QuestDocument.Avalon.Finished" xml:space="preserve"><value>Natapos mo na ang Adventurer Journey.
+
+Tapos na ang paghahanda mo at ang unang hunt kasama ang guide ng tribe mo.</value></data>
+  <data name="QuestDocument.Avalon.JourneyStart" xml:space="preserve"><value>Maligayang pagdating sa Adventurer Journey.
+
+Tanggapin ang starter equipment mo, i-equip ang weapon mo at maglagay ng potion sa belt mo. Kausapin mo ulit ako kapag handa ka na.</value></data>
+  <data name="QuestDocument.Avalon.JourneyBag" xml:space="preserve"><value>I-equip ang starter weapon mo at maglagay ng kahit isang potion sa belt mo bago magpatuloy.
+
+Kung may kulang na piraso ng starter equipment, kausapin mo ako para makuha ito.</value></data>
+  <data name="QuestDocument.Avalon.JourneyHuntSkadi" xml:space="preserve"><value>Gaganapin ang unang hunt mo sa kagubatan sa hilaga ng Ricarten.
+
+Talunin ang 3 Hopy, kunin ang hinihinging crystal at bumalik para kausapin ako.</value></data>
+  <data name="QuestDocument.Avalon.JourneyHuntJin" xml:space="preserve"><value>Gaganapin ang unang hunt mo sa kagubatan malapit sa Pillai.
+
+Talunin ang 3 Rabies, kunin ang hinihinging crystal at bumalik para kausapin ako.</value></data>
+  <data name="QuestDocument.Avalon.JourneyCollect" xml:space="preserve"><value>Tapusin ang hunt at dalhin ang hinihinging crystal.
+
+Matapos talunin ang tatlong monster, ipagpatuloy ang pag-hunt hanggang makuha mo ang crystal.</value></data>
+  <data name="QuestDocument.Avalon.JourneyFinish" xml:space="preserve"><value>Natapos mo na ang unang hunt mo.
+
+Ihatid ang crystal para makatanggap ng experience at 300 Gold at tapusin ang Adventurer Journey.</value></data>
+  <data name="QuestDocument.Avalon.ObjectiveSkadi" xml:space="preserve"><value>Kausapin si Skadi sa Ricarten.</value></data>
+  <data name="QuestDocument.Avalon.ObjectiveJin" xml:space="preserve"><value>Kausapin si Jin sa Pillai.</value></data>
+  <data name="QuestDocument.Avalon.ObjectivePreparation" xml:space="preserve"><value>I-equip ang weapon at maglagay ng potion sa belt.</value></data>
+  <data name="QuestDocument.Avalon.ObjectiveOther" xml:space="preserve"><value>Sundin ang mga tagubilin ng quest.</value></data>
+  <data name="QuestDocument.Avalon.RewardPreparation" xml:space="preserve"><value>EXP, 500 Gold at 15 potion.</value></data>
+  <data name="QuestDocument.Avalon.RewardMeet" xml:space="preserve"><value>Starter equipment at experience.</value></data>
+  <data name="QuestDocument.Avalon.RewardOther" xml:space="preserve"><value>Tingnan ang deskripsyon ng quest.</value></data>
+  <data name="QuestRoute.WaitCalculation" xml:space="preserve"><value>Hintayin ang kasalukuyang pagkalkula ng ruta.</value></data>
+  <data name="QuestRoute.Unreachable" xml:space="preserve"><value>Hindi maabot ang destinasyon sa rutang ito.</value></data>
+  <data name="QuestRoute.Calculating" xml:space="preserve"><value>Kinakalkula ang ruta...</value></data>
+  <data name="QuestRoute.NoSafeRoute" xml:space="preserve"><value>Walang nahanap na ligtas na ruta.</value></data>
+  <data name="QuestRoute.Following" xml:space="preserve"><value>Sinusundan ang ruta ng quest...</value></data>
+  <data name="QuestRoute.Arrived" xml:space="preserve"><value>Narating mo na ang layunin ng quest.</value></data>
+  <data name="QuestRoute.CannotWalk" xml:space="preserve"><value>Hindi makalakad ang character ngayon.</value></data>
+  <data name="QuestRoute.Obstacle" xml:space="preserve"><value>Naputol ang ruta dahil sa hadlang.</value></data>
+  <data name="QuestRoute.ApproachingGuide" xml:space="preserve"><value>Papalapit sa guide...</value></data>
+  <data name="QuestRoute.EnterField" xml:space="preserve"><value>Pumasok sa {0} para simulan ang rutang ito.</value></data>
+  <data name="Chat.Event.CrystalsOff" xml:space="preserve"><value>Naka-off na ang crystal event.</value></data>
+  <data name="Chat.Event.CrystalsHalfDay" xml:space="preserve"><value>Crystal event: tanghali hanggang hatinggabi.</value></data>
+  <data name="Chat.Event.CrystalsAllDay" xml:space="preserve"><value>Crystal event: buong araw.</value></data>
+  <data name="Chat.Event.Drops" xml:space="preserve"><value>Nagbago ang mga event drop. Tingnan ang kalendaryo.</value></data>
+  <data name="Chat.Event.Aging" xml:space="preserve"><value>Nagbago ang mga global na setting ng Aging.</value></data>
+  <data name="Chat.Event.Mixing" xml:space="preserve"><value>Nagbago ang mga global na setting ng mixing at alchemy.</value></data>
+  <data name="Chat.Event.Exp" xml:space="preserve"><value>EXP event: {0}%.</value></data>
+  <data name="Chat.Event.ExpMultiplier" xml:space="preserve"><value>Global na EXP multiplier: {0}x.</value></data>
+  <data name="News.Kind.Event" xml:space="preserve"><value>Event</value></data>
+  <data name="News.Kind.Improvement" xml:space="preserve"><value>Pagpapabuti</value></data>
+  <data name="News.Kind.News" xml:space="preserve"><value>Balita</value></data>
+  <data name="News.Loading" xml:space="preserve"><value>Naglo-load…</value></data>
+  <data name="News.Unavailable" xml:space="preserve"><value>Hindi available ang news feed.</value></data>
+  <data name="News.None" xml:space="preserve"><value>Walang balita.</value></data>
+  <data name="News.Link.Title" xml:space="preserve"><value>Buksan ang link?</value></data>
+  <data name="News.Link.Cancel" xml:space="preserve"><value>Kanselahin</value></data>
+  <data name="News.Link.Open" xml:space="preserve"><value>BUKSAN</value></data>
+  <data name="News.Ticket.Sent" xml:space="preserve"><value>Naipadala na ang ticket.</value></data>
+  <data name="News.Ticket.Replied" xml:space="preserve"><value>Naipadala na ang sagot.</value></data>
+  <data name="News.Ticket.Edited" xml:space="preserve"><value>Binago ang ticket.</value></data>
+  <data name="News.Ticket.Closed" xml:space="preserve"><value>Kinansela ang ticket.</value></data>
+  <data name="News.Ticket.Waiting" xml:space="preserve"><value>Naghihintay sa server...</value></data>
+  <data name="News.Ticket.Invalid" xml:space="preserve"><value>Punan ang subject at deskripsyon.</value></data>
+  <data name="News.Ticket.Error" xml:space="preserve"><value>Hindi available ang suporta.</value></data>
+  <data name="News.Ticket.Refresh" xml:space="preserve"><value>I-refresh</value></data>
+  <data name="News.Ticket.New" xml:space="preserve"><value>+ BAGONG TICKET</value></data>
+  <data name="News.Ticket.None" xml:space="preserve"><value>Walang ticket.</value></data>
+  <data name="News.Ticket.Back" xml:space="preserve"><value>‹ Bumalik</value></data>
+  <data name="News.Ticket.Edit" xml:space="preserve"><value>I-edit</value></data>
+  <data name="News.Ticket.Confirm" xml:space="preserve"><value>Kumpirmahin</value></data>
+  <data name="News.Ticket.Cancel" xml:space="preserve"><value>Kanselahin ang ticket</value></data>
+  <data name="News.Ticket.CancelledByYou" xml:space="preserve"><value>Kinansela mo ang ticket.</value></data>
+  <data name="News.Ticket.ClosedByStaff" xml:space="preserve"><value>Isinara ng staff ang ticket.</value></data>
+  <data name="News.Ticket.ReplyHint" xml:space="preserve"><value>Magsulat ng sagot...</value></data>
+  <data name="News.Ticket.ReplySend" xml:space="preserve"><value>IPADALA</value></data>
+  <data name="News.Ticket.Subject" xml:space="preserve"><value>Subject</value></data>
+  <data name="News.Ticket.Description" xml:space="preserve"><value>Deskripsyon</value></data>
+  <data name="News.Ticket.Send" xml:space="preserve"><value>Ipadala ang ticket</value></data>
+  <data name="News.Ticket.FormBack" xml:space="preserve"><value>Bumalik</value></data>
+  <data name="News.Ticket.SaveChanges" xml:space="preserve"><value>I-save ang mga pagbabago</value></data>
+  <data name="News.Ticket.Status.Answered" xml:space="preserve"><value>Nasagot na</value></data>
+  <data name="News.Ticket.Status.Closed" xml:space="preserve"><value>Sarado</value></data>
+  <data name="News.Ticket.Status.Cancelled" xml:space="preserve"><value>Kinansela</value></data>
+  <data name="News.Ticket.Status.Open" xml:space="preserve"><value>Bukas</value></data>
+  <data name="News.Link.Discord" xml:space="preserve"><value>Buksan ang Discord invite ng komunidad sa bagong tab?</value></data>
+  <data name="News.Link.Instagram" xml:space="preserve"><value>Buksan ang Instagram ng komunidad sa bagong tab?</value></data>
+  <data name="News.Link.X" xml:space="preserve"><value>Buksan ang X ng komunidad sa bagong tab?</value></data>
+  <data name="News.Ticket.OneMessage" xml:space="preserve"><value>1 mensahe</value></data>
+  <data name="News.Ticket.Messages" xml:space="preserve"><value>{0} mensahe</value></data>
+  <data name="News.Ticket.Details" xml:space="preserve"><value>binuksan {0} · {1} · na-update {2}</value></data>
+  <data name="News.Ticket.Opened" xml:space="preserve"><value>Binuksan noong {0} ni {1}</value></data>
+  <data name="News.Ticket.Tab.News" xml:space="preserve"><value>Balita</value></data>
+  <data name="News.Ticket.Tab.Mine" xml:space="preserve"><value>Mga ticket ko</value></data>
+  <data name="News.Ticket.Tab.New" xml:space="preserve"><value>Bagong ticket</value></data>
+  <data name="News.Ticket.EditHint" xml:space="preserve"><value>Hangga't hindi pa sumasagot ang staff, maaari mong i-edit o kanselahin ang ticket na ito.</value></data>
+  <data name="News.Ticket.Category.Bug" xml:space="preserve"><value>Mag-report ng bug</value></data>
+  <data name="News.Ticket.Category.Improvement" xml:space="preserve"><value>Magmungkahi ng pagpapabuti</value></data>
+  <data name="News.Ticket.Category.Other" xml:space="preserve"><value>Iba pa</value></data>
+  <data name="News.Ticket.CategoryImprovement" xml:space="preserve"><value>Pagpapabuti</value></data>
+  <data name="News.Ticket.CategoryBug" xml:space="preserve"><value>Bug</value></data>
+  <data name="News.Ticket.CategoryOther" xml:space="preserve"><value>Iba pa</value></data>
+  <data name="Party.RequestSent" xml:space="preserve"><value>Naipadala na ang request.</value></data>
+  <data name="Party.Creating" xml:space="preserve"><value>GINAGAWA...</value></data>
+  <data name="Party.Create" xml:space="preserve"><value>GUMAWA NG PARTY</value></data>
+  <data name="Party.OpenHint" xml:space="preserve"><value>Open: malayang makakasali ang mga player</value></data>
+  <data name="Party.Open" xml:space="preserve"><value>Open</value></data>
+  <data name="Party.Closed" xml:space="preserve"><value>Closed</value></data>
+  <data name="Party.FindParty" xml:space="preserve"><value>Maghanap ng party</value></data>
+  <data name="Party.Searching" xml:space="preserve"><value>Naghahanap ng mga party...</value></data>
+  <data name="Party.NoOpenParties" xml:space="preserve"><value>Walang open na party sa ngayon.</value></data>
+  <data name="Party.Refresh" xml:space="preserve"><value>I-REFRESH</value></data>
+  <data name="Party.Back" xml:space="preserve"><value>BUMALIK</value></data>
+  <data name="Party.Request" xml:space="preserve"><value>MAG-REQUEST</value></data>
+  <data name="Party.Join" xml:space="preserve"><value>SUMALI</value></data>
+  <data name="Party.Empty.Party" xml:space="preserve"><value>Wala ka sa party.</value></data>
+  <data name="Party.Empty.Friends" xml:space="preserve"><value>Wala ka pang friend.</value></data>
+  <data name="Party.Empty.Clan" xml:space="preserve"><value>Hindi ka miyembro ng clan.</value></data>
+  <data name="Party.Empty.Blocked" xml:space="preserve"><value>Walang naka-block.</value></data>
+  <data name="Party.Empty.Recent" xml:space="preserve"><value>Walang kamakailang usapan.</value></data>
+  <data name="Party.Empty.FriendsHint" xml:space="preserve"><value>Magdagdag ng pangalan sa ibaba o gamitin ang Friend button ng target.</value></data>
+  <data name="Party.Empty.PartyHint" xml:space="preserve"><value>Gamitin ang Find para sumali sa isa, o mag-invite ng player gamit ang pangalan</value></data>
+  <data name="Party.Empty.BlockedHint" xml:space="preserve"><value>Hindi ka mabubulungan ng mga naka-block na player.</value></data>
+  <data name="Party.Empty.RecentHint" xml:space="preserve"><value>Dito lalabas ang mga kamakailan mong nakausap sa whisper.</value></data>
+  <data name="Party.Empty.PartyHintEnd" xml:space="preserve"><value>sa ibaba.</value></data>
+  <data name="Party.SelectName" xml:space="preserve"><value>Pumili ng pangalan sa listahan para makita ang mga aksyon.</value></data>
+  <data name="Party.VisitClanMaster" xml:space="preserve"><value>Bisitahin ang Clan Master sa bayan.</value></data>
+  <data name="Party.CharacterName" xml:space="preserve"><value>Pangalan ng character</value></data>
+  <data name="Party.Invite" xml:space="preserve"><value>MAG-INVITE</value></data>
+  <data name="Party.Block" xml:space="preserve"><value>I-BLOCK</value></data>
+  <data name="Party.Add" xml:space="preserve"><value>IDAGDAG</value></data>
+  <data name="Party.Profile" xml:space="preserve"><value>Profile ng character</value></data>
+  <data name="Party.Command.Leader" xml:space="preserve"><value>Leader</value></data>
+  <data name="Party.Command.Disband" xml:space="preserve"><value>I-disband</value></data>
+  <data name="Party.Command.Kick" xml:space="preserve"><value>I-kick</value></data>
+  <data name="Party.Command.Leave" xml:space="preserve"><value>Umalis</value></data>
+  <data name="Party.Title" xml:space="preserve"><value>Party   {0}/{1}</value></data>
+  <data name="Party.DirectoryDetail" xml:space="preserve"><value>Average na level {0} · {1}</value></data>
+  <data name="Party.Profile.Class" xml:space="preserve"><value>Class   {0}</value></data>
+  <data name="Party.Profile.Level" xml:space="preserve"><value>Level   {0}</value></data>
+  <data name="Party.Profile.Clan" xml:space="preserve"><value>Clan   {0}</value></data>
+  <data name="Party.Tab.Party" xml:space="preserve"><value>Party</value></data>
+  <data name="Party.Tab.Friends" xml:space="preserve"><value>Mga Friend</value></data>
+  <data name="Party.Tab.Clan" xml:space="preserve"><value>Clan</value></data>
+  <data name="Party.Tab.Blocked" xml:space="preserve"><value>Naka-block</value></data>
+  <data name="Party.Tab.Recent" xml:space="preserve"><value>Kamakailan</value></data>
+  <data name="Party.Action.Whisper" xml:space="preserve"><value>Whisper</value></data>
+  <data name="Party.Action.Find" xml:space="preserve"><value>Hanapin</value></data>
+  <data name="Party.Action.Profile" xml:space="preserve"><value>Profile</value></data>
+  <data name="Party.Action.Party" xml:space="preserve"><value>Party</value></data>
+  <data name="Party.Action.Remove" xml:space="preserve"><value>Alisin</value></data>
+  <data name="Party.Action.ClanChat" xml:space="preserve"><value>Clan chat</value></data>
+  <data name="Party.Action.Unblock" xml:space="preserve"><value>I-unblock</value></data>
+  <data name="Party.Action.Friend" xml:space="preserve"><value>Friend</value></data>
+  <data name="Party.Action.Block" xml:space="preserve"><value>I-block</value></data>
+  <data name="Party.Map" xml:space="preserve"><value>Mapa {0}</value></data>
+</root>

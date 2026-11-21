@@ -5,6 +5,7 @@ using Android.Graphics.Drawables;
 using Android.Views;
 using Android.Widget;
 using PristonTale.Mobile;
+using PristonTale.Simulation.Combat;
 using PristonTale.Simulation.Social.Castle;
 using PristonTale.Simulation.World.Bellatra;
 using PristonTale.Simulation.World.Calendar;
@@ -328,6 +329,8 @@ internal sealed class VulkanEventCalendar(Activity activity, FrameLayout overlay
         CalendarEventKind.CrystalEvent => "Evento dos cristais",
         CalendarEventKind.ExperienceEvent => "Evento de experiência",
         CalendarEventKind.DropEvents => "Drops de evento",
+        CalendarEventKind.Arena => "Arena",
+        CalendarEventKind.Royale => "Battle Royale",
         _ => "Evento"
     };
 
@@ -340,6 +343,9 @@ internal sealed class VulkanEventCalendar(Activity activity, FrameLayout overlay
         CalendarEventKind.CrystalEvent => "Os cristais de monstro chamam seus monstros de evento.",
         CalendarEventKind.ExperienceEvent => "Experiência extra em todos os mapas.",
         CalendarEventKind.DropEvents => "Os monstros deixam itens de evento:",
+        CalendarEventKind.Arena => $"Partidas 1x1 e 3x3 entre jogadores a partir do nível {ArenaRules.MinimumLevel}: /arena 1x1 ou /arena 3x3 no chat.",
+        CalendarEventKind.Royale => $"Último sobrevivente a partir do nível {RoyaleRules.MinimumLevel}, todos com o mesmo equipamento: /royale no chat "
+            + $"nos {RoyaleRules.RegistrationMinutes} minutos antes do horário.",
         _ => ""
     };
 

@@ -17,6 +17,18 @@
 /processorParam:TextureFormat=Color
 /build:../../PristonTale/Content/Fonts/UI.spritefont;Fonts/UI.spritefont
 
+#begin ../../PristonTale/Content/Fonts/UI-zh-CN.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:TextureFormat=Color
+/build:../../PristonTale/Content/Fonts/UI-zh-CN.spritefont;Fonts/UI-zh-CN.spritefont
+
+#begin ../../PristonTale/Content/Fonts/UI-ja.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:TextureFormat=Color
+/build:../../PristonTale/Content/Fonts/UI-ja.spritefont;Fonts/UI-ja.spritefont
+
 #begin ../../PristonTale/Content/Shaders/Passes/Surface.fx
 /importer:EffectImporter
 /processor:SpirvEffectProcessor

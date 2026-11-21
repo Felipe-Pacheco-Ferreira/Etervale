@@ -24,7 +24,21 @@ public static class ChatLineFilter
          line.Line.Id is GameTextId.CastleTaken or GameTextId.SiegeInAnHour or GameTextId.SiegeInHalfAnHour or GameTextId.SiegeLeague
              or GameTextId.SiegeOver or GameTextId.SiegeRestartsSoon or GameTextId.SiegeStarted) ||
         (settings.HideBossNotices && line.Line.Id == GameTextId.BossTime) ||
-        (settings.StreamerMode && (line.Kind == ChatKind.Whisper || settings.StreamerHidesWholeChat && (Written(line.Kind) || line.SpeakerId != 0)));
+        (settings.HideAgingNotices && line.Line.Id == GameTextId.AgingNotice) ||
+        (settings.HideLevelUpNotices && line.Line.Id == GameTextId.LevelNotice) ||
+        (settings.HideDuelNotices && line.Line.Id is GameTextId.DuelNotice or GameTextId.DuelDrawNotice) ||
+        (settings.HideArenaNotices && line.Line.Id is GameTextId.ArenaOpen or GameTextId.ArenaNotice or GameTextId.ArenaDrawNotice) ||
+        (settings.HideRoyaleNotices && line.Line.Id is GameTextId.RoyaleOpen or GameTextId.RoyaleCancelled or GameTextId.RoyaleStarted or GameTextId.RoyaleWinner) ||
+        (settings.HideTitleNotices && line.Line.Id is GameTextId.TitleGained or GameTextId.TitleLost) ||
+        (settings.HideBossRouletteNotices && line.Line.Id == GameTextId.BossRouletteWinner) ||
+        (settings.PartyLootAlerts != PartyLootAlerts.All && line.Line.Id == GameTextId.PartyLoot) ||
+        (settings.PartyLootAlerts == PartyLootAlerts.Off && line.Line.Id == GameTextId.PartyRareLoot) ||
+        (settings.BellatraOpeningNotice == BellatraOpeningNotice.Off && line.Line.Id == GameTextId.BellatraOpening) ||
+        (settings.StreamerMode && (line.Kind == ChatKind.Whisper || settings.StreamerHidesWholeChat && (Written(line.Kind) && line.Line.IsNone || line.SpeakerId != 0)));
+
+    // A shown line that also goes to the notice strip at the top of the screen.
+    public static bool OnScreen(ClientSettings settings, ChatLineInfo line) =>
+        settings.BellatraOpeningNotice == BellatraOpeningNotice.Both && line.Line.Id == GameTextId.BellatraOpening;
 
     // A line a person wrote, as opposed to a notice of the server or the game.
     public static bool Written(ChatKind kind) => kind is ChatKind.Whisper or ChatKind.Party or ChatKind.Clan or ChatKind.Trade or ChatKind.Player;

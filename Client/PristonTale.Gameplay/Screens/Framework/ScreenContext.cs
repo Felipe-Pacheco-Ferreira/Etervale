@@ -16,7 +16,7 @@ public sealed class ScreenContext
         GraphicsDevice graphicsDevice,
         ContentManager content,
         SpriteBatch spriteBatch,
-        SpriteFont font,
+        PristonTale.Gameplay.UI.Rendering.UiFonts fonts,
         string assetRoot,
         IGameBackend backend,
         IClientLog log,
@@ -31,7 +31,7 @@ public sealed class ScreenContext
         GraphicsDevice = graphicsDevice;
         Content = content;
         SpriteBatch = spriteBatch;
-        Font = font;
+        Fonts = fonts;
         AssetRoot = assetRoot;
         Backend = backend;
         Log = log ?? ConsoleClientLog.Instance;
@@ -50,7 +50,9 @@ public sealed class ScreenContext
     public GraphicsDevice GraphicsDevice { get; }
     public ContentManager Content { get; }
     public SpriteBatch SpriteBatch { get; }
-    public SpriteFont Font { get; }
+    // The interface fonts; Font is the shown language's.
+    public PristonTale.Gameplay.UI.Rendering.UiFonts Fonts { get; }
+    public SpriteFont Font => Fonts.Current;
     public string AssetRoot { get; }
     public bool IsWindowActive { get; internal set; } = true;
     public PristonTale.Engine3D.Rendering.PresentationSettings Presentation { get; }

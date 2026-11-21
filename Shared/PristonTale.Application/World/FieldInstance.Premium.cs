@@ -14,9 +14,9 @@ public sealed partial class FieldInstance : IFieldPremiumHost
 
     bool IFieldPremiumHost.TryGetPlayer(ulong entityId, [MaybeNullWhen(false)] out WorldPlayer player) => _players.TryGetValue(entityId, out player);
 
-    void IFieldPremiumHost.PetStrike(WorldPlayer owner, MonsterInstance monster, int damage)
+    void IFieldPremiumHost.PetStrike(WorldPlayer owner, MonsterInstance monster, int damage, Element element)
     {
-        if (_combat.ApplyPlayerDamage(owner, monster, damage, false, NowMs, skill: true) is { } reward)
+        if (_combat.ApplyPlayerDamage(owner, monster, damage, false, NowMs, skill: true, element: element) is { } reward)
         {
             PlaceLoot(reward, NowMs);
         }

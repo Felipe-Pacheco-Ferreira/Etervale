@@ -26,6 +26,7 @@ internal sealed class OnlinePlayChannel : IPlayChannel
     private Task? _disposeTask;
 
     public int GameMasterLevel => _connection.GameMasterLevel;
+    public bool ChatTranslation => _connection.ChatTranslation;
 
     public long? GameClockMs => _connection.HasGameClock ? _connection.GameClockMs : null;
 
@@ -132,6 +133,12 @@ internal sealed class OnlinePlayChannel : IPlayChannel
         _connection.SendChat(text, party);
     }
 
+    public async Task SendChatTranslateToAsync(string language, CancellationToken ct = default)
+    {
+        await _start.WaitAsync(ct);
+        _connection.SendChatTranslateTo(language);
+    }
+
     public async Task SendYahooKeyAsync(CancellationToken ct = default)
     {
         await _start.WaitAsync(ct);
@@ -148,6 +155,24 @@ internal sealed class OnlinePlayChannel : IPlayChannel
     {
         await _start.WaitAsync(ct);
         _connection.SendMount(mount);
+    }
+
+    public async Task SendPvpSwitchAsync(bool on, CancellationToken ct = default)
+    {
+        await _start.WaitAsync(ct);
+        _connection.SendPvpSwitch(on);
+    }
+
+    public async Task AnswerDuelAsync(ulong fromId, bool accept, CancellationToken ct = default)
+    {
+        await _start.WaitAsync(ct);
+        _connection.SendSocial(new DuelAnswerPacket(fromId, accept));
+    }
+
+    public async Task ChooseTitleAsync(int title, CancellationToken ct = default)
+    {
+        await _start.WaitAsync(ct);
+        _connection.SendSocial(new ChooseTitlePacket((byte)Math.Clamp(title, 0, byte.MaxValue)));
     }
 
     public async Task SendDismissCrystalPetsAsync(uint statusCode, CancellationToken ct = default)

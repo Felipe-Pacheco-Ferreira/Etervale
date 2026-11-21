@@ -1,10 +1,12 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using PristonTale.Engine3D.Diagnostics;
 using PristonTale.Engine3D.Formats;
 using PristonTale.Engine3D.Physics;
 using PristonTale.Engine3D.Rendering;
 using PristonTale.Contracts.Characters;
+using PristonTale.Gameplay.UI.Widgets;
 using PristonTale.Gameplay.World;
 using PristonTale.Simulation.World;
 using PristonTale.Simulation.World.Fields;
@@ -25,6 +27,75 @@ internal static class CameraTests
         yield return ("camera arrows orbit horizontally and vertically", KeyboardOrbitAsync);
         yield return ("camera follow is time based and teleport reanchoring preserves framing", FollowAsync);
         yield return ("camera uses middle drag, tilts with the wheel as Page Up and Page Down do and respects UI pointer ownership", InputAsync);
+        yield return ("dungeon top-down camera looks down at a fixed tilt, follows without turning and zooms with the wheel", TopDownAsync);
+        yield return ("dungeon camera setting applies only underground and Shift+Z flips it", DungeonCameraSettingAsync);
+    }
+
+    private static Task TopDownAsync()
+    {
+        var settings = PristonCameraSettings.Default;
+        var camera = CreateCamera();
+        camera.TopDown = true;
+        camera.UpdateOrbit(Mouse(400, 300));
+        camera.UpdateFollow(Vector3.Zero, 0);
+        var forward = camera.FlatForward;
+        AssertTopDownArm(camera, settings.TopDownDistance);
+
+        var viewport = new Rectangle(0, 0, 800, 600);
+        camera.UpdateOrbit(Mouse(400, 300, ButtonState.Pressed), viewport: viewport, deltaSeconds: 1f / 60f);
+        camera.UpdateOrbit(Mouse(500, 400, ButtonState.Pressed), viewport: viewport, deltaSeconds: 1f / 60f);
+        camera.UpdateOrbit(Mouse(0, 300), new KeyboardState(Keys.Left, Keys.PageUp), viewport: viewport, deltaSeconds: 1f);
+        camera.UpdateOrbit(Mouse(0, 300, wheel: 120), viewport: viewport, deltaSeconds: 0f);
+        camera.UpdateFollow(Vector3.Zero, 0);
+        Assert.True(camera.FlatForward == forward, "the top-down view turned");
+        AssertTopDownArm(camera, settings.TopDownDistance - 120 * settings.MouseZoomSensitivity);
+
+        camera.UpdateOrbit(Mouse(400, 300, wheel: 120), new KeyboardState(Keys.Down), deltaSeconds: 1f);
+        camera.UpdateFollow(Vector3.Zero, 0);
+        AssertTopDownArm(camera, settings.TopDownDistance - 120 * settings.MouseZoomSensitivity + settings.KeyboardZoomUnitsPerSecond);
+
+        var moved = new Vector3(300f, 20f, -200f);
+        camera.UpdateFollow(moved, 0);
+        Assert.True(Vector3.Distance(camera.Target, moved + Vector3.Up * settings.TargetHeight) < 0.001f, "the top-down view did not follow the player");
+        Assert.True(camera.FlatForward == forward, "following turned the top-down view");
+
+        camera.TopDown = false;
+        camera.UpdateFollow(Vector3.Zero, 0);
+        var arm = camera.Position - camera.Target;
+        Assert.Near(100f, arm.Length(), 0.01f);
+        Assert.Near(0f, arm.Y, 0.01f);
+        return Task.CompletedTask;
+
+        static void AssertTopDownArm(PristonCamera camera, float distance)
+        {
+            var arm = camera.Position - camera.Target;
+            Assert.Near(distance, arm.Length(), 0.01f);
+            Assert.Near(80f, MathHelper.ToDegrees(MathF.Asin(arm.Y / arm.Length())), 0.01f);
+        }
+    }
+
+    private static Task DungeonCameraSettingAsync()
+    {
+        var topDown = new ClientSettings { DungeonCamera = DungeonCameraMode.TopDown };
+        Assert.True(GameScene.UsesTopDownCamera(Dungeon1Field.Definition, topDown), "a dungeon kept the free camera");
+        Assert.True(!GameScene.UsesTopDownCamera(Dungeon1Field.Definition, new ClientSettings()), "the default turned a dungeon top-down");
+        Assert.True(!GameScene.UsesTopDownCamera(RicartenField.Definition, topDown), "the dungeon camera reached a town");
+        Assert.True(!GameScene.UsesTopDownCamera(null, topDown), "the dungeon camera applied without a field");
+        Assert.True(new ClientSettings { DungeonCamera = (DungeonCameraMode)9 }.Validate(ConsoleClientLog.Instance).DungeonCamera == DungeonCameraMode.Free,
+            "an unknown dungeon camera survived validation");
+
+        Assert.True(HudSettingsPanel.PageShortcutDefaultLabel(HudSettingsPanel.DungeonCameraShortcut) == "Shift + Z", "the dungeon camera shortcut is not Shift + Z");
+        var presentation = new PresentationSettings { Requested = topDown };
+        var panel = new HudSettingsPanel(presentation);
+        var shiftZ = new KeyboardState(Keys.LeftShift, Keys.Z);
+        Assert.True(panel.ShortcutPressed(shiftZ, new KeyboardState(Keys.LeftShift), HudSettingsPanel.DungeonCameraShortcut), "Shift+Z did not press the shortcut");
+        Assert.True(!panel.ShortcutPressed(new KeyboardState(Keys.Z), default, HudSettingsPanel.DungeonCameraShortcut), "Z alone pressed the dungeon shortcut");
+        Assert.True(HudSettingsPanel.WithDungeonCameraSwitched(topDown).DungeonCamera == DungeonCameraMode.Free
+            && HudSettingsPanel.WithDungeonCameraSwitched(new ClientSettings()).DungeonCamera == DungeonCameraMode.TopDown, "the shortcut did not flip the setting");
+        var reset = HudSettingsPanel.ResetShortcut(HudSettingsPanel.Rebind(topDown, HudSettingsPanel.DungeonCameraShortcut, Keys.F11, shift: false, alt: false),
+            HudSettingsPanel.DungeonCameraShortcut);
+        Assert.True(HudSettingsPanel.PageShortcutLabel(reset, HudSettingsPanel.DungeonCameraShortcut) == "Shift + Z", "resetting the shortcut lost Shift");
+        return Task.CompletedTask;
     }
 
     private static PristonCamera CreateCamera()

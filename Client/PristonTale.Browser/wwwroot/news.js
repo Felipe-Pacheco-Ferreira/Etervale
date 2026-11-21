@@ -1,8 +1,8 @@
 import { makeDraggable } from './draggable.js';
+import { say, word as phraseIn } from './page-language.js';
 
 // News & Support drawn as the Settings panel: the news come from the site's feed; the game keeps the tickets'
 // conversation with the server (BrowserHost.NewsState, NewsAction) and the community links, and opens the window.
-const say = (pt, en) => ({ 'pt-BR': pt, en });
 const texts = {
     title: say('Novidades & Suporte', 'News & Support'),
     news: say('Novidades', 'News'),
@@ -49,7 +49,7 @@ const texts = {
 const teamLogo = '/img/emblem-256.png';
 const kinds = { News: say('Novidade', 'News'), Event: say('Evento', 'Event'), Improvement: say('Melhoria', 'Improvement') };
 const statuses = {
-    Open: say('Aberto', 'Open'), Answered: say('Respondido', 'Answered'), Closed: say('Fechado', 'Closed'),
+    Open: say('Aberto', 'Open', 'Open (ticket status)'), Answered: say('Respondido', 'Answered'), Closed: say('Fechado', 'Closed'),
     Cancelled: say('Cancelado', 'Cancelled')
 };
 // The server's category keys, in the order of the game's form.
@@ -113,7 +113,7 @@ export function createNews(root, getHost, getLanguage) {
     const send = part('news-send');
     const formCancel = part('news-form-cancel');
     const confirm = part('news-confirm');
-    const word = phrase => phrase?.[getLanguage()] ?? phrase?.['pt-BR'] ?? '';
+    const word = phrase => phraseIn(phrase, getLanguage());
     let tab = 'news';
     let state = null;
     let feed = null;

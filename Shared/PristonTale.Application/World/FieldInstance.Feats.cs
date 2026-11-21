@@ -19,10 +19,12 @@ public sealed partial class FieldInstance
         }
     }
 
-    // A blow between players: the siege's board, and the feat when it killed.
+    // A blow between players: the siege's board, the arena's damage or the PvP mode's hold and murderer, and the feat when
+    // it killed.
     private void OnPlayerHurtPlayer(WorldPlayer attacker, WorldPlayer target, int damage)
     {
         RecordSiegeBlow(attacker, target, damage);
+        RecordPvpBlow(attacker, target, damage);
         if (target.IsDead && FeatRaised is { } raise)
         {
             raise(new FieldFeat(FieldId, null, attacker, [], target, []));

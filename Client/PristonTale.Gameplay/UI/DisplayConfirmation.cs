@@ -19,7 +19,7 @@ internal sealed class DisplayConfirmation
     public DisplayConfirmation(ScreenContext context)
     {
         _context = context;
-        _canvas = new HudCanvas(context.SpriteBatch, context.Font, context.UiAtlas);
+        _canvas = new HudCanvas(context.SpriteBatch, context.Fonts, context.UiAtlas);
     }
 
     public void Update()

@@ -1,0 +1,1770 @@
+{
+  "npcs": {
+    "Adventurer Jin": {
+      "name": "Nhà thám hiểm Jin",
+      "dialog": [
+        "Xin chào! Tôi là Jin. Tôi đã đi khắp lục địa Priston rồi.",
+        "Tôi đã du hành vài năm, nhưng giờ tôi làm tình nguyện từ khi quái vật xuất hiện quá nhiều.",
+        "Tôi có một người chị em song sinh. Chúng tôi đều là lữ khách và giờ đang lạc nhau. Không biết cô ấy ở đâu~?"
+      ]
+    },
+    "Adventurer Skadi": {
+      "name": "Nhà thám hiểm Skadi",
+      "dialog": [
+        "Xin chào! Tôi là Skadi, tôi đã đi khắp lục địa Priston rồi.",
+        "Tôi sinh ra trong một gia đình lữ khách, có một người anh em song sinh. Thời buổi nguy hiểm này, tôi làm tình nguyện trong làng.",
+        "Bạn có thể gửi lời 'xin chào' đến em trai tôi giúp tôi không? ^0^"
+      ]
+    },
+    "Agni": {
+      "name": "Agni",
+      "dialog": [
+        "Cầu mong sức mạnh của lửa và lòng dũng cảm luôn đồng hành cùng bạn trong tương lai...",
+        "Bạn đến muộn rồi! Trận chiến Ardor đã bắt đầu.",
+        "Đội nào sẽ thắng đây?",
+        "Bạn trông cũng rất mạnh đấy.",
+        "Xin lỗi, bây giờ bạn không thể vào Ardor.",
+        "Vào giờ này mỗi ngày, phần thưởng được trao và đấu trường được dọn dẹp, bảo trì.",
+        "Vui lòng quay lại sau.",
+        "Có vẻ còn quá sớm để bạn vào Ardor. Bạn cần thêm EXP."
+      ]
+    },
+    "Ahin": {
+      "name": "Ahin",
+      "dialog": [
+        "Hẳn bạn là một chiến binh dũng cảm mới đến được tận đây.",
+        "Tôi đã chuẩn bị một món quà cho bạn",
+        "Vì tôi không có nhiều thời gian, bạn chỉ có thể mua một vật phẩm trong 3 phút.",
+        "Hẹn gặp lại. Tạm biệt."
+      ]
+    },
+    "Allya's Store": {
+      "name": "Cửa hàng của Allya",
+      "dialog": []
+    },
+    "Arad, the Crystal Master": {
+      "name": "Arad, Bậc thầy Pha lê",
+      "dialog": []
+    },
+    "Arad, the Crystal Master 2": {
+      "name": "Arad, Bậc thầy Pha lê",
+      "dialog": []
+    },
+    "Arcane Moriph": {
+      "name": "Arcane Moriph",
+      "dialog": [
+        "Vật phẩm có thể bị mất trong lúc cường hóa. Cách này tốt hơn mix, vốn chỉ kết hợp kỹ năng một lần.",
+        "Aging được tạo ra để khai thác tối đa vật phẩm, nhưng đồng thời cũng có khả năng làm mất chúng.",
+        "Bạn có thể dùng aging bất cứ lúc nào, nếu có đủ sheltom và tiền cần thiết.",
+        "Bạn sẵn sàng chưa? Bắt đầu aging nào!"
+      ]
+    },
+    "Arcane's pupil Newtor": {
+      "name": "Newtor, học trò của Arcane",
+      "dialog": [
+        "Moriph chưa quay lại kể từ khi đi tìm sheltom mới. Tạm thời tôi sẽ làm aging.",
+        "Nếu gặp Moriph, làm ơn bảo ông ấy quay về. Tôi mong ông ấy không gặp rắc rối.",
+        "Tôi không có kinh nghiệm như Moriph nên có nguy cơ thất bại. Nhưng tôi sẽ cố hết sức."
+      ]
+    },
+    "Ariel": {
+      "name": "Ariel",
+      "dialog": [
+        "Cầu mong sức mạnh của nước, trí tuệ và sự thanh nhã luôn đồng hành cùng bạn...",
+        "Tháp Thử Thách, Bellatra, do bang hội 'XXX' quản lý",
+        "Bạn đến muộn rồi! Bellatra đã bắt đầu.",
+        "Đội nào sẽ thắng đây?",
+        "Bạn trông cũng rất mạnh đấy.",
+        "Xin lỗi, bây giờ bạn không thể vào Bellatra.",
+        "Vào giờ này trong ngày, phần thưởng được trao và đấu trường được dọn dẹp, bảo trì.",
+        "Vui lòng quay lại sau.",
+        "Có vẻ còn quá sớm để bạn vào Bellatra. Bạn cần thêm EXP."
+      ]
+    },
+    "Ascam, the Vendor": {
+      "name": "Ascam, Người bán hàng",
+      "dialog": []
+    },
+    "Atlantis Guard": {
+      "name": "Lính canh Atlantis",
+      "dialog": []
+    },
+    "Atlantis Guard 2": {
+      "name": "Lính canh Atlantis",
+      "dialog": []
+    },
+    "Atlantis Guard 3": {
+      "name": "Lính canh Atlantis",
+      "dialog": []
+    },
+    "Atlantis Guard 4": {
+      "name": "Lính canh Atlantis",
+      "dialog": []
+    },
+    "Atlantis Guard 5": {
+      "name": "Lính canh Atlantis",
+      "dialog": []
+    },
+    "Barba": {
+      "name": "Barba",
+      "dialog": [
+        "Có một cách để bảo vệ trang bị của bạn trong thời loạn này.",
+        "Khắc dấu lên trang bị sẽ giảm nguy cơ làm mất nó.",
+        "Nếu muốn xóa dấu, bạn sẽ cần một Cọ Lãng Quên.",
+        "Vật phẩm đã khắc dấu không thể chuyển từ túi đồ của bạn sang túi đồ của người khác."
+      ]
+    },
+    "Baurin": {
+      "name": "Baurin",
+      "dialog": [
+        "Chúc mừng năm mới",
+        "Nếu bạn mang cho tôi một viên nang rồng, tôi sẽ đổi lấy một món quà."
+      ]
+    },
+    "Bayoo": {
+      "name": "Bayoo",
+      "dialog": [
+        "Tôi cầu nguyện cho sự tự do của gió luôn đồng hành cùng tầm nhìn của bạn...",
+        "Bạn đến muộn rồi! Trận chiến Ardor đã bắt đầu.",
+        "Đội nào sẽ thắng đây?",
+        "Bạn trông cũng rất mạnh đấy.",
+        "Xin lỗi, bây giờ bạn không thể vào Ardor.",
+        "Vào giờ này mỗi ngày, phần thưởng được trao và đấu trường được dọn dẹp, bảo trì.",
+        "Vui lòng quay lại sau.",
+        "Có vẻ còn quá sớm để bạn vào Ardor. Bạn cần thêm EXP."
+      ]
+    },
+    "Bellia": {
+      "name": "Bellia",
+      "dialog": [
+        "Mang cho tôi ba tinh thể từ cùng một loại quái vật, tôi sẽ làm cho bạn một tinh thể quái vật ba."
+      ]
+    },
+    "Blacksmith Bartz": {
+      "name": "Thợ rèn Bartz",
+      "dialog": [
+        "Không ngờ Midranda lại xâm chiếm Pillai...",
+        "Tôi luôn nghĩ Pillai là nơi an toàn, nhưng ý nghĩ đó đã chấm dứt.",
+        "Cơ thể tôi bị thương, nhưng tôi vẫn có thể làm ra những vũ khí tốt.",
+        "Tôi không thể tin Pillai thịnh vượng lại hóa thành tro tàn nhanh đến vậy."
+      ]
+    },
+    "Blacksmith Dfrain": {
+      "name": "Thợ rèn Dfrain",
+      "dialog": [
+        "Đây là Khiên Tháp do chính tôi chế tạo. Không ai làm được như vậy.",
+        "Mà này, tôi làm được những bộ giáp tốt hơn thế này nhiều. Nhưng để làm gì? Dù sao cũng chẳng ai mua.",
+        "Gì cơ? Tôi là thợ rèn vụng về à? Còn chiếc Khiên Tháp vĩ đại của tôi thì sao hả?",
+        "Đây không phải chỗ tìm vũ khí. Sang nói chuyện với ông Bartz ở cửa hàng bên cạnh đi. Đừng làm phiền tôi..."
+      ]
+    },
+    "Blacksmith Goden": {
+      "name": "Thợ rèn Goden",
+      "dialog": [
+        "Chào mừng đến cửa hàng của Goden. Chúng tôi bán trang bị cho chiến binh mới vào nghề.",
+        "Ở đây có nhiều trang bị cho chiến binh mới vào nghề.",
+        "Hôm nay tôi làm vài món mới. Chất lượng hạng nhất!",
+        "Bạn tìm thứ khác à? Vậy hãy tìm thợ rèn Gus. Ông ấy ở phía tây thành phố."
+      ]
+    },
+    "Blacksmith Gus": {
+      "name": "Thợ rèn Gus",
+      "dialog": [
+        "Chúng tôi có rất nhiều vật phẩm cho chiến binh mới vào nghề. Vào đi!",
+        "Hàng của chúng tôi từ vũ khí cho người mới đến giáp. Cứ xem thử.",
+        "Không tìm thấy thứ bạn cần à? Vậy hãy đến chỗ thợ rèn Goden. Ông ấy ở phía đông thành phố.",
+        "Tôi không làm loại giáo mà lính canh thành phố dùng, nhưng tôi có những món khác có thể bạn sẽ thích."
+      ]
+    },
+    "Blacksmith Joao": {
+      "name": "Thợ rèn João",
+      "dialog": []
+    },
+    "Blacksmith Max": {
+      "name": "Thợ rèn Max",
+      "dialog": []
+    },
+    "Blacksmith Pedro": {
+      "name": "Thợ rèn Pedro",
+      "dialog": []
+    },
+    "Blacksmith Ruga": {
+      "name": "Thợ rèn Ruga",
+      "dialog": [
+        "Tôi không có trang bị tốt nhất, nhưng có thể chỗ này chỗ kia sẽ hữu ích cho bạn.",
+        "Xem thử hàng của tôi đi. Có trang bị mà cả Tempskron lẫn Morion đều dùng được.",
+        "Tôi không có lò rèn xịn, nhưng trang bị của tôi đủ tốt để bán.",
+        "Tôi đang tích vàng để giúp xây dựng một ngôi làng lớn ở đây."
+      ]
+    },
+    "Blacksmith Umph": {
+      "name": "Thợ rèn Umph",
+      "dialog": [
+        "Đây là đặc sản của Navisko. Chỉ mình tôi làm được. Hãy xem những sản phẩm quý giá của tôi.",
+        "Không ai trên lục địa này chế tạo vũ khí và giáp mạnh hơn của tôi.",
+        "Các chiến binh SOD chẳng bao giờ ghé đây. Hay họ không quan tâm đến vũ khí của tôi? Họ mạnh cỡ nào chứ?",
+        "Nếu bạn có đồ để bán, cho tôi xem. Nếu cần gì, đây là trang bị mạnh nhất lục địa."
+      ]
+    },
+    "Blacksmith Umph 2": {
+      "name": "Thợ rèn Umph",
+      "dialog": [
+        "Đây là đặc sản của Navisko. Chỉ mình tôi làm được. Hãy xem những sản phẩm quý giá của tôi.",
+        "Không ai trên lục địa này chế tạo vũ khí và giáp mạnh hơn của tôi.",
+        "Các chiến binh SOD chẳng bao giờ ghé đây. Hay họ không quan tâm đến vũ khí của tôi? Họ mạnh cỡ nào chứ?",
+        "Nếu bạn có đồ để bán, cho tôi xem. Nếu cần gì, đây là trang bị mạnh nhất lục địa."
+      ]
+    },
+    "Bless Castle Guard": {
+      "name": "Lính canh Bless Castle",
+      "dialog": [
+        "Tôi vừa vào dân quân. Sao họ lại bắt tôi đi gác thế này! Thật vô lý!",
+        "Khi Bless Castle mở cửa, rất nhiều chiến binh giao tranh ở đây.",
+        "Bây giờ bạn không được vào lâu đài này!",
+        "Đừng làm phiền tôi, nếu không tôi sẽ gọi cận vệ hoàng gia đuổi bạn đi.",
+        "Này! Đừng chĩa vũ khí vào tôi như thế.",
+        "Nếu bạn gặp Cecillia của tôi, làm ơn nói với cô ấy rằng tôi vẫn ổn."
+      ]
+    },
+    "Bridge Guard": {
+      "name": "Lính canh cầu",
+      "dialog": [
+        "Cẩn thận. Sau cây cầu này có quái vật mạnh.",
+        "Cẩn thận. Đi chậm thôi! Cây cầu này có thể sập bất cứ lúc nào.",
+        "Dừng lại đây. Có thứ nguy hiểm đang chờ bạn sau cây cầu này.",
+        "Bạn đi Navisko à? Đừng quên chào lính canh sa mạc nhé!"
+      ]
+    },
+    "Bronze Wolverine": {
+      "name": "Wolverine Đồng",
+      "dialog": [
+        "Khaaaaaooooooooo! Grrrrrrrrrrrrrreeeeeeeeeeeeeerrrrrr...",
+        "Uuuuuuuuuuuuuuuu~~"
+      ]
+    },
+    "Buma": {
+      "name": "Buma",
+      "dialog": [
+        "Đừng đánh tôi. Khụ khụ",
+        "SOD bắt đầu vào mỗi rạng sáng. Hãy đến đúng giờ.",
+        "Trong các ván SOD, bạn nhận điểm được quy đổi thành vàng. Hãy cố kiếm càng nhiều điểm càng tốt.",
+        "Có giới hạn level để vào Đấu trường SOD. Từ level 10, bạn vào SOD thông qua BUMA.",
+        "Cảm ơn bạn đã tham gia SOD. Giờ SOD: mỗi ngày, từ 01:00 đến 06:00 (GMT+09:00). Chúc bạn vui vẻ!"
+      ]
+    },
+    "Captured Midranda": {
+      "name": "Midranda bị bắt",
+      "dialog": [
+        "Ngươi đã đánh bại ta và thuộc hạ của ta!",
+        "Ta sẽ trốn thoát và báo thù!",
+        "Sức mạnh của Morion không đủ mạnh để giam giữ ta mãi mãi!",
+        "Xin ngài, không phải tôi, là bạn tôi làm; tôi sẽ bị lưu đày bao lâu, thưa ngài?"
+      ]
+    },
+    "Casa": {
+      "name": "Casa",
+      "dialog": [
+        "Cầu mong sức mạnh của lửa và lòng dũng cảm luôn đồng hành cùng bạn trong tương lai...",
+        "Tháp Thử Thách, Bellatra, do bang hội 'XXX' quản lý",
+        "Bạn đến muộn rồi! Bellatra đã bắt đầu.",
+        "Đội nào sẽ thắng đây?",
+        "Bạn trông cũng rất mạnh đấy.",
+        "Xin lỗi, bây giờ bạn không thể vào Bellatra.",
+        "Vào giờ này trong ngày, phần thưởng được trao và đấu trường được dọn dẹp, bảo trì.",
+        "Vui lòng quay lại sau.",
+        "Có vẻ còn quá sớm để bạn vào Bellatra. Bạn cần thêm EXP."
+      ]
+    },
+    "Cave Guard": {
+      "name": "Lính canh hang động",
+      "dialog": [
+        "Trước đây nơi này gọi là Hang Tổ Ong, nhưng nó trở thành sào huyệt quái vật khi bức tường dẫn đến Thánh Địa Bóng Tối sụp đổ, và tà linh lan ra từ đó.",
+        "Đây là Hang Tổ Ong. Chỉ những chiến binh đã qua huấn luyện mới được đi qua đây.",
+        "Bạn có thể đến Hang Nấm ở vùng đất Tempskron, nơi cũng dẫn đến Thánh Địa Bóng Tối.",
+        "Sâu trong hang có một lối đi dẫn đến Thánh Địa Bóng Tối. Tà linh thống trị hang động. Tôi khuyên bạn nên tránh xa."
+      ]
+    },
+    "Cave Guard 2": {
+      "name": "Lính canh hang động",
+      "dialog": [
+        "Đây là lối vào Hang Nấm, dẫn đến Thánh Địa Bóng Tối. Các sinh vật trong hang đã hóa thành quái vật vì một tà linh từ Thánh Địa Bóng Tối.",
+        "Bạn có thể đến Hang Tổ Ong ở vùng đất Morion, nơi cũng dẫn đến Thánh Địa Bóng Tối.",
+        "Chỉ người từ level 55 trở lên mới được đi qua đây.",
+        "Hãy tập trung khi ở trong Thánh Địa Bóng Tối, vì cái ác có thể hấp thụ sức mạnh của bạn."
+      ]
+    },
+    "Chris": {
+      "name": "Chris",
+      "dialog": [
+        "Tôi tặng bạn một món quà nếu bạn mang cho tôi 7 quả bóng đá.",
+        "Tôi yêu bóng đá đến mức sưu tầm rất nhiều quả bóng."
+      ]
+    },
+    "Christmas Longbo": {
+      "name": "Longbo Giáng Sinh",
+      "dialog": []
+    },
+    "Civilian Minuren": {
+      "name": "Dân thường Minuren",
+      "dialog": [
+        "Navisko là một thành phố nhỏ ở trung tâm Tempskron. Ít ai dám vào, vì người ta nói ở đó xảy ra những chuyện kỳ lạ.",
+        "Sáng ngủ dậy bạn sẽ đau cơ đấy. Có lẽ do một mụ phù thủy nước dưới thành phố. Nơi này thật hoang vắng!",
+        "Đêm qua tôi mơ thấy một thợ máy tấn công tôi. Đau lắm và trông thật quá. Giờ vẫn thấy như thật.",
+        "Kể từ khi Đấu trường SOD mở cửa, nhiều chiến binh ghé thăm Navisko. Nơi này đã trở thành một trong những điểm tham quan của vùng đất Priston.",
+        "Bạn thấy cổng dịch chuyển ở giữa làng chưa? Đó là một thiết bị tuyệt vời giúp bạn dịch chuyển trong tích tắc."
+      ]
+    },
+    "Clan Master": {
+      "name": "Quản lý Bang hội",
+      "dialog": [
+        "Tôi phụ trách mọi việc liên quan đến bang hội.",
+        "Để tạo bang hội, bạn cần level 50 trở lên và trả 500.000 vàng.",
+        "Level của bang chủ càng cao thì bang hội càng có thể có nhiều thành viên.",
+        "Bạn có thể dùng huy hiệu bang hội và diễn đàn trên trang web của Priston Tale."
+      ]
+    },
+    "Cleric": {
+      "name": "Cleric",
+      "dialog": []
+    },
+    "Clever Daemon": {
+      "name": "Daemon Tinh Ranh",
+      "dialog": [
+        "Cách duy nhất để đến Đảo Bless là dịch chuyển.",
+        "Tôi là người duy nhất có thể dịch chuyển mọi người đến Bless Castle."
+      ]
+    },
+    "Clever Newter": {
+      "name": "Newter Tinh Ranh",
+      "dialog": [
+        "Tôi đã nghiên cứu và học tập cả đời vì sự thịnh vượng của Pillai. Dù bị thương thế này tôi vẫn không thể rời thành phố.",
+        "Tôi cứ nghĩ mãi mình có thể làm gì để giành lại Pillai.",
+        "Hãy dùng Teleport Core khi ra trận; đó là loại tinh thể tôi đã nghiên cứu.",
+        "Chiến binh dũng cảm. Xin hãy giành lại Pillai của chúng tôi."
+      ]
+    },
+    "Convicted Felon, Nadia": {
+      "name": "Nadia, Tù nhân",
+      "dialog": [
+        "Tôi bị bắt quả tang nghịch ngợm và bị vô hiệu hóa vĩnh viễn. Đừng mix vật phẩm với 'Thợ mix Morald' để làm lại thuộc tính; bạn sẽ không thể hoàn tác mix với tôi. -->",
+        "Chỉ dùng Respec Stone tùy chọn với Teiwaz, Jera và Sol để làm lại thuộc tính vật phẩm. Nếu lỡ mix một vật phẩm, hãy mở ticket hỗ trợ để đổi lại. Việc này chỉ làm MỘT lần. Sau đó thì chịu. -->"
+      ]
+    },
+    "Craftman Salon": {
+      "name": "Thợ thủ công Salon",
+      "dialog": [
+        "Bạn cần một công thức và ba loại rune để chế tạo một vật phẩm.",
+        "Hãy kiểm tra công thức mix trước khi chế tạo, vì vật phẩm tạo ra phụ thuộc vào rune được dùng.",
+        "Tôi là người duy nhất trên lục địa Priston có thể chế tạo bất kỳ vật phẩm nào bạn muốn."
+      ]
+    },
+    "Craftsman Fizk": {
+      "name": "Thợ thủ công Fizk",
+      "dialog": []
+    },
+    "Cuepy Costumes": {
+      "name": "Trang phục Cuepy",
+      "dialog": [
+        "Những bộ trang phục này chỉ dành cho các cô gái!"
+      ]
+    },
+    "Danu": {
+      "name": "Danu",
+      "dialog": [
+        "Cầu mong sự phong phú của đất đai và tình yêu luôn đồng hành cùng cuộc sống của bạn...",
+        "Bạn đến muộn rồi! Trận chiến Ardor đã bắt đầu.",
+        "Đội nào sẽ thắng đây?",
+        "Bạn trông cũng rất mạnh đấy.",
+        "Xin lỗi, bây giờ bạn không thể vào Ardor.",
+        "Vào giờ này mỗi ngày, phần thưởng được trao và đấu trường được dọn dẹp, bảo trì.",
+        "Vui lòng quay lại sau.",
+        "Có vẻ còn quá sớm để bạn vào Ardor. Bạn cần thêm EXP."
+      ]
+    },
+    "Desert Guard": {
+      "name": "Lính canh sa mạc",
+      "dialog": [
+        "Tránh ra. Khu vực này rất nguy hiểm và chỉ những chiến binh mạnh có chứng nhận quốc gia mới được qua.",
+        "Chiến binh level 50 có thể đi qua đây.",
+        "Đây là khu vực cấm, vì nhiều quái vật chết người lang thang trong sa mạc.",
+        "Một Đền Bị Nguyền nằm ở phía đông Chiến Trường Cổ, phía sau tôi."
+      ]
+    },
+    "Dindo, the Alchemist": {
+      "name": "Dindo, Nhà giả kim",
+      "dialog": []
+    },
+    "Dingo, the Alchemist": {
+      "name": "Dingo, Nhà giả kim",
+      "dialog": []
+    },
+    "Disabled": {
+      "name": "Vô hiệu hóa",
+      "dialog": []
+    },
+    "Donation Event Maria": {
+      "name": "Maria Sự kiện Quyên góp",
+      "dialog": [
+        "Tôi nghe nói nhiều người trong thành phố này có tấm lòng tốt. Thật tuyệt nếu bạn quyên góp chút tiền cho những người khuyết tật."
+      ]
+    },
+    "Dos": {
+      "name": "Dos",
+      "dialog": [
+        "Tôi làm việc trong một phòng thí nghiệm bí mật.",
+        "Tôi đã học được kỹ thuật khoét những lỗ nhiều màu trên trang bị của bạn.",
+        "Mũi khoan của tôi xuyên thủng cả những bộ giáp cứng nhất."
+      ]
+    },
+    "Dungeon Keeper": {
+      "name": "Người giữ ngục tối",
+      "dialog": [
+        "Vua Hopy đã phá vỡ bức tường ngục tối và một căn phòng ẩn được phát hiện. Căn phòng đó dùng để làm gì?",
+        "Đây là ngục tối do người xưa xây dựng để giam giữ thứ gì đó.",
+        "Chiến binh level 40 có thể đi qua đây.",
+        "Vua Hopy, đội trưởng của quân Hopy, xuất hiện trong Ngục Tối Cổ. Tôi rùng mình khi nghĩ đến cơ bắp khổng lồ và chiếc sừng đáng sợ của hắn."
+      ]
+    },
+    "Elder Hosean": {
+      "name": "Trưởng lão Hosean",
+      "dialog": [
+        "Làm sao bạn đến được tận vùng nội địa xa xôi thế này?",
+        "Hừm, hừm... Tôi chỉ là một ông già sống rất xa, trong vùng nội địa.",
+        "Tôi đang tạm thời giúp vương quốc tổ chức các bài kiểm tra cấp bậc.",
+        "Cẩn thận! Hãy đi cho chú ý, vì gần đây có quái vật nguy hiểm."
+      ]
+    },
+    "Eura Guard": {
+      "name": "Lính canh Eura",
+      "dialog": [
+        "Vì tuyết rơi dày, bạn không thể đi tiếp. Tôi có lệnh hạn chế vào khu vực này.",
+        "Bạn là một chiến binh vĩ đại khi đã đến được tận đây, nhưng vì tuyết rơi dày nên bạn không thể đi tiếp.",
+        "Hãy quay về làng Eura; bạn có thể bị kẹt trong tuyết.",
+        "Người ta nói quái vật ở cánh đồng băng mạnh hơn nhiều so với quái vật ở cánh đồng sắt."
+      ]
+    },
+    "Eura Guard 2": {
+      "name": "Lính canh Eura",
+      "dialog": [
+        "Tuyết rơi dày trên cánh đồng băng và có thể gây hại cho làng Eura.",
+        "Vì tuyết rơi dày, quái vật di chuyển chậm, nhưng làng Eura vẫn hạn chế người vào.",
+        "Bạn trông thật mạnh; một ngày nào đó tôi muốn thách đấu với bạn.",
+        "Lục địa Priston đang yếu đi; sắp có chuyện xảy ra."
+      ]
+    },
+    "Eura Warehouse Keeper": {
+      "name": "Thủ kho Eura",
+      "dialog": [
+        "Tôi lo cho việc cất giữ vật phẩm. Thời tiết này có thể làm chúng đóng băng!",
+        "Được rồi, đồ của bạn đây.",
+        "Bạn đến từ rất xa; bạn là chiến binh nổi tiếng của lục địa à?",
+        "Phía bắc còn lạnh hơn nữa. Bây giờ bạn định đi hướng đó à?"
+      ]
+    },
+    "Event Girl": {
+      "name": "Cô gái Sự kiện",
+      "dialog": [
+        "Chúng tôi cung cấp dịch vụ phân bổ lại điểm thuộc tính và điểm kỹ năng. Hãy tận dụng dịch vụ của chúng tôi.",
+        "Bạn chỉ có thể phân bổ lại một lần mỗi lần vào game. Nhưng bạn có thể phân bổ lại sau khi vào game lần nữa."
+      ]
+    },
+    "Event Girl 2": {
+      "name": "Cô gái Sự kiện",
+      "dialog": [
+        "Nếu bạn nói câu cổ vũ với tôi, tôi sẽ tặng bạn một vật phẩm.",
+        "Bạn nhận được 'Viên nang Chiến thắng' từ NPC phát vật phẩm.",
+        "Chúc bạn thật nhiều may mắn",
+        "Làm tốt lắm!"
+      ]
+    },
+    "Event girl, Rosemary": {
+      "name": "Rosemary, Cô gái Sự kiện",
+      "dialog": [
+        "Trong sự kiện đặc biệt, bạn có thể dùng điểm sao để xem phim hoặc đổi lấy quà. Hãy xem bạn có cơ hội trúng giải không.",
+        "Điểm sao là gì? Đó là điểm thưởng bạn đổi lấy nhiều món quà. Hãy truy cập trang Priston Tale để biết thêm chi tiết."
+      ]
+    },
+    "Force Master": {
+      "name": "Bậc thầy Force",
+      "dialog": [
+        "Những mảnh sheltom thừa hưởng sức mạnh vô hình được gọi là Force Orb.",
+        "Kỹ thuật này đến từ một nền văn hóa khác, không phải của Tempskron hay Morion.",
+        "Hãy nhớ rằng Force Orb sẽ bị tiêu hao khi sử dụng.",
+        "Nhờ Force Orb, bạn có thể có sức mạnh tấn công đáng kinh ngạc."
+      ]
+    },
+    "Force Master 2": {
+      "name": "Bậc thầy Force",
+      "dialog": [
+        "Khi công nghệ tiến bộ, nhiều loại giả kim Force Orb sẽ trở nên khả thi.",
+        "Cái lạnh không ảnh hưởng đến hiệu suất của Force Orb.",
+        "Hãy chào Bậc thầy Force ở Ricarten và Pillai.",
+        "Tôi khuyên bạn nên dùng Force Orb để chiến đấu với những quái vật mạnh hơn."
+      ]
+    },
+    "Fraud": {
+      "name": "Kẻ lừa đảo",
+      "dialog": [
+        "Ngày nay những nhà thám hiểm đó dường như có tinh thần yếu.",
+        "Hồi trẻ, tôi đã hạ gục 18 con quái vật cùng một lúc.",
+        "Mỗi tuần tôi sẽ tìm cho bạn đối thủ phù hợp. Vậy nên hãy chuẩn bị đi!"
+      ]
+    },
+    "Fury": {
+      "name": "Fury",
+      "dialog": [
+        "Khaaaaaaaaaaaaaooooooooooooo",
+        "Khhhhhhhhhhhhuuuuuuaaaaaaaaa",
+        "Phhhhhuuuuuuuurrrrrrrrrrr.."
+      ]
+    },
+    "Golden Wolverine": {
+      "name": "Wolverine Vàng",
+      "dialog": [
+        "Khhhhhhhaaaaaaaaaaaaaaooooo..!",
+        "Grrrrrrrrrrrrrrr.."
+      ]
+    },
+    "Good boy, Longbo": {
+      "name": "Longbo, Cậu bé ngoan",
+      "dialog": [
+        "Mọi thứ đã đổi thay chỉ trong một đêm. Chân tôi dài ra. Mặt tôi đổi khác. Và cả thành phố cũng thay đổi. Thôi, thôi... Cũng được, nhưng bức tượng từng ở đây đâu rồi? Không có nó trông trống trải quá.",
+        "Ở đây từng có một bức tượng khổng lồ. Tôi hay nằm dựa vào đó ngủ trưa... Những ngày tháng đẹp đẽ.",
+        "Bạn đã nghe nói về Thánh Địa Bóng Tối chưa? Nó nằm giữa Hang Tổ Ong và Hang Nấm. Ở đó xuất hiện những con quái vật kinh khủng!",
+        "Tôi nghe nói có một Đền Bị Nguyền giữa sa mạc. Tôi chưa từng đến đó. Bạn cũng đừng mơ đến, vì chỉ những người mạnh nhất mới vượt qua được ngôi đền.",
+        "Có một thành phố tên Navisko, nơi cư dân hóa thành quái vật vào ban đêm. Thành phố bị một tà linh nguyền rủa. Lạ ở chỗ chính họ cũng không biết mình hóa thành quái vật.",
+        "Bạn biết cổng dịch chuyển chứ? Một nhà phát minh đã tạo ra nó để dịch chuyển. Đó là thiết bị tuyệt vời đưa bạn từ nơi này sang nơi khác trong tích tắc. Thế giới thật kỳ diệu...",
+        "Tôi nghe nói ở Navisko có tổ chức một cuộc thi chiến đấu gọi là SOD. Nếu vượt qua vòng chỉ định, bạn nhận tiền thưởng. Bạn trông đủ mạnh đấy. Sao không tham gia SOD?",
+        "Tôi đã trở thành cậu bé ngoan, nhưng mọi người từng gọi tôi là Longbo khó ưa. Ai cũng sợ tôi. Nếu bạn chọc tôi giận quá, tôi sẽ trở lại như xưa. Nên đừng nghĩ đến chuyện đó, nhé?"
+      ]
+    },
+    "Guide Ran": {
+      "name": "Hướng dẫn viên Ran",
+      "dialog": [
+        "Tôi ở đây để giúp người mới sống trên lục địa.",
+        "Tôi sẽ tặng bạn vài vật phẩm hữu ích nếu bạn giúp tôi.",
+        "Khi đạt level 40, bạn không cần nói chuyện với tôi nữa.",
+        "Việc mang lại hòa bình sau âm mưu của Egolanos tùy thuộc vào bạn.",
+        "Nếu bạn giúp người dân trong thành phố, họ sẽ tặng bạn nhiều vật phẩm."
+      ]
+    },
+    "Gurf, the Merchant": {
+      "name": "Gurf, Thương nhân",
+      "dialog": []
+    },
+    "Gurf, the Merchant 2": {
+      "name": "Gurf, Thương nhân",
+      "dialog": []
+    },
+    "Hannah's Store": {
+      "name": "Cửa hàng của Hannah",
+      "dialog": []
+    },
+    "Helper Pria": {
+      "name": "Trợ lý Pria",
+      "dialog": [
+        "Chào mừng đến với thế giới Priston Tale.",
+        "Mỗi ngày một lần chúng tôi sẽ niệm phép để giúp bạn lớn nhanh hơn."
+      ]
+    },
+    "Helper Stonia": {
+      "name": "Trợ lý Stonia",
+      "dialog": [
+        "Chào mừng đến với thế giới Priston Tale.",
+        "Mỗi ngày một lần chúng tôi sẽ niệm phép để hỗ trợ sự phát triển của bạn."
+      ]
+    },
+    "Helper Tairee": {
+      "name": "Trợ lý Tairee",
+      "dialog": [
+        "Chào mừng đến với thế giới Priston Tale.",
+        "Mỗi ngày một lần chúng tôi sẽ niệm phép ma thuật để giúp bạn lớn nhanh hơn."
+      ]
+    },
+    "Hermit": {
+      "name": "Ẩn sĩ",
+      "dialog": [
+        "Ở đây không có ai... đúng không?",
+        "Trốn ở đây chắc sẽ an toàn.."
+      ]
+    },
+    "HobGoblin": {
+      "name": "HobGoblin",
+      "dialog": [
+        "Xin hãy xếp hàng.",
+        "Này! Đừng chen hàng. Làm ơn cư xử cho đúng.",
+        "SOD bắt đầu vào mỗi rạng sáng. Hãy đến đúng giờ.",
+        "Có giới hạn level để vào Đấu trường SOD. Từ level 10, bạn vào SOD thông qua BUMA.",
+        "Cảm ơn bạn đã tham gia SOD. Giờ SOD: mỗi ngày, từ 01:00 đến 06:00 (GMT+09:00). Chúc bạn vui vẻ!"
+      ]
+    },
+    "Hopy Costumes": {
+      "name": "Trang phục Hopy",
+      "dialog": [
+        "Những bộ trang phục này chỉ dành cho các chàng trai!"
+      ]
+    },
+    "Hunter Owen": {
+      "name": "Thợ săn Owen",
+      "dialog": [
+        "Ồ~ Người lính dũng cảm. Thật vui được gặp bạn.",
+        "Tôi là Owen, một thợ săn. Tôi không xuất sắc, nhưng tôi có thể hạ phần lớn quái vật!",
+        "Hãy luôn cẩn thận. Quái vật rất hung dữ."
+      ]
+    },
+    "Imprisoned Valento": {
+      "name": "Valento bị giam",
+      "dialog": []
+    },
+    "Inventor of Warpgate": {
+      "name": "Nhà phát minh Cổng Dịch Chuyển",
+      "dialog": [
+        "Bạn có biết Newter ở Pillai không? Tôi nghĩ ông ta đã lấy kỹ thuật của tôi...",
+        "Bạn thật sự định đến làng Pillai để thử dịch chuyển à?",
+        "Dịch chuyển chỉ đưa bạn đến bốn nơi, nhưng cổng dịch chuyển đưa bạn đi xa hơn nhiều!"
+      ]
+    },
+    "Item Distributor": {
+      "name": "Người phát vật phẩm",
+      "dialog": [
+        "Để xem tôi có món nào đứng tên bạn để nhận không.",
+        "Được rồi. Để tôi xem. Hmmm. Hmmmm. Tên bạn là gì nhỉ?",
+        "Tôi nghĩ không có gì mới cho bạn. Để tôi kiểm tra lại.",
+        "Bạn có đặt món gì không? Nếu không thấy, có lẽ bạn cần vào lại thế giới game!"
+      ]
+    },
+    "Jail Guard": {
+      "name": "Cai ngục",
+      "dialog": [
+        "Đây là nhà tù giam tội phạm. Hãy cư xử đàng hoàng nếu không muốn bị nhốt ở đây.",
+        "Có người cố vào nhà tù để gây chú ý. Thật xấu hổ!",
+        "Tôi nghe nói người Tempskron nhốt cả sói vào tù. Thật lãng phí!",
+        "Một mình canh nhà tù chán lắm. Rảnh thì ghé qua đây nhé. Aaaahhh..."
+      ]
+    },
+    "Jasmine, the Stylist": {
+      "name": "Jasmine, Nhà tạo mẫu",
+      "dialog": []
+    },
+    "Kadomatsu": {
+      "name": "Kadomatsu",
+      "dialog": []
+    },
+    "King Hoppie": {
+      "name": "Vua Hoppie",
+      "dialog": [
+        "Tôi tặng bạn một vật phẩm nếu bạn gom đủ 8 mảnh của bức tranh.",
+        "Tôi đã tìm được gần hết. Tôi định tìm nốt phần còn lại trước ngày 26 tháng 7, nên hãy mang phần còn lại đến lúc đó.",
+        "Nếu bạn mang cho tôi bức tranh Priestess/Mechanician, tôi sẽ tặng bạn một vật phẩm.",
+        "Tôi nghĩ phần lớn các mảnh đã được tìm thấy. Tôi tìm bức tranh hoàn chỉnh đến hết ngày 26 tháng 7."
+      ]
+    },
+    "Kiosk, Rune": {
+      "name": "Quầy hàng của Rune",
+      "dialog": [
+        "Xin chào, tôi là Rune. Tôi là người duy nhất quanh đây bán thuốc.",
+        "Tàn tích rất nguy hiểm. Hãy luôn mang theo thuốc hồi máu.",
+        "Tôi đang gom tiền để xây một ngôi làng tử tế ở Ruinen này.",
+        "Chào mừng đến cửa hàng của Rune! Chúng tôi bán nhiều loại thuốc và Core."
+      ]
+    },
+    "Knight Commander Derik": {
+      "name": "Chỉ huy Hiệp sĩ Derik",
+      "dialog": [
+        "Nếu bạn là chiến binh giỏi, tốt hơn hết hãy vào Vương quốc Hiệp sĩ.",
+        "Để vào Hoàng cung, hãy tìm Pháp sư Hoàng gia Ray ở Pillai.",
+        "Tôi học từ người giỏi nhất... Verkan, bậc thầy kỹ năng của Tempskron."
+      ]
+    },
+    "Lake Guard": {
+      "name": "Lính canh hồ",
+      "dialog": [
+        "Khu vực này chỉ mở cho các chiến binh được vương quốc chấp thuận. Tránh ra, rất nguy hiểm.",
+        "Chiến binh level 70 có thể đi qua đây.",
+        "Chúng tôi cấm khu vực này vì có những quái vật rất nguy hiểm."
+      ]
+    },
+    "Lauren store": {
+      "name": "Cửa hàng của Lauren",
+      "dialog": [
+        "Có đủ thuốc trước khi đi săn là sự chuẩn bị cơ bản.",
+        "Chúng tôi hơi xa thành phố lớn, nhưng có mọi thứ bạn cần.",
+        "Hôm nay lạnh quá; hãy nghỉ ở đây một chút trước khi lên đường.",
+        "Thuốc có thể đóng băng vì lạnh, nhưng vẫn hiệu quả như cũ."
+      ]
+    },
+    "MapleTree": {
+      "name": "Cây phong",
+      "dialog": []
+    },
+    "Marina": {
+      "name": "Marina",
+      "dialog": [
+        "Hoàng tử yêu quý của em, chàng không đẹp sao?",
+        "Giá mà chàng đừng khoe khoang trước mặt người khác thì thật hoàn hảo..",
+        "Thật ra em nghĩ cái kiểu khoe mẽ đó của chàng cũng rất đáng yêu."
+      ]
+    },
+    "Maron's Witchcraft Store": {
+      "name": "Cửa hàng Phù thủy của Maron",
+      "dialog": [
+        "Ở đây chúng tôi bán trang bị phù thủy. Nếu bạn là pháp sư, bạn sẽ tìm thấy nhiều thứ hữu ích.",
+        "Chào mừng. Chúng tôi bán trang bị cho pháp sư và nữ tu (phép thuật!). Hãy xem sản phẩm của chúng tôi.",
+        "Chúng tôi có chi nhánh thứ 2 ở Ruinen và chi nhánh thứ 3 ở Navisko. Nếu cần trang bị mạnh hơn, hãy ghé các chi nhánh của chúng tôi.",
+        "Phần lớn trang bị phù thủy trên lục địa là do tôi thiết kế và chế tạo."
+      ]
+    },
+    "Maron's store, 2nd branch": {
+      "name": "Cửa hàng Maron, chi nhánh 2",
+      "dialog": [
+        "Đây là chi nhánh thứ hai của cửa hàng phù thủy ông Maron. Dĩ nhiên ông Maron cung cấp hàng cho chúng tôi.",
+        "Chúng tôi bán trang bị phù thủy do ông Maron làm. Cứ xem thử.",
+        "Thấy chưa? Mọi trang bị ở đây đều có chữ ký của ông Maron.",
+        "Ngôi làng này không phát triển lắm, nhưng nhờ du khách chúng tôi cũng kiếm được chút tiền."
+      ]
+    },
+    "Maron's store, 3rd branch": {
+      "name": "Cửa hàng Maron, chi nhánh 3",
+      "dialog": [
+        "Đây là chi nhánh thứ ba của cửa hàng phù thủy ông Maron. Chúng tôi đảm bảo chất lượng như trụ sở chính.",
+        "Chất lượng như nhau. Điểm khác duy nhất là những vật phẩm này được làm ở Pillai.",
+        "Ông Maron là người duy nhất trên toàn lục địa có thể làm ra trang bị này.",
+        "Nếu bạn cần mua trang bị phù thủy, hãy xem kỹ sản phẩm của chúng tôi."
+      ]
+    },
+    "Maron's store, 3rd branch 2": {
+      "name": "Cửa hàng Maron, chi nhánh 3",
+      "dialog": [
+        "Đây là chi nhánh thứ ba của cửa hàng phù thủy ông Maron. Chúng tôi đảm bảo chất lượng như trụ sở chính.",
+        "Chất lượng như nhau. Điểm khác duy nhất là những vật phẩm này được làm ở Pillai.",
+        "Ông Maron là người duy nhất trên toàn lục địa có thể làm ra trang bị này.",
+        "Nếu bạn cần mua trang bị phù thủy, hãy xem kỹ sản phẩm của chúng tôi."
+      ]
+    },
+    "Maron's store, 3rd branch 3": {
+      "name": "Cửa hàng Maron, chi nhánh 3",
+      "dialog": [
+        "Đây là chi nhánh thứ ba của cửa hàng phù thủy ông Maron. Chúng tôi đảm bảo chất lượng như trụ sở chính.",
+        "Chất lượng như nhau. Điểm khác duy nhất là những vật phẩm này được làm ở Pillai.",
+        "Ông Maron là người duy nhất trên toàn lục địa có thể làm ra trang bị này.",
+        "Nếu bạn cần mua trang bị phù thủy, hãy xem kỹ sản phẩm của chúng tôi."
+      ]
+    },
+    "Messenger Ian": {
+      "name": "Sứ giả Ian",
+      "dialog": [
+        "Bạn khỏe không? Tôi là Ian, sứ giả của Tempskron.",
+        "Tôi chuyển những thông điệp khẩn khắp lục địa.",
+        "Lúc này, tất cả các vương quốc Priston đang ngăn chặn quái vật.",
+        "Có nhiều quái vật mạnh bên ngoài làng, nên hãy cẩn thận."
+      ]
+    },
+    "Messenger Rucia": {
+      "name": "Sứ giả Rucia",
+      "dialog": [
+        "Bạn khỏe không? Tôi là Rucia, sứ giả của Morion.",
+        "Tôi chuyển những thông điệp khẩn khắp lục địa.",
+        "Lúc này, tất cả các vương quốc Priston đang ngăn chặn quái vật.",
+        "Có nhiều quái vật mạnh bên ngoài làng, nên hãy cẩn thận."
+      ]
+    },
+    "Milter": {
+      "name": "Milter",
+      "dialog": [
+        "Tòa tháp đầy những linh hồn bị tra tấn. Xin hãy giải thoát chúng tôi...",
+        "Lời nguyền của Egolanos rất mạnh. Chúng tôi bị mắc kẹt ở đây mãi mãi..."
+      ]
+    },
+    "Miscellaneous Store Icyris": {
+      "name": "Tạp hóa Icyris",
+      "dialog": [
+        "Tôi nghĩ cuộc công thành tới sẽ là một trận chiến sinh tử.",
+        "Bạn cần gì?"
+      ]
+    },
+    "Miscellaneous Store, Allya": {
+      "name": "Tạp hóa, Allya",
+      "dialog": [
+        "Thuốc đỏ hồi HP và thuốc xanh lá hồi STM. Hãy luôn mang theo.",
+        "Ngay cả chiến binh mạnh nhất cũng không giữ được sức mạnh nếu thiếu thuốc hồi tức thì của tôi!",
+        "Tất cả thuốc bán trong cửa hàng này đều do một mình tôi làm. Bạn cần loại thuốc nào?",
+        "Hãy chọn loại thuốc phù hợp với HP của bạn."
+      ]
+    },
+    "Miscellaneous Store, Allya 2": {
+      "name": "Tạp hóa, Allya",
+      "dialog": [
+        "Thuốc đỏ hồi HP và thuốc xanh lá hồi STM. Hãy luôn mang theo.",
+        "Ngay cả chiến binh mạnh nhất cũng không giữ được sức mạnh nếu thiếu thuốc hồi tức thì của tôi!",
+        "Tất cả thuốc bán trong cửa hàng này đều do một mình tôi làm. Bạn cần loại thuốc nào?",
+        "Hãy chọn loại thuốc phù hợp với HP của bạn."
+      ]
+    },
+    "Miscellaneous Store, Byant": {
+      "name": "Tạp hóa, Byant",
+      "dialog": [
+        "Thuốc khẩn cấp quan trọng như nước giữa sa mạc.",
+        "Đây là nơi duy nhất quanh đây bạn có thể mua thuốc.",
+        "Mọi người muốn mua nhiều thuốc, vì quái vật ngày càng điên cuồng.",
+        "Hãy mang đủ thuốc để băng qua sa mạc. Tôi chắc bạn sẽ không quay lại đây mua thêm được."
+      ]
+    },
+    "Miscellaneous Store, Lynn": {
+      "name": "Tạp hóa, Lynn",
+      "dialog": [
+        "Chào mừng. Đây là khu nghỉ chân trong Rừng Keo.",
+        "Ở lối vào Rừng Keo có một nơi gọi là Đồi Goblin, nơi nhiều Hobgoblin lang thang.",
+        "Hang Nấm nằm ở phía tây Rừng Keo, nhưng chỉ chiến binh mạnh mới được qua.",
+        "Cẩn thận với những con cyclops quanh đây. Chúng mạnh hơn các quái vật khác."
+      ]
+    },
+    "Miscellaneous Store, Pillia": {
+      "name": "Tạp hóa, Pillia",
+      "dialog": [
+        "Dù mạnh hay yếu, bạn cũng phải mang theo những loại thuốc này.",
+        "Ngay cả chiến binh mạnh nhất cũng bị quái vật đánh tơi tả nếu thiếu những loại thuốc này.",
+        "Với công nghệ hiện nay, chúng tôi không thể chế tạo thuốc mana.",
+        "Tự mình mang theo thuốc là quy tắc vàng của chiến binh."
+      ]
+    },
+    "Mixing Craftsman, Morald": {
+      "name": "Thợ mix Morald",
+      "dialog": [
+        "Mix để làm gì ư? Bạn tối đa hóa năng lực trang bị chỉ với một lần cường hóa. Tốt hơn aging nhiều, vì vật phẩm có thể vỡ khi cường hóa không hoàn hảo.",
+        "Mix không chỉ là công nghệ rất tiên tiến mà còn là cách an toàn nhất để nâng cấp trang bị.",
+        "Mix về cơ bản khác với aging, vốn có thể làm mất vật phẩm trong lúc cường hóa.",
+        "Mix được phát hiện từ vài thiên niên kỷ trước, vậy mà mới chỉ hé lộ được một nửa."
+      ]
+    },
+    "Molly's Disguises": {
+      "name": "Đồ hóa trang của Molly",
+      "dialog": [
+        "Hãy che giấu danh tính của bạn bằng những bộ hóa trang vui nhộn này!"
+      ]
+    },
+    "Molly, the granny": {
+      "name": "Bà Molly",
+      "dialog": [
+        "Cuối cùng Midranda cũng đến nơi này",
+        "Xin hãy giành lại Pillai của chúng tôi, chiến binh dũng cảm.",
+        "Bà già này đã tan nát vì Midranda.",
+        "Liệu trước khi chết bà có được thấy Pillai nguyên vẹn lần nữa không?"
+      ]
+    },
+    "Moriph, the Mysterious": {
+      "name": "Moriph, Người bí ẩn",
+      "dialog": []
+    },
+    "Mr. Buma": {
+      "name": "Ông Buma",
+      "dialog": [
+        "Bạn có thể gọi tôi là thiên tài của bang hội, 'Ông Buma'. khụ.. khụ.."
+      ]
+    },
+    "Mr. HobGoblin": {
+      "name": "Ông HobGoblin",
+      "dialog": [
+        "Này, bạn.. Tôi tặng bạn một vật phẩm tuyệt vời nếu bạn mang cho tôi Sừng Babel",
+        "Tôi muốn Sừng Babel.. Nó có gì đó đặc biệt...",
+        "Tôi chán quần áo Goblin rồi và tôi nghĩ Sừng Babel hợp với người như tôi",
+        "Tôi không ngủ được vì Sừng Babel. Bạn mang Sừng Babel cho tôi được không? Tôi sẽ tặng lại một vật phẩm tuyệt vời."
+      ]
+    },
+    "Mythcreature": {
+      "name": "Sinh vật huyền thoại",
+      "dialog": [
+        "Sinh vật cổ đại lặng lẽ quan sát bạn."
+      ]
+    },
+    "Nadia": {
+      "name": "Nadia",
+      "dialog": [
+        "Làm ơn mang cho tôi một vật phẩm đã mix.",
+        "Để tôi đổi một vật phẩm chưa mix lấy một vật phẩm ngẫu nhiên.",
+        "Nếu ông Morald biết chuyện, ông ấy sẽ thất vọng."
+      ]
+    },
+    "Navisko Guard": {
+      "name": "Lính canh Navisko",
+      "dialog": [
+        "Có tin đồn về một bầy quái vật lang thang trong làng, nhưng tôi chưa từng thấy con nào. Lạ thật..!",
+        "Tôi nghĩ đêm qua tôi thấy một bầy Bargon. Tôi quên chuyện gì xảy ra sau đó. Có gì đó không ổn ở đây.",
+        "Rất nhiều người ra vào để thăm Đấu trường SOD. Một mình canh gác thành phố không dễ chút nào.",
+        "Những người đến bằng cổng dịch chuyển làm tôi đau đầu. Tôi không kiểm soát được họ nếu họ không đi qua lối vào chính thức."
+      ]
+    },
+    "Nina": {
+      "name": "Nina",
+      "dialog": [
+        "Cầu mong sức mạnh của nước, trí tuệ và sự thanh nhã luôn đồng hành cùng bạn...",
+        "Bạn đến muộn rồi! Trận chiến Ardor đã bắt đầu.",
+        "Đội nào sẽ thắng đây?",
+        "Bạn trông cũng rất mạnh đấy.",
+        "Xin lỗi, bây giờ bạn không thể vào Ardor.",
+        "Vào giờ này mỗi ngày, phần thưởng được trao và đấu trường được dọn dẹp, bảo trì.",
+        "Vui lòng quay lại sau.",
+        "Có vẻ còn quá sớm để bạn vào Ardor. Bạn cần thêm EXP."
+      ]
+    },
+    "Noas": {
+      "name": "Noas",
+      "dialog": [
+        "Cầu mong sự phong phú của đất đai và tình yêu luôn đồng hành cùng cuộc sống của bạn...",
+        "Tháp Thử Thách, Bellatra, do bang hội 'XXX' quản lý",
+        "Bạn đến muộn rồi! Bellatra đã bắt đầu.",
+        "Đội nào sẽ thắng đây?",
+        "Bạn trông cũng rất mạnh đấy.",
+        "Xin lỗi, bây giờ bạn không thể vào Bellatra.",
+        "Vào giờ này trong ngày, phần thưởng được trao và đấu trường được dọn dẹp, bảo trì.",
+        "Vui lòng quay lại sau.",
+        "Có vẻ còn quá sớm để bạn vào Bellatra. Bạn cần thêm EXP."
+      ]
+    },
+    "Novic": {
+      "name": "Novic",
+      "dialog": [
+        "Đây là nơi nào vậy?",
+        "Tôi nghĩ mình có thể kết hợp những viên đá quý bạn đang có.",
+        "Tôi cảm nhận được một linh hồn bí ẩn quanh những viên đá quý đó.",
+        "Hừm.. Không hiểu sao tôi không chắc mình có thể tạo ra nó..."
+      ]
+    },
+    "Peddler Yampi": {
+      "name": "Người bán rong Yampi",
+      "dialog": [
+        "Ôi, thật tuyệt khi bạn tìm thấy tôi trên lục địa Priston.",
+        "Tôi thường bán những vật phẩm khó tìm. Hãy luôn tìm tôi, vì đôi khi tôi bán những món rất tốt.",
+        "Tôi là Yampi, người chỉ bán vật phẩm trong 5 phút. Xin hãy chọn một món.",
+        "Đây là vật phẩm bạn muốn. Tôi đang bán nó bây giờ. Tôi sắp phải đi, nên nhanh lên"
+      ]
+    },
+    "Pillai Guard": {
+      "name": "Lính canh Pillai",
+      "dialog": [
+        "Thành phố Pillai lơ lửng trên không, nhưng bạn không cần sợ rơi.",
+        "Pillai an toàn trước những mối đe dọa bên ngoài vì nó lơ lửng trên không.",
+        "Hãy giữ yên lặng trong thành phố, vì phần lớn chiến binh ở đây đang thiền.",
+        "Mọi thứ lơ lửng trong thành phố đều được điều khiển bằng sức mạnh ma thuật, điều mà người Morion rất tự hào."
+      ]
+    },
+    "Pillai Guard 2": {
+      "name": "Lính canh Pillai",
+      "dialog": [
+        "Tôi không xứng đáng với vinh dự làm lính canh Pillai...",
+        "Tôi chỉ là một kẻ có tội; tôi đã không bảo vệ được Pillai, thành phố của Morion.",
+        "Midranda và thuộc hạ của hắn đã biến thành phố này thành tro tàn.",
+        "Tôi vẫn nhớ phong cảnh tuyệt đẹp của Pillai."
+      ]
+    },
+    "Pillai Guard 3": {
+      "name": "Lính canh Pillai",
+      "dialog": [
+        "Con đường kết thúc ở đây. Nếu muốn vào rừng, hãy dùng cổng ở phía nam thành phố.",
+        "Phía sau tôi là cổng dịch chuyển bạn đến mọi nơi. Bạn cần một đôi cánh để dùng cổng.",
+        "Nếu cần làm cánh hoặc nâng cấp cánh của bạn, hãy dùng cổng ngay bây giờ để gặp nhà phát minh cổng dịch chuyển ở Ricarten.",
+        "Dịch chuyển đến Ricarten và Pillai là miễn phí. Bạn cần một đôi cánh để đến các khu vực khác."
+      ]
+    },
+    "Pillai Guard 4": {
+      "name": "Lính canh Pillai",
+      "dialog": [
+        "Thỉnh thoảng có quái vật lén lút chui qua cổng.",
+        "Thành phố Pillai là nơi thanh bình và giản dị. Đừng gây ồn ào hay rước rắc rối.",
+        "Bạn không được làm phiền các chiến binh khác chỉ vì lợi ích của riêng mình.",
+        "Có vẻ người lính canh đằng kia đang ngủ gật. Đánh thức anh ta đi! Tôi chưa từng thấy anh ta tỉnh... chậc chậc..."
+      ]
+    },
+    "Pitchman Dela": {
+      "name": "Người bán hàng Dela",
+      "dialog": [
+        "Loại thuốc này được làm từ nước suối thiên nhiên. Các nữ tu thỉnh thoảng tắm ở con suối đó. Rất hiệu quả!!",
+        "Nước sinh mệnh từ con suối này đang được bán. Nếu cần nước sinh mệnh hoặc có vật phẩm muốn bán, hãy báo tôi.",
+        "Không phải ai cũng vào được Hang Tổ Ong ở phía tây Vùng Đất Hoàng Hôn.",
+        "Beedog và Cây Quỷ ở Rừng Linh Hồn, phía nam đây, cho mật ong và một loại dầu bí ẩn. Chúng dùng để làm gì nhỉ?"
+      ]
+    },
+    "Praya": {
+      "name": "Praya",
+      "dialog": [
+        "Tôi từ nơi xa đến để tìm một cặp bùa hộ mệnh.",
+        "Anh ấy là một con quái vật, nhưng chúng tôi yêu nhau biết bao.",
+        "Cặp bùa là dấu ấn tình yêu của chúng tôi, và tôi sẽ không bao giờ tha thứ cho kẻ đã trộm chúng."
+      ]
+    },
+    "Priest of the temple": {
+      "name": "Tư tế Đền thờ",
+      "dialog": [
+        "Tầng một của ngôi đền đã được mở. Đừng bao giờ vào đó. Rất nguy hiểm.",
+        "Hãy cẩn thận sau lưng! Ở tầng hai xuất hiện những quái vật còn chết chóc hơn.",
+        "Chỉ chiến binh từ level 70 trở lên mới được vào. Đó là luật!",
+        "Chỉ người từ level 75 trở lên mới được vào tầng hai của ngôi đền."
+      ]
+    },
+    "Princess Dzari": {
+      "name": "Công chúa Dzari",
+      "dialog": []
+    },
+    "Quest Manager": {
+      "name": "Quản lý nhiệm vụ",
+      "dialog": [
+        "Hãy giao cho tôi bất kỳ nhiệm vụ nào..."
+      ]
+    },
+    "Reporter of Bless Castle": {
+      "name": "Phóng viên Bless Castle",
+      "dialog": [
+        "Ai sẽ thắng vào cuối tuần này?",
+        "Bless Castle bắt đầu mỗi tuần một lần, và bang hội nào hạ được Tháp Valhalla sẽ giữ quyền sở hữu.",
+        "Nếu thắng trận chiến, bạn nhận phần thưởng lớn. Bạn có muốn thử không?",
+        "Theo dõi trận chiến trực tiếp trực tuyến một cách dễ dàng.",
+        "Tốt hơn hết bạn nên nói chuyện với chú Damon ở Rừng Tre nếu muốn đến Bless Castle."
+      ]
+    },
+    "Research Buma": {
+      "name": "Nhà nghiên cứu Buma",
+      "dialog": [
+        "Đang chờ ý kiến của bạn.",
+        "Tin nhắn sẽ được gửi ở cuối"
+      ]
+    },
+    "Ribbon Hopy": {
+      "name": "Hopy Nơ",
+      "dialog": [
+        "Priston Tale đang kỷ niệm sinh nhật.",
+        "Hãy chúc mừng nó và tôi sẽ tặng bạn một món quà đặc biệt mỗi ngày.",
+        "Chúc mừng kỷ niệm, Priston Tale ^^"
+      ]
+    },
+    "Ricarten Guard": {
+      "name": "Lính canh Ricarten",
+      "dialog": [
+        "Đừng cho chúng ăn hay chọc tức chúng từ bên ngoài. Không biết chúng sẽ làm gì nếu nổi giận.",
+        "Mấy con vật đó biến mất vào ban đêm và quay lại vào buổi sáng. Chúng là sinh vật kỳ lạ, bạn biết đấy?",
+        "Nhiệm vụ thăng hạng của Tempskron là bắt 3 con vật đó và mang về 3 bằng chứng.",
+        "Đừng lại gần cái lồng quá! Tôi sợ khi nghĩ đến chuyện có thể xảy ra!"
+      ]
+    },
+    "Ricarten Guard 2": {
+      "name": "Lính canh Ricarten",
+      "dialog": [
+        "Đây là thành phố Ricarten, ở phía nam vùng đất Tempskron.",
+        "Rất nhiều người ghé qua thành phố, khiến nó trở thành thánh địa kinh doanh và thương mại của cả lục địa.",
+        "Tên thành phố này là gì? Là Ricarten, thủ đô của Tempskron. Hãy nhớ lấy!",
+        "Rất nhiều người sống trong thành phố này, vậy mà nơi đây vẫn yên bình.",
+        "Nếu đây là lần săn đầu tiên của bạn, có thể bạn muốn đi săn Hoppy. Nếu tự tin hơn, hãy đi về phía tây săn Hobgoblin ở Rừng Keo."
+      ]
+    },
+    "Ricarten Guard 3": {
+      "name": "Lính canh Ricarten",
+      "dialog": [
+        "Hãy nhớ rằng làm phiền việc luyện tập của chiến binh khác hay lừa gạt họ là điều đáng xấu hổ.",
+        "Hãy đánh thức người lính canh bên cạnh bạn nếu anh ta ngủ gật.",
+        "Ricarten nằm ở cực nam vùng đất Priston.",
+        "Cẩn thận! Quái vật sẽ tấn công bạn sau cây cầu."
+      ]
+    },
+    "Ricarten Guard 4": {
+      "name": "Lính canh Ricarten",
+      "dialog": [
+        "Hãy nhớ rằng làm phiền việc luyện tập của chiến binh khác hay lừa gạt họ là điều đáng xấu hổ.",
+        "Hãy đánh thức người lính canh bên cạnh bạn nếu anh ta ngủ gật.",
+        "Ricarten nằm ở cực nam vùng đất Priston.",
+        "Cẩn thận! Quái vật sẽ tấn công bạn sau cây cầu."
+      ]
+    },
+    "Ricio": {
+      "name": "Ricio",
+      "dialog": [
+        "Đá rune có thể được khảm vào các lỗ cùng màu.",
+        "Đá rune có khắp thế giới Priston, nhưng loại tốt nhất nằm ở Phòng Thí Nghiệm Bí Mật và Vũ Khí Cổ Đại!",
+        "Đá rune thêm những kỹ năng khác nhau cho trang bị của bạn."
+      ]
+    },
+    "Royalmage Ray": {
+      "name": "Pháp sư Hoàng gia Ray",
+      "dialog": [
+        "Vương quốc Hiệp sĩ và Hoàng cung. Họ là số ít người được chọn.",
+        "Ở đây ồn quá, tôi không luyện tinh thần được. Làm ơn giữ yên lặng!",
+        "Các pháp sư hoàng gia đang chiến đấu gian khổ ở một số nơi. Chúng ta phải nghĩ cách giúp họ.",
+        "Tôi nghĩ chỉ các pháp sư hoàng gia mới có thể chiến đấu với Egolanos."
+      ]
+    },
+    "Rudolph": {
+      "name": "Rudolph",
+      "dialog": [
+        ".........",
+        ".........",
+        "........."
+      ]
+    },
+    "Sage Celina": {
+      "name": "Hiền giả Celina",
+      "dialog": [
+        "Tôi sẽ dùng tri thức của mình vì lục địa Priston và hòa bình vĩnh cửu của nó.",
+        "Bạn có thể cống hiến cả đời cho lục địa Priston không?",
+        "Liệu có tồn tại thiện và ác tuyệt đối không?"
+      ]
+    },
+    "Salon, the Specialist": {
+      "name": "Salon, Chuyên gia",
+      "dialog": []
+    },
+    "Sanctuary Guard": {
+      "name": "Lính canh Thánh Địa",
+      "dialog": [
+        "Bạn thấy nơi phía sau bạn không? Đó là Hang ổ của Kelvezu! Tôi nghi bạn sống sót được ở đó!",
+        "Kelvezu là một con quái vật đáng sợ, với sức tấn công kinh khủng. Với phòng thủ hiện tại, bạn sẽ không sống sót trước con quái vật hung dữ nhất!!",
+        "Nghe này! Hiện tại, nói rằng Kelvezu là kẻ bất khả chiến bại sống trong hang ổ cũng không ngoa!!"
+      ]
+    },
+    "Santa Goblin": {
+      "name": "Goblin Noel",
+      "dialog": [
+        "Sao bạn lại đi một mình vào dịp tuyệt vời như Giáng Sinh thế này!",
+        "Tôi là người quyết định có tặng quà hay không!",
+        "Nhìn mũi của Rudolph kìa... nó không còn sáng nữa."
+      ]
+    },
+    "Secretary Karina": {
+      "name": "Thư ký Karina",
+      "dialog": [
+        "Xin chào, tôi có thể giúp gì cho bạn? Tên tôi là Karina. Tôi quản lý Bellatra!",
+        "Bellatra tháng trước thật tuyệt vời. Các chiến binh mạnh khắp lục địa đã tham gia.",
+        "Ủy ban Bellatra sẽ do thượng viện quyết định sau khi có quyết định.",
+        "Chỉ bang chủ của bang hội quản lý Bellatra mới nhận được doanh thu.",
+        "Tôi cần một bang hội mạnh để quản lý các phòng của Bellatra!"
+      ]
+    },
+    "Sheltom Peddler": {
+      "name": "Người bán rong Sheltom",
+      "dialog": [
+        "GIAN LẬN!",
+        "Tiết kiệm cho bạn hàng triệu",
+        "Đồ lười biếng!"
+      ]
+    },
+    "Silver Wolverine": {
+      "name": "Wolverine Bạc",
+      "dialog": [
+        "Grrrrrrrrrrrrrr.. Khhhhhhhhhhhhhhooooooooo....!",
+        "Grrrr.. grrrr..."
+      ]
+    },
+    "Sir Rudolf": {
+      "name": "Ngài Rudolf",
+      "dialog": []
+    },
+    "Skill Master, Verkan": {
+      "name": "Bậc thầy Kỹ năng, Verkan",
+      "dialog": [
+        "Một cơ thể cường tráng và một tâm hồn cao quý là điều củng cố kỹ năng.",
+        "Sức mạnh của Tempskron đến từ cơ thể cường tráng. Giờ hãy rèn luyện bản thân để có thể trạng tốt hơn.",
+        "Bạn tích lũy càng nhiều điểm kỹ năng thì kỹ năng của bạn càng mạnh.",
+        "Bạn cần luyện kỹ năng nhiều hơn để dùng chúng dễ dàng mỗi khi muốn."
+      ]
+    },
+    "Smelting Master Arad": {
+      "name": "Bậc thầy Luyện kim Arad",
+      "dialog": [
+        "Bất kỳ hòn đá vô dụng nào cũng có thể thành pha lê nhờ luyện kim.",
+        "Một viên pha lê trở thành rune rất hữu ích cho việc chế tạo vật phẩm khi nhận được sức mạnh của sheltom.",
+        "Tất cả rune dùng trong chế tạo vật phẩm chỉ mình tôi làm được, trên lục địa Priston."
+      ]
+    },
+    "Snake Hunter": {
+      "name": "Thợ săn rắn",
+      "dialog": [
+        "Tất cả những con rắn tôi bắt đều đã trốn thoát",
+        "Rắn đen có một sức mạnh mà chúng ta chưa từng biết."
+      ]
+    },
+    "Son of Battle": {
+      "name": "Con của Chiến trận",
+      "dialog": []
+    },
+    "Stella": {
+      "name": "Stella",
+      "dialog": [
+        "Lâu Đài Ma đã trở thành chiến trường của 'Crossways Scroll'.",
+        "Xin hãy cứu lục địa Priston khỏi cái ác!"
+      ]
+    },
+    "Stella 2": {
+      "name": "Stella",
+      "dialog": [
+        "Bạn đã mang về kho báu của Kahn mà tôi đang tìm",
+        "Nó có thể kết hợp với một chiếc chìa khóa bí ẩn để mở chiếc hộp."
+      ]
+    },
+    "Stella's Store": {
+      "name": "Cửa hàng của Stella",
+      "dialog": []
+    },
+    "Steward Anders": {
+      "name": "Quản gia Anders",
+      "dialog": [
+        "Các Tháp Pha Lê có ba thuộc tính khác nhau: lửa, băng và sét. Hãy dùng chúng thật khéo.",
+        "Tất cả các thành phố hiện đang nộp thuế.",
+        "Tôi đã dành cả đời để tư vấn cho bạn về tài chính và phòng thủ tháp.",
+        "Vâng, thưa chủ nhân, tôi có thể phục vụ gì cho ngài?"
+      ]
+    },
+    "Supporter Longbo": {
+      "name": "Cổ động viên Longbo",
+      "dialog": [
+        "Cố lên, đội tuyển Brazil!!",
+        "Mang cho tôi 7 quả bóng đá và tôi sẽ tặng bạn một món quà."
+      ]
+    },
+    "Sylpi": {
+      "name": "Sylpi",
+      "dialog": [
+        "Tôi cầu nguyện cho sự tự do của gió luôn đồng hành cùng tầm nhìn của bạn...",
+        "Tháp Thử Thách, Bellatra, do bang hội 'XXX' quản lý",
+        "Bạn đến muộn rồi! Bellatra đã bắt đầu.",
+        "Đội nào sẽ thắng đây?",
+        "Bạn trông cũng rất mạnh đấy.",
+        "Xin lỗi, bây giờ bạn không thể vào Bellatra.",
+        "Vào giờ này trong ngày, phần thưởng được trao và đấu trường được dọn dẹp, bảo trì.",
+        "Vui lòng quay lại sau.",
+        "Có vẻ còn quá sớm để bạn vào Bellatra. Bạn cần thêm EXP."
+      ]
+    },
+    "Ticket Seller": {
+      "name": "Người bán vé",
+      "dialog": [
+        "Chào mừng đến hang ổ quái vật!! Ohhhhhhhhhoooo.."
+      ]
+    },
+    "Traveler Dela": {
+      "name": "Lữ khách Dela",
+      "dialog": []
+    },
+    "Vendor Rossa": {
+      "name": "Người bán hàng Rossa",
+      "dialog": [
+        "Tôi là em út trong Chị Em Bán Hàng.",
+        "Các chị em tôi và tôi hy vọng mở được một quầy hàng đường phố ở thành phố lớn!",
+        "Tôi có rất nhiều thứ để bán. Đây, xem thử đi.",
+        "Hãy mua hàng lần nữa nhé!"
+      ]
+    },
+    "Vendor Rozalin": {
+      "name": "Người bán hàng Rozalin",
+      "dialog": [
+        "Tôi là chị thứ hai trong Chị Em Bán Hàng.",
+        "Shellbi, Rossa và tôi muốn mở một quầy hàng đường phố lớn ở Ricarten.",
+        "Nếu bạn bị dịch chuyển đến đây, bạn sẽ cần một core để rời đi.",
+        "Thỉnh thoảng có thể thấy ánh sáng của Tháp Valhalla từ đây."
+      ]
+    },
+    "Vendor Shellbi": {
+      "name": "Người bán hàng Shellbi",
+      "dialog": [
+        "Tôi là chị cả trong Chị Em Bán Hàng.",
+        "Rozalin, Rossa và tôi muốn mở một quầy hàng đường phố lớn ở Ricarten.",
+        "Có người nói bạn phải dùng core nếu muốn quay về thành phố."
+      ]
+    },
+    "Wanderer, Lost": {
+      "name": "Kẻ lang thang lạc lối",
+      "dialog": [
+        "Tôi không hiểu sao chỉ riêng Ruinen là chẳng thay đổi gì...",
+        "Chúng tôi vốn là dân du mục, nhưng giờ có một cửa hàng ở biên giới giữa Tempskron và Morion.",
+        "Một ngày nào đó tôi sẽ xây một ngôi làng tử tế ở đây. Chắc chắn rồi!",
+        "Quái vật thường xuyên vào làng. Không gì ngăn được chúng, vì ngôi làng này nằm giữa nơi hoang vu."
+      ]
+    },
+    "Wandering Soul": {
+      "name": "Linh hồn lang thang",
+      "dialog": [
+        "Bệ hạ. Xin hãy lắng nghe thần.",
+        "Sứ mệnh của chúng ta phải được hoàn thành, dù phải trả giá nào.",
+        "Xin hãy chia sẻ sức mạnh của bạn với chúng tôi."
+      ]
+    },
+    "Warehouse Dunkun": {
+      "name": "Kho đồ Dunkun",
+      "dialog": [
+        "Một ngày nào đó tôi muốn trở thành đệ tử của Verkan và chiến đấu như một lính đánh thuê.",
+        "Kho đồ của bạn ở tất cả các thành phố được chia sẻ với nhau.",
+        "Đôi khi tôi chỉ muốn nghỉ ngơi, nhưng sự mệt mỏi tan biến khi thấy bạn vui mừng nhận lại vật phẩm từ tôi.",
+        "Bless Castle có những bức tường thành cao và vững chắc để tự bảo vệ tốt."
+      ]
+    },
+    "Warehouse Keeper, Lavendar": {
+      "name": "Thủ kho, Lavendar",
+      "dialog": [
+        "Nếu bạn mang quá nhiều đồ, cứ để lại cho tôi. Tôi sẽ cất ở nơi an toàn.",
+        "Thỉnh thoảng bạn cần sắp xếp lại vật phẩm, vì kho có giới hạn chỗ chứa.",
+        "Tôi kiệt sức sau một ngày làm việc dài. Bạn quay lại sau được không?",
+        "Không có gì phải lo, vì kho này được kết nối với kho của Tempskron."
+      ]
+    },
+    "Warehouse keeper, Arent": {
+      "name": "Thủ kho, Arent",
+      "dialog": [
+        "Chìa khóa đây. Bạn có thể lấy, nhưng đừng đụng vào đồ của tôi!",
+        "Làm thủ kho phức tạp hơn bạn nghĩ nhiều. Cố đừng ghé thăm tôi thường xuyên quá.",
+        "Bạn có thể cất đồ ở Ricarten và lấy lại ở kho Pillai, vì hai kho được kết nối với nhau!",
+        "Những người này đứng trước mặt tôi làm gì thế? Tôi cần chỗ để thở!"
+      ]
+    },
+    "Watchman Aljet": {
+      "name": "Người canh gác Aljet",
+      "dialog": []
+    },
+    "Witchcraft Academy, Raymon": {
+      "name": "Học viện Phù thủy, Raymon",
+      "dialog": [
+        "Năng lượng biến MP thành sức mạnh thể chất được gọi là ma thuật!",
+        "Chỉ người Morion mới được học ở Học viện Phù thủy.",
+        "Hãy cẩn thận khi phân bổ điểm kỹ năng, vì bạn chỉ có một cơ hội!",
+        "Bạn chỉ có thể học kỹ năng của cấp bậc thứ 2 sau khi thăng cấp bậc."
+      ]
+    },
+    "Zinjya": {
+      "name": "Zinjya",
+      "dialog": []
+    }
+  },
+  "items": {
+    "BI101": "Blue Stone",
+    "BI102": "Red Stone",
+    "BI103": "Green Stone",
+    "BI104": "Rebirth Scroll",
+    "BI105": "Eternal Life",
+    "BI108": "Teleport Core",
+    "BI110": "Enhancement Stone",
+    "BI123": "Firecracker",
+    "BI126": "Bronze Pack (1 ngày)",
+    "BI127": "Bronze Pack (7 ngày)",
+    "BI130": "Silver Pack (1 ngày)",
+    "BI131": "Silver Pack (7 ngày)",
+    "BI201": "Bronze Pack (3 giờ)",
+    "BI202": "Bronze Pack (1 ngày)",
+    "BI203": "Bronze Pack (7 ngày)",
+    "BI204": "Bronze Pack (30 ngày)",
+    "BI205": "Silver Pack (3 giờ)",
+    "BI206": "Silver Pack (1 ngày)",
+    "BI207": "Silver Pack (7 ngày)",
+    "BI208": "Silver Pack (30 ngày)",
+    "BI209": "Gold Pack (3 giờ)",
+    "BI210": "Gold Pack (1 ngày)",
+    "BI211": "Gold Pack (7 ngày)",
+    "BI212": "Gold Pack (30 ngày)",
+    "BI223": "Superior Pack (3 giờ)",
+    "BI224": "Superior Pack (1 ngày)",
+    "BI225": "Superior Pack (7 ngày)",
+    "BI518": "Silver Ore",
+    "DA102": "Battle Suit",
+    "DA103": "Leather Armor",
+    "DA105": "Steel Armor",
+    "DA107": "Breastplate",
+    "DA109": "Scale Armor",
+    "DA110": "Synthetic Armor",
+    "DA111": "Full Plate Armor",
+    "DA112": "Full Metal Armor",
+    "DA113": "Supreme Armor",
+    "DA114": "Spiked Armor",
+    "DA115": "Titan Armor",
+    "DA116": "Extreme Armor",
+    "DA117": "Ancient Armor",
+    "DA118": "Minotaur Armor",
+    "DA119": "Doom Armor",
+    "DA122": "Dragon Armor",
+    "DA126": "Magic Armor",
+    "DA130": "Imperial Armor",
+    "DA204": "Battle Robe",
+    "DA214": "Mystic Robe",
+    "DA220": "Astral Robe",
+    "DA222": "Angel Robe",
+    "DA226": "Magic Robe",
+    "DA229": "Deadly Robe",
+    "DA230": "Imperial Robe",
+    "DA401": "Flame Robe",
+    "DS111": "Great Shield",
+    "DS114": "Extreme Shield",
+    "DS116": "Synthetic Shield",
+    "DS117": "Titan Shield",
+    "DS118": "Mystic Shield",
+    "DS120": "Dragon Shield",
+    "DS126": "Deadly Shield",
+    "DS127": "Flame Shield",
+    "DS129": "Angel Shield",
+    "DS130": "Stygian Shield",
+    "GP109": "Mystic Crystal",
+    "GP112": "Dark Crystal",
+    "GP113": "Iron Crystal",
+    "GP116": "Imperial Guard",
+    "GP118": "Chaos Crystal",
+    "GP120": "Extreme Crystal",
+    "GP123": "Enigma Crystal",
+    "GP141": "Dragon Crystal",
+    "OA101": "Round Amulet",
+    "OA102": "Round Amulet +1",
+    "OA103": "Round Amulet +2",
+    "OA104": "Round Amulet +3",
+    "OA109": "Magic Amulet",
+    "OA110": "Magic Amulet +1",
+    "OA111": "Magic Amulet +2",
+    "OA112": "Magic Amulet +3",
+    "OA113": "Runic Amulet",
+    "OA114": "Runic Amulet +1",
+    "OA115": "Runic Amulet +2",
+    "OA116": "Runic Amulet +3",
+    "OA117": "Sealed Amulet",
+    "OA118": "Sealed Amulet +1",
+    "OA119": "Sealed Amulet",
+    "OA120": "Sealed Amulet +3",
+    "OA121": "Mystic Amulet",
+    "OA122": "Mystic Amulet +1",
+    "OA123": "Mystic Amulet +2",
+    "OA124": "Mystic Amulet +3",
+    "OA127": "Phantom Amulet",
+    "OA128": "Phantom Amulet +1",
+    "OA131": "Throne Amulet",
+    "OA132": "Enigma Amulet",
+    "OA134": "Enigma Amulet +2",
+    "OA135": "Enigma Amulet +3",
+    "OA136": "Voracious Amulet",
+    "OR101": "Round Ring",
+    "OR102": "Round Ring +1",
+    "OR103": "Round Ring +2",
+    "OR104": "Round Ring +3",
+    "OR105": "Gem Ring",
+    "OR106": "Gem Ring +1",
+    "OR107": "Gem Ring +2",
+    "OR108": "Gem Ring +3",
+    "OR109": "Magic Ring",
+    "OR110": "Magic Ring +1",
+    "OR111": "Magic Ring +2",
+    "OR112": "Magic Ring +3",
+    "OR113": "Runic Ring",
+    "OR114": "Runic Ring +1",
+    "OR115": "Runic Ring +2",
+    "OR116": "Runic Ring +3",
+    "OR117": "Sealed Ring",
+    "OR118": "Sealed Ring +1",
+    "OR119": "Sealed Ring +2",
+    "OR120": "Sealed Ring +3",
+    "OR121": "Mystic Ring",
+    "OR122": "Mystic Ring +1",
+    "OR123": "Mystic Ring +2",
+    "OR124": "Mystic Ring +3",
+    "OR127": "Phantom Ring",
+    "OR128": "Phantom Ring +1",
+    "OR130": "Phantom Ring +3",
+    "OR131": "Throne Ring",
+    "OR132": "Enigma Ring",
+    "OR133": "Enigma Ring +1",
+    "OR134": "Enigma Ring +1",
+    "OR135": "Enigma Ring +3",
+    "OR136": "Voracious Ring",
+    "PL101": "Small Life Potion",
+    "PL102": "Medium Life Potion",
+    "PL103": "Large Life Potion",
+    "PL104": "Mystic Life Potion",
+    "PL105": "Special Life Potion",
+    "PM101": "Small Mana Potion",
+    "PM102": "Medium Mana Potion",
+    "PM103": "Large Mana Potion",
+    "PM104": "Mystic Mana Potion",
+    "PM105": "Special Mana Potion",
+    "PR102": "Silver Ore",
+    "PR103": "Gold Ore",
+    "PR107": "Red Ore",
+    "PR108": "Green Ore",
+    "PR202": "Silver Crystal",
+    "PR203": "Gold Crystal",
+    "PR207": "Red Crystal",
+    "PR208": "Green Crystal",
+    "PS101": "Small Stamina Potion",
+    "PS102": "Medium Stamina Potion",
+    "PS103": "Large Stamina Potion",
+    "PS104": "Mystic Stamina Potion",
+    "PS105": "Special Stamina Potion",
+    "QT105": "Mysterious Oil",
+    "QT127": "Cursed Ring",
+    "QT135": "Gold Crystal",
+    "QW102": "Silver Wing",
+    "QW103": "Gold Wing",
+    "QW104": "Diamond Wing",
+    "QW105": "Chaos Wing",
+    "SP142": "Watermelon",
+    "SP230": "Halloween Box",
+    "WA101": "Stone Axe",
+    "WA102": "Steel Axe",
+    "WA103": "Battle Axe",
+    "WA104": "War Axe",
+    "WA105": "Double-Edged War Axe",
+    "WA108": "Double-Blade Axe",
+    "WA109": "Great Axe",
+    "WA110": "Diamond Axe",
+    "WA111": "Serrated Axe",
+    "WA113": "Giant Axe",
+    "WA115": "Titan Axe",
+    "WA116": "Chaos Axe",
+    "WA117": "Ancient Axe",
+    "WA119": "Extreme Axe",
+    "WA120": "Minotaur Axe",
+    "WA123": "Dragon Axe",
+    "WA126": "Dragon Axe",
+    "WA128": "Deadly Axe",
+    "WA129": "Flame Axe",
+    "WA131": "Deadly Axe",
+    "WA151": "Extreme Axe (5 giờ)",
+    "WC115": "Doom Claw",
+    "WC116": "Titan Claw",
+    "WC120": "Dragon Claw",
+    "WC125": "Furious Claw",
+    "WC127": "Deadly Claw",
+    "WC128": "Flame Claw",
+    "WC130": "Devilish Claw",
+    "WD102": "Iron Dagger",
+    "WD106": "Steel Dagger",
+    "WD109": "Platinum Dagger",
+    "WD119": "Chaos Dagger",
+    "WD121": "Shadow Dagger",
+    "WD127": "Deadly Dagger",
+    "WD128": "Flame Dagger",
+    "WD157": "Dark Dagger",
+    "WH105": "War Hammer",
+    "WH112": "Runic Hammer",
+    "WH121": "Extreme Hammer",
+    "WH122": "Guardian Hammer",
+    "WH124": "Dragon Hammer",
+    "WH127": "Dragon Hammer",
+    "WH129": "Deadly Hammer",
+    "WH130": "Flame Hammer",
+    "WH132": "Ruby Hammer",
+    "WH152": "Guardian Hammer (5 giờ)",
+    "WM109": "Phantom",
+    "WM114": "Chaos Staff",
+    "WM115": "Runic Wand",
+    "WM116": "Runic Staff",
+    "WM119": "Dragon Staff",
+    "WM121": "Astral Staff",
+    "WM124": "Astral Staff",
+    "WM127": "Astral Staff",
+    "WM129": "Deadly Staff",
+    "WM130": "Flame Staff",
+    "WM132": "Deadly Staff",
+    "WP109": "Evil Scythe",
+    "WP111": "Chaos Spear",
+    "WP112": "Titan Spear",
+    "WP114": "Dragon Wing",
+    "WP116": "Mystic Spear",
+    "WP120": "Extreme Spear",
+    "WP124": "Dragon Scythe",
+    "WP128": "Deadly Spear",
+    "WP129": "Flame Scythe",
+    "WP151": "Extreme Spear (5 giờ)",
+    "WS105": "Battle Bow",
+    "WS106": "Great Bow",
+    "WS107": "War Bow",
+    "WS111": "Bone Bow",
+    "WS114": "Titan Bow",
+    "WS115": "Chaos Bow",
+    "WS121": "Mirage Bow",
+    "WS122": "Dragon Bow",
+    "WS129": "Deadly Bow",
+    "WS130": "Flame Bow",
+    "WS132": "Deadly Bow",
+    "WS133": "Sinister Bow",
+    "WS151": "Mirage Bow (5 giờ)",
+    "WS210": "Platinum Sword",
+    "WS213": "Giant Sword",
+    "WS217": "Ancient Sword",
+    "WS221": "Titan Sword",
+    "WS225": "Extreme Sword",
+    "WS226": "Mirage Sword",
+    "WS229": "Mirage Sword",
+    "WS231": "Deadly Sword",
+    "WS232": "Flame Sword",
+    "WS234": "Deadly Sword",
+    "WS254": "Extreme Sword (5 giờ)",
+    "WT102": "War Dart",
+    "WT104": "Steel Dart",
+    "WT116": "Mirage Dart",
+    "WT117": "Mystic Dart",
+    "WT118": "Extreme Dart",
+    "WT119": "Dragon Dart",
+    "WT126": "Blessed Dart",
+    "WT128": "Deadly Dart",
+    "WT129": "Flame Dart",
+    "WT131": "Chaos Dart"
+  },
+  "monsters": {
+    "Ancient Golem": "Ancient Golem",
+    "Armored Bettle": "Armored Beetle",
+    "Bee Dog": "Bee Dog",
+    "Big Ghost": "Ghost",
+    "Bloody Knight": "Bloody Knight",
+    "Bloody Knight 2": "Bloody Knight",
+    "Bone Hound": "Bone Hound",
+    "Bronze Wolverine": "Bronze Wolverine",
+    "C-Doom Guard": "C-Doom Guard",
+    "C-Fox Hound": "C-Fox Hound",
+    "C-Marionette": "C-Marionette",
+    "C-Undead Chaser": "C-Undead Chaser",
+    "C-Undead Stalker": "C-Undead Stalker",
+    "Chimera": "Chimera",
+    "Chimera 2": "Chimera",
+    "Corrupt": "Corrupt",
+    "Crypt": "Crypt",
+    "Crypt 2": "Crypt",
+    "Cursed Archer": "Cursed Archer",
+    "Cursed Guard": "Cursed Guard",
+    "Cursed Knight": "Cursed Knight",
+    "CurseWeb": "Cursed Web",
+    "Cyclone": "Cyclops",
+    "Cyclone 2": "Cyclops",
+    "Cyclops": "Cyclops",
+    "Cyclops 2": "Cyclops",
+    "Dark Guard": "Dark Guard",
+    "Dark Knight": "Dark Knight",
+    "Dark Mage": "Dark Mage",
+    "Dark Specter": "Dark Specter",
+    "Dark Specter 2": "Dark Specter",
+    "Dark Stalker": "Dark Stalker",
+    "Deadly Machine": "Deadly Machine",
+    "Decoy": "Decoy",
+    "Decoy 2": "Decoy",
+    "Decoy 3": "Decoy",
+    "Devilish Tree": "Devilish Tree",
+    "Doom Guard": "Doom Guard",
+    "Doom Lord": "Doom Lord",
+    "Evil Plant": "Evil Plant",
+    "Fire Crystal": "Fire Crystal",
+    "Fury": "Fury",
+    "Fury 5": "Fury",
+    "Ghost": "Ghost",
+    "Ghoul": "Ghoul",
+    "Gorgon": "Gorgon",
+    "Guardian Staff": "Guardian Staff",
+    "Hammber Goblin": "Hammer Goblin",
+    "Hammer Decoy": "Hammer Decoy",
+    "Hammer Plant": "Hammer Plant",
+    "Haunting Maple": "Haunting Maple",
+    "Haunting Plant": "Haunting Plant",
+    "Head Cutter": "Head Cutter",
+    "Head Cutter 2": "Head Cutter",
+    "Head Cutter 3": "Head Cutter",
+    "Heavy Goblin": "Heavy Goblin",
+    "Heavy Goblin 2": "Heavy Goblin",
+    "Hell Hound": "Hell Hound",
+    "Hell Hound 2": "Hell Hound",
+    "Hell Hound 3": "Hell Hound",
+    "Hell Plant": "Hell Plant",
+    "HOPY KID": "Hopy Kid",
+    "Hopy King": "King Hopy",
+    "Hopy King 2": "King Hopy",
+    "I-Dark Mage": "I-Dark Mage",
+    "I-Fox Hound": "I-Fox Hound",
+    "I-icegoblin": "I-Ice Goblin",
+    "I-Marionette": "I-Marionette",
+    "I-Revived Archer": "I-Revived Archer",
+    "I-Temple Guard": "I-Temple Guard",
+    "I-Undead Chaser": "I-Undead Chaser",
+    "I-Undead Stalker": "I-Undead Stalker",
+    "Ice Crystal": "Ice Crystal",
+    "Icegoblin": "Ice Goblin",
+    "Icegoblin 2": "Ice Goblin",
+    "Incubus": "Incubus",
+    "Iron Guard": "Iron Guard",
+    "Iron Guard 2": "Iron Guard",
+    "L-Corrupt": "L-Corrupt",
+    "L-Crypt": "L-Crypt",
+    "L-Decoy": "L-Decoy",
+    "L-Fox Hound": "L-Fox Hound",
+    "L-Ghost": "L-Ghost",
+    "L-Ghoul": "L-Ghoul",
+    "L-Marionette": "L-Marionette",
+    "L-Skeleton": "L-Skeleton",
+    "L-Skeleton Archer": "L-Skeleton Archer",
+    "L-Undead Chaser": "L-Undead Chaser",
+    "L-Undead Stalker": "L-Undead Stalker",
+    "L-Zombi": "L-Zombie",
+    "Lava Archer": "Lava Archer",
+    "Lava Armor": "Lava Armor",
+    "Lava Golem": "Lava Golem",
+    "Lava Golem 2": "Lava Golem",
+    "Leech": "Leech",
+    "Lightning Crystal": "Lightning Crystal",
+    "MapleFairy": "Maple Fairy",
+    "MapleTree": "Maple Tree",
+    "Maximum Decoy": "Maximum Decoy",
+    "Mummy": "Mummy",
+    "Mummy 2": "Mummy",
+    "Mushroom Ghost": "Mushroom Ghost",
+    "Mutant Plant": "Mutant Plant",
+    "Mutant Rabie": "Mutant Rabie",
+    "Mutant Tree": "Mutant Tree",
+    "N-Dark Knight": "N-Dark Knight",
+    "N-Decoy": "N-Decoy",
+    "N-Doom Guard": "N-Doom Guard",
+    "N-Fox Hound": "N-Fox Hound",
+    "N-Head Cutter": "N-Head Cutter",
+    "N-Marionette": "N-Marionette",
+    "N-Undead Chaser": "N-Undead Chaser",
+    "N-Undead Stalker": "N-Undead Stalker",
+    "NorthGoblin": "North Goblin",
+    "Plant": "Plant",
+    "PlantLord": "Plant Lord",
+    "Revived Archer": "Revived Archer",
+    "Revived Knight": "Revived Knight",
+    "Runic Guardian": "Runic Guardian",
+    "Sadness": "Sadness",
+    "SantaGoblin": "Santa Goblin",
+    "Scorpion": "Scorpion",
+    "Silver Wolverine": "Silver Wolverine",
+    "Skeleton": "Skeleton",
+    "Skeleton 2": "Skeleton",
+    "Skeleton Archer": "Skeleton Archer",
+    "Skeleton Archer 2": "Skeleton Archer",
+    "Skeleton Archer 3": "Skeleton Archer",
+    "Skeleton Knight": "Skeleton Knight",
+    "Skeleton Knight 2": "Skeleton Knight",
+    "Skeleton Warrior": "Skeleton Warrior",
+    "Skeleton Warrior 2": "Skeleton Warrior",
+    "Snowman": "Snowman",
+    "SOD_Armored Beetle": "SOD_Armored Beetle",
+    "SOD_Crypt": "SOD_Crypt",
+    "SOD_Cursed Web": "SOD_Cursed Web",
+    "SOD_Dark Knight": "SOD_Dark Knight",
+    "SOD_Doom Guard": "SOD_Doom Guard",
+    "SOD_Doom Lord": "SOD_Doom Lord",
+    "SOD_Heavy Goblin": "SOD_Heavy Goblin",
+    "SOD_Mummy": "SOD_Mummy",
+    "SOD_Sadness": "SOD_Sadness",
+    "SOD_Skeleton Knight": "SOD_Skeleton Knight",
+    "SOD_Stone Golem": "SOD_Stone Golem",
+    "Stone Golem": "Stone Golem",
+    "Stygian Staff": "Stygian Staff",
+    "Temple Guard": "Temple Guard",
+    "Temple Guard 3": "Temple Guard",
+    "Temple Guard 4": "Temple Guard",
+    "Temple Guard 5": "Temple Guard",
+    "V-Chimera": "V-Chimera",
+    "V-Dark Guard": "V-Dark Guard",
+    "V-Dark Mage": "V-Dark Mage",
+    "V-Fox Hound": "V-Fox Hound",
+    "V-Gorgon": "V-Gorgon",
+    "V-Incubus": "V-Incubus",
+    "V-Marionette": "V-Marionette",
+    "V-Revived Archer": "V-Revived Archer",
+    "V-Undead Chaser": "V-Undead Chaser",
+    "V-Undead Stalker": "V-Undead Stalker",
+    "Wanted Morif": "Wanted Morif",
+    "Watermelon": "Watermelon",
+    "Web": "Web",
+    "Web 2": "Web",
+    "Web 3": "Web",
+    "Wevyn, the Hunter": "Wevyn, ang Hunter",
+    "Wild Goblin": "Wild Goblin",
+    "Zombi": "Zombie",
+    "Zombi 2": "Zombie",
+    "Zombie": "Zombie"
+  }
+}

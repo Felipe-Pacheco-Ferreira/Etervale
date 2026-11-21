@@ -206,6 +206,7 @@ seguem para a torre alta.</value></data>
   <data name="Friends.Recent" xml:space="preserve"><value>[Recentes]</value></data>
   <data name="Game.ActionPending" xml:space="preserve"><value>Outra ação está pendente; tente de novo</value></data>
   <data name="Game.AgedItemMatured" xml:space="preserve"><value>O item em aging amadureceu</value></data>
+  <data name="Game.AgingNotice" xml:space="preserve"><value>{0} fez aging de {1} para +{2}!</value></data>
   <data name="Game.AlreadyApplied" xml:space="preserve"><value>Já foi feito</value></data>
   <data name="Game.AlreadyTalking" xml:space="preserve"><value>Já está falando com este NPC</value></data>
   <data name="Game.BellatraBossDown" xml:space="preserve"><value>Um chefe caiu ({0} pontos).</value></data>
@@ -216,6 +217,94 @@ seguem para a torre alta.</value></data>
   <data name="Game.BellatraGuardian" xml:space="preserve"><value>{0} quebrou o Selo do Guardião: um Guardian Saint luta ao lado dele.</value></data>
   <data name="Game.BellatraLevel" xml:space="preserve"><value>Você ainda não é forte o bastante para entrar na Bellatra (nível {0}). Treine mais e volte.</value></data>
   <data name="Game.BellatraNoTickets" xml:space="preserve"><value>Os ingressos da Bellatra são vendidos ao amanhecer (horas {0} e {1} do jogo), antes de uma partida. Volte nesse horário.</value></data>
+  <data name="Game.BellatraOpening" xml:space="preserve"><value>A Bellatra abriu: os ingressos estão à venda em Navisko.</value></data>
+  <data name="Game.ChatTranslated" xml:space="preserve"><value>{0} (traduzido)</value></data>
+  <data name="Game.PvpOn" xml:space="preserve"><value>Modo PvP ligado: nos mapas de caça você pode lutar com jogadores de PvP ligado, fora do seu grupo e do seu clã.</value></data>
+  <data name="Game.ArenaOpen" xml:space="preserve"><value>A arena está aberta por {0} minutos: /arena 1x1 ou /arena 3x3 para entrar na fila.</value></data>
+  <data name="Game.ArenaQueued" xml:space="preserve"><value>Você entrou na fila da arena {0}.</value></data>
+  <data name="Game.ArenaLeft" xml:space="preserve"><value>Você saiu da fila da arena.</value></data>
+  <data name="Game.ArenaClosed" xml:space="preserve"><value>A arena está fechada. Ela abre às {0}.</value></data>
+  <data name="Game.ArenaLevel" xml:space="preserve"><value>A arena abre no nível {0}.</value></data>
+  <data name="Game.ArenaParty" xml:space="preserve"><value>No 3x3, o líder de um grupo de exatamente {0} jogadores entra na fila.</value></data>
+  <data name="Game.ArenaBusy" xml:space="preserve"><value>Você ou alguém do seu grupo não pode entrar na arena agora.</value></data>
+  <data name="Game.ArenaNotQueued" xml:space="preserve"><value>Você não está na fila da arena.</value></data>
+  <data name="Game.ArenaQueueClosed" xml:space="preserve"><value>A arena fechou e a fila acabou.</value></data>
+  <data name="Game.ArenaStarted" xml:space="preserve"><value>Sua partida de arena {0} contra {1} começou! Quem ficar com 1 de vida sai; ninguém morre.</value></data>
+  <data name="Game.ArenaOut" xml:space="preserve"><value>Você saiu da partida. Espere o fim para voltar.</value></data>
+  <data name="Game.ArenaWon" xml:space="preserve"><value>Vitória na arena! +{0} pontos na semana.</value></data>
+  <data name="Game.ArenaLost" xml:space="preserve"><value>Derrota na arena: -{0} pontos na semana.</value></data>
+  <data name="Game.ArenaDraw" xml:space="preserve"><value>A partida da arena terminou empatada.</value></data>
+  <data name="Game.ArenaNotice" xml:space="preserve"><value>Arena {0}: {1} venceu {2}.</value></data>
+  <data name="Game.ArenaDrawNotice" xml:space="preserve"><value>Arena {0}: {1} e {2} empataram.</value></data>
+  <data name="Arena.Queued" xml:space="preserve"><value>Na fila da arena {0}</value></data>
+  <data name="Arena.Status" xml:space="preserve"><value>Arena {0}: seu time {1} x {2}, faltam {3}:{4}</value></data>
+  <data name="Arena.Out" xml:space="preserve"><value>Você saiu. Arena {0}: seu time {1} x {2}, faltam {3}:{4}</value></data>
+  <data name="QuickMenu.ArenaSolo" xml:space="preserve"><value>Arena 1x1</value></data>
+  <data name="QuickMenu.ArenaTrio" xml:space="preserve"><value>Arena 3x3</value></data>
+  <data name="Game.RoyaleOpen" xml:space="preserve"><value>Inscrições abertas para o Battle Royale: começa em {0} minutos, a partir do nível {1}. Use /royale para se inscrever.</value></data>
+  <data name="Game.RoyaleRegistered" xml:space="preserve"><value>Você se inscreveu no Battle Royale ({0} inscritos).</value></data>
+  <data name="Game.RoyaleLeft" xml:space="preserve"><value>Você saiu da inscrição do Battle Royale.</value></data>
+  <data name="Game.RoyaleClosed" xml:space="preserve"><value>As inscrições do Battle Royale abrem 10 minutos antes de {0}.</value></data>
+  <data name="Game.RoyaleLevel" xml:space="preserve"><value>O Battle Royale exige o nível {0}.</value></data>
+  <data name="Game.RoyaleFull" xml:space="preserve"><value>O Battle Royale está cheio ({0} jogadores).</value></data>
+  <data name="Game.RoyaleBusy" xml:space="preserve"><value>Você não pode se inscrever agora: saia antes do duelo, da arena, de Bellatra ou da arena de missões.</value></data>
+  <data name="Game.RoyaleNotRegistered" xml:space="preserve"><value>Você não está inscrito no Battle Royale.</value></data>
+  <data name="Game.RoyaleCancelled" xml:space="preserve"><value>O Battle Royale foi cancelado: {0} inscritos, são necessários {1}.</value></data>
+  <data name="Game.RoyaleStarted" xml:space="preserve"><value>O Battle Royale começou com {0} jogadores!</value></data>
+  <data name="Game.RoyaleOut" xml:space="preserve"><value>Você foi eliminado do Battle Royale e agora assiste: {0} ainda de pé.</value></data>
+  <data name="Game.RoyalePlace" xml:space="preserve"><value>Battle Royale: você ficou em {0}º lugar e ganhou {1} de experiência.</value></data>
+  <data name="Game.RoyaleWinner" xml:space="preserve"><value>{0} venceu o Battle Royale!</value></data>
+  <data name="Game.RoyaleSkipped" xml:space="preserve"><value>Você ficou de fora do Battle Royale: estava ocupado quando ele começou.</value></data>
+  <data name="Royale.Registered" xml:space="preserve"><value>Inscrito no Battle Royale ({0} inscritos)</value></data>
+  <data name="Royale.Status" xml:space="preserve"><value>Battle Royale: {0} de {1} de pé, a zona fecha em {2}, faltam {3}</value></data>
+  <data name="Game.TitleGained" xml:space="preserve"><value>{0} conquistou o título {1}!</value></data>
+  <data name="Game.TitleLost" xml:space="preserve"><value>{0} perdeu o título {1} para {2}!</value></data>
+  <data name="Game.TitleEarned" xml:space="preserve"><value>Você conquistou o título {0}. Escolha-o acima da janela de status para mostrá-lo sobre o seu nome.</value></data>
+  <data name="Game.TitleTaken" xml:space="preserve"><value>Você perdeu o título {0} para {1}.</value></data>
+  <data name="Game.BossRouletteWinner" xml:space="preserve"><value>{0} ganhou {1} na roleta do boss {2}!</value></data>
+  <data name="Game.BossRouletteWon" xml:space="preserve"><value>Você ganhou {0} na roleta do boss {1}! O prêmio está no Distribuidor de itens (Mais).</value></data>
+  <data name="Title.None" xml:space="preserve"><value>Sem título</value></data>
+  <data name="Title.Veteran" xml:space="preserve"><value>Veterano</value></data>
+  <data name="Title.Master" xml:space="preserve"><value>Mestre</value></data>
+  <data name="Title.Legend" xml:space="preserve"><value>Lenda</value></data>
+  <data name="Title.Immortal" xml:space="preserve"><value>Imortal</value></data>
+  <data name="Title.Artisan" xml:space="preserve"><value>Artesão</value></data>
+  <data name="Title.MasterArtisan" xml:space="preserve"><value>Mestre Artesão</value></data>
+  <data name="Title.Adventurer" xml:space="preserve"><value>Aventureiro</value></data>
+  <data name="Title.Hunter" xml:space="preserve"><value>Caçador</value></data>
+  <data name="Title.Exterminator" xml:space="preserve"><value>Exterminador</value></data>
+  <data name="Title.BossHunter" xml:space="preserve"><value>Caçador de Chefes</value></data>
+  <data name="Title.ArenaKingLow" xml:space="preserve"><value>Rei da Arena 100-119</value></data>
+  <data name="Title.ArenaKingMiddle" xml:space="preserve"><value>Rei da Arena 120-139</value></data>
+  <data name="Title.ArenaKingHigh" xml:space="preserve"><value>Rei da Arena 140+</value></data>
+  <data name="Title.Survivor" xml:space="preserve"><value>Sobrevivente</value></data>
+  <data name="Title.CastleLord" xml:space="preserve"><value>Senhor do Castelo</value></data>
+  <data name="Title.Strongest" xml:space="preserve"><value>O Mais Forte</value></data>
+  <data name="Royale.Closing" xml:space="preserve"><value>Battle Royale: {0} de {1} de pé, faltam {3}</value></data>
+  <data name="Royale.Out" xml:space="preserve"><value>Você foi eliminado e assiste. Battle Royale: {0} de {1} de pé, faltam {3}</value></data>
+  <data name="QuickMenu.Royale" xml:space="preserve"><value>Battle Royale</value></data>
+  <data name="Game.DuelChallenged" xml:space="preserve"><value>Você desafiou {0} para um duelo.</value></data>
+  <data name="Game.DuelNotFound" xml:space="preserve"><value>{0} não está jogando agora.</value></data>
+  <data name="Game.DuelTooFar" xml:space="preserve"><value>{0} está longe demais para um duelo.</value></data>
+  <data name="Game.DuelField" xml:space="preserve"><value>Duelos só acontecem nos mapas de caça.</value></data>
+  <data name="Game.DuelBusy" xml:space="preserve"><value>{0} não pode duelar agora.</value></data>
+  <data name="Game.DuelSelf" xml:space="preserve"><value>Você não pode duelar consigo mesmo.</value></data>
+  <data name="Game.DuelRefused" xml:space="preserve"><value>{0} recusou seu duelo.</value></data>
+  <data name="Game.DuelStarted" xml:space="preserve"><value>O duelo com {0} começou: fique dentro do círculo dourado. Quem ficar com 1 de vida perde; ninguém morre.</value></data>
+  <data name="Game.DuelWon" xml:space="preserve"><value>Você venceu o duelo contra {0}!</value></data>
+  <data name="Game.DuelLost" xml:space="preserve"><value>Você perdeu o duelo para {0}.</value></data>
+  <data name="Game.DuelDraw" xml:space="preserve"><value>Seu duelo com {0} terminou empatado.</value></data>
+  <data name="Game.DuelNotice" xml:space="preserve"><value>{0} venceu {1} em duelo.</value></data>
+  <data name="Game.DuelDrawNotice" xml:space="preserve"><value>{0} e {1} empataram um duelo.</value></data>
+  <data name="Duel.Button" xml:space="preserve"><value>Duelo</value></data>
+  <data name="Duel.Request" xml:space="preserve"><value>quer duelar</value></data>
+  <data name="Duel.Status" xml:space="preserve"><value>Duelo com {0}: {1}:{2}</value></data>
+  <data name="Duel.Outside" xml:space="preserve"><value>Volte para a área: você perde o duelo com {0} em {1} s</value></data>
+  <data name="Game.PvpOff" xml:space="preserve"><value>Modo PvP desligado.</value></data>
+  <data name="Game.PvpLevel" xml:space="preserve"><value>O modo PvP abre no nível {0}.</value></data>
+  <data name="Game.PvpInCombat" xml:space="preserve"><value>Você lutou com um jogador há pouco: pode desligar o PvP em {0} segundos.</value></data>
+  <data name="Game.PvpMurderer" xml:space="preserve"><value>Você é assassino: seu PvP fica ligado por mais {0} segundos.</value></data>
+  <data name="Game.PvpMurder" xml:space="preserve"><value>Você matou {0}: agora é assassino por {1} minutos. Qualquer jogador com PvP ligado pode atacar você, e seu PvP fica ligado.</value></data>
   <data name="Game.BellatraOut" xml:space="preserve"><value>Sua equipe foi eliminada ({0}º lugar). Você ganhou {1} de ouro.</value></data>
   <data name="Game.BellatraPoints" xml:space="preserve"><value>{0} quebrou o Selo dos Pontos: {1} pontos a mais.</value></data>
   <data name="Game.BellatraQuake" xml:space="preserve"><value>{0} quebrou o Selo do Tremor: os monstros da sala tremem.</value></data>
@@ -327,6 +416,7 @@ seguem para a torre alta.</value></data>
   <data name="Game.ItemReceived" xml:space="preserve"><value>Você recebeu {0}</value></data>
   <data name="Game.ItemUsed" xml:space="preserve"><value>Item usado</value></data>
   <data name="Game.ItemsReceived" xml:space="preserve"><value>Você recebeu {0} x{1}</value></data>
+  <data name="Game.LevelNotice" xml:space="preserve"><value>{0} chegou ao nível {1}!</value></data>
   <data name="Game.LevelTooLow" xml:space="preserve"><value>Seu nível é baixo demais</value></data>
   <data name="Game.LifeFifteen" xml:space="preserve"><value>HP aumentado em +15</value></data>
   <data name="Game.LuckyBagHeld" xml:space="preserve"><value>A lucky bag continha {0}</value></data>
@@ -360,6 +450,8 @@ seguem para a torre alta.</value></data>
   <data name="Game.PartyLeaderNow" xml:space="preserve"><value>o líder do grupo agora é {0}</value></data>
   <data name="Game.PartyLeft" xml:space="preserve"><value>{0} saiu do grupo</value></data>
   <data name="Game.PartyLevelGap" xml:space="preserve"><value>A diferença de nível é grande demais</value></data>
+  <data name="Game.PartyLoot" xml:space="preserve"><value>{0} pegou {1}.</value></data>
+  <data name="Game.PartyRareLoot" xml:space="preserve"><value>{0} pegou um item raro: {1}!</value></data>
   <data name="Game.PartyRecommended" xml:space="preserve"><value>O líder do grupo {0} recomendou {1} para entrar no grupo</value></data>
   <data name="Game.PartyRecommends" xml:space="preserve"><value>recomenda {0}</value></data>
   <data name="Game.PartyReleased" xml:space="preserve"><value>o grupo foi desfeito</value></data>
@@ -561,6 +653,30 @@ seguem para a torre alta.</value></data>
   <data name="ItemUse.Teleport" xml:space="preserve"><value>teleportar?</value></data>
   <data name="Language.en" xml:space="preserve"><value>English</value></data>
   <data name="Language.pt-BR" xml:space="preserve"><value>Português (Brasil)</value></data>
+  <data name="Mail.NoAnswer" xml:space="preserve"><value>Sem resposta. Tente novamente.</value></data>
+  <data name="Mail.Claim.Already" xml:space="preserve"><value>Esta recompensa já foi resgatada.</value></data>
+  <data name="Mail.Claim.Space" xml:space="preserve"><value>A recompensa não cabe no inventário.</value></data>
+  <data name="Mail.Claim.Unavailable" xml:space="preserve"><value>Recompensa indisponível.</value></data>
+  <data name="Mail.Claim.Retry" xml:space="preserve"><value>Tente novamente em instantes.</value></data>
+  <data name="Mail.Title.Distributor" xml:space="preserve"><value>Distribuidor de Itens</value></data>
+  <data name="Mail.Title.Inbox" xml:space="preserve"><value>Correios · Caixa de entrada</value></data>
+  <data name="Mail.Title.Message" xml:space="preserve"><value>Correios · Mensagem</value></data>
+  <data name="Mail.Loading" xml:space="preserve"><value>Carregando…</value></data>
+  <data name="Mail.ServerSilent" xml:space="preserve"><value>Sem resposta do servidor.</value></data>
+  <data name="Mail.AutoRefresh" xml:space="preserve"><value>Atualização automática</value></data>
+  <data name="Mail.Attachments" xml:space="preserve"><value>Anexos</value></data>
+  <data name="Mail.AttachmentsGold" xml:space="preserve"><value>Anexos · {0} ouro</value></data>
+  <data name="Mail.Claimed" xml:space="preserve"><value>Recompensa resgatada</value></data>
+  <data name="Mail.Inbox" xml:space="preserve"><value>Caixa de entrada</value></data>
+  <data name="Mail.Wait" xml:space="preserve"><value>Aguarde…</value></data>
+  <data name="Mail.Claim" xml:space="preserve"><value>Resgatar</value></data>
+  <data name="Mail.Previous" xml:space="preserve"><value>Anterior</value></data>
+  <data name="Mail.Next" xml:space="preserve"><value>Próxima</value></data>
+  <data name="Language.es" xml:space="preserve"><value>Español</value></data>
+  <data name="Language.fil" xml:space="preserve"><value>Filipino</value></data>
+  <data name="Language.vi" xml:space="preserve"><value>Tiếng Việt</value></data>
+  <data name="Language.zh-CN" xml:space="preserve"><value>Chinês (simplificado)</value></data>
+  <data name="Language.ja" xml:space="preserve"><value>Japonês</value></data>
   <data name="Login.Account" xml:space="preserve"><value>Conta</value></data>
   <data name="Login.Failure.AlreadyLoggedIn" xml:space="preserve"><value>Já conectado nesta conexão.</value></data>
   <data name="Login.Failure.BadCredentials" xml:space="preserve"><value>Conta ou senha inválida.</value></data>
@@ -900,6 +1016,24 @@ seguem para a torre alta.</value></data>
   <data name="Time.OneHour" xml:space="preserve"><value>1 hora</value></data>
   <data name="Time.Seconds" xml:space="preserve"><value>{0}s</value></data>
   <data name="Trade.Gold" xml:space="preserve"><value>você quer trocar?</value></data>
+  <data name="Tutorial.Ok" xml:space="preserve"><value>Entendi</value></data>
+  <data name="Tutorial.Off" xml:space="preserve"><value>Desligar dicas</value></data>
+  <data name="Tutorial.Move.Title" xml:space="preserve"><value>Andar</value></data>
+  <data name="Tutorial.Move.Text" xml:space="preserve"><value>Clique no chão para andar até lá; segure o botão para seguir o cursor. Clique duas vezes no chão para continuar andando.</value></data>
+  <data name="Tutorial.Attack.Title" xml:space="preserve"><value>Atacar</value></data>
+  <data name="Tutorial.Attack.Text" xml:space="preserve"><value>Clique num monstro para atacá-lo. Com Shift + clique, o ataque continua até você clicar em outro lugar.</value></data>
+  <data name="Tutorial.Inventory.Title" xml:space="preserve"><value>Inventário</value></data>
+  <data name="Tutorial.Inventory.Text" xml:space="preserve"><value>Aperte {0} para abrir o inventário: seus itens, equipamentos e ouro.</value></data>
+  <data name="Tutorial.Character.Title" xml:space="preserve"><value>Personagem</value></data>
+  <data name="Tutorial.Character.Text" xml:space="preserve"><value>Aperte {0} para ver seus atributos e gastar os pontos ganhos ao subir de nível.</value></data>
+  <data name="Tutorial.Skills.Title" xml:space="preserve"><value>Habilidades</value></data>
+  <data name="Tutorial.Skills.Text" xml:space="preserve"><value>Aperte {0} para abrir as habilidades. Segure o clique numa habilidade e aperte de {1} a {2} para pô-la num atalho.</value></data>
+  <data name="Tutorial.Potions.Title" xml:space="preserve"><value>Poções</value></data>
+  <data name="Tutorial.Potions.Text" xml:space="preserve"><value>As poções do cinto são usadas com {0}, {1} e {2}.</value></data>
+  <data name="Tutorial.Chat.Title" xml:space="preserve"><value>Chat</value></data>
+  <data name="Tutorial.Chat.Text" xml:space="preserve"><value>Aperte Enter para escrever no chat e Enter de novo para enviar.</value></data>
+  <data name="Tutorial.Settings.Title" xml:space="preserve"><value>Configurações</value></data>
+  <data name="Tutorial.Settings.Text" xml:space="preserve"><value>Aperte {0} para abrir as configurações. A aba Teclas troca qualquer atalho.</value></data>
   <data name="Usable.AgingArmlet" xml:space="preserve"><value>o bracelete</value></data>
   <data name="Usable.AgingArmor" xml:space="preserve"><value>a armadura ou manto</value></data>
   <data name="Usable.AgingBoots" xml:space="preserve"><value>as botas</value></data>
@@ -958,4 +1092,423 @@ seguem para a torre alta.</value></data>
   <data name="WingGate.Title" xml:space="preserve"><value>Portal</value></data>
   <data name="Workbench.TakeBack" xml:space="preserve"><value>Clique direito: retirar</value></data>
   <data name="Status.EnteringWorld" xml:space="preserve"><value>Entrando no mundo…</value></data>
+  <data name="CharSelect.Title.Characters" xml:space="preserve"><value>Personagens</value></data>
+  <data name="CharSelect.Title.Tribe" xml:space="preserve"><value>Tribo</value></data>
+  <data name="CharSelect.Title.Class" xml:space="preserve"><value>Classe</value></data>
+  <data name="CharSelect.Title.Face" xml:space="preserve"><value>Rosto</value></data>
+  <data name="CharSelect.NewCharacter" xml:space="preserve"><value>Criar personagem</value></data>
+  <data name="CharSelect.Button.Create" xml:space="preserve"><value>Criar</value></data>
+  <data name="CharSelect.Button.Select" xml:space="preserve"><value>Selecionar</value></data>
+  <data name="CharSelect.Button.Exit" xml:space="preserve"><value>Sair</value></data>
+  <data name="CharSelect.Button.Back" xml:space="preserve"><value>Voltar</value></data>
+  <data name="CharSelect.Button.Delete" xml:space="preserve"><value>Excluir</value></data>
+  <data name="Chat.Tab.All" xml:space="preserve"><value>Todos</value></data>
+  <data name="Chat.Tab.Clan" xml:space="preserve"><value>Clã</value></data>
+  <data name="Chat.Tab.Party" xml:space="preserve"><value>Grupo</value></data>
+  <data name="Chat.Tab.Trade" xml:space="preserve"><value>Troca</value></data>
+  <data name="Chat.Tab.Whisper" xml:space="preserve"><value>Msg.P</value></data>
+  <data name="Chat.Alert" xml:space="preserve"><value>Alerta</value></data>
+  <data name="ServerSelect.Title" xml:space="preserve"><value>Servidores</value></data>
+  <data name="ServerSelect.Hint" xml:space="preserve"><value>Setas: selecionar   Enter: conectar   Esc: voltar</value></data>
+  <data name="GlobalBonuses.Title" xml:space="preserve"><value>Bônus globais</value></data>
+  <data name="GlobalBonuses.ExpRate" xml:space="preserve"><value>Taxa de EXP</value></data>
+  <data name="GlobalBonuses.ExpEvent" xml:space="preserve"><value>Evento de EXP</value></data>
+  <data name="GlobalBonuses.AgingCost" xml:space="preserve"><value>Custo de Aging</value></data>
+  <data name="GlobalBonuses.MixCost" xml:space="preserve"><value>Custo de Mix</value></data>
+  <data name="GlobalBonuses.Contacting" xml:space="preserve"><value>Consultando o servidor...</value></data>
+  <data name="Rewards.UpdateFailed" xml:space="preserve"><value>Não foi possível atualizar as recompensas.</value></data>
+  <data name="Rewards.Title" xml:space="preserve"><value>Eventos e Recompensas</value></data>
+  <data name="Rewards.Claim" xml:space="preserve"><value>Resgatar ({0})</value></data>
+  <data name="RecentDrops.Title" xml:space="preserve"><value>Últimos drops avistados</value></data>
+  <data name="RecentDrops.None" xml:space="preserve"><value>Nenhum item avistado nesta sessão.</value></data>
+  <data name="ShopDirectory.Title" xml:space="preserve"><value>Lojas de jogadores</value></data>
+  <data name="ShopDirectory.None" xml:space="preserve"><value>Nenhuma loja avistada.</value></data>
+  <data name="Premium.BuffActivated" xml:space="preserve"><value>Buff premium ativado.</value></data>
+  <data name="Hud.ExpGained" xml:space="preserve"><value>EXP ganha: {0:N0}</value></data>
+  <data name="QuickMenu.Calendar" xml:space="preserve"><value>Calendário</value></data>
+  <data name="QuickMenu.Auction" xml:space="preserve"><value>Leilão</value></data>
+  <data name="QuickMenu.Security" xml:space="preserve"><value>Segurança</value></data>
+  <data name="QuickMenu.RecentDrops" xml:space="preserve"><value>Últimos drops</value></data>
+  <data name="QuickMenu.CoinHistory" xml:space="preserve"><value>Histórico de Coins</value></data>
+  <data name="QuickMenu.Events" xml:space="preserve"><value>Eventos</value></data>
+  <data name="QuickMenu.Eragon" xml:space="preserve"><value>Lar do Eragon</value></data>
+  <data name="QuickMenu.Rankings" xml:space="preserve"><value>Ranking</value></data>
+  <data name="QuickMenu.Distributor" xml:space="preserve"><value>Distribuidor</value></data>
+  <data name="QuickMenu.ItemShop" xml:space="preserve"><value>Loja de Itens</value></data>
+  <data name="QuickMenu.Mail" xml:space="preserve"><value>Correios</value></data>
+  <data name="QuickMenu.AutoHuntNeedsQuest" xml:space="preserve"><value>A auto-caça precisa de uma missão de caça ativa fora da cidade.</value></data>
+  <data name="QuickMenu.News" xml:space="preserve"><value>Novidades &amp; Suporte</value></data>
+  <data name="QuickMenu.AutoHunt" xml:space="preserve"><value>Auto-caça</value></data>
+  <data name="QuickMenu.MoreOpen" xml:space="preserve"><value>Mais  ^</value></data>
+  <data name="QuickMenu.MoreClosed" xml:space="preserve"><value>Mais  v</value></data>
+  <data name="QuickMenu.Quests" xml:space="preserve"><value>Missões</value></data>
+  <data name="SystemMenu.Help" xml:space="preserve"><value>Ajuda</value></data>
+  <data name="SystemMenu.Quit" xml:space="preserve"><value>Sair</value></data>
+  <data name="LootFilter.LifePotions" xml:space="preserve"><value>Poções de vida</value></data>
+  <data name="LootFilter.ManaPotions" xml:space="preserve"><value>Poções de mana</value></data>
+  <data name="LootFilter.StaminaPotions" xml:space="preserve"><value>Poções de stamina</value></data>
+  <data name="LootFilter.Armor" xml:space="preserve"><value>Armaduras e robes</value></data>
+  <data name="LootFilter.Shields" xml:space="preserve"><value>Escudos</value></data>
+  <data name="LootFilter.Boots" xml:space="preserve"><value>Botas</value></data>
+  <data name="LootFilter.Gloves" xml:space="preserve"><value>Luvas</value></data>
+  <data name="LootFilter.Bracelets" xml:space="preserve"><value>Braceletes e orbs</value></data>
+  <data name="LootFilter.Amulets" xml:space="preserve"><value>Amuletos</value></data>
+  <data name="LootFilter.Rings" xml:space="preserve"><value>Anéis</value></data>
+  <data name="LootFilter.Sheltoms" xml:space="preserve"><value>Sheltoms</value></data>
+  <data name="LootFilter.ForceOrbs" xml:space="preserve"><value>Force Orbs</value></data>
+  <data name="LootFilter.Other" xml:space="preserve"><value>Outros itens</value></data>
+  <data name="LootFilter.Crystals" xml:space="preserve"><value>Cristais de invocação</value></data>
+  <data name="LootFilter.Cores" xml:space="preserve"><value>Cores</value></data>
+  <data name="LootFilter.Job.Mechanician" xml:space="preserve"><value>Mecânico</value></data>
+  <data name="LootFilter.Job.Fighter" xml:space="preserve"><value>Lutador</value></data>
+  <data name="LootFilter.Job.Pikeman" xml:space="preserve"><value>Pike</value></data>
+  <data name="LootFilter.Job.Archer" xml:space="preserve"><value>Arqueira</value></data>
+  <data name="LootFilter.Job.Knight" xml:space="preserve"><value>Cavaleiro</value></data>
+  <data name="LootFilter.Job.Atalanta" xml:space="preserve"><value>Atalanta</value></data>
+  <data name="LootFilter.Job.Priestess" xml:space="preserve"><value>Sacerdotisa</value></data>
+  <data name="LootFilter.Job.Magician" xml:space="preserve"><value>Mago</value></data>
+  <data name="LootFilter.Job.Assassin" xml:space="preserve"><value>Assassina</value></data>
+  <data name="LootFilter.Job.MartialArtist" xml:space="preserve"><value>Artista marcial</value></data>
+  <data name="LootFilter.Job.Shaman" xml:space="preserve"><value>Xamã</value></data>
+  <data name="Settings.Tab.Video" xml:space="preserve"><value>Vídeo</value></data>
+  <data name="Settings.Tab.Audio" xml:space="preserve"><value>Áudio</value></data>
+  <data name="Settings.Tab.Keys" xml:space="preserve"><value>Teclas</value></data>
+  <data name="Settings.Tab.Other" xml:space="preserve"><value>Outros</value></data>
+  <data name="Settings.Voice.Nearby" xml:space="preserve"><value>Perto</value></data>
+  <data name="Settings.Voice.Party" xml:space="preserve"><value>Grupo</value></data>
+  <data name="Settings.Voice.Clan" xml:space="preserve"><value>Clã</value></data>
+  <data name="Settings.Voice.Map" xml:space="preserve"><value>Todos no mapa</value></data>
+  <data name="Shortcut.Inventory" xml:space="preserve"><value>Inventário</value></data>
+  <data name="Shortcut.Character" xml:space="preserve"><value>Personagem</value></data>
+  <data name="Shortcut.Skills" xml:space="preserve"><value>Habilidades</value></data>
+  <data name="Shortcut.Quests" xml:space="preserve"><value>Missões</value></data>
+  <data name="Shortcut.Social" xml:space="preserve"><value>Social</value></data>
+  <data name="Shortcut.SystemMenu" xml:space="preserve"><value>Menu do sistema</value></data>
+  <data name="Shortcut.RunWalk" xml:space="preserve"><value>Correr / andar</value></data>
+  <data name="Shortcut.Settings" xml:space="preserve"><value>Configurações</value></data>
+  <data name="Shortcut.SwitchBag" xml:space="preserve"><value>Trocar bolsa (A/B)</value></data>
+  <data name="Shortcut.SwitchWeapons" xml:space="preserve"><value>Trocar conjunto de armas</value></data>
+  <data name="Shortcut.BeltPotion" xml:space="preserve"><value>Poção do cinto {0}</value></data>
+  <data name="Shortcut.Skill" xml:space="preserve"><value>Atalho de habilidade {0}</value></data>
+  <data name="Shortcut.Minimap" xml:space="preserve"><value>Minimapa</value></data>
+  <data name="Shortcut.News" xml:space="preserve"><value>Novidades</value></data>
+  <data name="Shortcut.GroundNames" xml:space="preserve"><value>Nomes dos itens no chão</value></data>
+  <data name="Shortcut.RotateLeft" xml:space="preserve"><value>Girar câmera à esquerda</value></data>
+  <data name="Shortcut.RotateRight" xml:space="preserve"><value>Girar câmera à direita</value></data>
+  <data name="Shortcut.ZoomIn" xml:space="preserve"><value>Aproximar câmera</value></data>
+  <data name="Shortcut.ZoomOut" xml:space="preserve"><value>Afastar câmera</value></data>
+  <data name="Shortcut.TiltUp" xml:space="preserve"><value>Inclinar câmera para cima</value></data>
+  <data name="Shortcut.TiltDown" xml:space="preserve"><value>Inclinar câmera para baixo</value></data>
+  <data name="Shortcut.ActionBar" xml:space="preserve"><value>Barra de ações: espaço {0}</value></data>
+  <data name="Shortcut.PushToTalk" xml:space="preserve"><value>Pressionar para falar</value></data>
+  <data name="Shortcut.HideHud" xml:space="preserve"><value>Esconder todo o HUD (para prints)</value></data>
+  <data name="Shortcut.PersistentInfo" xml:space="preserve"><value>Informações fixas sobre os personagens</value></data>
+  <data name="Shortcut.DungeonCamera" xml:space="preserve"><value>Câmera 2D / 3D (dungeons)</value></data>
+  <data name="Shortcut.Pvp" xml:space="preserve"><value>Modo PvP: ligar / desligar</value></data>
+  <data name="Settings.Toggle.On" xml:space="preserve"><value>{0}: Ligado</value></data>
+  <data name="Settings.Toggle.Off" xml:space="preserve"><value>{0}: Desligado</value></data>
+  <data name="Settings.Switch.OnWords" xml:space="preserve"><value>ligado,ligada,ligados,ligadas</value></data>
+  <data name="Settings.Switch.OffWords" xml:space="preserve"><value>desligado,desligada,desligados,desligadas</value></data>
+  <data name="Settings.Row.ChatTranslateTo" xml:space="preserve"><value>Traduzir chat para: {0}</value></data>
+  <data name="Settings.ChatTranslate.Off" xml:space="preserve"><value>Não traduzir</value></data>
+  <data name="Settings.ChatTranslate.Game" xml:space="preserve"><value>Idioma do jogo</value></data>
+  <data name="Settings.Row.LevelGuide" xml:space="preserve"><value>Guia de nível</value></data>
+  <data name="Settings.Row.ScreenReflections" xml:space="preserve"><value>Reflexos em tela</value></data>
+  <data name="Settings.Row.Fog" xml:space="preserve"><value>Neblina</value></data>
+  <data name="Settings.Row.VolumetricLight" xml:space="preserve"><value>Luz volumétrica</value></data>
+  <data name="Settings.Row.ColorGrading" xml:space="preserve"><value>Cores (LUT)</value></data>
+  <data name="Settings.Row.AutoExposure" xml:space="preserve"><value>Exposição automática</value></data>
+  <data name="Settings.Row.Bloom" xml:space="preserve"><value>Bloom</value></data>
+  <data name="Settings.Row.GroundGold" xml:space="preserve"><value>Mostrar ouro no chão</value></data>
+  <data name="Settings.Row.GroundPotions" xml:space="preserve"><value>Mostrar poções no chão</value></data>
+  <data name="Settings.Row.GroundWeapons" xml:space="preserve"><value>Mostrar armas no chão</value></data>
+  <data name="Settings.Row.TradeChat" xml:space="preserve"><value>Chat de comércio</value></data>
+  <data name="Settings.Row.CastleNotices" xml:space="preserve"><value>Avisos do Castelo Bless</value></data>
+  <data name="Settings.Row.OnlinePlayers" xml:space="preserve"><value>Mostrar jogadores online</value></data>
+  <data name="Settings.Row.UseLootFilter" xml:space="preserve"><value>Usar o filtro de loot</value></data>
+  <data name="Settings.Row.MinimumLevel" xml:space="preserve"><value>Nível mínimo: {0}</value></data>
+  <data name="Settings.Row.MaximumLevel" xml:space="preserve"><value>Nível máximo: {0}</value></data>
+  <data name="Settings.Row.Unlimited" xml:space="preserve"><value>Sem limite</value></data>
+  <data name="Settings.Row.RareEquipment" xml:space="preserve"><value>Sempre mostrar equipamentos raros</value></data>
+  <data name="Settings.Row.ShowAll" xml:space="preserve"><value>Mostrar tudo (filtro de loot)</value></data>
+  <data name="Settings.VoiceChat" xml:space="preserve"><value>Chat de voz</value></data>
+  <data name="Settings.Microphone" xml:space="preserve"><value>Microfone</value></data>
+  <data name="Settings.Row.SpeakTo" xml:space="preserve"><value>Falar para: {0}</value></data>
+  <data name="Settings.Row.PushToTalkKey" xml:space="preserve"><value>Tecla de falar: {0}</value></data>
+  <data name="Settings.Row.Device" xml:space="preserve"><value>Dispositivo: {0}</value></data>
+  <data name="Settings.Row.SystemDefault" xml:space="preserve"><value>Padrão do sistema</value></data>
+  <data name="Settings.Row.PushToTalkMode" xml:space="preserve"><value>Modo: Pressionar para falar</value></data>
+  <data name="Settings.Row.AlwaysShow" xml:space="preserve"><value>Sempre mostrar: {0}</value></data>
+  <data name="Settings.MouseButtons.Swapped" xml:space="preserve"><value>Invertidos</value></data>
+  <data name="Settings.MouseButtons.Off" xml:space="preserve"><value>Desligados</value></data>
+  <data name="Settings.MouseButtons.Default" xml:space="preserve"><value>Padrão</value></data>
+  <data name="Settings.Row.CameraSideButtons" xml:space="preserve"><value>Botões laterais da câmera: {0}</value></data>
+  <data name="Settings.Row.BellatraBoss" xml:space="preserve"><value>Bellatra: derrota do chefe</value></data>
+  <data name="Settings.Row.ClanMembership" xml:space="preserve"><value>Clã: entradas e saídas</value></data>
+  <data name="Settings.Row.EventRewards" xml:space="preserve"><value>Recompensas de evento</value></data>
+  <data name="Settings.Row.PremiumBuffs" xml:space="preserve"><value>Ativação de buffs premium</value></data>
+  <data name="Settings.Row.EventCalendar" xml:space="preserve"><value>Calendário de eventos</value></data>
+  <data name="Settings.Row.CharacterNames" xml:space="preserve"><value>Mostrar nomes dos personagens</value></data>
+  <data name="Settings.Row.Damage" xml:space="preserve"><value>Mostrar dano</value></data>
+  <data name="Settings.Row.GroundItemNames" xml:space="preserve"><value>Nomes de todos os itens no chão</value></data>
+  <data name="Settings.Row.InvertCameraRotation" xml:space="preserve"><value>Inverter giro da câmera</value></data>
+  <data name="Settings.Row.InvertCameraScroll" xml:space="preserve"><value>Inverter rolagem da câmera</value></data>
+  <data name="Settings.Row.DungeonCameraTopDown" xml:space="preserve"><value>Câmera em dungeons: 2D (vista de cima)</value></data>
+  <data name="Settings.Row.DungeonCameraNormal" xml:space="preserve"><value>Câmera em dungeons: 3D (câmera normal)</value></data>
+  <data name="Settings.Row.HudScale" xml:space="preserve"><value>Escala do HUD: {0}%</value></data>
+  <data name="Settings.Row.MoveChat" xml:space="preserve"><value>Mover chat (arraste o chat)</value></data>
+  <data name="Settings.Row.TutorialTips" xml:space="preserve"><value>Dicas do tutorial</value></data>
+  <data name="Settings.Row.ResetInterface" xml:space="preserve"><value>Redefinir interface (escala e chat)</value></data>
+  <data name="Settings.Row.GlobalBonuses" xml:space="preserve"><value>Bônus globais</value></data>
+  <data name="Settings.Row.ExpGained" xml:space="preserve"><value>EXP ganha</value></data>
+  <data name="Settings.Row.BellatraResults" xml:space="preserve"><value>Bellatra: avisos de resultado</value></data>
+  <data name="Settings.Row.BellatraSeals" xml:space="preserve"><value>Bellatra: selos da equipe</value></data>
+  <data name="Settings.MouseAction.Off" xml:space="preserve"><value>Desligado</value></data>
+  <data name="Settings.MouseAction.RotateLeft" xml:space="preserve"><value>Girar à esquerda</value></data>
+  <data name="Settings.MouseAction.RotateRight" xml:space="preserve"><value>Girar à direita</value></data>
+  <data name="Settings.MouseAction.ZoomIn" xml:space="preserve"><value>Aproximar</value></data>
+  <data name="Settings.MouseAction.ZoomOut" xml:space="preserve"><value>Afastar</value></data>
+  <data name="Settings.MouseAction.TiltUp" xml:space="preserve"><value>Inclinar para cima</value></data>
+  <data name="Settings.MouseAction.TiltDown" xml:space="preserve"><value>Inclinar para baixo</value></data>
+  <data name="Settings.Row.QuestTracker" xml:space="preserve"><value>Rastreador de missões</value></data>
+  <data name="Settings.Row.WithoutSpecialization" xml:space="preserve"><value>Sem especialização</value></data>
+  <data name="Settings.Card.Textures" xml:space="preserve"><value>Texturas</value></data>
+  <data name="Settings.Card.InterfaceAndNames" xml:space="preserve"><value>Interface e nomes</value></data>
+  <data name="Settings.Card.BackgroundMusic" xml:space="preserve"><value>Música de fundo</value></data>
+  <data name="Settings.Card.SoundEffects" xml:space="preserve"><value>Efeitos sonoros</value></data>
+  <data name="Settings.Card.Windows" xml:space="preserve"><value>Janelas</value></data>
+  <data name="Settings.Card.Skills" xml:space="preserve"><value>Habilidades</value></data>
+  <data name="Settings.Card.Language" xml:space="preserve"><value>Idioma</value></data>
+  <data name="Settings.Card.Interface" xml:space="preserve"><value>Interface</value></data>
+  <data name="Settings.Section.Character" xml:space="preserve"><value>Personagem</value></data>
+  <data name="Settings.Section.Voice" xml:space="preserve"><value>Voz</value></data>
+  <data name="Settings.Section.Potions" xml:space="preserve"><value>Poções</value></data>
+  <data name="Settings.Section.Camera" xml:space="preserve"><value>Câmera</value></data>
+  <data name="Settings.Section.GraphicsQuality" xml:space="preserve"><value>Qualidade gráfica</value></data>
+  <data name="Settings.Section.EnhancedGraphics" xml:space="preserve"><value>Gráficos aprimorados</value></data>
+  <data name="Settings.Section.Display" xml:space="preserve"><value>Exibição e resolução</value></data>
+  <data name="Settings.Section.Game" xml:space="preserve"><value>Jogo</value></data>
+  <data name="Settings.Section.LootFilter" xml:space="preserve"><value>Filtro de loot</value></data>
+  <data name="Settings.Section.ChatNotifications" xml:space="preserve"><value>Notificações do chat</value></data>
+  <data name="Settings.PressKey" xml:space="preserve"><value>Pressione uma tecla</value></data>
+  <data name="Settings.RestoreDefaults" xml:space="preserve"><value>Restaurar padrão</value></data>
+  <data name="Settings.Hint.LootNames" xml:space="preserve"><value>Separe os nomes por vírgula. Enter confirma, Esc cancela.</value></data>
+  <data name="Settings.Hint.Rebind" xml:space="preserve"><value>Clique para alterar. Shift + clique restaura o atalho.</value></data>
+  <data name="Settings.Hint.Scroll" xml:space="preserve"><value>Role para ver mais opções.</value></data>
+  <data name="Settings.Cancel" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="Settings.Save" xml:space="preserve"><value>SALVAR</value></data>
+  <data name="QuestWindow.ResetsDaily" xml:space="preserve"><value>Renovação diária.</value></data>
+  <data name="QuestWindow.AutoGuide" xml:space="preserve"><value>Guia auto</value></data>
+  <data name="QuestWindow.Tracker" xml:space="preserve"><value>Rastreador</value></data>
+  <data name="QuestWindow.MonthlyNotStarted" xml:space="preserve"><value>O desafio do mês ainda não começou.</value></data>
+  <data name="QuestWindow.SelectQuest" xml:space="preserve"><value>Escolha uma missão na lista.</value></data>
+  <data name="QuestWindow.NoQuests" xml:space="preserve"><value>Nenhuma missão.</value></data>
+  <data name="QuestWindow.Completed" xml:space="preserve"><value>Concluída</value></data>
+  <data name="QuestWindow.InProgress" xml:space="preserve"><value>Em andamento</value></data>
+  <data name="QuestWindow.Loading" xml:space="preserve"><value>Carregando...</value></data>
+  <data name="QuestWindow.Now" xml:space="preserve"><value>Agora</value></data>
+  <data name="QuestWindow.QuestCompleted" xml:space="preserve"><value>Missão concluída.</value></data>
+  <data name="QuestWindow.ClickGo" xml:space="preserve"><value>Clique em Ir para seguir a rota.</value></data>
+  <data name="QuestWindow.ReadInstructions" xml:space="preserve"><value>Consulte as instruções da missão.</value></data>
+  <data name="QuestWindow.Objectives" xml:space="preserve"><value>Objetivos</value></data>
+  <data name="QuestWindow.Done" xml:space="preserve"><value>Feito</value></data>
+  <data name="QuestWindow.Reward" xml:space="preserve"><value>Recompensa</value></data>
+  <data name="QuestWindow.Tracking" xml:space="preserve"><value>Rastreando</value></data>
+  <data name="QuestWindow.Track" xml:space="preserve"><value>Rastrear</value></data>
+  <data name="QuestWindow.Go" xml:space="preserve"><value>IR</value></data>
+  <data name="QuestWindow.LoadingDaily" xml:space="preserve"><value>Carregando diárias...</value></data>
+  <data name="QuestWindow.Daily" xml:space="preserve"><value>Diária</value></data>
+  <data name="QuestWindow.CompleteToClaim" xml:space="preserve"><value>Complete a meta para resgatar.</value></data>
+  <data name="QuestWindow.Claimed" xml:space="preserve"><value>Resgatado</value></data>
+  <data name="QuestWindow.Waiting" xml:space="preserve"><value>Aguardando...</value></data>
+  <data name="QuestWindow.Claim" xml:space="preserve"><value>Resgatar</value></data>
+  <data name="QuestWindow.HowTo" xml:space="preserve"><value>? Como fazer</value></data>
+  <data name="QuestWindow.Goal.MonsterKills" xml:space="preserve"><value>Elimine monstros</value></data>
+  <data name="QuestWindow.Goal.Sheltoms" xml:space="preserve"><value>Colete Sheltoms</value></data>
+  <data name="QuestWindow.Goal.Potions" xml:space="preserve"><value>Use poções</value></data>
+  <data name="QuestWindow.Goal.MonsterDrops" xml:space="preserve"><value>Colete itens</value></data>
+  <data name="QuestWindow.Goal.BellatraEntries" xml:space="preserve"><value>Participe do Bellatra</value></data>
+  <data name="QuestWindow.Goal.Level" xml:space="preserve"><value>Suba de nível</value></data>
+  <data name="QuestWindow.Goal.Login" xml:space="preserve"><value>Entre no jogo</value></data>
+  <data name="QuestWindow.Tab.Journey" xml:space="preserve"><value>Jornada</value></data>
+  <data name="QuestWindow.Tab.Daily" xml:space="preserve"><value>Diárias</value></data>
+  <data name="QuestWindow.Tab.Monthly" xml:space="preserve"><value>Mensal</value></data>
+  <data name="QuestWindow.Tab.Completed" xml:space="preserve"><value>Concluídas</value></data>
+  <data name="QuestWindow.AvailableAtLevel" xml:space="preserve"><value>Disponível no nível {0}.</value></data>
+  <data name="QuestWindow.CompletedCount" xml:space="preserve"><value>CONCLUÍDAS ({0})</value></data>
+  <data name="QuestWindow.InProgressCount" xml:space="preserve"><value>EM ANDAMENTO ({0})</value></data>
+  <data name="QuestDocument.Avalon.MeetSkadi" xml:space="preserve"><value>Encontre a Aventureira Skadi em Ricarten.
+
+Ela apresenta os equipamentos iniciais e a primeira caçada da Jornada do aventureiro.</value></data>
+  <data name="QuestDocument.Avalon.MeetJin" xml:space="preserve"><value>Encontre o Aventureiro Jin em Pillai.
+
+Ele apresenta os equipamentos iniciais e a primeira caçada da Jornada do aventureiro.</value></data>
+  <data name="QuestDocument.Avalon.Preparation" xml:space="preserve"><value>Equipe a arma inicial e coloque uma poção no cinto.
+
+Volte ao guia da Jornada para receber as instruções da primeira caçada.
+
+Esta etapa concede experiência, 500 Gold e 15 poções pequenas de vida.</value></data>
+  <data name="QuestDocument.Avalon.SkadiHunt" xml:space="preserve"><value>Derrote 3 Hopys na Floresta do Início.
+
+Continue a caçada até obter o cristal solicitado e entregue-o à Aventureira Skadi em Ricarten.
+
+A entrega concede experiência e 300 Gold.</value></data>
+  <data name="QuestDocument.Avalon.JinHunt" xml:space="preserve"><value>Derrote 3 Rabies na floresta próxima de Pillai.
+
+Continue a caçada até obter o cristal solicitado e entregue-o ao Aventureiro Jin em Pillai.
+
+A entrega concede experiência e 300 Gold.</value></data>
+  <data name="QuestDocument.Avalon.Finished" xml:space="preserve"><value>Você concluiu a Jornada do aventureiro.
+
+A preparação e a primeira caçada foram concluídas com o guia da sua tribo.</value></data>
+  <data name="QuestDocument.Avalon.JourneyStart" xml:space="preserve"><value>Bem-vindo à Jornada do aventureiro.
+
+Receba seus equipamentos iniciais, equipe a arma e coloque uma poção no cinto. Fale comigo novamente quando estiver pronto.</value></data>
+  <data name="QuestDocument.Avalon.JourneyBag" xml:space="preserve"><value>Equipe a arma inicial e coloque pelo menos uma poção no cinto antes de continuar.
+
+Se faltar uma peça do equipamento inicial, fale comigo para recebê-la.</value></data>
+  <data name="QuestDocument.Avalon.JourneyHuntSkadi" xml:space="preserve"><value>Sua primeira caçada acontece na floresta ao norte de Ricarten.
+
+Derrote 3 Hopys, obtenha o cristal solicitado e volte para falar comigo.</value></data>
+  <data name="QuestDocument.Avalon.JourneyHuntJin" xml:space="preserve"><value>Sua primeira caçada acontece na floresta próxima de Pillai.
+
+Derrote 3 Rabies, obtenha o cristal solicitado e volte para falar comigo.</value></data>
+  <data name="QuestDocument.Avalon.JourneyCollect" xml:space="preserve"><value>Complete a caçada e traga o cristal solicitado.
+
+Depois de derrotar os três monstros, continue caçando até recolher o cristal.</value></data>
+  <data name="QuestDocument.Avalon.JourneyFinish" xml:space="preserve"><value>Você concluiu sua primeira caçada.
+
+Entregue o cristal para receber experiência e 300 Gold e concluir a Jornada do aventureiro.</value></data>
+  <data name="QuestDocument.Avalon.ObjectiveSkadi" xml:space="preserve"><value>Fale com Skadi em Ricarten.</value></data>
+  <data name="QuestDocument.Avalon.ObjectiveJin" xml:space="preserve"><value>Fale com Jin em Pillai.</value></data>
+  <data name="QuestDocument.Avalon.ObjectivePreparation" xml:space="preserve"><value>Equipe a arma e uma poção no cinto.</value></data>
+  <data name="QuestDocument.Avalon.ObjectiveOther" xml:space="preserve"><value>Siga as instruções da missão.</value></data>
+  <data name="QuestDocument.Avalon.RewardPreparation" xml:space="preserve"><value>EXP, 500 Gold e 15 poções.</value></data>
+  <data name="QuestDocument.Avalon.RewardMeet" xml:space="preserve"><value>Equipamento inicial e experiência.</value></data>
+  <data name="QuestDocument.Avalon.RewardOther" xml:space="preserve"><value>Consulte a descrição da missão.</value></data>
+  <data name="QuestRoute.WaitCalculation" xml:space="preserve"><value>Aguarde o cálculo da rota atual.</value></data>
+  <data name="QuestRoute.Unreachable" xml:space="preserve"><value>O destino não está acessível nesta rota.</value></data>
+  <data name="QuestRoute.Calculating" xml:space="preserve"><value>Calculando rota...</value></data>
+  <data name="QuestRoute.NoSafeRoute" xml:space="preserve"><value>Não foi encontrada uma rota segura.</value></data>
+  <data name="QuestRoute.Following" xml:space="preserve"><value>Seguindo a rota da missão...</value></data>
+  <data name="QuestRoute.Arrived" xml:space="preserve"><value>Você chegou ao objetivo da missão.</value></data>
+  <data name="QuestRoute.CannotWalk" xml:space="preserve"><value>O personagem não pode caminhar agora.</value></data>
+  <data name="QuestRoute.Obstacle" xml:space="preserve"><value>A rota foi interrompida por um obstáculo.</value></data>
+  <data name="QuestRoute.ApproachingGuide" xml:space="preserve"><value>Aproximando-se do guia...</value></data>
+  <data name="QuestRoute.EnterField" xml:space="preserve"><value>Vá até {0} para iniciar esta rota.</value></data>
+  <data name="Chat.Event.CrystalsOff" xml:space="preserve"><value>Evento de cristais desativado.</value></data>
+  <data name="Chat.Event.CrystalsHalfDay" xml:space="preserve"><value>Evento de cristais: das 12h à meia-noite.</value></data>
+  <data name="Chat.Event.CrystalsAllDay" xml:space="preserve"><value>Evento de cristais: o dia inteiro.</value></data>
+  <data name="Chat.Event.Drops" xml:space="preserve"><value>Os drops de evento mudaram. Consulte o calendário.</value></data>
+  <data name="Chat.Event.Aging" xml:space="preserve"><value>As condições globais de Aging mudaram.</value></data>
+  <data name="Chat.Event.Mixing" xml:space="preserve"><value>As condições globais de Mix e Alquimia mudaram.</value></data>
+  <data name="Chat.Event.Exp" xml:space="preserve"><value>Evento de EXP: {0}%.</value></data>
+  <data name="Chat.Event.ExpMultiplier" xml:space="preserve"><value>Multiplicador global de EXP: {0}x.</value></data>
+  <data name="News.Kind.Event" xml:space="preserve"><value>Evento</value></data>
+  <data name="News.Kind.Improvement" xml:space="preserve"><value>Melhoria</value></data>
+  <data name="News.Kind.News" xml:space="preserve"><value>Novidade</value></data>
+  <data name="News.Loading" xml:space="preserve"><value>Carregando…</value></data>
+  <data name="News.Unavailable" xml:space="preserve"><value>Feed de notícias indisponível.</value></data>
+  <data name="News.None" xml:space="preserve"><value>Sem notícias.</value></data>
+  <data name="News.Link.Title" xml:space="preserve"><value>Abrir link?</value></data>
+  <data name="News.Link.Cancel" xml:space="preserve"><value>Cancelar</value></data>
+  <data name="News.Link.Open" xml:space="preserve"><value>ABRIR</value></data>
+  <data name="News.Ticket.Sent" xml:space="preserve"><value>Ticket enviado.</value></data>
+  <data name="News.Ticket.Replied" xml:space="preserve"><value>Resposta enviada.</value></data>
+  <data name="News.Ticket.Edited" xml:space="preserve"><value>Ticket alterado.</value></data>
+  <data name="News.Ticket.Closed" xml:space="preserve"><value>Ticket cancelado.</value></data>
+  <data name="News.Ticket.Waiting" xml:space="preserve"><value>Aguardando servidor...</value></data>
+  <data name="News.Ticket.Invalid" xml:space="preserve"><value>Preencha título e descrição.</value></data>
+  <data name="News.Ticket.Error" xml:space="preserve"><value>Suporte indisponível.</value></data>
+  <data name="News.Ticket.Refresh" xml:space="preserve"><value>Atualizar</value></data>
+  <data name="News.Ticket.New" xml:space="preserve"><value>+ NOVO TICKET</value></data>
+  <data name="News.Ticket.None" xml:space="preserve"><value>Nenhum ticket.</value></data>
+  <data name="News.Ticket.Back" xml:space="preserve"><value>‹ Voltar</value></data>
+  <data name="News.Ticket.Edit" xml:space="preserve"><value>Editar</value></data>
+  <data name="News.Ticket.Confirm" xml:space="preserve"><value>Confirmar</value></data>
+  <data name="News.Ticket.Cancel" xml:space="preserve"><value>Cancelar ticket</value></data>
+  <data name="News.Ticket.CancelledByYou" xml:space="preserve"><value>Ticket cancelado por você.</value></data>
+  <data name="News.Ticket.ClosedByStaff" xml:space="preserve"><value>Ticket fechado pela equipe.</value></data>
+  <data name="News.Ticket.ReplyHint" xml:space="preserve"><value>Escreva uma resposta...</value></data>
+  <data name="News.Ticket.ReplySend" xml:space="preserve"><value>ENVIAR</value></data>
+  <data name="News.Ticket.Subject" xml:space="preserve"><value>Título</value></data>
+  <data name="News.Ticket.Description" xml:space="preserve"><value>Descrição</value></data>
+  <data name="News.Ticket.Send" xml:space="preserve"><value>Enviar ticket</value></data>
+  <data name="News.Ticket.FormBack" xml:space="preserve"><value>Voltar</value></data>
+  <data name="News.Ticket.SaveChanges" xml:space="preserve"><value>Salvar alterações</value></data>
+  <data name="News.Ticket.Status.Answered" xml:space="preserve"><value>Respondido</value></data>
+  <data name="News.Ticket.Status.Closed" xml:space="preserve"><value>Fechado</value></data>
+  <data name="News.Ticket.Status.Cancelled" xml:space="preserve"><value>Cancelado</value></data>
+  <data name="News.Ticket.Status.Open" xml:space="preserve"><value>Aberto</value></data>
+  <data name="News.Link.Discord" xml:space="preserve"><value>Abrir o convite do Discord da comunidade em uma nova aba?</value></data>
+  <data name="News.Link.Instagram" xml:space="preserve"><value>Abrir o Instagram da comunidade em uma nova aba?</value></data>
+  <data name="News.Link.X" xml:space="preserve"><value>Abrir o X da comunidade em uma nova aba?</value></data>
+  <data name="News.Ticket.OneMessage" xml:space="preserve"><value>1 mensagem</value></data>
+  <data name="News.Ticket.Messages" xml:space="preserve"><value>{0} mensagens</value></data>
+  <data name="News.Ticket.Details" xml:space="preserve"><value>aberto {0} · {1} · atualizado {2}</value></data>
+  <data name="News.Ticket.Opened" xml:space="preserve"><value>Aberto em {0} por {1}</value></data>
+  <data name="News.Ticket.Tab.News" xml:space="preserve"><value>Novidades</value></data>
+  <data name="News.Ticket.Tab.Mine" xml:space="preserve"><value>Meus tickets</value></data>
+  <data name="News.Ticket.Tab.New" xml:space="preserve"><value>Novo ticket</value></data>
+  <data name="News.Ticket.EditHint" xml:space="preserve"><value>Enquanto a equipe não responder, você pode editar ou cancelar este ticket.</value></data>
+  <data name="News.Ticket.Category.Bug" xml:space="preserve"><value>Reportar bug</value></data>
+  <data name="News.Ticket.Category.Improvement" xml:space="preserve"><value>Pedir melhoria</value></data>
+  <data name="News.Ticket.Category.Other" xml:space="preserve"><value>Outro assunto</value></data>
+  <data name="News.Ticket.CategoryImprovement" xml:space="preserve"><value>Melhoria</value></data>
+  <data name="News.Ticket.CategoryBug" xml:space="preserve"><value>Bug</value></data>
+  <data name="News.Ticket.CategoryOther" xml:space="preserve"><value>Outro</value></data>
+  <data name="Party.RequestSent" xml:space="preserve"><value>Solicitação enviada.</value></data>
+  <data name="Party.Creating" xml:space="preserve"><value>CRIANDO...</value></data>
+  <data name="Party.Create" xml:space="preserve"><value>CRIAR GRUPO</value></data>
+  <data name="Party.OpenHint" xml:space="preserve"><value>Aberto: outros entram sem convite</value></data>
+  <data name="Party.Open" xml:space="preserve"><value>Aberto</value></data>
+  <data name="Party.Closed" xml:space="preserve"><value>Fechado</value></data>
+  <data name="Party.FindParty" xml:space="preserve"><value>Procurar grupo</value></data>
+  <data name="Party.Searching" xml:space="preserve"><value>Buscando grupos...</value></data>
+  <data name="Party.NoOpenParties" xml:space="preserve"><value>Nenhum grupo aberto no momento.</value></data>
+  <data name="Party.Refresh" xml:space="preserve"><value>ATUALIZAR</value></data>
+  <data name="Party.Back" xml:space="preserve"><value>VOLTAR</value></data>
+  <data name="Party.Request" xml:space="preserve"><value>PEDIR</value></data>
+  <data name="Party.Join" xml:space="preserve"><value>ENTRAR</value></data>
+  <data name="Party.Empty.Party" xml:space="preserve"><value>Você não está em um grupo.</value></data>
+  <data name="Party.Empty.Friends" xml:space="preserve"><value>Nenhum amigo ainda.</value></data>
+  <data name="Party.Empty.Clan" xml:space="preserve"><value>Você ainda não faz parte de um clã.</value></data>
+  <data name="Party.Empty.Blocked" xml:space="preserve"><value>Ninguém bloqueado.</value></data>
+  <data name="Party.Empty.Recent" xml:space="preserve"><value>Nenhuma conversa recente.</value></data>
+  <data name="Party.Empty.FriendsHint" xml:space="preserve"><value>Adicione pelo nome abaixo ou pelo botão Amigo do alvo.</value></data>
+  <data name="Party.Empty.PartyHint" xml:space="preserve"><value>Use Procurar para achar um, ou convide alguém pelo nome</value></data>
+  <data name="Party.Empty.BlockedHint" xml:space="preserve"><value>Sussurros de quem você bloquear não chegam até você.</value></data>
+  <data name="Party.Empty.RecentHint" xml:space="preserve"><value>Quem trocar sussurros com você aparece aqui.</value></data>
+  <data name="Party.Empty.PartyHintEnd" xml:space="preserve"><value>abaixo.</value></data>
+  <data name="Party.SelectName" xml:space="preserve"><value>Clique em um nome da lista para ver as ações.</value></data>
+  <data name="Party.VisitClanMaster" xml:space="preserve"><value>Encontre o Mestre de Clãs na cidade.</value></data>
+  <data name="Party.CharacterName" xml:space="preserve"><value>Nome do personagem</value></data>
+  <data name="Party.Invite" xml:space="preserve"><value>CONVIDAR</value></data>
+  <data name="Party.Block" xml:space="preserve"><value>BLOQUEAR</value></data>
+  <data name="Party.Add" xml:space="preserve"><value>ADICIONAR</value></data>
+  <data name="Party.Profile" xml:space="preserve"><value>Perfil do personagem</value></data>
+  <data name="Party.Command.Leader" xml:space="preserve"><value>Líder</value></data>
+  <data name="Party.Command.Disband" xml:space="preserve"><value>Dissolver</value></data>
+  <data name="Party.Command.Kick" xml:space="preserve"><value>Expulsar</value></data>
+  <data name="Party.Command.Leave" xml:space="preserve"><value>Sair</value></data>
+  <data name="Party.Title" xml:space="preserve"><value>Grupo   {0}/{1}</value></data>
+  <data name="Party.DirectoryDetail" xml:space="preserve"><value>Nível médio {0} · {1}</value></data>
+  <data name="Party.Profile.Class" xml:space="preserve"><value>Classe   {0}</value></data>
+  <data name="Party.Profile.Level" xml:space="preserve"><value>Nível   {0}</value></data>
+  <data name="Party.Profile.Clan" xml:space="preserve"><value>Clã   {0}</value></data>
+  <data name="Party.Tab.Party" xml:space="preserve"><value>Grupo</value></data>
+  <data name="Party.Tab.Friends" xml:space="preserve"><value>Amigos</value></data>
+  <data name="Party.Tab.Clan" xml:space="preserve"><value>Clã</value></data>
+  <data name="Party.Tab.Blocked" xml:space="preserve"><value>Bloqueados</value></data>
+  <data name="Party.Tab.Recent" xml:space="preserve"><value>Recentes</value></data>
+  <data name="Party.Action.Whisper" xml:space="preserve"><value>Sussurrar</value></data>
+  <data name="Party.Action.Find" xml:space="preserve"><value>Procurar</value></data>
+  <data name="Party.Action.Profile" xml:space="preserve"><value>Perfil</value></data>
+  <data name="Party.Action.Party" xml:space="preserve"><value>Grupo</value></data>
+  <data name="Party.Action.Remove" xml:space="preserve"><value>Remover</value></data>
+  <data name="Party.Action.ClanChat" xml:space="preserve"><value>Chat clã</value></data>
+  <data name="Party.Action.Unblock" xml:space="preserve"><value>Desbloquear</value></data>
+  <data name="Party.Action.Friend" xml:space="preserve"><value>Amigo</value></data>
+  <data name="Party.Action.Block" xml:space="preserve"><value>Bloquear</value></data>
+  <data name="Party.Map" xml:space="preserve"><value>Mapa {0}</value></data>
 </root>

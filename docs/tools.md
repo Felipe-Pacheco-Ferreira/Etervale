@@ -27,7 +27,7 @@ JSON, UI font) and the Blender helper scripts in `3d_glb/blender/`. None of them
 | `tools/PristonTale.VfxImport/` | `ptvfx`: converts the original effect scripts and installs the authored effect definitions into `<assetRoot>/Effect/Vfx` |
 | `tools/PristonTale.DataImport/` | `ptdata`: copies folders of another client's game data into `assets/`, unmasking XOR-masked files and refusing what the game cannot read |
 | `tools/PristonTale.WebAssetPacks/` | `ptwebpacks`: packs the browser client's `bootstrap.txt` files into the world packs `BootstrapFiles` reads (`WebAssetPackBuilder.cs`) |
-| `tools/ui/build_font.py` | Builds the UI font subset and its MonoGame `.spritefont` description |
+| `tools/ui/build_font.py` | Builds the UI fonts (the Latin one and a language's own) and their MonoGame `.spritefont` descriptions |
 | `3d_glb/blender/` | Blender scripts for viewing exported GLBs (`frame_map.py`, `play_animation.py`) |
 
 Solution membership: SmokeClient, GltfExport, LoadTest, VfxImport and DataImport are in `PristonTale.sln` and are built by the
@@ -371,8 +371,31 @@ python3 tools/ui/build_font.py <DejaVuSans.ttf> <LICENSE>
 - Copies the font to `assets/Hud/Fonts/DejaVuSans.ttf` and the license to `assets/Hud/Fonts/DejaVu-LICENSE.txt`, and
   regenerates `Client/PristonTale/Content/Fonts/UI.spritefont`: 21 points (a 28-pixel em at the pipeline's 96 dpi,
   drawn at half scale for the 14-pixel text: `HudPainter.BakePixels`, `TextScale`), kerning, and one character region
-  per contiguous run of the glyphs it has among Basic Latin, Latin-1, Latin Extended-A and general punctuation.
-  Rebuild the client afterwards to bake the glyphs.
+  per contiguous run of the glyphs it has among Basic Latin, Latin-1, Latin Extended-A, general punctuation, the
+  Vietnamese letters (Latin Extended-B's horned O and U, Latin Extended Additional's toned vowels U+1EA0-1EF9) and the
+  arrows U+2190-2193: 520 glyphs, about 0.8 MB baked (70 KB compressed). `FontCoverageTests` checks that every
+  character of every language's texts is among them. Rebuild the client afterwards to bake the glyphs.
+
+A language whose script the interface font lacks has a font of its own (`UiFonts.OwnFontLanguages`: Simplified
+Chinese and Japanese):
+
+```bash
+python3 tools/ui/build_font.py --language zh-CN <NotoSansSC-Regular.otf> <LICENSE>
+python3 tools/ui/build_font.py --language ja <NotoSansJP-Regular.otf> <LICENSE>
+```
+
+- `font`: `Sans/SubsetOTF/SC/NotoSansSC-Regular.otf` or `Sans/SubsetOTF/JP/NotoSansJP-Regular.otf` of the Noto CJK
+  fonts (github.com/notofonts/noto-cjk); `license`: `Sans/LICENSE` (SIL Open Font License 1.1).
+- Copies the font to `assets/Hud/Fonts/` and the license to `assets/Hud/Fonts/NotoSansCJK-LICENSE.txt`, and regenerates
+  `Client/PristonTale/Content/Fonts/UI-<code>.spritefont` at the same 21 points: the Latin ranges above and every other
+  character the language's texts use (its `ClientText` and `DataText` phrases, `Texts/<code>/` and the importer's
+  `Translations/<code>.json`) and its players commonly type (`COMMON_ROWS`: for Simplified Chinese the GB2312 set's
+  full-width forms and its 3755 first-level characters; for Japanese the JIS X 0208 set's punctuation, full-width forms,
+  kana and its 2965 first-level kanji; so the chat takes them), printing any the font lacks. Rerun it after the
+  language's texts change (a new character needs its glyph); `FontCoverageTests` fails until then. Simplified Chinese:
+  4321 glyphs, about 13.8 MB baked (1.7 MB compressed); Japanese: 3648 glyphs, about 11.5 MB (1.4 MB). Each is loaded
+  only by a player who shows the language (the browser fetches only the page language's, from a world-pack chunk of
+  its own).
 
 ## Blender scripts (`3d_glb/blender/`)
 

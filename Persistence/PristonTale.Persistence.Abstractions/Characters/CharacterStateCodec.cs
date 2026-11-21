@@ -58,6 +58,7 @@ public static class CharacterStateCodec
         character.RestoreStarterGifts(record.StarterGiftsReceived);
         character.RestoreHelpPet(record.HelpPet, record.HelpPetHidden);
         character.Events.Restore(RewardEventStateCodec.Read(record.Events));
+        character.Titles.Restore(TitleStateCodec.Read(record.Titles));
 
         character.RestoreSides(inventory.ActiveSide, equipment.ActiveSide);
         // Gear restores first: the potion space it gives bounds the belt's stacks.

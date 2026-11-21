@@ -73,6 +73,19 @@ public sealed record PresenceUpdate(
     public TradeInfo? Trade { get; init; }
     public TradeRequestInfo? TradeRequest { get; init; }
 
+    // The local player's duel when it changed (not Running once it ended), and a player's challenge to one.
+    public DuelInfo? Duel { get; init; }
+    public DuelRequestInfo? DuelRequest { get; init; }
+
+    // The local player's arena queue or match when it changed (Mode 0 once neither).
+    public ArenaInfo? Arena { get; init; }
+
+    // The local player's Battle Royale registration or event when it changed (State 0 once neither).
+    public RoyaleInfo? Royale { get; init; }
+
+    // The local player's titles when they changed.
+    public TitlesInfo? Titles { get; init; }
+
     // One of the local player's contact lists, as the server answered a change or a refresh.
     public ContactListInfo? Contacts { get; init; }
 
@@ -96,6 +109,22 @@ public sealed record TradeInfo(ulong PartnerId, string PartnerName, PristonTale.
 }
 
 public sealed record TradeRequestInfo(ulong FromId, string FromName);
+
+public sealed record DuelRequestInfo(ulong FromId, string FromName);
+
+// The local player's arena (ArenaRules): queued for a mode, or in a match with its side's and the other side's players
+// still standing and the whole seconds left, Out once a blow took it out; Mode 0 when it neither queues nor plays.
+public sealed record ArenaInfo(Simulation.Combat.ArenaMode Mode, bool Queued, bool Out, int OwnStanding, int FoeStanding, int SecondsLeft)
+{
+    public bool Active => Mode != 0;
+}
+
+// The local player's duel (DuelRules): the opponent, the arena's center in server space, the whole seconds left and, out of
+// the arena, the whole seconds before it loses (0 inside); OpponentId 0 once it ended.
+public sealed record DuelInfo(ulong OpponentId, string OpponentName, System.Numerics.Vector3 Center, int SecondsLeft, int OutsideSecondsLeft)
+{
+    public bool Running => OpponentId != 0;
+}
 
 // The local player's party, the leader first; Position is the member's planar place (x, z) in world units.
 public sealed record PartyInfo(IReadOnlyList<PartyMemberInfo> Members, bool IsOpen = false)
@@ -129,3 +158,20 @@ public sealed record PartyRequestInfo(ulong FromId, string FromName, string Reco
 public sealed record ChatLineInfo(ChatKind Kind, ulong SpeakerId, string Text, GameText Line = default);
 
 public sealed record WarpInfo(int FieldId, System.Numerics.Vector3 Position, bool Forced);
+
+// The local player's Battle Royale (RoyaleRules): registered (Total the players registered), or in the event with the
+// players standing of Total, the safe zone's radius, the whole seconds until it shrinks again (0 once it no longer does)
+// and until the time limit, Out once it was taken out to watch; State 0 when it neither registered nor fights.
+public sealed record RoyaleInfo(byte State, int Standing, int Total, int Radius, int SecondsToShrink, int SecondsLeft)
+{
+    public bool Active => State != Protocol.Packets.RoyaleStatePacket.NoneState;
+    public bool Registered => State == Protocol.Packets.RoyaleStatePacket.RegisteredState;
+    public bool Fighting => State == Protocol.Packets.RoyaleStatePacket.FightingState;
+    public bool Out => State == Protocol.Packets.RoyaleStatePacket.OutState;
+}
+
+// The local player's titles (TitleRules): the one shown (0 none) and those it owns (TitleRules.Bit each).
+public sealed record TitlesInfo(byte Shown, uint Owned)
+{
+    public bool Owns(int title) => Simulation.Titles.TitleRules.IsTitle(title) && (Owned & Simulation.Titles.TitleRules.Bit((Simulation.Titles.TitleCode)title)) != 0;
+}

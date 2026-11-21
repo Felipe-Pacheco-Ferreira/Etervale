@@ -95,11 +95,15 @@ internal sealed partial class HudNews
             Math.Clamp(desired.Y, -Box.Top, Math.Max(-Box.Top, layout.Height - Box.Bottom)));
     }
 
-    internal static string KindLabel(NewsKind kind, bool portuguese) => kind switch
+    internal static string KindLabel(NewsKind kind) => ClientText.Get(KindKey(kind));
+
+    internal static string KindLabel(NewsKind kind, string language) => ClientText.Get(KindKey(kind), language);
+
+    private static string KindKey(NewsKind kind) => kind switch
     {
-        NewsKind.Event => portuguese ? "Evento" : "Event",
-        NewsKind.Improvement => portuguese ? "Melhoria" : "Improvement",
-        _ => portuguese ? "Novidade" : "News"
+        NewsKind.Event => "News.Kind.Event",
+        NewsKind.Improvement => "News.Kind.Improvement",
+        _ => "News.Kind.News"
     };
 
     private readonly Uri[] _social = new Uri[3];
@@ -220,19 +224,18 @@ internal sealed partial class HudNews
 
         painter.Shift(_offset);
         DrawWindow(painter);
-        DrawLinkPrompt(painter, ClientText.Language == "pt-BR");
+        DrawLinkPrompt(painter);
         painter.Shift(Point.Zero);
     }
 
     private void DrawWindow(HudPainter painter)
     {
-        var portuguese = ClientText.Language == "pt-BR";
         painter.FramedBox(Box, WindowBorder, WindowTop, WindowBottom, 6);
         painter.Fill(new Rectangle(Box.X + 1, Header.Bottom, Box.Width - 2, 1), Rule);
         painter.Diamond(107, 33, 6, new Color(232, 186, 92));
         painter.Diamond(107, 33, 3, new Color(255, 232, 170));
-        painter.Text(portuguese ? "Novidades & Suporte" : "News & Support", 122, 22, TitleCream, HudPainter.TextScale * 1.35f);
-        painter.Text(portuguese ? "Novidades & Suporte" : "News & Support", 123, 22, TitleCream, HudPainter.TextScale * 1.35f);
+        painter.Text(ClientText.Get("QuickMenu.News"), 122, 22, TitleCream, HudPainter.TextScale * 1.35f);
+        painter.Text(ClientText.Get("QuickMenu.News"), 123, 22, TitleCream, HudPainter.TextScale * 1.35f);
         DrawCloseButton(painter);
         for (var index = 0; index < _social.Length; index++)
         {
@@ -242,7 +245,7 @@ internal sealed partial class HudNews
             }
         }
 
-        if (DrawTickets(painter, portuguese))
+        if (DrawTickets(painter))
         {
             return;
         }
@@ -251,8 +254,8 @@ internal sealed partial class HudNews
         if (_request is not { IsCompletedSuccessfully: true } || _request.Result is null)
         {
             var status = _request is { IsCompleted: false }
-                ? (portuguese ? "Carregando…" : "Loading…")
-                : (portuguese ? "Feed de notícias indisponível." : "News feed unavailable.");
+                ? ClientText.Get("News.Loading")
+                : ClientText.Get("News.Unavailable");
             painter.Text(status, Feed.X + FeedTextX, Feed.Y + 4, BodyInk);
             return;
         }
@@ -260,11 +263,11 @@ internal sealed partial class HudNews
         var cards = _request.Result;
         if (cards.Length == 0)
         {
-            painter.Text(portuguese ? "Sem notícias." : "No news.", Feed.X + FeedTextX, Feed.Y + 4, BodyInk);
+            painter.Text(ClientText.Get("News.None"), Feed.X + FeedTextX, Feed.Y + 4, BodyInk);
             return;
         }
 
-        DrawNewsFeed(painter, cards, portuguese);
+        DrawNewsFeed(painter, cards);
     }
 
     private static void DrawCloseButton(HudPainter painter)
@@ -301,18 +304,18 @@ internal sealed partial class HudNews
         painter.Text(text, textX + 1, bounds.Y + 4, ink, HudPainter.TextScale * 0.85f);
     }
 
-    private void DrawNewsFeed(HudPainter painter, NewsCard[] cards, bool portuguese)
+    private void DrawNewsFeed(HudPainter painter, NewsCard[] cards)
     {
         var width = Feed.Width - FeedTextX - 14;
         var top = Feed.Y - _newsOffset;
         var total = 0;
         foreach (var card in cards)
         {
-            card.Layout ??= LayoutCard(painter, card, width, portuguese);
+            card.Layout ??= LayoutCard(painter, card, width);
             var layout = card.Layout;
             if (top + layout.Height > Feed.Top && top < Feed.Bottom)
             {
-                DrawPost(painter, card, layout, top, portuguese);
+                DrawPost(painter, card, layout, top);
             }
 
             top += layout.Step;
@@ -325,7 +328,7 @@ internal sealed partial class HudNews
         }
     }
 
-    private static void DrawPost(HudPainter painter, NewsCard card, NewsLayout layout, int top, bool portuguese)
+    private static void DrawPost(HudPainter painter, NewsCard card, NewsLayout layout, int top)
     {
         var accent = KindColors[(int)card.Kind];
         var lineTop = Math.Max(Feed.Top, top);
@@ -335,9 +338,9 @@ internal sealed partial class HudNews
         var titleY = top + TitleTop;
         if (titleY >= Feed.Top && titleY + BadgeHeight <= Feed.Bottom)
         {
-            var badge = new Rectangle(left, titleY + 1, BadgeWidth(painter, card.Kind, portuguese), BadgeHeight);
+            var badge = new Rectangle(left, titleY + 1, BadgeWidth(painter, card.Kind), BadgeHeight);
             painter.RoundedFill(badge, accent, 8);
-            var label = KindLabel(card.Kind, portuguese);
+            var label = KindLabel(card.Kind);
             var labelX = badge.Center.X - painter.MeasureAt(label, BadgeScale) / 2;
             painter.Text(label, labelX, badge.Y + 3, Color.White, BadgeScale);
             painter.Text(label, labelX + 1, badge.Y + 3, Color.White, BadgeScale);

@@ -31,7 +31,7 @@ internal static class SkillSystemTests
         yield return ("regeneration follows the original per-second rules and the running drain", RegenerationAsync);
         yield return ("skill packets round-trip and reject malformed counts, phases and timers", PacketsAsync);
         yield return ("cast validation rejects unlearned, cooldown, mana, weapon, range, village and busy casts", ValidationAsync);
-        yield return ("server casts a first-tier damage skill end to end on the motion timeline", DamageScenarioAsync);
+        yield return ("server casts a first-tier damage skill end to end on the motion timeline, its hit carrying its element", DamageScenarioAsync);
         yield return ("server casts a buff and a stun, ticks their timers and removes them on expiry", BuffScenarioAsync);
         yield return ("skill and status events reach the client through the presence encoder", WireAsync);
     }
@@ -319,6 +319,7 @@ internal static class SkillSystemTests
         var flight = SkillProjectile.FlightMs(120f);
         Assert.True(impactTick > 0 && impactTick * 50f >= launchMs + flight - 50f, $"impact at tick {impactTick} before launch {launchMs} + flight {flight}");
         Assert.True(hits.Count == 1 && monster.Life == lifeBefore - hits[0].Damage && hits[0].Damage > 0, "bolt damage did not land exactly once");
+        Assert.True(hits[0].Element == Element.Fire, $"Fire Bolt's hit reported {hits[0].Element}");
         return Task.CompletedTask;
     }
 

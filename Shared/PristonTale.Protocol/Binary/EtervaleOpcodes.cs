@@ -88,6 +88,17 @@ public static class EtervaleOpcodes
     public const uint RewardEvents = 0x45541401;
     public const uint RewardEventsResult = 0x45541402;
 
+    public const uint DuelAnswer = 0x45541500;
+    public const uint DuelAsked = 0x45541501;
+    public const uint DuelState = 0x45541502;
+
+    public const uint ArenaState = 0x45541600;
+
+    public const uint RoyaleState = 0x45541700;
+
+    public const uint Titles = 0x45541800;
+    public const uint ChooseTitle = 0x45541801;
+
     public const uint PresenceEntries = 0x45540900;
     public const uint DescribeEntity = 0x45540901;
     public const uint EntityDescription = 0x45540902;
@@ -101,6 +112,7 @@ public static class EtervaleOpcodes
 
     public const uint ChatLine = 0x45540C00;
     public const uint ChatSay = 0x45540C01;
+    public const uint ChatTranslateTo = 0x45540C02;
 
     public const uint MovementReport = 0x45540D00;
     public const uint AttackRequest = 0x45540D01;
@@ -111,6 +123,7 @@ public static class EtervaleOpcodes
     public const uint YahooKey = 0x45540D06;
     public const uint SwingRequest = 0x45540D07;
     public const uint MountRequest = 0x45540D08;
+    public const uint PvpSwitch = 0x45540D09;
 
     public const uint EnterWorld = 0x45540E00;
     public const uint WorldEntry = 0x45540E01;

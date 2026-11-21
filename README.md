@@ -24,7 +24,7 @@ How the code works is documented in [docs/](docs/README.md).
 
 The game assets and authored world data are excluded from Git. `assets/` contains models, textures, audio, HUD
 resources and INX animation data; `assets/GameServer/` contains the authored item, monster, NPC and field configuration
-read by the importer. The MonoGame content build needs `assets/Hud/Fonts/DejaVuSans.ttf` (`tools/ui/build_font.py`, see docs/tools.md).
+read by the importer. The MonoGame content build needs `assets/Hud/Fonts/DejaVuSans.ttf`, `NotoSansSC-Regular.otf` and `NotoSansJP-Regular.otf` (`tools/ui/build_font.py`, see docs/tools.md).
 
 Expected layout:
 

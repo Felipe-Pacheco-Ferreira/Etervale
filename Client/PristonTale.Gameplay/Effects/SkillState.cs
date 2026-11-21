@@ -52,6 +52,9 @@ public sealed class SkillCooldownBook
     }
 
     public bool Ready(uint skillCode, double nowMs) => RemainingMs(skillCode, nowMs) <= 0d;
+
+    // The whole cooldown of a skill that is recovering, or 0.
+    public int DurationMs(uint skillCode) => _running.TryGetValue(skillCode, out var cooldown) ? cooldown.DurationMs : 0;
 }
 
 public sealed class StatusEntry

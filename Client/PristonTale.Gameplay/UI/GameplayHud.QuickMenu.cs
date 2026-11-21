@@ -16,36 +16,38 @@ public sealed partial class GameplayHud
     private void RefreshQuickActions()
     {
         _quickActions.Clear();
-        var portuguese = ClientText.Language == "pt-BR";
         var settings = _context.Presentation.Requested;
         var site = DesktopCommunityLinks.Parse(settings.NewsEndpoint);
 
-        Link("calendar", "Calendário", "Calendar", 110, 0x007E5A7E427E2400UL, site is null ? null : new Uri(site, "/eventos"));
-        Link("auction", "Leilão", "Auction", 88, 0x000C1E3C18087E00UL, DesktopCommunityLinks.Parse(settings.AuctionUrl));
-        Link("security", "Segurança", "Security", 106, 0x003C343C243C1800UL, site is null ? null : new Uri(site, "/conta#seguranca"));
-        Add("drops", "Últimos drops", "Recent drops", 124, 0x003C3C7E7E3C1800UL, () => _recentDropsOpen = true);
-        Link("coin-history", "Histórico de Coins", "Coin history", 150, 0x003C42423C423C00UL, DesktopCommunityLinks.Parse(settings.CoinHistoryUrl));
+        Link("calendar", "QuickMenu.Calendar", 110, 0x007E5A7E427E2400UL, site is null ? null : new Uri(site, "/eventos"));
+        Link("auction", "QuickMenu.Auction", 88, 0x000C1E3C18087E00UL, DesktopCommunityLinks.Parse(settings.AuctionUrl));
+        Link("security", "QuickMenu.Security", 106, 0x003C343C243C1800UL, site is null ? null : new Uri(site, "/conta#seguranca"));
+        Add("drops", "QuickMenu.RecentDrops", 124, 0x003C3C7E7E3C1800UL, () => _recentDropsOpen = true);
+        Link("coin-history", "QuickMenu.CoinHistory", 150, 0x003C42423C423C00UL, DesktopCommunityLinks.Parse(settings.CoinHistoryUrl));
 
-        Add("events", "Eventos", "Events", 110, 0x007E5A5A7E5A2400UL, OpenRewards);
-        Link("eragon", "Lar do Eragon", "Eragon", 132, 0x00247E5A5A423C00UL, DesktopCommunityLinks.Parse(settings.EragonUrl));
-        Link("ranking", "Ranking", "Rankings", 93, 0x003C18183C667E00UL, site is null ? null : new Uri(site, "/rankings"));
-        Add("rewards", "Distribuidor", "Item distributor", 125, 0x007E42665A427E00UL, () => _mail.Open(_chat, distributor: true));
-        Link("item-shop", "Loja de Itens", "Item Shop", 116, 0x003C3C7E663C1800UL, DesktopCommunityLinks.Parse(settings.ItemShopUrl));
-        Add("community-buffs", "Bônus globais", "Global bonuses", 145, 0x000818387C3E1C00UL, () =>
+        Add("events", "QuickMenu.Events", 110, 0x007E5A5A7E5A2400UL, OpenRewards);
+        Add("arena-solo", "QuickMenu.ArenaSolo", 108, 0x0018183C7E181800UL, () => _chat.Send?.Invoke("/arena 1x1", false));
+        Add("arena-trio", "QuickMenu.ArenaTrio", 108, 0x005A5A7E7E5A5A00UL, () => _chat.Send?.Invoke("/arena 3x3", false));
+        Add("royale", "QuickMenu.Royale", 120, 0x00183C7E7E3C1800UL, () => _chat.Send?.Invoke("/royale", false));
+        Link("eragon", "QuickMenu.Eragon", 132, 0x00247E5A5A423C00UL, DesktopCommunityLinks.Parse(settings.EragonUrl));
+        Link("ranking", "QuickMenu.Rankings", 93, 0x003C18183C667E00UL, site is null ? null : new Uri(site, "/rankings"));
+        Add("rewards", "QuickMenu.Distributor", 125, 0x007E42665A427E00UL, () => _mail.Open(_chat, distributor: true));
+        Link("item-shop", "QuickMenu.ItemShop", 116, 0x003C3C7E663C1800UL, DesktopCommunityLinks.Parse(settings.ItemShopUrl));
+        Add("community-buffs", "GlobalBonuses.Title", 145, 0x000818387C3E1C00UL, () =>
         {
             _globalBonusesOpen = true;
             _nextBonusRefresh = 0;
         });
-        Add("mail", "Correios", "Mail", 89, 0x007E42665A427E00UL, () => _mail.Open(_chat));
-        Add("player-shops", "Lojas de jogadores", "Player shops", 145, 0x000818387C3E1C00UL, () => _shopDirectoryOpen = true);
+        Add("mail", "QuickMenu.Mail", 89, 0x007E42665A427E00UL, () => _mail.Open(_chat));
+        Add("player-shops", "ShopDirectory.Title", 145, 0x000818387C3E1C00UL, () => _shopDirectoryOpen = true);
 
-        void Add(string id, string pt, string en, int width, ulong icon, Action run) => _quickActions.Add(new QuickAction(id, portuguese ? pt : en, width, icon, run));
+        void Add(string id, string label, int width, ulong icon, Action run) => _quickActions.Add(new QuickAction(id, ClientText.Get(label), width, icon, run));
 
-        void Link(string id, string pt, string en, int width, ulong icon, Uri address)
+        void Link(string id, string label, int width, ulong icon, Uri address)
         {
             if (address is not null)
             {
-                Add(id, pt, en, width, icon, () => DesktopCommunityLinks.Open(address));
+                Add(id, label, width, icon, () => DesktopCommunityLinks.Open(address));
             }
         }
     }
@@ -151,8 +153,7 @@ public sealed partial class GameplayHud
         AutoHuntEnabled = !AutoHuntEnabled && !InTown && AutoHuntQuestCode != 0;
         if (!AutoHuntEnabled && (InTown || AutoHuntQuestCode == 0))
         {
-            _chat.Assist(ClientText.Language == "pt-BR" ? "A auto-caça precisa de uma missão de caça ativa fora da cidade." :
-                "Auto-hunt requires an active hunt quest outside town.");
+            _chat.Assist(ClientText.Get("QuickMenu.AutoHuntNeedsQuest"));
         }
     }
 
@@ -174,20 +175,19 @@ public sealed partial class GameplayHud
 
     private void DrawQuickMenu(HudLayout layout, Point pointer)
     {
-        var portuguese = ClientText.Language == "pt-BR";
         if (!WebWorldHud.Enabled)
         {
             var news = NewsBounds(layout);
-            Plaque(news, portuguese ? "Novidades & Suporte" : "News & Support");
+            Plaque(news, ClientText.Get("QuickMenu.News"));
             if (_news.Unread > 0)
             {
                 _painter.Disc(news.Right - 4, news.Y + 4, 7, new Color(196, 52, 40));
                 _painter.TextCentered("!", news.Right - 11, news.Right + 3, news.Y - 1, Color.White);
             }
 
-            var huntLabel = portuguese ? "Auto-caça" : "Auto-hunt";
+            var huntLabel = ClientText.Get("QuickMenu.AutoHunt");
             Plaque(HuntBounds(layout), huntLabel + (AutoHuntEnabled ? "  II" : "  >"));
-            Plaque(QuickMenuBounds(layout), _quickMenuOpen ? (portuguese ? "Mais  ^" : "More  ^") : (portuguese ? "Mais  v" : "More  v"));
+            Plaque(QuickMenuBounds(layout), ClientText.Get(_quickMenuOpen ? "QuickMenu.MoreOpen" : "QuickMenu.MoreClosed"));
         }
         if (!WebWorldHud.Enabled && _quickMenuOpen)
         {
@@ -213,7 +213,7 @@ public sealed partial class GameplayHud
 
         var bounds = TrackerBounds(layout);
         Frame(bounds);
-        _painter.Text(portuguese ? "Missões" : "Quests", bounds.X + 8, bounds.Y + 5, Color.Gold);
+        _painter.Text(ClientText.Get("QuickMenu.Quests"), bounds.X + 8, bounds.Y + 5, Color.Gold);
         if (WebWorldHud.Enabled)
         {
             Plaque(TrackerClose(bounds), "x");

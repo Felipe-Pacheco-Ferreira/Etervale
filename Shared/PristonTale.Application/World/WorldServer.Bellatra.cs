@@ -62,6 +62,11 @@ public sealed partial class WorldServer
             started++;
         }
 
+        if (game.LastHour >= 0 && game.BetweenGames && BellatraOpen && BellatraRules.HourReached(game.LastHour, hour, BellatraRules.TicketHour))
+        {
+            Announce(GameText.Of(GameTextId.BellatraOpening));
+        }
+
         game.LastHour = hour;
         if (game.Next == 0)
         {

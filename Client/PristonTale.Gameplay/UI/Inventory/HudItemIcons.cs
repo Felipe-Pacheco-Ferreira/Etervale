@@ -17,6 +17,8 @@ public sealed class HudItemIcons : IDisposable
 
     public Texture2D Find(string key) => _cache.Find(key);
 
+    public bool TryPath(string key, out string path) => _cache.TryPath(key, out path);
+
     // Item bitmaps are authored at their cell size: drawn unscaled and centred, as in the inventory; a grey cell while the
     // icon is not loaded.
     public void Draw(HudPainter painter, string catalogKey, Rectangle bounds, Color? tint = null)

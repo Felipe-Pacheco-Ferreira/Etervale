@@ -16,9 +16,11 @@ public static partial class BrowserHost
     // When Start was called, in Stopwatch milliseconds, for the start's timing log (BrowserGame.LoadContent).
     internal static double StartedMs { get; private set; }
 
-    // clientAddress: the absolute address of the folder the client is served from, ending in '/'.
+    // clientAddress: the absolute address of the folder the client is served from, ending in '/'; language: the page's
+    // language, the only one whose own interface font (UiFonts) is fetched.
     [JSExport]
-    public static Task PrepareAsync(string clientAddress) => BootstrapFiles.FetchAsync(new Uri(clientAddress, UriKind.Absolute));
+    public static Task PrepareAsync(string clientAddress, string language) =>
+        BootstrapFiles.FetchAsync(new Uri(clientAddress, UriKind.Absolute), ClientSettings.NormalizeLanguage(language));
 
     // endpoint: the game server's wss:// address; language: the page's language (the client's texts follow it).
     [JSExport]

@@ -39,4 +39,5 @@ public sealed record CharacterRecord(
     int StarterGiftsReceived = Simulation.Characters.StarterGifts.Count,
     short HelpPet = 0,
     bool HelpPetHidden = false,
-    JsonText Events = default);
+    JsonText Events = default,
+    JsonText Titles = default);

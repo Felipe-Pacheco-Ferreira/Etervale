@@ -1,0 +1,1514 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Aging.CannotAge" xml:space="preserve"><value>このアイテムはエイジングできません</value></data>
+  <data name="Aging.DownOne" xml:space="preserve"><value>エイジングレベルが -1 下がりました</value></data>
+  <data name="Aging.DownTwo" xml:space="preserve"><value>エイジングレベルが -2 下がりました</value></data>
+  <data name="Aging.Failed" xml:space="preserve"><value>アイテムのエイジングに失敗しました</value></data>
+  <data name="Aging.UpOne" xml:space="preserve"><value>エイジングレベルが +1 上がりました</value></data>
+  <data name="Aging.UpTwo" xml:space="preserve"><value>エイジングレベルが +2 上がりました</value></data>
+  <data name="Attribute.Agility" xml:space="preserve"><value>敏捷性</value></data>
+  <data name="Attribute.Health" xml:space="preserve"><value>健康</value></data>
+  <data name="Attribute.Spirit" xml:space="preserve"><value>精神力</value></data>
+  <data name="Attribute.Strength" xml:space="preserve"><value>筋力</value></data>
+  <data name="Attribute.Talent" xml:space="preserve"><value>才能</value></data>
+  <data name="Bellatra.AdvanceOne" xml:space="preserve"><value>{0}
+が上位の塔へ進みます。</value></data>
+  <data name="Bellatra.AdvanceTwo" xml:space="preserve"><value>{0} と {1}
+が上位の塔へ進みます。</value></data>
+  <data name="Bellatra.Back" xml:space="preserve"><value>戻る</value></data>
+  <data name="Bellatra.Chief" xml:space="preserve"><value>クランマスター：{0}</value></data>
+  <data name="Bellatra.ChiefOnly" xml:space="preserve"><value>収益を受け取れるのはクランマスターだけです。</value></data>
+  <data name="Bellatra.ChiefRedeems" xml:space="preserve"><value>クランマスターであるあなたは受け取ることができます。</value></data>
+  <data name="Bellatra.HowMuch" xml:space="preserve"><value>いくらですか？</value></data>
+  <data name="Bellatra.Income" xml:space="preserve"><value>クランの収益：{0} ゴールド</value></data>
+  <data name="Bellatra.MyScore" xml:space="preserve"><value>あなたのスコア</value></data>
+  <data name="Bellatra.NoOperator" xml:space="preserve"><value>本日ベラトラを運営しているクランはありません。</value></data>
+  <data name="Bellatra.NoRanking" xml:space="preserve"><value>昨日ベラトラをプレイしたクランはありません。</value></data>
+  <data name="Bellatra.Operator" xml:space="preserve"><value>運営クラン：{0}</value></data>
+  <data name="Bellatra.Outcome.Cleared" xml:space="preserve"><value>おめでとうございます！ベラトラが終了しました。</value></data>
+  <data name="Bellatra.Outcome.GoesOn" xml:space="preserve"><value>ステージクリア！チームは次へ進みます。</value></data>
+  <data name="Bellatra.Outcome.Out" xml:space="preserve"><value>チームは脱落しました。</value></data>
+  <data name="Bellatra.Over" xml:space="preserve"><value>ゲーム終了</value></data>
+  <data name="Bellatra.RankLine" xml:space="preserve"><value>{0}. {1} - {2} ポイント</value></data>
+  <data name="Bellatra.Ranking" xml:space="preserve"><value>ランキング</value></data>
+  <data name="Bellatra.Redeem" xml:space="preserve"><value>受け取る</value></data>
+  <data name="Bellatra.Round" xml:space="preserve"><value>ラウンド {0}</value></data>
+  <data name="Bellatra.Seal.Freeze" xml:space="preserve"><value>フリーズシール</value></data>
+  <data name="Bellatra.Seal.Guardian" xml:space="preserve"><value>ガーディアンシール</value></data>
+  <data name="Bellatra.Seal.Points" xml:space="preserve"><value>ポイント {0} アップ</value></data>
+  <data name="Bellatra.Seal.Quake" xml:space="preserve"><value>クエイクシール</value></data>
+  <data name="Bellatra.Seal.Rabbit" xml:space="preserve"><value>ラビットシール</value></data>
+  <data name="Bellatra.Seal.Stun" xml:space="preserve"><value>スタンシール</value></data>
+  <data name="Bellatra.Seal.Stygian" xml:space="preserve"><value>スティジアンシール</value></data>
+  <data name="Bellatra.Secretary" xml:space="preserve"><value>ベラトラの秘書</value></data>
+  <data name="Bellatra.Status.Busy" xml:space="preserve"><value>ほかの行動中です。</value></data>
+  <data name="Bellatra.Status.NotChief" xml:space="preserve"><value>収益を受け取れるのはクランマスターだけです。</value></data>
+  <data name="Bellatra.Status.NotEnoughBalance" xml:space="preserve"><value>クランの収益がそれだけありません。</value></data>
+  <data name="Bellatra.Status.OutOfReach" xml:space="preserve"><value>秘書から離れすぎています。</value></data>
+  <data name="Bellatra.Status.TooMuchGold" xml:space="preserve"><value>それだけのゴールドは持てません。</value></data>
+  <data name="Bellatra.Status.Unavailable" xml:space="preserve"><value>ベラトラの秘書は現在対応できません。</value></data>
+  <data name="Bellatra.Tax" xml:space="preserve"><value>賞金の税金：{0}</value></data>
+  <data name="Bellatra.Team" xml:space="preserve"><value>チーム {0}</value></data>
+  <data name="Bellatra.Title" xml:space="preserve"><value>ベラトラ</value></data>
+  <data name="Bellatra.ToRedeem" xml:space="preserve"><value>受け取るゴールド</value></data>
+  <data name="Bellatra.Waiting" xml:space="preserve"><value>ラウンド待機中</value></data>
+  <data name="Brood.Demon" xml:space="preserve"><value>デーモン</value></data>
+  <data name="Brood.Mechanic" xml:space="preserve"><value>メカニック</value></data>
+  <data name="Brood.Mutant" xml:space="preserve"><value>ミュータント</value></data>
+  <data name="Brood.Normal" xml:space="preserve"><value>ノーマル</value></data>
+  <data name="Brood.Undead" xml:space="preserve"><value>アンデッド</value></data>
+  <data name="Brood.User" xml:space="preserve"><value>プレイヤー</value></data>
+  <data name="Browser.Characters" xml:space="preserve"><value>あなたのキャラクター</value></data>
+  <data name="Browser.NoCharacters" xml:space="preserve"><value>このアカウントにはまだキャラクターがいません。</value></data>
+  <data name="Castle.AbsorbEffect" xml:space="preserve"><value>吸収力 +{0}</value></data>
+  <data name="Castle.Back" xml:space="preserve"><value>戻る</value></data>
+  <data name="Castle.ChiefOnly" xml:space="preserve"><value>城を変更できるのはクランマスターだけです。</value></data>
+  <data name="Castle.Cost" xml:space="preserve"><value>費用：{0} ゴールド</value></data>
+  <data name="Castle.DamageEffect" xml:space="preserve"><value>ダメージ +{0}%</value></data>
+  <data name="Castle.EvasionEffect" xml:space="preserve"><value>攻撃の {0}% を回避</value></data>
+  <data name="Castle.Fire" xml:space="preserve"><value>火</value></data>
+  <data name="Castle.HowMuch" xml:space="preserve"><value>ゴールドの額</value></data>
+  <data name="Castle.Ice" xml:space="preserve"><value>氷</value></data>
+  <data name="Castle.Lightning" xml:space="preserve"><value>雷</value></data>
+  <data name="Castle.Mercenaries" xml:space="preserve"><value>傭兵</value></data>
+  <data name="Castle.MercenariesLine" xml:space="preserve"><value>傭兵：{0}（各最大 {1}）</value></data>
+  <data name="Castle.MercenaryA" xml:space="preserve"><value>リカルテン民兵</value></data>
+  <data name="Castle.MercenaryB" xml:space="preserve"><value>リカルテン衛兵</value></data>
+  <data name="Castle.MercenaryC" xml:space="preserve"><value>ブレス近衛兵</value></data>
+  <data name="Castle.MercenaryLine" xml:space="preserve"><value>{0}：{1}/{2}（各 {3}）</value></data>
+  <data name="Castle.NoSkill" xml:space="preserve"><value>なし</value></data>
+  <data name="Castle.NoTower" xml:space="preserve"><value>なし</value></data>
+  <data name="Castle.Reset" xml:space="preserve"><value>元に戻す</value></data>
+  <data name="Castle.Save" xml:space="preserve"><value>保存</value></data>
+  <data name="Castle.Skill" xml:space="preserve"><value>クランスキル</value></data>
+  <data name="Castle.SkillLine" xml:space="preserve"><value>{0}：{1}</value></data>
+  <data name="Castle.SkillNow" xml:space="preserve"><value>クランスキル：{0}</value></data>
+  <data name="Castle.SkillTomorrow" xml:space="preserve"><value>明日からのクランスキル：{0}</value></data>
+  <data name="Castle.Status.Busy" xml:space="preserve"><value>先に今の作業を終えてください。</value></data>
+  <data name="Castle.Status.DuringSiege" xml:space="preserve"><value>攻城戦中はできません。</value></data>
+  <data name="Castle.Status.InvalidSetup" xml:space="preserve"><value>この変更はできません。</value></data>
+  <data name="Castle.Status.NotChief" xml:space="preserve"><value>クランマスターだけが行えます。</value></data>
+  <data name="Castle.Status.NotEnoughGold" xml:space="preserve"><value>ゴールドが足りません。</value></data>
+  <data name="Castle.Status.NotEnoughTreasury" xml:space="preserve"><value>金庫にそれだけの資金がありません。</value></data>
+  <data name="Castle.Status.NotOwner" xml:space="preserve"><value>あなたのクランはブレス城を保有していません。</value></data>
+  <data name="Castle.Status.OutOfReach" xml:space="preserve"><value>執事から離れすぎています。</value></data>
+  <data name="Castle.Status.TooMuchGold" xml:space="preserve"><value>それだけのゴールドは持てません。</value></data>
+  <data name="Castle.Status.Unavailable" xml:space="preserve"><value>現在、城を変更できません。もう一度お試しください。</value></data>
+  <data name="Castle.Tax" xml:space="preserve"><value>税率</value></data>
+  <data name="Castle.TaxLine" xml:space="preserve"><value>税率：{0}（明日 {1}）</value></data>
+  <data name="Castle.ToWithdraw" xml:space="preserve"><value>金庫から引き出しますか？</value></data>
+  <data name="Castle.TowerInnerA" xml:space="preserve"><value>内郭 A</value></data>
+  <data name="Castle.TowerInnerB" xml:space="preserve"><value>内郭 B</value></data>
+  <data name="Castle.TowerInnerC" xml:space="preserve"><value>内郭 C</value></data>
+  <data name="Castle.TowerInnerD" xml:space="preserve"><value>内郭 D</value></data>
+  <data name="Castle.TowerLine" xml:space="preserve"><value>{0}：{1}  {2}</value></data>
+  <data name="Castle.TowerOuterA" xml:space="preserve"><value>外門 A</value></data>
+  <data name="Castle.TowerOuterB" xml:space="preserve"><value>外門 B</value></data>
+  <data name="Castle.Towers" xml:space="preserve"><value>クリスタルタワー</value></data>
+  <data name="Castle.TowersLine" xml:space="preserve"><value>クリスタルタワー：{0} / {1}</value></data>
+  <data name="Castle.Treasury" xml:space="preserve"><value>金庫：{0} ゴールド</value></data>
+  <data name="Castle.Withdraw" xml:space="preserve"><value>引き出す</value></data>
+  <data name="CharSelect.ChooseClass" xml:space="preserve"><value>クラスを選択してください。</value></data>
+  <data name="CharSelect.ChooseTribe" xml:space="preserve"><value>種族を選択してください。</value></data>
+  <data name="CharSelect.ClassModelsFailed" xml:space="preserve"><value>クラスのモデルを読み込めませんでした。</value></data>
+  <data name="CharSelect.CreateFailure.InvalidFace" xml:space="preserve"><value>無効な顔です。</value></data>
+  <data name="CharSelect.CreateFailure.NameLength" xml:space="preserve"><value>名前は 3 ～ 16 文字で入力してください。</value></data>
+  <data name="CharSelect.CreateFailure.NameTaken" xml:space="preserve"><value>その名前はすでに使われています。</value></data>
+  <data name="CharSelect.CreateFailure.NoFreeSlot" xml:space="preserve"><value>空いているキャラクタースロットがありません。</value></data>
+  <data name="CharSelect.CreateFailure.None" xml:space="preserve"><value>キャラクターを作成できませんでした。</value></data>
+  <data name="CharSelect.CreateFailure.Rejected" xml:space="preserve"><value>キャラクターの作成が拒否されました。</value></data>
+  <data name="CharSelect.CreateFailure.UnknownClass" xml:space="preserve"><value>不明なクラスです。</value></data>
+  <data name="CharSelect.DeleteFailed" xml:space="preserve"><value>キャラクターを削除できませんでした。</value></data>
+  <data name="CharSelect.EnterFailure.AlreadyActive" xml:space="preserve"><value>このキャラクターはすでに接続中です。</value></data>
+  <data name="CharSelect.EnterFailure.AlreadyEntering" xml:space="preserve"><value>セッションはすでに入場中、またはプレイ中です。</value></data>
+  <data name="CharSelect.EnterFailure.InvalidSavedClassOrField" xml:space="preserve"><value>保存されたキャラクターのクラスまたはフィールドが無効です。</value></data>
+  <data name="CharSelect.EnterFailure.InvalidSession" xml:space="preserve"><value>無効なセッションです。</value></data>
+  <data name="CharSelect.EnterFailure.None" xml:space="preserve"><value>ワールドに入れませんでした。</value></data>
+  <data name="CharSelect.EnterFailure.NotFound" xml:space="preserve"><value>キャラクターが見つかりません。</value></data>
+  <data name="CharSelect.EnterFailure.Rejected" xml:space="preserve"><value>ワールドへの入場が拒否されました。</value></data>
+  <data name="CharSelect.EnterFailure.SessionClosed" xml:space="preserve"><value>入場中にセッションが終了しました。</value></data>
+  <data name="CharSelect.EnterFailure.UnsupportedSavedState" xml:space="preserve"><value>保存されたキャラクターの状態が無効、または未対応です。保存データはそのまま残されています。</value></data>
+  <data name="CharSelect.EnterName" xml:space="preserve"><value>名前を入力してください。</value></data>
+  <data name="CharSelect.LoadFailed" xml:space="preserve"><value>キャラクターを読み込めませんでした。</value></data>
+  <data name="CharSelect.ModelsFailed" xml:space="preserve"><value>キャラクターのモデルを読み込めませんでした。</value></data>
+  <data name="CharSelect.Unreachable" xml:space="preserve"><value>サーバーに接続できませんでした。</value></data>
+  <data name="Chat.Frozen" xml:space="preserve"><value>{0} : しゃべりすぎて舌が凍っちゃった！WOW -_-;</value></data>
+  <data name="Clan.Appoint" xml:space="preserve"><value>副マスター任命</value></data>
+  <data name="Clan.Back" xml:space="preserve"><value>戻る</value></data>
+  <data name="Clan.BelowSix" xml:space="preserve"><value>メンバーが 6 人未満です。クランが解散されるまで、募集期間はあと {0} 日 {1} 時間です。</value></data>
+  <data name="Clan.Cancel" xml:space="preserve"><value>キャンセル</value></data>
+  <data name="Clan.ChooseEntrust" xml:space="preserve"><value>新しいクランマスターを選んでください（あなた以上のレベルが必要です）。費用は 300,000 ゴールドで、あなたはメンバーになります。</value></data>
+  <data name="Clan.ChooseExpel" xml:space="preserve"><value>追放するメンバーを選んでください。</value></data>
+  <data name="Clan.ChooseVice" xml:space="preserve"><value>副マスターに任命するメンバーを選んでください。</value></data>
+  <data name="Clan.Confirm" xml:space="preserve"><value>確認</value></data>
+  <data name="Clan.ConfirmAppoint" xml:space="preserve"><value>{0} を副マスターに任命しますか？</value></data>
+  <data name="Clan.ConfirmDisband" xml:space="preserve"><value>クランを解散すると、クランの情報とメンバーはすべて失われます。続行しますか？</value></data>
+  <data name="Clan.ConfirmDischarge" xml:space="preserve"><value>{0} を副マスターから解任しますか？</value></data>
+  <data name="Clan.ConfirmEntrust" xml:space="preserve"><value>300,000 ゴールドで {0} にクランを譲渡しますか？あなたはメンバーになります。</value></data>
+  <data name="Clan.ConfirmExpel" xml:space="preserve"><value>{0} をクランから追放しますか？</value></data>
+  <data name="Clan.ConfirmLeave" xml:space="preserve"><value>クラン {0} を脱退しますか？</value></data>
+  <data name="Clan.ConfirmMark" xml:space="preserve"><value>{0} をクランのマークにしますか？次のように表示されます：</value></data>
+  <data name="Clan.Cost" xml:space="preserve"><value>クランの結成には {0} ゴールドとレベル {1} が必要です。</value></data>
+  <data name="Clan.Count" xml:space="preserve"><value>メンバー：{0} / {1}</value></data>
+  <data name="Clan.Disband" xml:space="preserve"><value>解散</value></data>
+  <data name="Clan.Discharge" xml:space="preserve"><value>副マスター解任</value></data>
+  <data name="Clan.Entrust" xml:space="preserve"><value>クラン譲渡</value></data>
+  <data name="Clan.Expel" xml:space="preserve"><value>追放</value></data>
+  <data name="Clan.Found" xml:space="preserve"><value>クラン結成</value></data>
+  <data name="Clan.Intro" xml:space="preserve"><value>同じ目的を持つ多くの戦士が集まり、世界中で集団を作っています。それがクランです。クランは仲間を守り、支え合います。クランを結成するには、正式に登録するための手数料を支払う必要があります。クランを結成しますか？</value></data>
+  <data name="Clan.InviteLine" xml:space="preserve"><value>があなたをクラン {0} に招待しています。</value></data>
+  <data name="Clan.Leave" xml:space="preserve"><value>クラン脱退</value></data>
+  <data name="Clan.Mark" xml:space="preserve"><value>クランマーク</value></data>
+  <data name="Clan.MarkFolder" xml:space="preserve"><value>ゲームと同じ場所にある ClanMarks フォルダーに画像（PNG、JPG、BMP）を入れて、下から選んでください。中央部分が {0}x{0} のマークになります。</value></data>
+  <data name="Clan.MarkLoading" xml:space="preserve"><value>画像を読み込み中...</value></data>
+  <data name="Clan.MarkLooking" xml:space="preserve"><value>画像を検索中...</value></data>
+  <data name="Clan.MarkUnreadable" xml:space="preserve"><value>{0} を画像として読み込めませんでした。</value></data>
+  <data name="Clan.No" xml:space="preserve"><value>いいえ</value></data>
+  <data name="Clan.NoMarkFiles" xml:space="preserve"><value>ClanMarks フォルダーに画像がありません。</value></data>
+  <data name="Clan.RankChief" xml:space="preserve"><value>（マスター）</value></data>
+  <data name="Clan.RankVice" xml:space="preserve"><value>（副マスター）</value></data>
+  <data name="Clan.Registered" xml:space="preserve"><value>クランは正式に登録されています。</value></data>
+  <data name="Clan.Registering" xml:space="preserve"><value>登録中：6 人に達するまであと {0} 日 {1} 時間です。</value></data>
+  <data name="Clan.Requirements" xml:space="preserve"><value>正式に登録されるには、{1} 日以内にクランマスターを含めて {0} 人のメンバーが必要です。満たせない場合は取り消されます。登録済みのクランのメンバーが {0} 人未満になった場合、解散されるまでに再び募集できる期間は {1} 日です。</value></data>
+  <data name="Clan.Title" xml:space="preserve"><value>クランマスター</value></data>
+  <data name="Clan.TypeName" xml:space="preserve"><value>クラン名（2 ～ 16 文字の英字、数字、スペース、'-'、'_'）を入力して Enter キーを押してください。</value></data>
+  <data name="Clan.Yes" xml:space="preserve"><value>はい</value></data>
+  <data name="Combat.Evade" xml:space="preserve"><value>回避</value></data>
+  <data name="Combat.Miss" xml:space="preserve"><value>ミス</value></data>
+  <data name="Count.DoYouWant" xml:space="preserve"><value>いくつ</value></data>
+  <data name="Count.HowManyItems" xml:space="preserve"><value>アイテムの個数</value></data>
+  <data name="Count.HowMuchGold" xml:space="preserve"><value>ゴールドの額</value></data>
+  <data name="Count.ToBuy" xml:space="preserve"><value>購入しますか？</value></data>
+  <data name="Count.ToDrop" xml:space="preserve"><value>捨てますか？</value></data>
+  <data name="Count.ToSell" xml:space="preserve"><value>売却しますか？</value></data>
+  <data name="Count.ToStore" xml:space="preserve"><value>預けますか？</value></data>
+  <data name="Count.ToTakeOut" xml:space="preserve"><value>引き出しますか？</value></data>
+  <data name="Crystal.Dismiss" xml:space="preserve"><value>このペットを解除しますか？</value></data>
+  <data name="Crystal.Title" xml:space="preserve"><value>モンスタークリスタル</value></data>
+  <data name="Display.Keep" xml:space="preserve"><value>この画面設定を維持しますか？</value></data>
+  <data name="Display.KeepButton" xml:space="preserve"><value>維持 (Enter)</value></data>
+  <data name="Display.RevertButton" xml:space="preserve"><value>元に戻す (Esc)</value></data>
+  <data name="Display.Reverting" xml:space="preserve"><value>{0} 秒後に元に戻ります</value></data>
+  <data name="Element.Bionic" xml:space="preserve"><value>有機</value></data>
+  <data name="Element.Earth" xml:space="preserve"><value>地</value></data>
+  <data name="Element.Fire" xml:space="preserve"><value>火</value></data>
+  <data name="Element.Ice" xml:space="preserve"><value>氷</value></data>
+  <data name="Element.Lighting" xml:space="preserve"><value>雷</value></data>
+  <data name="Element.Poison" xml:space="preserve"><value>毒</value></data>
+  <data name="Element.Water" xml:space="preserve"><value>水</value></data>
+  <data name="Element.Wind" xml:space="preserve"><value>風</value></data>
+  <data name="Friends.Friends" xml:space="preserve"><value>[フレンド] {0}/{1}</value></data>
+  <data name="Friends.Ignored" xml:space="preserve"><value>[無視] {0}/{1}</value></data>
+  <data name="Friends.Recent" xml:space="preserve"><value>[最近]</value></data>
+  <data name="Game.ActionPending" xml:space="preserve"><value>ほかの処理が実行中です。もう一度お試しください</value></data>
+  <data name="Game.AgedItemMatured" xml:space="preserve"><value>エイジング中のアイテムが完成しました</value></data>
+  <data name="Game.AgingNotice" xml:space="preserve"><value>{0} が {1} を +{2} にエイジングしました！</value></data>
+  <data name="Game.AlreadyApplied" xml:space="preserve"><value>すでに完了しています</value></data>
+  <data name="Game.AlreadyTalking" xml:space="preserve"><value>すでにこの NPC と会話中です</value></data>
+  <data name="Game.BellatraBossDown" xml:space="preserve"><value>ボスを倒しました（{0} ポイント）。</value></data>
+  <data name="Game.BellatraCleared" xml:space="preserve"><value>おめでとうございます！ベラトラが終了しました。{0} ゴールドを獲得しました。</value></data>
+  <data name="Game.BellatraClosed" xml:space="preserve"><value>現在ベラトラには入場できません。しばらくしてからもう一度お越しください。</value></data>
+  <data name="Game.BellatraEntered" xml:space="preserve"><value>すでにこのベラトラに参加しています。</value></data>
+  <data name="Game.BellatraFreeze" xml:space="preserve"><value>{0} がフリーズシールを破りました：部屋のモンスターが凍りつきました。</value></data>
+  <data name="Game.BellatraGuardian" xml:space="preserve"><value>{0} がガーディアンシールを破りました：守護聖人が味方として戦います。</value></data>
+  <data name="Game.BellatraLevel" xml:space="preserve"><value>まだベラトラに入場できる強さではありません（レベル {0}）。鍛えてからお越しください。</value></data>
+  <data name="Game.BellatraNoTickets" xml:space="preserve"><value>ベラトラのチケットは開催前の夜明け（ゲーム内時刻 {0} 時と {1} 時）に販売されます。その時間にお越しください。</value></data>
+  <data name="Game.BellatraOpening" xml:space="preserve"><value>ベラトラが開幕しました：チケットはナビスコで販売中です。</value></data>
+  <data name="Game.ChatTranslated" xml:space="preserve"><value>{0}（翻訳）</value></data>
+  <data name="Game.PvpOn" xml:space="preserve"><value>PvP モード ON：狩り場では、パーティーやクランに属さない PvP 中のプレイヤーと戦えます。</value></data>
+  <data name="Game.ArenaOpen" xml:space="preserve"><value>アリーナが {0} 分間開放されます：/arena 1x1 または /arena 3x3 で待機列に参加できます。</value></data>
+  <data name="Game.ArenaQueued" xml:space="preserve"><value>{0} アリーナの待機列に参加しました。</value></data>
+  <data name="Game.ArenaLeft" xml:space="preserve"><value>アリーナの待機列から抜けました。</value></data>
+  <data name="Game.ArenaClosed" xml:space="preserve"><value>アリーナは閉鎖中です。{0} に開放されます。</value></data>
+  <data name="Game.ArenaLevel" xml:space="preserve"><value>アリーナはレベル {0} から利用できます。</value></data>
+  <data name="Game.ArenaParty" xml:space="preserve"><value>3x3 では、ちょうど {0} 人のパーティーのリーダーが待機列に参加します。</value></data>
+  <data name="Game.ArenaBusy" xml:space="preserve"><value>あなた、またはパーティーメンバーが現在アリーナに参加できません。</value></data>
+  <data name="Game.ArenaNotQueued" xml:space="preserve"><value>アリーナの待機列に参加していません。</value></data>
+  <data name="Game.ArenaQueueClosed" xml:space="preserve"><value>アリーナが閉鎖され、待機列は終了しました。</value></data>
+  <data name="Game.ArenaStarted" xml:space="preserve"><value>{1} との {0} アリーナ戦が始まります！生命力が 1 になった人は脱落しますが、死亡はしません。</value></data>
+  <data name="Game.ArenaOut" xml:space="preserve"><value>試合から脱落しました。試合が終わるまでお待ちください。</value></data>
+  <data name="Game.ArenaWon" xml:space="preserve"><value>アリーナ勝利！今週 +{0} ポイント。</value></data>
+  <data name="Game.ArenaLost" xml:space="preserve"><value>アリーナ敗北：今週 -{0} ポイント。</value></data>
+  <data name="Game.ArenaDraw" xml:space="preserve"><value>アリーナ戦は引き分けに終わりました。</value></data>
+  <data name="Game.ArenaNotice" xml:space="preserve"><value>アリーナ {0}：{1} が {2} に勝利しました。</value></data>
+  <data name="Game.ArenaDrawNotice" xml:space="preserve"><value>アリーナ {0}：{1} と {2} は引き分けました。</value></data>
+  <data name="Arena.Queued" xml:space="preserve"><value>{0} アリーナの待機列に参加中</value></data>
+  <data name="Arena.Status" xml:space="preserve"><value>アリーナ {0}：味方 {1} x {2}、残り {3}:{4}</value></data>
+  <data name="Arena.Out" xml:space="preserve"><value>脱落しました。アリーナ {0}：味方 {1} x {2}、残り {3}:{4}</value></data>
+  <data name="QuickMenu.ArenaSolo" xml:space="preserve"><value>アリーナ 1x1</value></data>
+  <data name="QuickMenu.ArenaTrio" xml:space="preserve"><value>アリーナ 3x3</value></data>
+  <data name="Game.RoyaleOpen" xml:space="preserve"><value>バトルロイヤルの参加受付中：{0} 分後に開始、レベル {1} 以上。/royale で参加登録できます。</value></data>
+  <data name="Game.RoyaleRegistered" xml:space="preserve"><value>バトルロイヤルに参加登録しました（登録 {0} 人）。</value></data>
+  <data name="Game.RoyaleLeft" xml:space="preserve"><value>バトルロイヤルの参加登録を取り消しました。</value></data>
+  <data name="Game.RoyaleClosed" xml:space="preserve"><value>バトルロイヤルの参加受付は {0} の 10 分前に始まります。</value></data>
+  <data name="Game.RoyaleLevel" xml:space="preserve"><value>バトルロイヤルにはレベル {0} が必要です。</value></data>
+  <data name="Game.RoyaleFull" xml:space="preserve"><value>バトルロイヤルは満員です（{0} 人）。</value></data>
+  <data name="Game.RoyaleBusy" xml:space="preserve"><value>現在は登録できません：先にデュエル、アリーナ、ベラトラ、またはクエストアリーナから離れてください。</value></data>
+  <data name="Game.RoyaleNotRegistered" xml:space="preserve"><value>バトルロイヤルに参加登録していません。</value></data>
+  <data name="Game.RoyaleCancelled" xml:space="preserve"><value>バトルロイヤルは中止されました：登録 {0} 人、必要人数は {1} 人です。</value></data>
+  <data name="Game.RoyaleStarted" xml:space="preserve"><value>{0} 人でバトルロイヤルが始まりました！</value></data>
+  <data name="Game.RoyaleOut" xml:space="preserve"><value>バトルロイヤルから脱落し、観戦中です：残り {0} 人。</value></data>
+  <data name="Game.RoyalePlace" xml:space="preserve"><value>バトルロイヤル：{0} 位になり、経験値 {1} を獲得しました。</value></data>
+  <data name="Game.RoyaleWinner" xml:space="preserve"><value>{0} がバトルロイヤルで優勝しました！</value></data>
+  <data name="Game.RoyaleSkipped" xml:space="preserve"><value>バトルロイヤルに参加できませんでした：開始時に別の行動中でした。</value></data>
+  <data name="Royale.Registered" xml:space="preserve"><value>バトルロイヤルに登録済み（登録 {0} 人）</value></data>
+  <data name="Royale.Status" xml:space="preserve"><value>バトルロイヤル：残り {0} / {1} 人、{2} 後にゾーンが縮小、残り {3}</value></data>
+  <data name="Game.TitleGained" xml:space="preserve"><value>{0} が称号「{1}」を獲得しました！</value></data>
+  <data name="Game.TitleLost" xml:space="preserve"><value>{0} が称号「{1}」を {2} に奪われました！</value></data>
+  <data name="Game.TitleEarned" xml:space="preserve"><value>称号「{0}」を獲得しました。ステータスウィンドウで選ぶと名前の上に表示されます。</value></data>
+  <data name="Game.TitleTaken" xml:space="preserve"><value>称号「{0}」を {1} に奪われました。</value></data>
+  <data name="Game.BossRouletteWinner" xml:space="preserve"><value>{0} が {2} ボスルーレットで {1} を獲得しました！</value></data>
+  <data name="Game.BossRouletteWon" xml:space="preserve"><value>{1} ボスルーレットで {0} を獲得しました！アイテム配布所（その他）で待っています。</value></data>
+  <data name="Title.None" xml:space="preserve"><value>称号なし</value></data>
+  <data name="Title.Veteran" xml:space="preserve"><value>ベテラン</value></data>
+  <data name="Title.Master" xml:space="preserve"><value>マスター</value></data>
+  <data name="Title.Legend" xml:space="preserve"><value>レジェンド</value></data>
+  <data name="Title.Immortal" xml:space="preserve"><value>イモータル</value></data>
+  <data name="Title.Artisan" xml:space="preserve"><value>職人</value></data>
+  <data name="Title.MasterArtisan" xml:space="preserve"><value>名匠</value></data>
+  <data name="Title.Adventurer" xml:space="preserve"><value>冒険者</value></data>
+  <data name="Title.Hunter" xml:space="preserve"><value>ハンター</value></data>
+  <data name="Title.Exterminator" xml:space="preserve"><value>エクスターミネーター</value></data>
+  <data name="Title.BossHunter" xml:space="preserve"><value>ボスハンター</value></data>
+  <data name="Title.ArenaKingLow" xml:space="preserve"><value>アリーナキング 100-119</value></data>
+  <data name="Title.ArenaKingMiddle" xml:space="preserve"><value>アリーナキング 120-139</value></data>
+  <data name="Title.ArenaKingHigh" xml:space="preserve"><value>アリーナキング 140+</value></data>
+  <data name="Title.Survivor" xml:space="preserve"><value>サバイバー</value></data>
+  <data name="Title.CastleLord" xml:space="preserve"><value>城主</value></data>
+  <data name="Title.Strongest" xml:space="preserve"><value>最強の者</value></data>
+  <data name="Royale.Closing" xml:space="preserve"><value>バトルロイヤル：残り {0} / {1} 人、残り {3}</value></data>
+  <data name="Royale.Out" xml:space="preserve"><value>脱落して観戦中です。バトルロイヤル：残り {0} / {1} 人、残り {3}</value></data>
+  <data name="QuickMenu.Royale" xml:space="preserve"><value>バトルロイヤル</value></data>
+  <data name="Game.DuelChallenged" xml:space="preserve"><value>{0} にデュエルを申し込みました。</value></data>
+  <data name="Game.DuelNotFound" xml:space="preserve"><value>{0} は現在プレイしていません。</value></data>
+  <data name="Game.DuelTooFar" xml:space="preserve"><value>{0} はデュエルするには遠すぎます。</value></data>
+  <data name="Game.DuelField" xml:space="preserve"><value>デュエルは狩り場でのみ行えます。</value></data>
+  <data name="Game.DuelBusy" xml:space="preserve"><value>{0} は現在デュエルできません。</value></data>
+  <data name="Game.DuelSelf" xml:space="preserve"><value>自分自身とはデュエルできません。</value></data>
+  <data name="Game.DuelRefused" xml:space="preserve"><value>{0} がデュエルを断りました。</value></data>
+  <data name="Game.DuelStarted" xml:space="preserve"><value>{0} とのデュエルが始まります：金色の円の中にいてください。生命力が 1 になった人の負けですが、死亡はしません。</value></data>
+  <data name="Game.DuelWon" xml:space="preserve"><value>{0} とのデュエルに勝利しました！</value></data>
+  <data name="Game.DuelLost" xml:space="preserve"><value>{0} とのデュエルに敗れました。</value></data>
+  <data name="Game.DuelDraw" xml:space="preserve"><value>{0} とのデュエルは引き分けに終わりました。</value></data>
+  <data name="Game.DuelNotice" xml:space="preserve"><value>{0} がデュエルで {1} に勝利しました。</value></data>
+  <data name="Game.DuelDrawNotice" xml:space="preserve"><value>{0} と {1} のデュエルは引き分けでした。</value></data>
+  <data name="Duel.Button" xml:space="preserve"><value>デュエル</value></data>
+  <data name="Duel.Request" xml:space="preserve"><value>がデュエルを申し込んでいます</value></data>
+  <data name="Duel.Status" xml:space="preserve"><value>{0} とのデュエル：{1}:{2}</value></data>
+  <data name="Duel.Outside" xml:space="preserve"><value>アリーナに戻ってください：{1} 秒後に {0} とのデュエルに敗北します</value></data>
+  <data name="Game.PvpOff" xml:space="preserve"><value>PvP モード OFF。</value></data>
+  <data name="Game.PvpLevel" xml:space="preserve"><value>PvP モードはレベル {0} から利用できます。</value></data>
+  <data name="Game.PvpInCombat" xml:space="preserve"><value>少し前にプレイヤーと戦いました：{0} 秒後に PvP を OFF にできます。</value></data>
+  <data name="Game.PvpMurderer" xml:space="preserve"><value>あなたは殺人者です：PvP はあと {0} 秒間 ON のままです。</value></data>
+  <data name="Game.PvpMurder" xml:space="preserve"><value>{0} を倒しました：{1} 分間、殺人者になります。PvP が ON のプレイヤーは誰でもあなたを攻撃でき、あなたの PvP は ON のままです。</value></data>
+  <data name="Game.BellatraOut" xml:space="preserve"><value>チームは脱落しました（{0} 位）。{1} ゴールドを獲得しました。</value></data>
+  <data name="Game.BellatraPoints" xml:space="preserve"><value>{0} がポイントシールを破りました：さらに {1} ポイント。</value></data>
+  <data name="Game.BellatraQuake" xml:space="preserve"><value>{0} がクエイクシールを破りました：部屋のモンスターが揺れています。</value></data>
+  <data name="Game.BellatraRabbit" xml:space="preserve"><value>{0} がラビットシールを破りました：モンスターがラビーズに変わります。</value></data>
+  <data name="Game.BellatraSealIdle" xml:space="preserve"><value>シールはラウンド中にアリーナの部屋のいずれかでのみ破れます。</value></data>
+  <data name="Game.BellatraStun" xml:space="preserve"><value>{0} がスタンシールを破りました：部屋のモンスターが気絶しました。</value></data>
+  <data name="Game.BellatraStygian" xml:space="preserve"><value>{0} がスティジアンシールを破りました：スティジアンロードが味方として戦います。</value></data>
+  <data name="Game.BellatraTeamFull" xml:space="preserve"><value>このチームのチケットはすべて売り切れです。</value></data>
+  <data name="Game.BellatraTicket" xml:space="preserve"><value>ベラトラのチケット販売中：{0} ゴールド。</value></data>
+  <data name="Game.BossTime" xml:space="preserve"><value>ボスタイム：XX:{0}</value></data>
+  <data name="Game.CannotDrop" xml:space="preserve"><value>このアイテムは捨てられません</value></data>
+  <data name="Game.CannotUseYet" xml:space="preserve"><value>まだこのアイテムは使えません</value></data>
+  <data name="Game.CastleTaken" xml:space="preserve"><value>クラン {0} がブレス城を占領しました。</value></data>
+  <data name="Game.CharacterBusy" xml:space="preserve"><value>保存またはほかのキャラクター処理が実行中です。もう一度お試しください</value></data>
+  <data name="Game.CharacterUnchanged" xml:space="preserve"><value>ストレージが操作を拒否しました。キャラクターは変更されていません</value></data>
+  <data name="Game.ClanAlreadyInClan" xml:space="preserve"><value>すでにクランに所属しています。</value></data>
+  <data name="Game.ClanBelowSix" xml:space="preserve"><value>クランのメンバーが {1} 人未満です。{0} 日以内に募集しないと解散されます。</value></data>
+  <data name="Game.ClanBusy" xml:space="preserve"><value>先に取引または個人商店を閉じてください。</value></data>
+  <data name="Game.ClanCapacityTooLow" xml:space="preserve"><value>そのレベルでは、新しいマスターはすべてのメンバーを維持できません。</value></data>
+  <data name="Game.ClanChiefCannotLeave" xml:space="preserve"><value>クランマスターは脱退できません：クランを譲渡するか解散してください。</value></data>
+  <data name="Game.ClanChiefChanged" xml:space="preserve"><value>クランマスターが {0} から {1} に変わりました。</value></data>
+  <data name="Game.ClanChiefOnAccount" xml:space="preserve"><value>このアカウントにはすでにクランマスターがいます。クランマスターはアカウントごとに 1 人までです。</value></data>
+  <data name="Game.ClanDisbanded" xml:space="preserve"><value>クラン {0} は解散しました。</value></data>
+  <data name="Game.ClanExpelled" xml:space="preserve"><value>{0} はクランから追放されました。</value></data>
+  <data name="Game.ClanFounded" xml:space="preserve"><value>クラン [{0}] が結成されました。登録するには {2} 日以内にクランマスターを含めて {1} 人のメンバーを集めてください。</value></data>
+  <data name="Game.ClanFull" xml:space="preserve"><value>これ以上メンバーを募集できません。</value></data>
+  <data name="Game.ClanInviteRefused" xml:space="preserve"><value>{0} はクランへの加入を断りました。</value></data>
+  <data name="Game.ClanInviteSent" xml:space="preserve"><value>{0} にクランの招待を送りました。</value></data>
+  <data name="Game.ClanJoinCooldown" xml:space="preserve"><value>クランが解散してから {0} 日間は、クランに加入できません。</value></data>
+  <data name="Game.ClanJoined" xml:space="preserve"><value>{0} がクランに加入しました。</value></data>
+  <data name="Game.ClanLeft" xml:space="preserve"><value>{0} がクランを脱退しました。</value></data>
+  <data name="Game.ClanLevelTooLow" xml:space="preserve"><value>クランを結成するにはレベル {0} が必要です。</value></data>
+  <data name="Game.ClanMarkChanged" xml:space="preserve"><value>クラン [{0}] の新しいマークが設定されました。</value></data>
+  <data name="Game.ClanMarkUnavailable" xml:space="preserve"><value>クランマークはまだアップロードできません。</value></data>
+  <data name="Game.ClanNameInvalid" xml:space="preserve"><value>クラン名は {0} ～ {1} 文字の英字、数字、スペース、'-'、'_' で入力してください。</value></data>
+  <data name="Game.ClanNameTaken" xml:space="preserve"><value>このクラン名はすでに存在します。別の名前をお試しください。</value></data>
+  <data name="Game.ClanNoInvitation" xml:space="preserve"><value>クランの招待はすでに無効です。</value></data>
+  <data name="Game.ClanNotChief" xml:space="preserve"><value>クランマスターだけが行えます。</value></data>
+  <data name="Game.ClanNotInClan" xml:space="preserve"><value>クランに所属していません。</value></data>
+  <data name="Game.ClanNotMember" xml:space="preserve"><value>そのキャラクターはクランのメンバーではありません。</value></data>
+  <data name="Game.ClanNotRecruiter" xml:space="preserve"><value>メンバーを募集できるのはクランマスターまたは副マスターだけです。</value></data>
+  <data name="Game.ClanNotRegistered" xml:space="preserve"><value>先にクランを正式に登録する必要があります。</value></data>
+  <data name="Game.ClanNotVice" xml:space="preserve"><value>そのメンバーは副マスターではありません。</value></data>
+  <data name="Game.ClanOnly" xml:space="preserve"><value>クランメンバーだけがこのアイテムを使えます</value></data>
+  <data name="Game.ClanPetOwned" xml:space="preserve"><value>同時に召喚できるのは 1 体だけです。</value></data>
+  <data name="Game.ClanPetsNearby" xml:space="preserve"><value>あなたのクランはすでにここに 3 体召喚しています。</value></data>
+  <data name="Game.ClanRegistered" xml:space="preserve"><value>おめでとうございます！クラン [{0}] が正式に登録されました。</value></data>
+  <data name="Game.ClanTargetInClan" xml:space="preserve"><value>そのプレイヤーはすでにクランに所属しています。</value></data>
+  <data name="Game.ClanTargetLevelTooLow" xml:space="preserve"><value>新しいマスターはあなた以上のレベルが必要です。</value></data>
+  <data name="Game.ClanTargetNotFound" xml:space="preserve"><value>そのプレイヤーは対応できません。</value></data>
+  <data name="Game.ClanUnavailable" xml:space="preserve"><value>クランサービスは利用できません。しばらくしてからもう一度お試しください。</value></data>
+  <data name="Game.ClanViceAppointed" xml:space="preserve"><value>{0} が副マスターに任命されました。</value></data>
+  <data name="Game.ClanViceDischarged" xml:space="preserve"><value>{0} が副マスターから解任されました。</value></data>
+  <data name="Game.ClanViceExists" xml:space="preserve"><value>クランにはすでに副マスターがいます。</value></data>
+  <data name="Game.ClanYouWereExpelled" xml:space="preserve"><value>クラン {0} から追放されました。</value></data>
+  <data name="Game.CloseShopFirst" xml:space="preserve"><value>先に個人商店を閉じてください</value></data>
+  <data name="Game.CloseTradeFirst" xml:space="preserve"><value>先に取引ウィンドウを閉じてください</value></data>
+  <data name="Game.ConfirmAcceptQuest" xml:space="preserve"><value>クエストを受ける</value></data>
+  <data name="Game.ConfirmBattleZone" xml:space="preserve"><value>バトルゾーンへ移動しますか？</value></data>
+  <data name="Game.ConfirmCarryOut" xml:space="preserve"><value>クエストを実行しますか？</value></data>
+  <data name="Game.ConfirmDoYouWanna" xml:space="preserve"><value>よろしいですか？</value></data>
+  <data name="Game.ConfirmDoYouWantTo" xml:space="preserve"><value>よろしいですか？</value></data>
+  <data name="Game.ConfirmExchangeItem" xml:space="preserve"><value>アイテムと交換しますか？</value></data>
+  <data name="Game.ConfirmGetQuest" xml:space="preserve"><value>クエストを受けますか？</value></data>
+  <data name="Game.ConfirmProcessQuest" xml:space="preserve"><value>クエストを進める</value></data>
+  <data name="Game.ConfirmRankUp" xml:space="preserve"><value>ランクアップしますか？</value></data>
+  <data name="Game.ConfirmRankUpFifth" xml:space="preserve"><value>ランクアップ</value></data>
+  <data name="Game.ConfirmReceiveItem" xml:space="preserve"><value>アイテムを受け取りますか？</value></data>
+  <data name="Game.ConfirmRedistribute" xml:space="preserve"><value>再分配しますか？</value></data>
+  <data name="Game.ConfirmSearchQuest" xml:space="preserve"><value>クエストを探しますか？</value></data>
+  <data name="Game.ConfirmTheQuest" xml:space="preserve"><value>このクエストでよろしいですか？</value></data>
+  <data name="Game.ConfirmWantToAccept" xml:space="preserve"><value>受けますか？</value></data>
+  <data name="Game.ConfirmWantToDo" xml:space="preserve"><value>行いますか？</value></data>
+  <data name="Game.ConnectionError" xml:space="preserve"><value>接続エラーです。もう一度お試しください。</value></data>
+  <data name="Game.ContactListFull" xml:space="preserve"><value>リストが満杯です</value></data>
+  <data name="Game.ContactListed" xml:space="preserve"><value>{0} はすでにリストにいます</value></data>
+  <data name="Game.ContactNotListed" xml:space="preserve"><value>{0} はリストにいません</value></data>
+  <data name="Game.ContactRefused" xml:space="preserve"><value>この名前はリストに登録できません</value></data>
+  <data name="Game.ContactsUnavailable" xml:space="preserve"><value>現在リストを変更できません</value></data>
+  <data name="Game.CrystalRefused" xml:space="preserve"><value>このクリスタルは使えません</value></data>
+  <data name="Game.DeadCannotUse" xml:space="preserve"><value>死亡中はアイテムを使えません</value></data>
+  <data name="Game.DeathPenaltyReduced" xml:space="preserve"><value>死亡ペナルティの経験値が 1 減少しました</value></data>
+  <data name="Game.DropOutOfReach" xml:space="preserve"><value>アイテムが消えたか、手が届きません</value></data>
+  <data name="Game.EliteQuestDone" xml:space="preserve"><value>{0} : 完了</value></data>
+  <data name="Game.EliteQuestExpired" xml:space="preserve"><value>クエストの制限時間が過ぎました。</value></data>
+  <data name="Game.EliteQuestProgress" xml:space="preserve"><value>{0} : {1}/{2}</value></data>
+  <data name="Game.EliteSkillPointsGained" xml:space="preserve"><value>エリートスキルポイントが +{0} 増えました。</value></data>
+  <data name="Game.EnterWorldFirst" xml:space="preserve"><value>先にワールドに入ってください</value></data>
+  <data name="Game.FemaleCannotUse" xml:space="preserve"><value>女性キャラクターは使用できません</value></data>
+  <data name="Game.FountainPotion" xml:space="preserve"><value>&gt; {0} がソウルファウンテンからミスティックマナポーションを受け取りました [残り：{1}]</value></data>
+  <data name="Game.FuryLost" xml:space="preserve"><value>Fury との対決に敗れました。</value></data>
+  <data name="Game.FuryTitle" xml:space="preserve"><value>Fury の幻影</value></data>
+  <data name="Game.FuryWon" xml:space="preserve"><value>Fury との対決に勝利しました。</value></data>
+  <data name="Game.GateNotAtStone" xml:space="preserve"><value>先にワープゲートの上に立ってください</value></data>
+  <data name="Game.GateNotReached" xml:space="preserve"><value>あなたのウィングはこのゲートに届きません</value></data>
+  <data name="Game.GateRefused" xml:space="preserve"><value>ワープゲートに拒否されました</value></data>
+  <data name="Game.GoldLimit" xml:space="preserve"><value>所持できるゴールドの上限を超えています</value></data>
+  <data name="Game.GravityStoneUsed" xml:space="preserve"><value>グラビティストーンを使用しました</value></data>
+  <data name="Game.HestianLost" xml:space="preserve"><value>Hestian に敗れました。</value></data>
+  <data name="Game.HestianWon" xml:space="preserve"><value>Hestian に勝利しました。</value></data>
+  <data name="Game.InvalidQuestRequest" xml:space="preserve"><value>無効なクエストの要求です</value></data>
+  <data name="Game.InventoryChanged" xml:space="preserve"><value>インベントリが変更されました。もう一度お試しください</value></data>
+  <data name="Game.ItemAlreadyRunning" xml:space="preserve"><value>このアイテムはすでに使用中です</value></data>
+  <data name="Game.ItemInTrade" xml:space="preserve"><value>このアイテムは取引ウィンドウにあります</value></data>
+  <data name="Game.ItemNamedUsed" xml:space="preserve"><value>{0} を使用しました</value></data>
+  <data name="Game.ItemNotHere" xml:space="preserve"><value>このアイテムはここでは使えません</value></data>
+  <data name="Game.ItemNotUsable" xml:space="preserve"><value>このアイテムは使えません</value></data>
+  <data name="Game.ItemNotUsed" xml:space="preserve"><value>アイテムを使用できませんでした</value></data>
+  <data name="Game.ItemReceived" xml:space="preserve"><value>{0} を受け取りました</value></data>
+  <data name="Game.ItemUsed" xml:space="preserve"><value>アイテムを使用しました</value></data>
+  <data name="Game.ItemsReceived" xml:space="preserve"><value>{0} x{1} を受け取りました</value></data>
+  <data name="Game.LevelNotice" xml:space="preserve"><value>{0} がレベル {1} に到達しました！</value></data>
+  <data name="Game.LevelTooLow" xml:space="preserve"><value>レベルが足りません</value></data>
+  <data name="Game.LifeFifteen" xml:space="preserve"><value>HP +15 増加</value></data>
+  <data name="Game.LuckyBagHeld" xml:space="preserve"><value>福袋から {0} が出ました</value></data>
+  <data name="Game.MaleCannotUse" xml:space="preserve"><value>男性キャラクターは使用できません</value></data>
+  <data name="Game.MercenaryLimit" xml:space="preserve"><value>召喚の上限を超えています</value></data>
+  <data name="Game.MissionTimedOut" xml:space="preserve"><value>時間切れでミッションに失敗しました。</value></data>
+  <data name="Game.Name" xml:space="preserve"><value>{0}</value></data>
+  <data name="Game.NoClassChange" xml:space="preserve"><value>マスターは今、あなたにクラスチェンジを行えません</value></data>
+  <data name="Game.NoQuestWeapon" xml:space="preserve"><value>マスターはこのクラスのクエスト武器を作れません</value></data>
+  <data name="Game.NoRoomOnGround" xml:space="preserve"><value>地面に置く場所がありません</value></data>
+  <data name="Game.NoSession" xml:space="preserve"><value>無効なセッションです</value></data>
+  <data name="Game.NoShopHere" xml:space="preserve"><value>ここには開いている店がありません</value></data>
+  <data name="Game.NoSkillRedistribution" xml:space="preserve"><value>スキルの再分配は行われていません</value></data>
+  <data name="Game.NoSpace" xml:space="preserve"><value>インベントリの空きが足りません</value></data>
+  <data name="Game.NotEnoughGold" xml:space="preserve"><value>ゴールドが足りません</value></data>
+  <data name="Game.NotPlaying" xml:space="preserve"><value>キャラクターはプレイ中ではありません</value></data>
+  <data name="Game.NothingToChange" xml:space="preserve"><value>このアイテムで変更できるものがありません</value></data>
+  <data name="Game.NpcNoSuchService" xml:space="preserve"><value>この NPC はそのサービスを提供していません</value></data>
+  <data name="Game.NpcOutOfReach" xml:space="preserve"><value>生存した状態でこの NPC に近づいてください</value></data>
+  <data name="Game.NpcRefused" xml:space="preserve"><value>NPC に拒否されました</value></data>
+  <data name="Game.OperationConflict" xml:space="preserve"><value>操作の識別子が競合しています</value></data>
+  <data name="Game.OtherTownMaster" xml:space="preserve"><value>このマスターは別の町のクラスを指導しています</value></data>
+  <data name="Game.OverWeight" xml:space="preserve"><value>インベントリの重量制限を超えています</value></data>
+  <data name="Game.PartyAlreadyMember" xml:space="preserve"><value>{0} はすでにパーティーメンバーです</value></data>
+  <data name="Game.PartyCannotEnter" xml:space="preserve"><value>パーティーに参加できません</value></data>
+  <data name="Game.PartyDelegated" xml:space="preserve"><value>{0} が新しいパーティーリーダーに委任されました</value></data>
+  <data name="Game.PartyDisbanded" xml:space="preserve"><value>パーティーが解散されました</value></data>
+  <data name="Game.PartyEntered" xml:space="preserve"><value>{0} がパーティーに参加しました</value></data>
+  <data name="Game.PartyExpelled" xml:space="preserve"><value>{0} がパーティーから追放されました</value></data>
+  <data name="Game.PartyInOther" xml:space="preserve"><value>{0} はすでに別のパーティーのメンバーです</value></data>
+  <data name="Game.PartyLeaderNow" xml:space="preserve"><value>パーティーリーダーは {0} になりました</value></data>
+  <data name="Game.PartyLeft" xml:space="preserve"><value>{0} がパーティーを抜けました</value></data>
+  <data name="Game.PartyLevelGap" xml:space="preserve"><value>レベル差が大きすぎます</value></data>
+  <data name="Game.PartyLoot" xml:space="preserve"><value>{0} が {1} を拾いました。</value></data>
+  <data name="Game.PartyRareLoot" xml:space="preserve"><value>{0} がレアアイテムを拾いました：{1}！</value></data>
+  <data name="Game.PartyRecommended" xml:space="preserve"><value>パーティーリーダー {0} が {1} をパーティーに推薦しました</value></data>
+  <data name="Game.PartyRecommends" xml:space="preserve"><value>{0} を推薦しています</value></data>
+  <data name="Game.PartyReleased" xml:space="preserve"><value>パーティーが解散されました</value></data>
+  <data name="Game.PartyRequest" xml:space="preserve"><value>がパーティーの申請を送りました</value></data>
+  <data name="Game.PartyRequested" xml:space="preserve"><value>{0} にパーティーの申請を送りました</value></data>
+  <data name="Game.PartyYouLeft" xml:space="preserve"><value>パーティーを抜けました</value></data>
+  <data name="Game.PersonalShopRefused" xml:space="preserve"><value>個人商店に拒否されました</value></data>
+  <data name="Game.PickupNoRoom" xml:space="preserve"><value>インベントリが満杯か、ゴールドの上限に達しています</value></data>
+  <data name="Game.PlayerNotFound" xml:space="preserve"><value>{0} は現在オフライン、または見つかりません</value></data>
+  <data name="Game.PlayerOnline" xml:space="preserve"><value>{0} は現在オンラインです</value></data>
+  <data name="Game.PotionNotNow" xml:space="preserve"><value>今は別のポーションを使えません</value></data>
+  <data name="Game.PotionNotStored" xml:space="preserve"><value>ポーションは預けられません</value></data>
+  <data name="Game.ProgressionRefused" xml:space="preserve"><value>条件を満たしていないか、キャラクターが変更されました。もう一度お試しください</value></data>
+  <data name="Game.QuestHunt" xml:space="preserve"><value>&lt;クエスト&gt; {1} のうち {0} を討伐</value></data>
+  <data name="Game.QuestHuntFinished" xml:space="preserve"><value>&lt;クエスト&gt;  {1} のうち {0} の討伐が完了</value></data>
+  <data name="Game.QuestInProgress" xml:space="preserve"><value>進行中のクエストがあります</value></data>
+  <data name="Game.QuestItemFrom" xml:space="preserve"><value>&lt;クエスト&gt; {0} からアイテムを入手</value></data>
+  <data name="Game.QuestItemGone" xml:space="preserve"><value>クエストアイテム {0} が消えました</value></data>
+  <data name="Game.QuestItemLevelUp" xml:space="preserve"><value>クエストアイテムがレベルアップ</value></data>
+  <data name="Game.QuestItemSlowed" xml:space="preserve"><value>クエストアイテムの攻撃速度が低下</value></data>
+  <data name="Game.QuestKillCount" xml:space="preserve"><value>クエスト&gt; {0} {1} 体のモンスターが必要</value></data>
+  <data name="Game.QuestMovedOn" xml:space="preserve"><value>クエストが進行しました。もう一度 NPC に話しかけてください</value></data>
+  <data name="Game.QuestName" xml:space="preserve"><value>{0}</value></data>
+  <data name="Game.QuestTitle" xml:space="preserve"><value> ク エ ス ト </value></data>
+  <data name="Game.RegisteredClanOnly" xml:space="preserve"><value>登録済みクランのメンバーだけがこのアイテムを使えます</value></data>
+  <data name="Game.RequestRefused" xml:space="preserve"><value>要求は拒否されました</value></data>
+  <data name="Game.RewardAlreadyClaimed" xml:space="preserve"><value>この報酬はすでに受け取り済みです。</value></data>
+  <data name="Game.RewardBusy" xml:space="preserve"><value>ほかの処理が進行中です。もう一度お試しください。</value></data>
+  <data name="Game.RewardClaimed" xml:space="preserve"><value>報酬を受け取りました。</value></data>
+  <data name="Game.RewardExpired" xml:space="preserve"><value>このイベントは終了しました。</value></data>
+  <data name="Game.RewardGoldLimit" xml:space="preserve"><value>それだけのゴールドは持てません。</value></data>
+  <data name="Game.RewardLevelTooLow" xml:space="preserve"><value>この報酬を受け取るにはレベルが足りません。</value></data>
+  <data name="Game.RewardNotReady" xml:space="preserve"><value>この報酬はまだ受け取れません。</value></data>
+  <data name="Game.RewardReceived" xml:space="preserve"><value>補償としてアイテムを獲得しました。</value></data>
+  <data name="Game.SameAttributeRunning" xml:space="preserve"><value>同じ属性のアイテムがすでに使用中です</value></data>
+  <data name="Game.SellerNotFound" xml:space="preserve"><value>販売者が見つかりません</value></data>
+  <data name="Game.SellerShopClosed" xml:space="preserve"><value>販売者の個人商店は閉じています</value></data>
+  <data name="Game.ServiceNotAvailable" xml:space="preserve"><value>このサービスはまだ利用できません</value></data>
+  <data name="Game.ServiceStale" xml:space="preserve"><value>インベントリまたは倉庫が変更されました。もう一度お試しください</value></data>
+  <data name="Game.SevenStatPoints" xml:space="preserve"><value>レベル 80 を超えると、レベルアップごとにステータスポイントを 7 獲得します。</value></data>
+  <data name="Game.ShopBuysAndRepairs" xml:space="preserve"><value>この店は買取と修理のみ行っています</value></data>
+  <data name="Game.ShopCountChanged" xml:space="preserve"><value>アイテムの個数が正しくありません</value></data>
+  <data name="Game.ShopNotInTown" xml:space="preserve"><value>個人商店は町の中でのみ開けます</value></data>
+  <data name="Game.ShopNotListable" xml:space="preserve"><value>このアイテムは個人商店で販売できません。</value></data>
+  <data name="Game.ShopPriceChanged" xml:space="preserve"><value>アイテムの価格が変更されました</value></data>
+  <data name="Game.ShopRefused" xml:space="preserve"><value>店に拒否されました</value></data>
+  <data name="Game.ShopSold" xml:space="preserve"><value>{0} 様が {2} を {1} 個、{3} ゴールドで購入しました</value></data>
+  <data name="Game.ShopSoldOut" xml:space="preserve"><value>このアイテムはすでに売れています</value></data>
+  <data name="Game.ShopTradePending" xml:space="preserve"><value>取引がまだ保留中です。もう一度お試しください</value></data>
+  <data name="Game.SiegeInAnHour" xml:space="preserve"><value>ブレスキャッスルは1時間後に開始されます。準備をお願いします。</value></data>
+  <data name="Game.SiegeInHalfAnHour" xml:space="preserve"><value>ブレスキャッスルは30分後に開始されます。準備をお願いします。</value></data>
+  <data name="Game.SiegeLeague" xml:space="preserve"><value>ブレスキャッスルリーグが始まりました。2時間にわたり攻城戦が続けて行われます。</value></data>
+  <data name="Game.SiegeOver" xml:space="preserve"><value>ブレスキャッスルは終了しました。ご参加ありがとうございました。</value></data>
+  <data name="Game.SiegeRestartsSoon" xml:space="preserve"><value>まもなくブレスキャッスルが始まります。参加の準備をしてください。</value></data>
+  <data name="Game.SiegeStarted" xml:space="preserve"><value>ブレスキャッスルが開催中です。皆様のご健闘をお祈りします。</value></data>
+  <data name="Game.SkillMasterAway" xml:space="preserve"><value>生存した状態で、町のスキルマスターに近づいてください</value></data>
+  <data name="Game.SkillPointName" xml:space="preserve"><value>スキルポイント</value></data>
+  <data name="Game.SkillPointOne" xml:space="preserve"><value>スキルポイントが1増加しました</value></data>
+  <data name="Game.SkillsMastered" xml:space="preserve"><value>スキル修練が完了しました</value></data>
+  <data name="Game.SkillsRedistributed" xml:space="preserve"><value>ステータスがリセットされました</value></data>
+  <data name="Game.SkillsReset" xml:space="preserve"><value>スキルポイントを再び割り振れるようになりました</value></data>
+  <data name="Game.StaleInventory" xml:space="preserve"><value>無効な操作か、インベントリが変更されました。もう一度お試しください</value></data>
+  <data name="Game.StarterGift" xml:space="preserve"><value>{0} をプレゼントとして受け取りました。</value></data>
+  <data name="Game.StatFiveSkillOne" xml:space="preserve"><value>ステータスポイントが5、スキルポイントが1増加しました</value></data>
+  <data name="Game.StatFiveSkillTwo" xml:space="preserve"><value>ステータスポイントが5、スキルポイントが2増加しました</value></data>
+  <data name="Game.StatPointsFive" xml:space="preserve"><value>ステータスポイントが5増加しました</value></data>
+  <data name="Game.StatPointsGained" xml:space="preserve"><value>ステータスポイントが +{0} 増加しました。</value></data>
+  <data name="Game.StatsReset" xml:space="preserve"><value>ステータスポイントを再び割り振れるようになりました</value></data>
+  <data name="Game.StorageRejected" xml:space="preserve"><value>倉庫が操作を拒否しました。変更はありません</value></data>
+  <data name="Game.SummonLimit" xml:space="preserve"><value>クリスタル召喚は同時に {0} 体までです</value></data>
+  <data name="Game.TalkToNpcFirst" xml:space="preserve"><value>先にNPCに話しかけてください</value></data>
+  <data name="Game.TenStatPoints" xml:space="preserve"><value>レベル90を超えると、レベルアップごとにステータスポイントを10獲得します。</value></data>
+  <data name="Game.TooManyRequests" xml:space="preserve"><value>リクエストが多すぎます。しばらくお待ちください</value></data>
+  <data name="Game.TradeBusy" xml:space="preserve"><value>相手は取り込み中です</value></data>
+  <data name="Game.TradeCancelled" xml:space="preserve"><value>取引がキャンセルされました</value></data>
+  <data name="Game.TradeChanged" xml:space="preserve"><value>アイテムが変更されました。ご確認ください</value></data>
+  <data name="Game.TradeNotTradable" xml:space="preserve"><value>このアイテムは取引できません</value></data>
+  <data name="Game.TradeOutOfReach" xml:space="preserve"><value>相手が遠すぎます</value></data>
+  <data name="Game.TradeRefused" xml:space="preserve"><value>取引は拒否されました</value></data>
+  <data name="Game.TradeRequested" xml:space="preserve"><value>{0} に取引を申し込みました</value></data>
+  <data name="Game.TradeTooFar" xml:space="preserve"><value>{0} が遠すぎるため、取引を申し込めません</value></data>
+  <data name="Game.TradeTooMany" xml:space="preserve"><value>取引できるアイテム数の上限を超えています</value></data>
+  <data name="Game.TrainingReset" xml:space="preserve"><value>修練用の数値をリセットしました。</value></data>
+  <data name="Game.TwentyBargons" xml:space="preserve"><value>バーゴンを20体倒しました。</value></data>
+  <data name="Game.UnionCoreAway" xml:space="preserve"><value>ユニオンコアを使用できません。そのクランメンバーのもとへ現在は行けません。</value></data>
+  <data name="Game.UnionCoreBound" xml:space="preserve"><value>ユニオンコアがあなたに登録されました。使用したクランメンバーがあなたのもとへ来ます。</value></data>
+  <data name="Game.UnionCoreOwn" xml:space="preserve"><value>自分のユニオンコアは使用できません。</value></data>
+  <data name="Game.UnionCoreWrongClan" xml:space="preserve"><value>そのユニオンコアは別のクランのものです。</value></data>
+  <data name="Game.UseDelay" xml:space="preserve"><value>次のアイテムを使うまで少しお待ちください</value></data>
+  <data name="Game.VitalityForty" xml:space="preserve"><value>生命力が40増加しました</value></data>
+  <data name="Game.WarehouseChanged" xml:space="preserve"><value>倉庫が別の場所で変更されました。開き直してください</value></data>
+  <data name="Game.WarehouseNotOpen" xml:space="preserve"><value>先に倉庫を開いてください</value></data>
+  <data name="Game.WarehouseUnreadable" xml:space="preserve"><value>保存された倉庫を読み込めません</value></data>
+  <data name="Game.WhisperRefused" xml:space="preserve"><value>プライベートメッセージが拒否されました</value></data>
+  <data name="Game.WhisperUnable" xml:space="preserve"><value>プライベートメッセージを送信できません</value></data>
+  <data name="Game.WhispersAccepted" xml:space="preserve"><value>プライベートメッセージを受け付けます</value></data>
+  <data name="Game.WhispersDenied" xml:space="preserve"><value>プライベートメッセージを拒否します</value></data>
+  <data name="Game.WrongMaterials" xml:space="preserve"><value>これらの素材はこの作業に合いません</value></data>
+  <data name="Game.WrongPuzzle" xml:space="preserve"><value>パズルが違います</value></data>
+  <data name="Guide.More" xml:space="preserve"><value>&gt;&gt;続きを見る...</value></data>
+  <data name="Hud.AttackAuto" xml:space="preserve"><value>攻撃方式：オート</value></data>
+  <data name="Hud.AttackManual" xml:space="preserve"><value>攻撃方式：マニュアル</value></data>
+  <data name="Hud.DoubleClickSwitch" xml:space="preserve"><value>ダブルクリックで切り替え</value></data>
+  <data name="Hud.Effect" xml:space="preserve"><value>効果 {0}</value></data>
+  <data name="Hud.Life" xml:space="preserve"><value>HP : {0}/{1}</value></data>
+  <data name="Hud.Mana" xml:space="preserve"><value>MP : {0}/{1}</value></data>
+  <data name="Hud.Monster" xml:space="preserve"><value>モンスター</value></data>
+  <data name="Hud.Npc" xml:space="preserve"><value>NPC</value></data>
+  <data name="Hud.Quest" xml:space="preserve"><value>クエスト</value></data>
+  <data name="Hud.RightClickDismiss" xml:space="preserve"><value>右クリックで閉じる</value></data>
+  <data name="Hud.Stamina" xml:space="preserve"><value>STM : {0}/{1}</value></data>
+  <data name="Hud.Target" xml:space="preserve"><value>ターゲット</value></data>
+  <data name="Hud.TargetLevel" xml:space="preserve"><value>Lv. {0}</value></data>
+  <data name="Hud.TimeLeft" xml:space="preserve"><value>残り時間：{0}</value></data>
+  <data name="Hud.TimeLeftSeconds" xml:space="preserve"><value>残り時間：{0} 秒</value></data>
+  <data name="Inventory.HintCarry" xml:space="preserve"><value>クリック：持つ</value></data>
+  <data name="Inventory.HintDrink" xml:space="preserve"><value>右クリック：1つ飲む</value></data>
+  <data name="Inventory.HintEquip" xml:space="preserve"><value>クリック：持つ  Shift+クリック：分割  右クリック：装備</value></data>
+  <data name="Inventory.HintUnequip" xml:space="preserve"><value>右クリック：装備解除</value></data>
+  <data name="Inventory.HintUse" xml:space="preserve"><value>右クリック：使用</value></data>
+  <data name="Inventory.OperationFailed" xml:space="preserve"><value>操作に失敗しました。再接続して保存状態を確認してください。</value></data>
+  <data name="Item.Absorb" xml:space="preserve"><value>吸収力:  </value></data>
+  <data name="Item.AddLife" xml:space="preserve"><value>追加HP: </value></data>
+  <data name="Item.AddMana" xml:space="preserve"><value>追加MP:  </value></data>
+  <data name="Item.AddStamina" xml:space="preserve"><value>追加STM:  </value></data>
+  <data name="Item.AnyClass" xml:space="preserve"><value>クラス</value></data>
+  <data name="Item.AttackPower" xml:space="preserve"><value>攻撃力:  </value></data>
+  <data name="Item.AttackRating" xml:space="preserve"><value>命中力:  </value></data>
+  <data name="Item.Block" xml:space="preserve"><value>ブロック率:  </value></data>
+  <data name="Item.Critical" xml:space="preserve"><value>クリティカル:  </value></data>
+  <data name="Item.Defence" xml:space="preserve"><value>防御力:  </value></data>
+  <data name="Item.Integrity" xml:space="preserve"><value>耐久度:  </value></data>
+  <data name="Item.LifeRegen" xml:space="preserve"><value>HP回復力:  </value></data>
+  <data name="Item.MagicMastery" xml:space="preserve"><value>魔法熟練度:  </value></data>
+  <data name="Item.ManaRegen" xml:space="preserve"><value>MP回復力: </value></data>
+  <data name="Item.PotionSpace" xml:space="preserve"><value>ポーション収納数:  </value></data>
+  <data name="Item.Range" xml:space="preserve"><value>射程:  </value></data>
+  <data name="Item.RequiredAgility" xml:space="preserve"><value>必要敏捷性:  </value></data>
+  <data name="Item.RequiredHealth" xml:space="preserve"><value>必要健康:  </value></data>
+  <data name="Item.RequiredLevel" xml:space="preserve"><value>必要レベル:  </value></data>
+  <data name="Item.RequiredSpirit" xml:space="preserve"><value>必要精神力:  </value></data>
+  <data name="Item.RequiredStrength" xml:space="preserve"><value>必要筋力:  </value></data>
+  <data name="Item.RequiredTalent" xml:space="preserve"><value>必要才能:  </value></data>
+  <data name="Item.ResistFlame" xml:space="preserve"><value>火炎属性:  </value></data>
+  <data name="Item.ResistFrost" xml:space="preserve"><value>氷結属性:  </value></data>
+  <data name="Item.ResistLightning" xml:space="preserve"><value>雷属性:  </value></data>
+  <data name="Item.ResistNature" xml:space="preserve"><value>自然属性:  </value></data>
+  <data name="Item.ResistOrganic" xml:space="preserve"><value>有機属性:  </value></data>
+  <data name="Item.ResistPoison" xml:space="preserve"><value>毒属性: </value></data>
+  <data name="Item.ResistWater" xml:space="preserve"><value>水属性:  </value></data>
+  <data name="Item.ResistWind" xml:space="preserve"><value>風属性:  </value></data>
+  <data name="Item.SpecAbsorb" xml:space="preserve"><value>特化 吸収力:  </value></data>
+  <data name="Item.SpecAttackPower" xml:space="preserve"><value>特化 攻撃力:  </value></data>
+  <data name="Item.SpecAttackRating" xml:space="preserve"><value>特化 命中力:  </value></data>
+  <data name="Item.SpecAttackSpeed" xml:space="preserve"><value>特化 攻撃速度:  </value></data>
+  <data name="Item.SpecBlock" xml:space="preserve"><value>特化 ブロック率:  </value></data>
+  <data name="Item.SpecCritical" xml:space="preserve"><value>特化 クリティカル:  </value></data>
+  <data name="Item.SpecDefence" xml:space="preserve"><value>特化 防御力:  </value></data>
+  <data name="Item.SpecHeader" xml:space="preserve"><value>{0} 特化 </value></data>
+  <data name="Item.SpecLevelLife" xml:space="preserve"><value>最大HP上昇:  </value></data>
+  <data name="Item.SpecLevelMana" xml:space="preserve"><value>最大MP上昇:  </value></data>
+  <data name="Item.SpecLifeRegen" xml:space="preserve"><value>HP回復:  </value></data>
+  <data name="Item.SpecManaRegen" xml:space="preserve"><value>MP回復:  </value></data>
+  <data name="Item.SpecRange" xml:space="preserve"><value>特化 射程:  </value></data>
+  <data name="Item.SpecSpeed" xml:space="preserve"><value>特化 速度:  </value></data>
+  <data name="Item.SpecStaminaRegen" xml:space="preserve"><value>STM回復:  </value></data>
+  <data name="Item.Speed" xml:space="preserve"><value>速度:  </value></data>
+  <data name="Item.StaminaRegen" xml:space="preserve"><value>STM回復力: </value></data>
+  <data name="Item.WeaponSpeed" xml:space="preserve"><value>武器速度:  </value></data>
+  <data name="ItemKind.Amulet" xml:space="preserve"><value>アミュレット</value></data>
+  <data name="ItemKind.Armor" xml:space="preserve"><value>アーマー</value></data>
+  <data name="ItemKind.Axe" xml:space="preserve"><value>斧</value></data>
+  <data name="ItemKind.Boots" xml:space="preserve"><value>ブーツ</value></data>
+  <data name="ItemKind.Bow" xml:space="preserve"><value>弓</value></data>
+  <data name="ItemKind.Bracelet" xml:space="preserve"><value>ブレスレット</value></data>
+  <data name="ItemKind.Claw" xml:space="preserve"><value>クロー</value></data>
+  <data name="ItemKind.Dagger" xml:space="preserve"><value>ダガー</value></data>
+  <data name="ItemKind.ForceOrb" xml:space="preserve"><value>フォースオーブ</value></data>
+  <data name="ItemKind.Gloves" xml:space="preserve"><value>グローブ</value></data>
+  <data name="ItemKind.Hammer" xml:space="preserve"><value>ハンマー</value></data>
+  <data name="ItemKind.Material" xml:space="preserve"><value>素材</value></data>
+  <data name="ItemKind.Misc" xml:space="preserve"><value>その他</value></data>
+  <data name="ItemKind.Orb" xml:space="preserve"><value>オーブ</value></data>
+  <data name="ItemKind.Phantom" xml:space="preserve"><value>ファントム</value></data>
+  <data name="ItemKind.Pole" xml:space="preserve"><value>ポール</value></data>
+  <data name="ItemKind.Potion" xml:space="preserve"><value>ポーション</value></data>
+  <data name="ItemKind.Quest" xml:space="preserve"><value>クエストアイテム</value></data>
+  <data name="ItemKind.Ring" xml:space="preserve"><value>リング</value></data>
+  <data name="ItemKind.Sheltom" xml:space="preserve"><value>シェルトム</value></data>
+  <data name="ItemKind.Shield" xml:space="preserve"><value>シールド</value></data>
+  <data name="ItemKind.Staff" xml:space="preserve"><value>スタッフ</value></data>
+  <data name="ItemKind.Sword" xml:space="preserve"><value>ソード</value></data>
+  <data name="ItemKind.ThrowingWeapon" xml:space="preserve"><value>投擲武器</value></data>
+  <data name="ItemKind.Vambrace" xml:space="preserve"><value>ヴァンブレイス</value></data>
+  <data name="ItemUse.BindUnionCore" xml:space="preserve"><value>ユニオンコアをあなたに登録しますか？</value></data>
+  <data name="ItemUse.Confirm" xml:space="preserve"><value>このアイテムを</value></data>
+  <data name="ItemUse.Confirm2" xml:space="preserve"><value>使用しますか？</value></data>
+  <data name="ItemUse.ConnectionError" xml:space="preserve"><value>接続エラーです。再試行する前にインベントリを確認してください。</value></data>
+  <data name="ItemUse.Teleport" xml:space="preserve"><value>テレポートしますか？</value></data>
+  <data name="Language.en" xml:space="preserve"><value>English</value></data>
+  <data name="Language.pt-BR" xml:space="preserve"><value>Português (Brasil)</value></data>
+  <data name="Mail.NoAnswer" xml:space="preserve"><value>応答がありません。もう一度お試しください。</value></data>
+  <data name="Mail.Claim.Already" xml:space="preserve"><value>この報酬はすでに受け取り済みです。</value></data>
+  <data name="Mail.Claim.Space" xml:space="preserve"><value>報酬がインベントリに入りきりません。</value></data>
+  <data name="Mail.Claim.Unavailable" xml:space="preserve"><value>報酬を受け取れません。</value></data>
+  <data name="Mail.Claim.Retry" xml:space="preserve"><value>しばらくしてからもう一度お試しください。</value></data>
+  <data name="Mail.Title.Distributor" xml:space="preserve"><value>アイテム配布係</value></data>
+  <data name="Mail.Title.Inbox" xml:space="preserve"><value>メール · 受信箱</value></data>
+  <data name="Mail.Title.Message" xml:space="preserve"><value>メール · メッセージ</value></data>
+  <data name="Mail.Loading" xml:space="preserve"><value>読み込み中…</value></data>
+  <data name="Mail.ServerSilent" xml:space="preserve"><value>サーバーから応答がありません。</value></data>
+  <data name="Mail.AutoRefresh" xml:space="preserve"><value>自動更新</value></data>
+  <data name="Mail.Attachments" xml:space="preserve"><value>添付</value></data>
+  <data name="Mail.AttachmentsGold" xml:space="preserve"><value>添付 · {0} ゴールド</value></data>
+  <data name="Mail.Claimed" xml:space="preserve"><value>報酬を受け取りました</value></data>
+  <data name="Mail.Inbox" xml:space="preserve"><value>受信箱</value></data>
+  <data name="Mail.Wait" xml:space="preserve"><value>お待ちください…</value></data>
+  <data name="Mail.Claim" xml:space="preserve"><value>受け取る</value></data>
+  <data name="Mail.Previous" xml:space="preserve"><value>前へ</value></data>
+  <data name="Mail.Next" xml:space="preserve"><value>次へ</value></data>
+  <data name="Language.es" xml:space="preserve"><value>Español</value></data>
+  <data name="Language.fil" xml:space="preserve"><value>Filipino</value></data>
+  <data name="Language.vi" xml:space="preserve"><value>Tiếng Việt</value></data>
+  <data name="Language.zh-CN" xml:space="preserve"><value>中国語（簡体字）</value></data>
+  <data name="Language.ja" xml:space="preserve"><value>日本語</value></data>
+  <data name="Login.Account" xml:space="preserve"><value>アカウント</value></data>
+  <data name="Login.Failure.AlreadyLoggedIn" xml:space="preserve"><value>この接続ではすでにログインしています。</value></data>
+  <data name="Login.Failure.BadCredentials" xml:space="preserve"><value>アカウントまたはパスワードが正しくありません。</value></data>
+  <data name="Login.Failure.Busy" xml:space="preserve"><value>サーバーが混雑しています。しばらくしてからもう一度お試しください。</value></data>
+  <data name="Login.Failure.LoginDenied" xml:space="preserve"><value>このアカウントはブロックされています。</value></data>
+  <data name="Login.Failure.None" xml:space="preserve"><value>ログインに失敗しました。</value></data>
+  <data name="Login.Failure.OutdatedClient" xml:space="preserve"><value>このクライアントはサーバーが要求するバージョンより古いです。</value></data>
+  <data name="Login.Hint" xml:space="preserve"><value>ゲームサーバーに接続</value></data>
+  <data name="Login.LogIn" xml:space="preserve"><value>ログイン</value></data>
+  <data name="Login.Password" xml:space="preserve"><value>パスワード</value></data>
+  <data name="Login.Subtitle" xml:space="preserve"><value>ここから冒険が始まる</value></data>
+  <data name="Login.Unreachable" xml:space="preserve"><value>ゲームサーバーに接続できませんでした。</value></data>
+  <data name="Loot.Gold" xml:space="preserve"><value>{0} ゴールド</value></data>
+  <data name="Manufacture.Done" xml:space="preserve"><value>アイテムを製作しました。</value></data>
+  <data name="Manufacture.Failed" xml:space="preserve"><value>アイテムの製作に失敗しました。</value></data>
+  <data name="Manufacture.Random" xml:space="preserve"><value>ランダム</value></data>
+  <data name="Manufacture.RunesPlaced" xml:space="preserve"><value>ルーンを置いている間は、レシピを変更できません。</value></data>
+  <data name="Manufacture.WrongRune" xml:space="preserve"><value>この製作方法は正しくありません。</value></data>
+  <data name="Mix.Bonus.Absorb" xml:space="preserve"><value>吸収力 +{0}</value></data>
+  <data name="Mix.Bonus.AttackRating" xml:space="preserve"><value>命中力 +{0}</value></data>
+  <data name="Mix.Bonus.AttackSpeed" xml:space="preserve"><value>攻撃速度 +{0}</value></data>
+  <data name="Mix.Bonus.Block" xml:space="preserve"><value>ブロック率 +{0}%</value></data>
+  <data name="Mix.Bonus.Critical" xml:space="preserve"><value>クリティカル +{0}%</value></data>
+  <data name="Mix.Bonus.DamageMax" xml:space="preserve"><value>最大攻撃力 +{0}</value></data>
+  <data name="Mix.Bonus.DamageMin" xml:space="preserve"><value>最小攻撃力 +{0}</value></data>
+  <data name="Mix.Bonus.Defence" xml:space="preserve"><value>防御力 +{0}</value></data>
+  <data name="Mix.Bonus.Fire" xml:space="preserve"><value>火炎属性 +{0}</value></data>
+  <data name="Mix.Bonus.Ice" xml:space="preserve"><value>氷結属性 +{0}</value></data>
+  <data name="Mix.Bonus.Life" xml:space="preserve"><value>HP +{0}</value></data>
+  <data name="Mix.Bonus.LifeRegen" xml:space="preserve"><value>HP回復力 +{0}</value></data>
+  <data name="Mix.Bonus.Lightning" xml:space="preserve"><value>雷属性 +{0}</value></data>
+  <data name="Mix.Bonus.Mana" xml:space="preserve"><value>MP +{0}</value></data>
+  <data name="Mix.Bonus.ManaRegen" xml:space="preserve"><value>MP回復力 +{0}</value></data>
+  <data name="Mix.Bonus.MoveSpeed" xml:space="preserve"><value>移動速度 +{0}</value></data>
+  <data name="Mix.Bonus.Organic" xml:space="preserve"><value>有機属性 +{0}</value></data>
+  <data name="Mix.Bonus.Poison" xml:space="preserve"><value>毒属性 +{0}</value></data>
+  <data name="Mix.Bonus.Stamina" xml:space="preserve"><value>STM +{0}</value></data>
+  <data name="Mix.Bonus.StaminaRegen" xml:space="preserve"><value>STM回復力 +{0}</value></data>
+  <data name="Mix.CannotMix" xml:space="preserve"><value>このアイテムはミックスできません</value></data>
+  <data name="Mix.Failed" xml:space="preserve"><value>アイテムのミックスに失敗しました</value></data>
+  <data name="Mix.Reconstructed" xml:space="preserve"><value>アイテムを再構築しました。</value></data>
+  <data name="Mix.Refined" xml:space="preserve"><value>シェルトムがフォースオーブに精製されました。</value></data>
+  <data name="Mix.Result" xml:space="preserve"><value>アイテムミックス結果：{0}</value></data>
+  <data name="MixReset.CannotReset" xml:space="preserve"><value>リセットできるのはミックス済みのアイテムだけです。</value></data>
+  <data name="MixReset.Done" xml:space="preserve"><value>アイテムのミックスをリセットしました。</value></data>
+  <data name="MixReset.ItemFirst" xml:space="preserve"><value>先にミックス済みのアイテムを置いてください。</value></data>
+  <data name="Npc.Bought" xml:space="preserve"><value>購入しました。</value></data>
+  <data name="Npc.Destination" xml:space="preserve"><value>{0}  {1} ゴールド</value></data>
+  <data name="Npc.DestinationLevel" xml:space="preserve"><value>{0}  {1} ゴールド  (Lv {2})</value></data>
+  <data name="Npc.Repaired" xml:space="preserve"><value>修理しました。</value></data>
+  <data name="Npc.Sold" xml:space="preserve"><value>売却しました。</value></data>
+  <data name="Npc.Teleporting" xml:space="preserve"><value>テレポート中...</value></data>
+  <data name="Npc.WhereTo" xml:space="preserve"><value>どこへ行きますか？</value></data>
+  <data name="NpcService.Aging" xml:space="preserve"><value>エイジング</value></data>
+  <data name="NpcService.Alchemy" xml:space="preserve"><value>錬金術</value></data>
+  <data name="NpcService.BlessCastle" xml:space="preserve"><value>ブレスキャッスル</value></data>
+  <data name="NpcService.Broadcast" xml:space="preserve"><value>放送</value></data>
+  <data name="NpcService.Clan" xml:space="preserve"><value>クラン</value></data>
+  <data name="NpcService.Crafting" xml:space="preserve"><value>製作</value></data>
+  <data name="NpcService.DonationBox" xml:space="preserve"><value>寄付箱</value></data>
+  <data name="NpcService.Donations" xml:space="preserve"><value>寄付</value></data>
+  <data name="NpcService.Event" xml:space="preserve"><value>イベント</value></data>
+  <data name="NpcService.EventQuest" xml:space="preserve"><value>イベントクエスト</value></data>
+  <data name="NpcService.ItemDelivery" xml:space="preserve"><value>アイテム受け取り</value></data>
+  <data name="NpcService.Mixing" xml:space="preserve"><value>ミックス</value></data>
+  <data name="NpcService.MixtureReset" xml:space="preserve"><value>ミックスリセット</value></data>
+  <data name="NpcService.PrizeDraw" xml:space="preserve"><value>景品抽選</value></data>
+  <data name="NpcService.PuzzleExchange" xml:space="preserve"><value>パズル交換</value></data>
+  <data name="NpcService.Quest" xml:space="preserve"><value>クエスト</value></data>
+  <data name="NpcService.Service" xml:space="preserve"><value>サービス</value></data>
+  <data name="NpcService.Shop" xml:space="preserve"><value>ショップ</value></data>
+  <data name="NpcService.SkillMaster" xml:space="preserve"><value>スキル修練</value></data>
+  <data name="NpcService.Smelting" xml:space="preserve"><value>精錬</value></data>
+  <data name="NpcService.StarPoints" xml:space="preserve"><value>スターポイント</value></data>
+  <data name="NpcService.Survey" xml:space="preserve"><value>アンケート</value></data>
+  <data name="NpcService.Teleport" xml:space="preserve"><value>テレポート</value></data>
+  <data name="NpcService.Warehouse" xml:space="preserve"><value>倉庫</value></data>
+  <data name="NpcService.WarpGate" xml:space="preserve"><value>ワープゲート</value></data>
+  <data name="PersonalShop.BuyItem" xml:space="preserve"><value>アイテムを購入しますか？</value></data>
+  <data name="PersonalShop.CancelRegister" xml:space="preserve"><value>登録をキャンセルしますか？</value></data>
+  <data name="PersonalShop.NoRoom" xml:space="preserve"><value>ショップにこのアイテムを置く空きがありません</value></data>
+  <data name="PersonalShop.NothingToSell" xml:space="preserve"><value>販売できるアイテムはもうありません</value></data>
+  <data name="PersonalShop.OnSale" xml:space="preserve"><value>販売中</value></data>
+  <data name="PersonalShop.PriceValue" xml:space="preserve"><value>価格：{0}</value></data>
+  <data name="PersonalShop.Register" xml:space="preserve"><value>アイテムの金額を</value></data>
+  <data name="PersonalShop.Register2" xml:space="preserve"><value>登録しますか？</value></data>
+  <data name="PersonalShop.SignTitle" xml:space="preserve"><value>ショップ情報</value></data>
+  <data name="PersonalShop.TakeBack" xml:space="preserve"><value>クリック：取り戻す</value></data>
+  <data name="PersonalShop.UnitPrice" xml:space="preserve"><value>アイテムの</value></data>
+  <data name="PersonalShop.UnitPrice2" xml:space="preserve"><value>単価を設定しますか？</value></data>
+  <data name="PersonalShop.UnitPriceValue" xml:space="preserve"><value>単価：{0}</value></data>
+  <data name="Pet.Dismissed" xml:space="preserve"><value>ペットを解除しました</value></data>
+  <data name="Premium.ExperienceUp" xml:space="preserve"><value>EXP {0}% アップ</value></data>
+  <data name="Premium.FightsBeside" xml:space="preserve"><value>あなたのそばで戦う</value></data>
+  <data name="Premium.ManaRecharging" xml:space="preserve"><value>命中ごとにMP回復</value></data>
+  <data name="Premium.ManaReduce" xml:space="preserve"><value>MP消費を {0}% 軽減</value></data>
+  <data name="Premium.MightOfAwell" xml:space="preserve"><value>収納量を {0} 増加</value></data>
+  <data name="Premium.Mute" xml:space="preserve"><value>攻撃力 +10%</value></data>
+  <data name="Premium.Phoenix" xml:space="preserve"><value>EXP +20%、ドロップ率 +50%</value></data>
+  <data name="Premium.StaminaReduce" xml:space="preserve"><value>STM消費を {0}% 軽減</value></data>
+  <data name="Premium.ThirdEyes" xml:space="preserve"><value>追加ドロップ確率 {0}%</value></data>
+  <data name="Premium.Vampiric" xml:space="preserve"><value>命中ごとにHP回復</value></data>
+  <data name="Progression.ConnectionError" xml:space="preserve"><value>接続エラーです。再試行する前にキャラクターの状態を確認してください。</value></data>
+  <data name="Progression.Saved" xml:space="preserve"><value>保存しました</value></data>
+  <data name="Progression.Saving" xml:space="preserve"><value>保存中...</value></data>
+  <data name="Puzzle.Exchange" xml:space="preserve"><value>アイテムと交換しますか？</value></data>
+  <data name="Puzzle.Help" xml:space="preserve"><value>1つのパズルの8つのピースをインベントリの盤面に並べて、私のところへ持ってきてください。</value></data>
+  <data name="Puzzle.Title" xml:space="preserve"><value>完成したパズル</value></data>
+  <data name="Request.ConnectionError" xml:space="preserve"><value>接続エラーです。もう一度お試しください。</value></data>
+  <data name="Resource.Life" xml:space="preserve"><value>HP</value></data>
+  <data name="Resource.Mana" xml:space="preserve"><value>MP</value></data>
+  <data name="Resource.Stamina" xml:space="preserve"><value>STM</value></data>
+  <data name="Restart.Field" xml:space="preserve"><value> フィールドで再開しますか？</value></data>
+  <data name="Restart.NoExperience" xml:space="preserve"><value> EXPが足りないため</value></data>
+  <data name="Restart.NoExperience2" xml:space="preserve"><value> フィールドに留まれません</value></data>
+  <data name="Restart.Penalty" xml:space="preserve"><value> ペナルティ(ゴールド/EXP) 1%</value></data>
+  <data name="Restart.Quit" xml:space="preserve"><value> ゲームを終了しますか？</value></data>
+  <data name="Restart.Town" xml:space="preserve"><value> 町で再開しますか？</value></data>
+  <data name="Settings.AntiAliasing" xml:space="preserve"><value>アンチエイリアス：{0}</value></data>
+  <data name="Settings.AntiAliasingMsaa" xml:space="preserve"><value>アンチエイリアス：MSAA {0}x</value></data>
+  <data name="Settings.AntiAliasingOff" xml:space="preserve"><value>アンチエイリアス：オフ</value></data>
+  <data name="Settings.BackgroundFps" xml:space="preserve"><value>バックグラウンドFPS：{0}</value></data>
+  <data name="Settings.BackgroundFpsForeground" xml:space="preserve"><value>バックグラウンドFPS：前面時の上限</value></data>
+  <data name="Settings.Clouds" xml:space="preserve"><value>雲：{0}</value></data>
+  <data name="Settings.Clouds.High" xml:space="preserve"><value>高</value></data>
+  <data name="Settings.Clouds.Low" xml:space="preserve"><value>低</value></data>
+  <data name="Settings.Clouds.Medium" xml:space="preserve"><value>中</value></data>
+  <data name="Settings.Clouds.Off" xml:space="preserve"><value>オフ</value></data>
+  <data name="Settings.Frequency" xml:space="preserve"><value>リフレッシュレート：{0} Hz (0 = 自動)</value></data>
+  <data name="Settings.FrequencyDesktop" xml:space="preserve"><value>リフレッシュレート：デスクトップ</value></data>
+  <data name="Settings.Hint" xml:space="preserve"><value>クリック：次へ   Shift+クリック：前へ</value></data>
+  <data name="Settings.Language" xml:space="preserve"><value>言語：{0}</value></data>
+  <data name="Settings.MaxFps" xml:space="preserve"><value>最大FPS：{0}</value></data>
+  <data name="Settings.MaxFpsUnlimited" xml:space="preserve"><value>最大FPS：無制限</value></data>
+  <data name="Settings.Monitor" xml:space="preserve"><value>モニター：{0}</value></data>
+  <data name="Settings.MonitorCurrent" xml:space="preserve"><value>モニター：現在のもの</value></data>
+  <data name="Settings.MusicOff" xml:space="preserve"><value>BGM：オフ</value></data>
+  <data name="Settings.MusicOn" xml:space="preserve"><value>BGM：オン</value></data>
+  <data name="Settings.NamePlatesClassic" xml:space="preserve"><value>ネームプレート：クラシック</value></data>
+  <data name="Settings.NamePlatesCompact" xml:space="preserve"><value>ネームプレート：コンパクト</value></data>
+  <data name="Settings.NeedsAttention" xml:space="preserve"><value>設定に問題があります。クライアントログをご確認ください。</value></data>
+  <data name="Settings.Quality" xml:space="preserve"><value>グラフィック品質：{0}</value></data>
+  <data name="Settings.Quality.Custom" xml:space="preserve"><value>カスタム</value></data>
+  <data name="Settings.Quality.High" xml:space="preserve"><value>高</value></data>
+  <data name="Settings.Quality.Low" xml:space="preserve"><value>低</value></data>
+  <data name="Settings.Quality.Medium" xml:space="preserve"><value>中</value></data>
+  <data name="Settings.Quality.Ultra" xml:space="preserve"><value>最高</value></data>
+  <data name="Settings.Resolution" xml:space="preserve"><value>解像度：{0} x {1}</value></data>
+  <data name="Settings.ResolutionDesktop" xml:space="preserve"><value>解像度：デスクトップ</value></data>
+  <data name="Settings.ShadowAnimation" xml:space="preserve"><value>影のアニメーション：{0} Hz</value></data>
+  <data name="Settings.ShadowAnimationEveryFrame" xml:space="preserve"><value>影のアニメーション：毎フレーム</value></data>
+  <data name="Settings.ShadowsOff" xml:space="preserve"><value>影：オフ</value></data>
+  <data name="Settings.ShadowsOn" xml:space="preserve"><value>影：オン</value></data>
+  <data name="Settings.SkyClassic" xml:space="preserve"><value>空：クラシック</value></data>
+  <data name="Settings.SkyRealistic" xml:space="preserve"><value>空：リアル</value></data>
+  <data name="Settings.SoundOff" xml:space="preserve"><value>サウンド：オフ</value></data>
+  <data name="Settings.SoundOn" xml:space="preserve"><value>サウンド：オン</value></data>
+  <data name="Settings.SunShadow" xml:space="preserve"><value>太陽の影：{0}</value></data>
+  <data name="Settings.TargetHealthAlways" xml:space="preserve"><value>ターゲットHP：常に表示（割合つき）</value></data>
+  <data name="Settings.TargetHealthClassic" xml:space="preserve"><value>ターゲットHP：クラシック（最初の命中後）</value></data>
+  <data name="Settings.Title" xml:space="preserve"><value>設定</value></data>
+  <data name="Settings.VSyncOff" xml:space="preserve"><value>垂直同期：オフ</value></data>
+  <data name="Settings.VSyncOn" xml:space="preserve"><value>垂直同期：オン</value></data>
+  <data name="Settings.WeatherOff" xml:space="preserve"><value>天候：オフ</value></data>
+  <data name="Settings.WeatherOn" xml:space="preserve"><value>天候：オン</value></data>
+  <data name="Settings.Window" xml:space="preserve"><value>ウィンドウ：{0}</value></data>
+  <data name="Settings.WindowMode.Borderless" xml:space="preserve"><value>ボーダーレス</value></data>
+  <data name="Settings.WindowMode.Fullscreen" xml:space="preserve"><value>フルスクリーン</value></data>
+  <data name="Settings.WindowMode.Windowed" xml:space="preserve"><value>ウィンドウ</value></data>
+  <data name="Shop.ClickBuy" xml:space="preserve"><value>クリック：購入</value></data>
+  <data name="Shop.DoesNotBuy" xml:space="preserve"><value>このショップでは買い取りません</value></data>
+  <data name="Shop.Mobile" xml:space="preserve"><value>移動ショップ</value></data>
+  <data name="Shop.NotDamaged" xml:space="preserve"><value>損傷なし</value></data>
+  <data name="Shop.Price" xml:space="preserve"><value>価格：{0} ゴールド</value></data>
+  <data name="Shop.RepairCost" xml:space="preserve"><value>修理費：{0} ゴールド</value></data>
+  <data name="Shop.SellsFor" xml:space="preserve"><value>{0} ゴールドで売却</value></data>
+  <data name="Siege.Crystals" xml:space="preserve"><value>クリスタルタワー {0}/{1}</value></data>
+  <data name="Siege.DoorDown" xml:space="preserve"><value>城門が破壊された</value></data>
+  <data name="Siege.DoorStands" xml:space="preserve"><value>城門は健在</value></data>
+  <data name="Siege.Ended" xml:space="preserve"><value>ブレスキャッスルの攻城戦が終了しました。</value></data>
+  <data name="Siege.EndedText" xml:space="preserve"><value>まもなく、ブレスキャッスルを保持していないクランの全員が城のフィールドの入口へ戻されます。</value></data>
+  <data name="Siege.HeldBy" xml:space="preserve"><value>{0} が保持</value></data>
+  <data name="Siege.League" xml:space="preserve"><value>ブレスキャッスルリーグ</value></data>
+  <data name="Siege.NoOwner" xml:space="preserve"><value>城を保持しているクランはありません</value></data>
+  <data name="Siege.Title" xml:space="preserve"><value>ブレスキャッスル</value></data>
+  <data name="Siege.Won" xml:space="preserve"><value>あなたのクランがブレスキャッスルを保持しています！</value></data>
+  <data name="Siege.WonText" xml:space="preserve"><value>勝利おめでとうございます！次の攻城戦まで、城はあなたのクランのものです。クランマスターは城の執事のもとで税率とクランスキルを設定できます。</value></data>
+  <data name="Skill.AlreadyActive" xml:space="preserve"><value>その効果はまだ有効です。</value></data>
+  <data name="Skill.CannotUse" xml:space="preserve"><value>今はスキルを使用できません。</value></data>
+  <data name="Skill.InVillage" xml:space="preserve"><value>町ではスキルを使用できません。</value></data>
+  <data name="Skill.InvalidTarget" xml:space="preserve"><value>このスキルの有効なターゲットがいません。</value></data>
+  <data name="Skill.LearnFirst" xml:space="preserve"><value>先にスキルマスターでこのスキルを習得してください。</value></data>
+  <data name="Skill.NotEnoughMana" xml:space="preserve"><value>MPが足りません。</value></data>
+  <data name="Skill.NotEnoughStamina" xml:space="preserve"><value>STMが足りません。</value></data>
+  <data name="Skill.NotReady" xml:space="preserve"><value>スキルの準備がまだできていません。</value></data>
+  <data name="Skill.OutOfRange" xml:space="preserve"><value>ターゲットが射程外です。</value></data>
+  <data name="Skill.TargetAggressive" xml:space="preserve"><value>{0}：周囲のあらゆる敵を攻撃します。</value></data>
+  <data name="Skill.TargetFocused" xml:space="preserve"><value>{0}：ターゲットのみを攻撃します。</value></data>
+  <data name="Skill.WeaponNotAllowed" xml:space="preserve"><value>このスキルには別の武器が必要です。</value></data>
+  <data name="SkillInfo.Absorbs" xml:space="preserve"><value>ダメージの {0}% を {1} で吸収</value></data>
+  <data name="SkillInfo.AddingRate" xml:space="preserve"><value>追加率 {0}%</value></data>
+  <data name="SkillInfo.Allies" xml:space="preserve"><value>範囲 {0} 内の味方</value></data>
+  <data name="SkillInfo.AlliesShare" xml:space="preserve"><value>範囲 {0} 内の味方 ({1}%)</value></data>
+  <data name="SkillInfo.Area" xml:space="preserve"><value>範囲 {0}{1}</value></data>
+  <data name="SkillInfo.AreaBox" xml:space="preserve"><value>範囲 {0} x {1}{2}</value></data>
+  <data name="SkillInfo.AttackRating" xml:space="preserve"><value>命中力 {0}</value></data>
+  <data name="SkillInfo.AttackRatingPercent" xml:space="preserve"><value>命中力 {0}%</value></data>
+  <data name="SkillInfo.BroodBonus" xml:space="preserve"><value>{0} {1}%</value></data>
+  <data name="SkillInfo.ByRelatedRank" xml:space="preserve"><value>関連スキルのランクによる {0}</value></data>
+  <data name="SkillInfo.Chain" xml:space="preserve"><value>{0} の連鎖、{1} 番目</value></data>
+  <data name="SkillInfo.Charm" xml:space="preserve"><value>成功率 {0}%、HP {1}%</value></data>
+  <data name="SkillInfo.Critical" xml:space="preserve"><value>クリティカル {0}%</value></data>
+  <data name="SkillInfo.Damage" xml:space="preserve"><value>ダメージ {0}-{1}</value></data>
+  <data name="SkillInfo.DamageElement" xml:space="preserve"><value>{2} ダメージ {0}-{1}</value></data>
+  <data name="SkillInfo.DamagePercent" xml:space="preserve"><value>ダメージ {0}%</value></data>
+  <data name="SkillInfo.Drains" xml:space="preserve"><value>最大HPの {0}% を吸収</value></data>
+  <data name="SkillInfo.Duration" xml:space="preserve"><value>持続時間 {0} 秒</value></data>
+  <data name="SkillInfo.Enchant" xml:space="preserve"><value>{0} +{1}-{2}</value></data>
+  <data name="SkillInfo.Guard" xml:space="preserve"><value>{1} ダメージの {0}% をHPへ</value></data>
+  <data name="SkillInfo.GuardBlocked" xml:space="preserve"><value>ブロックした {1} ダメージの {0}% をHPへ</value></data>
+  <data name="SkillInfo.Heals" xml:space="preserve"><value>{0}-{1} 回復 (+ 武器 / 3、精神力)</value></data>
+  <data name="SkillInfo.Hits" xml:space="preserve"><value>{0} ヒット</value></data>
+  <data name="SkillInfo.PlusLevel" xml:space="preserve"><value>{0} + レベル/{1}</value></data>
+  <data name="SkillInfo.Range" xml:space="preserve"><value>射程 {0}</value></data>
+  <data name="SkillInfo.RangeAdded" xml:space="preserve"><value>射程 +{0}</value></data>
+  <data name="SkillInfo.Reflects" xml:space="preserve"><value>{1} 攻撃の {0}% を反射</value></data>
+  <data name="SkillInfo.Revive" xml:space="preserve"><value>蘇生確率 {0}%、HP {1}%</value></data>
+  <data name="SkillInfo.ShareChance" xml:space="preserve"><value>{0}% の確率：HPの {1}%</value></data>
+  <data name="SkillInfo.Shots" xml:space="preserve"><value>{0} 発</value></data>
+  <data name="SkillInfo.Sparks" xml:space="preserve"><value>最大 {0} 個のスパーク</value></data>
+  <data name="SkillInfo.StrikesEvery" xml:space="preserve"><value>{0} 秒ごとに攻撃</value></data>
+  <data name="SkillInfo.Summon" xml:space="preserve"><value>{0}：ダメージ {1}-{2}、HP {3}</value></data>
+  <data name="SkillInfo.Targets" xml:space="preserve"><value>、{0} 体</value></data>
+  <data name="SkillWindow.AnyWeapon" xml:space="preserve"><value>任意の武器</value></data>
+  <data name="SkillWindow.BasicAttack" xml:space="preserve"><value>通常攻撃</value></data>
+  <data name="SkillWindow.BasicAttackBind" xml:space="preserve"><value>ボタンを押したまま F1-F8 で登録。</value></data>
+  <data name="SkillWindow.BasicAttackSelect" xml:space="preserve"><value>左または右クリックを離して選択。</value></data>
+  <data name="SkillWindow.Cost" xml:space="preserve"><value>ランク {0}: MP {1} | SP {2}</value></data>
+  <data name="SkillWindow.EitherMouse" xml:space="preserve"><value>左右どちらのマウス</value></data>
+  <data name="SkillWindow.ElitePoints" xml:space="preserve"><value>エリートスキルポイント : {0}</value></data>
+  <data name="SkillWindow.Equipment" xml:space="preserve"><value>装備：{0}</value></data>
+  <data name="SkillWindow.Learned" xml:space="preserve"><value>習得ランク {0} / {1}</value></data>
+  <data name="SkillWindow.LeftMouse" xml:space="preserve"><value>左マウス</value></data>
+  <data name="SkillWindow.Level" xml:space="preserve"><value>Lv {0}</value></data>
+  <data name="SkillWindow.NoCost" xml:space="preserve"><value>発動コストなし</value></data>
+  <data name="SkillWindow.NoPoints" xml:space="preserve"><value>スキルポイントが足りません</value></data>
+  <data name="SkillWindow.NoPoints2" xml:space="preserve"><value>習得または修練できません</value></data>
+  <data name="SkillWindow.OnlyLeft" xml:space="preserve"><value>{0} はマウスの左ボタンでのみ使用できます。</value></data>
+  <data name="SkillWindow.OnlyRight" xml:space="preserve"><value>{0} はマウスの右ボタンでのみ使用できます。</value></data>
+  <data name="SkillWindow.Passive" xml:space="preserve"><value> | パッシブ</value></data>
+  <data name="SkillWindow.PassiveSkill" xml:space="preserve"><value>パッシブスキル</value></data>
+  <data name="SkillWindow.PlaceHint" xml:space="preserve"><value> | クリックでマウススロットに配置、押したまま F1-F8 で登録</value></data>
+  <data name="SkillWindow.Recharge" xml:space="preserve"><value> | 再使用 {0} 秒</value></data>
+  <data name="SkillWindow.RightMouse" xml:space="preserve"><value>右マウス</value></data>
+  <data name="SkillWindow.SelectSkill" xml:space="preserve"><value>スキルまたは魔法を選択</value></data>
+  <data name="SkillWindow.SkillPoints" xml:space="preserve"><value>スキルポイント : {0}</value></data>
+  <data name="SkillWindow.ToLearn" xml:space="preserve"><value>習得または修練</value></data>
+  <data name="SkillWindow.TrainPrice" xml:space="preserve"><value>ランク {0}: {1} ゴールド</value></data>
+  <data name="SkillWindow.TrainTitle" xml:space="preserve"><value>スキル/魔法の修練</value></data>
+  <data name="SkillWindow.Unavailable" xml:space="preserve"><value>このバージョンでは利用できません</value></data>
+  <data name="SkillWindow.Unlearned" xml:space="preserve"><value>未習得 | ランク1のプレビュー</value></data>
+  <data name="Smelt.CannotSmelt" xml:space="preserve"><value>精錬できるのは、同じ種類の鉱石またはクリスタル3個と、そのシェルトムだけです。</value></data>
+  <data name="Smelt.Done" xml:space="preserve"><value>精錬が完了しました。</value></data>
+  <data name="Smelt.Failed" xml:space="preserve"><value>アイテムの精錬に失敗しました。</value></data>
+  <data name="Smelt.NotSame" xml:space="preserve"><value>同じ種類の鉱石またはクリスタルではありません。</value></data>
+  <data name="Stat.Absorption" xml:space="preserve"><value>吸収力</value></data>
+  <data name="Stat.AbsorptionVsUndead" xml:space="preserve"><value>アンデッドへの吸収力</value></data>
+  <data name="Stat.Agility" xml:space="preserve"><value>敏捷性</value></data>
+  <data name="Stat.ArmorDefence" xml:space="preserve"><value>アーマー防御力</value></data>
+  <data name="Stat.AttackMotionSpeed" xml:space="preserve"><value>攻撃モーション速度</value></data>
+  <data name="Stat.AttackRange" xml:space="preserve"><value>射程</value></data>
+  <data name="Stat.AttackRating" xml:space="preserve"><value>命中力</value></data>
+  <data name="Stat.AttackSpeed" xml:space="preserve"><value>攻撃速度</value></data>
+  <data name="Stat.BlockChance" xml:space="preserve"><value>ブロック率</value></data>
+  <data name="Stat.CompanionDamage" xml:space="preserve"><value>仲間のダメージ</value></data>
+  <data name="Stat.CriticalChance" xml:space="preserve"><value>クリティカル率</value></data>
+  <data name="Stat.CriticalChanceTaken" xml:space="preserve"><value>被クリティカル率</value></data>
+  <data name="Stat.CriticalDamage" xml:space="preserve"><value>クリティカルダメージ</value></data>
+  <data name="Stat.DamageDealt" xml:space="preserve"><value>与ダメージ</value></data>
+  <data name="Stat.DamageMax" xml:space="preserve"><value>最大ダメージ</value></data>
+  <data name="Stat.DamageMin" xml:space="preserve"><value>最小ダメージ</value></data>
+  <data name="Stat.DamageTaken" xml:space="preserve"><value>被ダメージ</value></data>
+  <data name="Stat.DamageVsUndead" xml:space="preserve"><value>アンデッドへのダメージ</value></data>
+  <data name="Stat.Defence" xml:space="preserve"><value>防御力</value></data>
+  <data name="Stat.Evasion" xml:space="preserve"><value>回避</value></data>
+  <data name="Stat.ForceOrbDamage" xml:space="preserve"><value>フォースオーブ威力</value></data>
+  <data name="Stat.HealingTaken" xml:space="preserve"><value>被回復量</value></data>
+  <data name="Stat.HitDamage" xml:space="preserve"><value>ヒットダメージ</value></data>
+  <data name="Stat.HitDamageMax" xml:space="preserve"><value>最大ヒットダメージ</value></data>
+  <data name="Stat.HitDamageMin" xml:space="preserve"><value>最小ヒットダメージ</value></data>
+  <data name="Stat.LifeCostPerAttack" xml:space="preserve"><value>攻撃ごとのHP消費</value></data>
+  <data name="Stat.LifeLeech" xml:space="preserve"><value>HP吸収</value></data>
+  <data name="Stat.LifeRegen" xml:space="preserve"><value>HP回復 (毎秒1/10)</value></data>
+  <data name="Stat.ManaLeech" xml:space="preserve"><value>MP吸収</value></data>
+  <data name="Stat.ManaRegen" xml:space="preserve"><value>MP回復 (毎秒1/10)</value></data>
+  <data name="Stat.MaxLife" xml:space="preserve"><value>最大HP</value></data>
+  <data name="Stat.MaxMana" xml:space="preserve"><value>最大MP</value></data>
+  <data name="Stat.MaxStamina" xml:space="preserve"><value>最大STM</value></data>
+  <data name="Stat.MonsterSight" xml:space="preserve"><value>モンスターの視野</value></data>
+  <data name="Stat.MoveSpeed" xml:space="preserve"><value>速度</value></data>
+  <data name="Stat.MoveSpeedUnbound" xml:space="preserve"><value>制限なし速度</value></data>
+  <data name="Stat.NextHitDamage" xml:space="preserve"><value>次のヒットのダメージ</value></data>
+  <data name="Stat.NormalAttackWeaponDamage" xml:space="preserve"><value>通常攻撃の武器ダメージ</value></data>
+  <data name="Stat.NormalAttackWeaponMax" xml:space="preserve"><value>通常攻撃の武器最大値</value></data>
+  <data name="Stat.ResistAll" xml:space="preserve"><value>全属性耐性</value></data>
+  <data name="Stat.ResistBionic" xml:space="preserve"><value>有機耐性</value></data>
+  <data name="Stat.ResistEarth" xml:space="preserve"><value>地耐性</value></data>
+  <data name="Stat.ResistFire" xml:space="preserve"><value>火耐性</value></data>
+  <data name="Stat.ResistIce" xml:space="preserve"><value>氷耐性</value></data>
+  <data name="Stat.ResistLightning" xml:space="preserve"><value>雷耐性</value></data>
+  <data name="Stat.ResistPoison" xml:space="preserve"><value>毒耐性</value></data>
+  <data name="Stat.ResistWater" xml:space="preserve"><value>水耐性</value></data>
+  <data name="Stat.ResistWind" xml:space="preserve"><value>風耐性</value></data>
+  <data name="Stat.SkillDamageTaken" xml:space="preserve"><value>被スキルダメージ</value></data>
+  <data name="Stat.SkillManaCost" xml:space="preserve"><value>スキルのMP消費</value></data>
+  <data name="Stat.SpellDamage" xml:space="preserve"><value>魔法威力</value></data>
+  <data name="Stat.SpellPower" xml:space="preserve"><value>魔法ダメージ</value></data>
+  <data name="Stat.Spirit" xml:space="preserve"><value>精神力</value></data>
+  <data name="Stat.StaminaRegen" xml:space="preserve"><value>STM回復</value></data>
+  <data name="Stat.Strength" xml:space="preserve"><value>筋力</value></data>
+  <data name="Stat.WeaponDamagePercent" xml:space="preserve"><value>武器ダメージ</value></data>
+  <data name="Status.CharacterSelect" xml:space="preserve"><value>キャラクター選択</value></data>
+  <data name="Status.CrystalPet" xml:space="preserve"><value>戦闘であなたを支援する召喚ペット</value></data>
+  <data name="Status.LifeBooster" xml:space="preserve"><value>ライフが{0}%上昇します</value></data>
+  <data name="Status.Loading" xml:space="preserve"><value>読み込み中…</value></data>
+  <data name="Status.ManaBooster" xml:space="preserve"><value>マナが{0}%上昇します</value></data>
+  <data name="Status.Opening" xml:space="preserve"><value>開いています：{0}</value></data>
+  <data name="Status.SavingAndDisconnecting" xml:space="preserve"><value>保存して切断しています…</value></data>
+  <data name="Status.SkillDelay" xml:space="preserve"><value>スキルの再使用まで0.5秒かかります</value></data>
+  <data name="Status.StaminaBooster" xml:space="preserve"><value>スタミナが{0}%上昇します</value></data>
+  <data name="TeleportCore.Page" xml:space="preserve"><value>[テレポートコア - {0}ページ]</value></data>
+  <data name="TeleportCore.Row" xml:space="preserve"><value>{0}. {1} (Lv {2})</value></data>
+  <data name="TeleportCore.Title" xml:space="preserve"><value>テレポート</value></data>
+  <data name="Time.Days" xml:space="preserve"><value>{0}日</value></data>
+  <data name="Time.Hours" xml:space="preserve"><value>{0}時間</value></data>
+  <data name="Time.OneDay" xml:space="preserve"><value>1日</value></data>
+  <data name="Time.OneHour" xml:space="preserve"><value>1時間</value></data>
+  <data name="Time.Seconds" xml:space="preserve"><value>{0}秒</value></data>
+  <data name="Trade.Gold" xml:space="preserve"><value>取引しませんか？</value></data>
+  <data name="Tutorial.Ok" xml:space="preserve"><value>わかった</value></data>
+  <data name="Tutorial.Off" xml:space="preserve"><value>ヒントをオフにする</value></data>
+  <data name="Tutorial.Move.Title" xml:space="preserve"><value>移動</value></data>
+  <data name="Tutorial.Move.Text" xml:space="preserve"><value>地面をクリックするとそこへ歩きます。ボタンを押し続けるとカーソルについていきます。地面をダブルクリックすると歩き続けます。</value></data>
+  <data name="Tutorial.Attack.Title" xml:space="preserve"><value>攻撃</value></data>
+  <data name="Tutorial.Attack.Text" xml:space="preserve"><value>モンスターをクリックすると攻撃します。Shift + クリックで、ほかの場所をクリックするまで攻撃し続けます。</value></data>
+  <data name="Tutorial.Inventory.Title" xml:space="preserve"><value>インベントリ</value></data>
+  <data name="Tutorial.Inventory.Text" xml:space="preserve"><value>{0}キーでインベントリを開きます。アイテム、装備、ゴールドを確認できます。</value></data>
+  <data name="Tutorial.Character.Title" xml:space="preserve"><value>キャラクター</value></data>
+  <data name="Tutorial.Character.Text" xml:space="preserve"><value>{0}キーで能力値を確認し、レベルアップで得たポイントを割り振れます。</value></data>
+  <data name="Tutorial.Skills.Title" xml:space="preserve"><value>スキル</value></data>
+  <data name="Tutorial.Skills.Text" xml:space="preserve"><value>{0}キーでスキルを開きます。スキルをクリックしたまま{1}～{2}キーを押すと、ショートカットに登録できます。</value></data>
+  <data name="Tutorial.Potions.Title" xml:space="preserve"><value>ポーション</value></data>
+  <data name="Tutorial.Potions.Text" xml:space="preserve"><value>ベルトのポーションは{0}、{1}、{2}キーで使用します。</value></data>
+  <data name="Tutorial.Chat.Title" xml:space="preserve"><value>チャット</value></data>
+  <data name="Tutorial.Chat.Text" xml:space="preserve"><value>Enterキーでチャットに入力し、もう一度Enterキーで送信します。</value></data>
+  <data name="Tutorial.Settings.Title" xml:space="preserve"><value>設定</value></data>
+  <data name="Tutorial.Settings.Text" xml:space="preserve"><value>{0}キーで設定を開きます。「キー」タブでショートカットを変更できます。</value></data>
+  <data name="Usable.AgingArmlet" xml:space="preserve"><value>アームレット</value></data>
+  <data name="Usable.AgingArmor" xml:space="preserve"><value>アーマーまたはローブ</value></data>
+  <data name="Usable.AgingBoots" xml:space="preserve"><value>ブーツ</value></data>
+  <data name="Usable.AgingGloves" xml:space="preserve"><value>グローブ</value></data>
+  <data name="Usable.AgingShield" xml:space="preserve"><value>シールドまたはオーブ</value></data>
+  <data name="Usable.AgingWeapon" xml:space="preserve"><value>武器</value></data>
+  <data name="Usable.BigHead" xml:space="preserve"><value>{0}分間、頭が大きくなります。</value></data>
+  <data name="Usable.CastleOnly" xml:space="preserve"><value>ブレスキャッスル専用</value></data>
+  <data name="Usable.ClanOnly" xml:space="preserve"><value>クランメンバー専用</value></data>
+  <data name="Usable.ClanPet" xml:space="preserve"><value>クランのために{0}を召喚します。</value></data>
+  <data name="Usable.ClanTeleport" xml:space="preserve"><value>クランメンバーのもとへテレポート</value></data>
+  <data name="Usable.CriticalScroll" xml:space="preserve"><value>クリティカル攻撃の確率が{0}%</value></data>
+  <data name="Usable.CriticalScroll2" xml:space="preserve"><value>上昇します。</value></data>
+  <data name="Usable.Duration" xml:space="preserve"><value>持続時間：{0}</value></data>
+  <data name="Usable.EvasionScroll" xml:space="preserve"><value>回避の確率が{0}%</value></data>
+  <data name="Usable.EvasionScroll2" xml:space="preserve"><value>上昇します。</value></data>
+  <data name="Usable.FemaleOnly" xml:space="preserve"><value>女性キャラクター専用</value></data>
+  <data name="Usable.Fireworks" xml:space="preserve"><value>花火があなたの周りの空を照らします。</value></data>
+  <data name="Usable.Gift" xml:space="preserve"><value>開けるとギフトを受け取れます。</value></data>
+  <data name="Usable.Gravity" xml:space="preserve"><value>所持可能重量 +{0}</value></data>
+  <data name="Usable.GravityUses" xml:space="preserve"><value>(最大{0}回使用可能)</value></data>
+  <data name="Usable.Hair" xml:space="preserve"><value>髪型をタイプ{0}に変更します。</value></data>
+  <data name="Usable.Invulnerability" xml:space="preserve"><value>設定時間のあいだ無敵になります。</value></data>
+  <data name="Usable.Invulnerability2" xml:space="preserve"><value>攻撃力が1/2に低下します。</value></data>
+  <data name="Usable.LevelFrom" xml:space="preserve"><value>必要レベル：{0}以上</value></data>
+  <data name="Usable.LevelRange" xml:space="preserve"><value>必要レベル：{0}～{1}</value></data>
+  <data name="Usable.MaleOnly" xml:space="preserve"><value>男性キャラクター専用</value></data>
+  <data name="Usable.Mature" xml:space="preserve"><value>装備中のエイジング済み{0}を熟成させます。</value></data>
+  <data name="Usable.Mercenary" xml:space="preserve"><value>{0}を召喚して</value></data>
+  <data name="Usable.Mercenary2" xml:space="preserve"><value>攻城戦中に城を守らせます。</value></data>
+  <data name="Usable.Merchant" xml:space="preserve"><value>買取と修理ができるショップを開きます。</value></data>
+  <data name="Usable.OrbDamage" xml:space="preserve"><value>AddedATKPOWER：{0}</value></data>
+  <data name="Usable.OrbPercent" xml:space="preserve"><value>AddATKPOWER%：{0}%</value></data>
+  <data name="Usable.Pet" xml:space="preserve"><value>{0}を召喚してあなたのために戦わせます</value></data>
+  <data name="Usable.Pet2" xml:space="preserve"><value>{0}分間。レベルが高いほど長くなります。</value></data>
+  <data name="Usable.PuzzleBag" xml:space="preserve"><value>{0}ゴールドで中のパズルピースを確認します。</value></data>
+  <data name="Usable.PuzzleBoard" xml:space="preserve"><value>セットをパズルボードに並べます。</value></data>
+  <data name="Usable.PuzzlePiece" xml:space="preserve"><value>パズルピース {0}/{1}</value></data>
+  <data name="Usable.Recall" xml:space="preserve"><value>{0}へ帰還</value></data>
+  <data name="Usable.Redistributed" xml:space="preserve"><value>再分配できる状態にします。</value></data>
+  <data name="Usable.ResetAttribute" xml:space="preserve"><value>{0}を初期値に戻し</value></data>
+  <data name="Usable.ResetAttribute2" xml:space="preserve"><value>ステータスポイントを返還します。</value></data>
+  <data name="Usable.ResetBoth" xml:space="preserve"><value>ステータス/スキルポイントを</value></data>
+  <data name="Usable.ResetSkills" xml:space="preserve"><value>スキルポイントを</value></data>
+  <data name="Usable.ResetStats" xml:space="preserve"><value>ステータスポイントを</value></data>
+  <data name="Usable.Restoration" xml:space="preserve"><value>倒れた場所で復活します</value></data>
+  <data name="Usable.Restoration2" xml:space="preserve"><value>城内で死亡してから{0}秒後。</value></data>
+  <data name="Usable.Restores" xml:space="preserve"><value>ライフ、マナ、スタミナを回復します。</value></data>
+  <data name="Usable.SoccerHead" xml:space="preserve"><value>{0}のあいだ、頭がサッカーボールになります。</value></data>
+  <data name="Usable.SoulStone" xml:space="preserve"><value>{0}分間、敵対的な魂を解き放ちます。</value></data>
+  <data name="Usable.TeleportCore" xml:space="preserve"><value>選んだフィールドへテレポートします。</value></data>
+  <data name="Usable.TrainTier" xml:space="preserve"><value>クラスティア{0}のスキルを完全に修練します。</value></data>
+  <data name="Usable.UnionCoreName" xml:space="preserve"><value>名前：{0}</value></data>
+  <data name="Usable.VirtualLife" xml:space="preserve"><value>バーチャルライフ Lv {0}</value></data>
+  <data name="WingGate.MoveThere" xml:space="preserve"><value>移動しますか？</value></data>
+  <data name="WingGate.Title" xml:space="preserve"><value>ワープゲート</value></data>
+  <data name="Workbench.TakeBack" xml:space="preserve"><value>右クリック：取り戻す</value></data>
+  <data name="Status.EnteringWorld" xml:space="preserve"><value>ワールドに入っています…</value></data>
+  <data name="CharSelect.Title.Characters" xml:space="preserve"><value>キャラクター</value></data>
+  <data name="CharSelect.Title.Tribe" xml:space="preserve"><value>種族</value></data>
+  <data name="CharSelect.Title.Class" xml:space="preserve"><value>クラス</value></data>
+  <data name="CharSelect.Title.Face" xml:space="preserve"><value>顔</value></data>
+  <data name="CharSelect.NewCharacter" xml:space="preserve"><value>キャラクター作成</value></data>
+  <data name="CharSelect.Button.Create" xml:space="preserve"><value>作成</value></data>
+  <data name="CharSelect.Button.Select" xml:space="preserve"><value>選択</value></data>
+  <data name="CharSelect.Button.Exit" xml:space="preserve"><value>終了</value></data>
+  <data name="CharSelect.Button.Back" xml:space="preserve"><value>戻る</value></data>
+  <data name="CharSelect.Button.Delete" xml:space="preserve"><value>削除</value></data>
+  <data name="Chat.Tab.All" xml:space="preserve"><value>全体</value></data>
+  <data name="Chat.Tab.Clan" xml:space="preserve"><value>クラン</value></data>
+  <data name="Chat.Tab.Party" xml:space="preserve"><value>パーティー</value></data>
+  <data name="Chat.Tab.Trade" xml:space="preserve"><value>取引</value></data>
+  <data name="Chat.Tab.Whisper" xml:space="preserve"><value>ささやき</value></data>
+  <data name="Chat.Alert" xml:space="preserve"><value>警告</value></data>
+  <data name="ServerSelect.Title" xml:space="preserve"><value>サーバー</value></data>
+  <data name="ServerSelect.Hint" xml:space="preserve"><value>矢印：選択   Enter：接続   Esc：戻る</value></data>
+  <data name="GlobalBonuses.Title" xml:space="preserve"><value>全体ボーナス</value></data>
+  <data name="GlobalBonuses.ExpRate" xml:space="preserve"><value>EXP倍率</value></data>
+  <data name="GlobalBonuses.ExpEvent" xml:space="preserve"><value>EXPイベント</value></data>
+  <data name="GlobalBonuses.AgingCost" xml:space="preserve"><value>エイジング費用</value></data>
+  <data name="GlobalBonuses.MixCost" xml:space="preserve"><value>ミックス費用</value></data>
+  <data name="GlobalBonuses.Contacting" xml:space="preserve"><value>サーバーに接続しています...</value></data>
+  <data name="Rewards.UpdateFailed" xml:space="preserve"><value>報酬を更新できませんでした。</value></data>
+  <data name="Rewards.Title" xml:space="preserve"><value>イベントと報酬</value></data>
+  <data name="Rewards.Claim" xml:space="preserve"><value>受け取る ({0})</value></data>
+  <data name="RecentDrops.Title" xml:space="preserve"><value>最近見たドロップ</value></data>
+  <data name="RecentDrops.None" xml:space="preserve"><value>このセッションで見たアイテムはありません。</value></data>
+  <data name="ShopDirectory.Title" xml:space="preserve"><value>プレイヤーショップ</value></data>
+  <data name="ShopDirectory.None" xml:space="preserve"><value>視界内にショップはありません。</value></data>
+  <data name="Premium.BuffActivated" xml:space="preserve"><value>プレミアムバフが発動しました。</value></data>
+  <data name="Hud.ExpGained" xml:space="preserve"><value>獲得EXP：{0:N0}</value></data>
+  <data name="QuickMenu.Calendar" xml:space="preserve"><value>カレンダー</value></data>
+  <data name="QuickMenu.Auction" xml:space="preserve"><value>オークション</value></data>
+  <data name="QuickMenu.Security" xml:space="preserve"><value>セキュリティ</value></data>
+  <data name="QuickMenu.RecentDrops" xml:space="preserve"><value>最近のドロップ</value></data>
+  <data name="QuickMenu.CoinHistory" xml:space="preserve"><value>コイン履歴</value></data>
+  <data name="QuickMenu.Events" xml:space="preserve"><value>イベント</value></data>
+  <data name="QuickMenu.Eragon" xml:space="preserve"><value>Eragon</value></data>
+  <data name="QuickMenu.Rankings" xml:space="preserve"><value>ランキング</value></data>
+  <data name="QuickMenu.Distributor" xml:space="preserve"><value>アイテム配布所</value></data>
+  <data name="QuickMenu.ItemShop" xml:space="preserve"><value>アイテムショップ</value></data>
+  <data name="QuickMenu.Mail" xml:space="preserve"><value>メール</value></data>
+  <data name="QuickMenu.AutoHuntNeedsQuest" xml:space="preserve"><value>オート狩りには、街の外で進行中の狩猟クエストが必要です。</value></data>
+  <data name="QuickMenu.News" xml:space="preserve"><value>お知らせ &amp; サポート</value></data>
+  <data name="QuickMenu.AutoHunt" xml:space="preserve"><value>オート狩り</value></data>
+  <data name="QuickMenu.MoreOpen" xml:space="preserve"><value>その他  ^</value></data>
+  <data name="QuickMenu.MoreClosed" xml:space="preserve"><value>その他  v</value></data>
+  <data name="QuickMenu.Quests" xml:space="preserve"><value>クエスト</value></data>
+  <data name="SystemMenu.Help" xml:space="preserve"><value>ヘルプ</value></data>
+  <data name="SystemMenu.Quit" xml:space="preserve"><value>ゲーム終了</value></data>
+  <data name="LootFilter.LifePotions" xml:space="preserve"><value>ライフポーション</value></data>
+  <data name="LootFilter.ManaPotions" xml:space="preserve"><value>マナポーション</value></data>
+  <data name="LootFilter.StaminaPotions" xml:space="preserve"><value>スタミナポーション</value></data>
+  <data name="LootFilter.Armor" xml:space="preserve"><value>アーマーとローブ</value></data>
+  <data name="LootFilter.Shields" xml:space="preserve"><value>シールド</value></data>
+  <data name="LootFilter.Boots" xml:space="preserve"><value>ブーツ</value></data>
+  <data name="LootFilter.Gloves" xml:space="preserve"><value>グローブ</value></data>
+  <data name="LootFilter.Bracelets" xml:space="preserve"><value>ブレスレットとオーブ</value></data>
+  <data name="LootFilter.Amulets" xml:space="preserve"><value>アミュレット</value></data>
+  <data name="LootFilter.Rings" xml:space="preserve"><value>リング</value></data>
+  <data name="LootFilter.Sheltoms" xml:space="preserve"><value>シェルトム</value></data>
+  <data name="LootFilter.ForceOrbs" xml:space="preserve"><value>フォースオーブ</value></data>
+  <data name="LootFilter.Other" xml:space="preserve"><value>その他のアイテム</value></data>
+  <data name="LootFilter.Crystals" xml:space="preserve"><value>召喚クリスタル</value></data>
+  <data name="LootFilter.Cores" xml:space="preserve"><value>コア</value></data>
+  <data name="LootFilter.Job.Mechanician" xml:space="preserve"><value>メカニシャン</value></data>
+  <data name="LootFilter.Job.Fighter" xml:space="preserve"><value>ファイター</value></data>
+  <data name="LootFilter.Job.Pikeman" xml:space="preserve"><value>パイクマン</value></data>
+  <data name="LootFilter.Job.Archer" xml:space="preserve"><value>アーチャー</value></data>
+  <data name="LootFilter.Job.Knight" xml:space="preserve"><value>ナイト</value></data>
+  <data name="LootFilter.Job.Atalanta" xml:space="preserve"><value>アタランタ</value></data>
+  <data name="LootFilter.Job.Priestess" xml:space="preserve"><value>プリエステス</value></data>
+  <data name="LootFilter.Job.Magician" xml:space="preserve"><value>マジシャン</value></data>
+  <data name="LootFilter.Job.Assassin" xml:space="preserve"><value>アサシン</value></data>
+  <data name="LootFilter.Job.MartialArtist" xml:space="preserve"><value>マーシャルアーティスト</value></data>
+  <data name="LootFilter.Job.Shaman" xml:space="preserve"><value>シャーマン</value></data>
+  <data name="Settings.Tab.Video" xml:space="preserve"><value>映像</value></data>
+  <data name="Settings.Tab.Audio" xml:space="preserve"><value>音声</value></data>
+  <data name="Settings.Tab.Keys" xml:space="preserve"><value>キー</value></data>
+  <data name="Settings.Tab.Other" xml:space="preserve"><value>その他</value></data>
+  <data name="Settings.Voice.Nearby" xml:space="preserve"><value>近くの人</value></data>
+  <data name="Settings.Voice.Party" xml:space="preserve"><value>パーティー</value></data>
+  <data name="Settings.Voice.Clan" xml:space="preserve"><value>クラン</value></data>
+  <data name="Settings.Voice.Map" xml:space="preserve"><value>マップ内の全員</value></data>
+  <data name="Shortcut.Inventory" xml:space="preserve"><value>インベントリ</value></data>
+  <data name="Shortcut.Character" xml:space="preserve"><value>キャラクター</value></data>
+  <data name="Shortcut.Skills" xml:space="preserve"><value>スキル</value></data>
+  <data name="Shortcut.Quests" xml:space="preserve"><value>クエスト</value></data>
+  <data name="Shortcut.Social" xml:space="preserve"><value>ソーシャル</value></data>
+  <data name="Shortcut.SystemMenu" xml:space="preserve"><value>システムメニュー</value></data>
+  <data name="Shortcut.RunWalk" xml:space="preserve"><value>走る / 歩く</value></data>
+  <data name="Shortcut.Settings" xml:space="preserve"><value>設定</value></data>
+  <data name="Shortcut.SwitchBag" xml:space="preserve"><value>バッグ切替 (A/B)</value></data>
+  <data name="Shortcut.SwitchWeapons" xml:space="preserve"><value>武器セット切替</value></data>
+  <data name="Shortcut.BeltPotion" xml:space="preserve"><value>ベルトポーション {0}</value></data>
+  <data name="Shortcut.Skill" xml:space="preserve"><value>スキルショートカット {0}</value></data>
+  <data name="Shortcut.Minimap" xml:space="preserve"><value>ミニマップ</value></data>
+  <data name="Shortcut.News" xml:space="preserve"><value>お知らせ</value></data>
+  <data name="Shortcut.GroundNames" xml:space="preserve"><value>地面のアイテム名</value></data>
+  <data name="Shortcut.RotateLeft" xml:space="preserve"><value>カメラを左に回転</value></data>
+  <data name="Shortcut.RotateRight" xml:space="preserve"><value>カメラを右に回転</value></data>
+  <data name="Shortcut.ZoomIn" xml:space="preserve"><value>ズームイン</value></data>
+  <data name="Shortcut.ZoomOut" xml:space="preserve"><value>ズームアウト</value></data>
+  <data name="Shortcut.TiltUp" xml:space="preserve"><value>カメラを上に傾ける</value></data>
+  <data name="Shortcut.TiltDown" xml:space="preserve"><value>カメラを下に傾ける</value></data>
+  <data name="Shortcut.ActionBar" xml:space="preserve"><value>アクションバー：スロット{0}</value></data>
+  <data name="Shortcut.PushToTalk" xml:space="preserve"><value>プッシュトゥトーク</value></data>
+  <data name="Shortcut.HideHud" xml:space="preserve"><value>HUD全体を非表示 (スクリーンショット用)</value></data>
+  <data name="Shortcut.PersistentInfo" xml:space="preserve"><value>キャラクター情報の常時表示</value></data>
+  <data name="Shortcut.DungeonCamera" xml:space="preserve"><value>2D / 3Dダンジョンカメラ</value></data>
+  <data name="Shortcut.Pvp" xml:space="preserve"><value>PvPモード：オン / オフ</value></data>
+  <data name="Settings.Toggle.On" xml:space="preserve"><value>{0}：オン</value></data>
+  <data name="Settings.Toggle.Off" xml:space="preserve"><value>{0}：オフ</value></data>
+  <data name="Settings.Switch.OnWords" xml:space="preserve"><value>オン,on</value></data>
+  <data name="Settings.Switch.OffWords" xml:space="preserve"><value>オフ,off</value></data>
+  <data name="Settings.Row.ChatTranslateTo" xml:space="preserve"><value>チャットの翻訳先：{0}</value></data>
+  <data name="Settings.ChatTranslate.Off" xml:space="preserve"><value>翻訳しない</value></data>
+  <data name="Settings.ChatTranslate.Game" xml:space="preserve"><value>ゲームの言語</value></data>
+  <data name="Settings.Row.LevelGuide" xml:space="preserve"><value>レベルガイド</value></data>
+  <data name="Settings.Row.ScreenReflections" xml:space="preserve"><value>画面反射</value></data>
+  <data name="Settings.Row.Fog" xml:space="preserve"><value>フォグ</value></data>
+  <data name="Settings.Row.VolumetricLight" xml:space="preserve"><value>ボリュメトリックライト</value></data>
+  <data name="Settings.Row.ColorGrading" xml:space="preserve"><value>カラーグレーディング</value></data>
+  <data name="Settings.Row.AutoExposure" xml:space="preserve"><value>自動露出</value></data>
+  <data name="Settings.Row.Bloom" xml:space="preserve"><value>ブルーム</value></data>
+  <data name="Settings.Row.GroundGold" xml:space="preserve"><value>地面のゴールドを表示</value></data>
+  <data name="Settings.Row.GroundPotions" xml:space="preserve"><value>地面のポーションを表示</value></data>
+  <data name="Settings.Row.GroundWeapons" xml:space="preserve"><value>地面の武器を表示</value></data>
+  <data name="Settings.Row.TradeChat" xml:space="preserve"><value>取引チャット</value></data>
+  <data name="Settings.Row.CastleNotices" xml:space="preserve"><value>ブレスキャッスルのお知らせ</value></data>
+  <data name="Settings.Row.OnlinePlayers" xml:space="preserve"><value>オンラインのプレイヤーを表示</value></data>
+  <data name="Settings.Row.UseLootFilter" xml:space="preserve"><value>ルートフィルターを使用</value></data>
+  <data name="Settings.Row.MinimumLevel" xml:space="preserve"><value>最低レベル：{0}</value></data>
+  <data name="Settings.Row.MaximumLevel" xml:space="preserve"><value>最高レベル：{0}</value></data>
+  <data name="Settings.Row.Unlimited" xml:space="preserve"><value>無制限</value></data>
+  <data name="Settings.Row.RareEquipment" xml:space="preserve"><value>レア装備を常に表示</value></data>
+  <data name="Settings.Row.ShowAll" xml:space="preserve"><value>すべて表示 (ルートフィルター)</value></data>
+  <data name="Settings.VoiceChat" xml:space="preserve"><value>ボイスチャット</value></data>
+  <data name="Settings.Microphone" xml:space="preserve"><value>マイク</value></data>
+  <data name="Settings.Row.SpeakTo" xml:space="preserve"><value>話す相手：{0}</value></data>
+  <data name="Settings.Row.PushToTalkKey" xml:space="preserve"><value>プッシュトゥトーク：{0}</value></data>
+  <data name="Settings.Row.Device" xml:space="preserve"><value>デバイス：{0}</value></data>
+  <data name="Settings.Row.SystemDefault" xml:space="preserve"><value>システムの既定</value></data>
+  <data name="Settings.Row.PushToTalkMode" xml:space="preserve"><value>モード：プッシュトゥトーク</value></data>
+  <data name="Settings.Row.AlwaysShow" xml:space="preserve"><value>常に表示：{0}</value></data>
+  <data name="Settings.MouseButtons.Swapped" xml:space="preserve"><value>入れ替え</value></data>
+  <data name="Settings.MouseButtons.Off" xml:space="preserve"><value>オフ</value></data>
+  <data name="Settings.MouseButtons.Default" xml:space="preserve"><value>既定</value></data>
+  <data name="Settings.Row.CameraSideButtons" xml:space="preserve"><value>カメラのサイドボタン：{0}</value></data>
+  <data name="Settings.Row.BellatraBoss" xml:space="preserve"><value>ベラトラのボス撃破</value></data>
+  <data name="Settings.Row.ClanMembership" xml:space="preserve"><value>クラン：加入と脱退</value></data>
+  <data name="Settings.Row.EventRewards" xml:space="preserve"><value>イベント報酬</value></data>
+  <data name="Settings.Row.PremiumBuffs" xml:space="preserve"><value>プレミアムバフの発動</value></data>
+  <data name="Settings.Row.EventCalendar" xml:space="preserve"><value>イベントカレンダーのお知らせ</value></data>
+  <data name="Settings.Row.CharacterNames" xml:space="preserve"><value>キャラクター名を表示</value></data>
+  <data name="Settings.Row.Damage" xml:space="preserve"><value>ダメージを表示</value></data>
+  <data name="Settings.Row.GroundItemNames" xml:space="preserve"><value>地面のアイテム名を常に表示</value></data>
+  <data name="Settings.Row.InvertCameraRotation" xml:space="preserve"><value>カメラ回転を反転</value></data>
+  <data name="Settings.Row.InvertCameraScroll" xml:space="preserve"><value>カメラのスクロールを反転</value></data>
+  <data name="Settings.Row.DungeonCameraTopDown" xml:space="preserve"><value>ダンジョンカメラ：2D (真上視点)</value></data>
+  <data name="Settings.Row.DungeonCameraNormal" xml:space="preserve"><value>ダンジョンカメラ：3D (通常カメラ)</value></data>
+  <data name="Settings.Row.HudScale" xml:space="preserve"><value>HUDの大きさ：{0}%</value></data>
+  <data name="Settings.Row.MoveChat" xml:space="preserve"><value>チャットを移動 (チャットをドラッグ)</value></data>
+  <data name="Settings.Row.TutorialTips" xml:space="preserve"><value>チュートリアルのヒント</value></data>
+  <data name="Settings.Row.ResetInterface" xml:space="preserve"><value>インターフェースをリセット (大きさとチャット)</value></data>
+  <data name="Settings.Row.GlobalBonuses" xml:space="preserve"><value>全体ボーナスのお知らせ</value></data>
+  <data name="Settings.Row.ExpGained" xml:space="preserve"><value>獲得EXP</value></data>
+  <data name="Settings.Row.BellatraResults" xml:space="preserve"><value>ベラトラの結果のお知らせ</value></data>
+  <data name="Settings.Row.BellatraSeals" xml:space="preserve"><value>ベラトラのチームシール</value></data>
+  <data name="Settings.MouseAction.Off" xml:space="preserve"><value>オフ</value></data>
+  <data name="Settings.MouseAction.RotateLeft" xml:space="preserve"><value>左に回転</value></data>
+  <data name="Settings.MouseAction.RotateRight" xml:space="preserve"><value>右に回転</value></data>
+  <data name="Settings.MouseAction.ZoomIn" xml:space="preserve"><value>ズームイン</value></data>
+  <data name="Settings.MouseAction.ZoomOut" xml:space="preserve"><value>ズームアウト</value></data>
+  <data name="Settings.MouseAction.TiltUp" xml:space="preserve"><value>上に傾ける</value></data>
+  <data name="Settings.MouseAction.TiltDown" xml:space="preserve"><value>下に傾ける</value></data>
+  <data name="Settings.Row.QuestTracker" xml:space="preserve"><value>クエストトラッカー</value></data>
+  <data name="Settings.Row.WithoutSpecialization" xml:space="preserve"><value>専門化なし</value></data>
+  <data name="Settings.Card.Textures" xml:space="preserve"><value>テクスチャ</value></data>
+  <data name="Settings.Card.InterfaceAndNames" xml:space="preserve"><value>インターフェースと名前</value></data>
+  <data name="Settings.Card.BackgroundMusic" xml:space="preserve"><value>BGM</value></data>
+  <data name="Settings.Card.SoundEffects" xml:space="preserve"><value>効果音</value></data>
+  <data name="Settings.Card.Windows" xml:space="preserve"><value>ウィンドウ</value></data>
+  <data name="Settings.Card.Skills" xml:space="preserve"><value>スキル</value></data>
+  <data name="Settings.Card.Language" xml:space="preserve"><value>言語</value></data>
+  <data name="Settings.Card.Interface" xml:space="preserve"><value>インターフェース</value></data>
+  <data name="Settings.Section.Character" xml:space="preserve"><value>キャラクター</value></data>
+  <data name="Settings.Section.Voice" xml:space="preserve"><value>ボイス</value></data>
+  <data name="Settings.Section.Potions" xml:space="preserve"><value>ポーション</value></data>
+  <data name="Settings.Section.Camera" xml:space="preserve"><value>カメラ</value></data>
+  <data name="Settings.Section.GraphicsQuality" xml:space="preserve"><value>グラフィック品質</value></data>
+  <data name="Settings.Section.EnhancedGraphics" xml:space="preserve"><value>拡張グラフィック</value></data>
+  <data name="Settings.Section.Display" xml:space="preserve"><value>画面と解像度</value></data>
+  <data name="Settings.Section.Game" xml:space="preserve"><value>ゲーム</value></data>
+  <data name="Settings.Section.LootFilter" xml:space="preserve"><value>ルートフィルター</value></data>
+  <data name="Settings.Section.ChatNotifications" xml:space="preserve"><value>チャット通知</value></data>
+  <data name="Settings.PressKey" xml:space="preserve"><value>キーを押してください</value></data>
+  <data name="Settings.RestoreDefaults" xml:space="preserve"><value>初期設定に戻す</value></data>
+  <data name="Settings.Hint.LootNames" xml:space="preserve"><value>名前はカンマで区切ります。Enterで確定、Escでキャンセルします。</value></data>
+  <data name="Settings.Hint.Rebind" xml:space="preserve"><value>クリックで割り当て変更。Shift + クリックでショートカットを元に戻します。</value></data>
+  <data name="Settings.Hint.Scroll" xml:space="preserve"><value>スクロールするとほかの項目が表示されます。</value></data>
+  <data name="Settings.Cancel" xml:space="preserve"><value>キャンセル</value></data>
+  <data name="Settings.Save" xml:space="preserve"><value>保存</value></data>
+  <data name="QuestWindow.ResetsDaily" xml:space="preserve"><value>毎日リセットされます。</value></data>
+  <data name="QuestWindow.AutoGuide" xml:space="preserve"><value>オートガイド</value></data>
+  <data name="QuestWindow.Tracker" xml:space="preserve"><value>トラッカー</value></data>
+  <data name="QuestWindow.MonthlyNotStarted" xml:space="preserve"><value>今月の挑戦はまだ始まっていません。</value></data>
+  <data name="QuestWindow.SelectQuest" xml:space="preserve"><value>リストからクエストを選んでください。</value></data>
+  <data name="QuestWindow.NoQuests" xml:space="preserve"><value>クエストはありません。</value></data>
+  <data name="QuestWindow.Completed" xml:space="preserve"><value>完了</value></data>
+  <data name="QuestWindow.InProgress" xml:space="preserve"><value>進行中</value></data>
+  <data name="QuestWindow.Loading" xml:space="preserve"><value>読み込み中...</value></data>
+  <data name="QuestWindow.Now" xml:space="preserve"><value>現在</value></data>
+  <data name="QuestWindow.QuestCompleted" xml:space="preserve"><value>クエストを完了しました。</value></data>
+  <data name="QuestWindow.ClickGo" xml:space="preserve"><value>「GO」をクリックすると経路に沿って進みます。</value></data>
+  <data name="QuestWindow.ReadInstructions" xml:space="preserve"><value>クエストの説明を読んでください。</value></data>
+  <data name="QuestWindow.Objectives" xml:space="preserve"><value>目標</value></data>
+  <data name="QuestWindow.Done" xml:space="preserve"><value>達成</value></data>
+  <data name="QuestWindow.Reward" xml:space="preserve"><value>報酬</value></data>
+  <data name="QuestWindow.Tracking" xml:space="preserve"><value>追跡中</value></data>
+  <data name="QuestWindow.Track" xml:space="preserve"><value>追跡</value></data>
+  <data name="QuestWindow.Go" xml:space="preserve"><value>GO</value></data>
+  <data name="QuestWindow.LoadingDaily" xml:space="preserve"><value>デイリークエストを読み込み中...</value></data>
+  <data name="QuestWindow.Daily" xml:space="preserve"><value>デイリー</value></data>
+  <data name="QuestWindow.CompleteToClaim" xml:space="preserve"><value>目標を達成すると受け取れます。</value></data>
+  <data name="QuestWindow.Claimed" xml:space="preserve"><value>受け取り済み</value></data>
+  <data name="QuestWindow.Waiting" xml:space="preserve"><value>待機中...</value></data>
+  <data name="QuestWindow.Claim" xml:space="preserve"><value>受け取る</value></data>
+  <data name="QuestWindow.HowTo" xml:space="preserve"><value>? 遊び方</value></data>
+  <data name="QuestWindow.Goal.MonsterKills" xml:space="preserve"><value>モンスターを倒す</value></data>
+  <data name="QuestWindow.Goal.Sheltoms" xml:space="preserve"><value>シェルトムを集める</value></data>
+  <data name="QuestWindow.Goal.Potions" xml:space="preserve"><value>ポーションを使う</value></data>
+  <data name="QuestWindow.Goal.MonsterDrops" xml:space="preserve"><value>アイテムを集める</value></data>
+  <data name="QuestWindow.Goal.BellatraEntries" xml:space="preserve"><value>ベラトラに参加する</value></data>
+  <data name="QuestWindow.Goal.Level" xml:space="preserve"><value>レベルアップする</value></data>
+  <data name="QuestWindow.Goal.Login" xml:space="preserve"><value>ログインする</value></data>
+  <data name="QuestWindow.Tab.Journey" xml:space="preserve"><value>冒険の旅</value></data>
+  <data name="QuestWindow.Tab.Daily" xml:space="preserve"><value>デイリー</value></data>
+  <data name="QuestWindow.Tab.Monthly" xml:space="preserve"><value>マンスリー</value></data>
+  <data name="QuestWindow.Tab.Completed" xml:space="preserve"><value>完了</value></data>
+  <data name="QuestWindow.AvailableAtLevel" xml:space="preserve"><value>レベル{0}で受注できます。</value></data>
+  <data name="QuestWindow.CompletedCount" xml:space="preserve"><value>完了 ({0})</value></data>
+  <data name="QuestWindow.InProgressCount" xml:space="preserve"><value>進行中 ({0})</value></data>
+  <data name="QuestDocument.Avalon.MeetSkadi" xml:space="preserve"><value>リカルテンにいる冒険者 Skadi を探してください。
+
+彼女が初心者用の装備と、冒険の旅の最初の狩りを紹介してくれます。</value></data>
+  <data name="QuestDocument.Avalon.MeetJin" xml:space="preserve"><value>ピライにいる冒険者 Jin を探してください。
+
+彼が初心者用の装備と、冒険の旅の最初の狩りを紹介してくれます。</value></data>
+  <data name="QuestDocument.Avalon.Preparation" xml:space="preserve"><value>初心者用の武器を装備し、ベルトにポーションをセットしてください。
+
+最初の狩りの説明を聞くため、旅のガイドのもとへ戻りましょう。
+
+このステップでは経験値、500ゴールド、小ライフポーション15個を獲得できます。</value></data>
+  <data name="QuestDocument.Avalon.SkadiHunt" xml:space="preserve"><value>最初の森でHopyを3体倒してください。
+
+求められているクリスタルを手に入れるまで狩りを続け、リカルテンの冒険者 Skadi に届けましょう。
+
+納品すると経験値と300ゴールドを獲得できます。</value></data>
+  <data name="QuestDocument.Avalon.JinHunt" xml:space="preserve"><value>ピライ郊外の森でRabiesを3体倒してください。
+
+求められているクリスタルを手に入れるまで狩りを続け、ピライの冒険者 Jin に届けましょう。
+
+納品すると経験値と300ゴールドを獲得できます。</value></data>
+  <data name="QuestDocument.Avalon.Finished" xml:space="preserve"><value>冒険の旅を完了しました。
+
+準備と、種族のガイドとの最初の狩りが終わりました。</value></data>
+  <data name="QuestDocument.Avalon.JourneyStart" xml:space="preserve"><value>冒険の旅へようこそ。
+
+初心者用の装備を受け取り、武器を装備して、ベルトにポーションをセットしてください。準備ができたらもう一度話しかけてください。</value></data>
+  <data name="QuestDocument.Avalon.JourneyBag" xml:space="preserve"><value>先へ進む前に、初心者用の武器を装備し、ベルトにポーションを1つ以上セットしてください。
+
+初心者用の装備が足りない場合は、私に話しかけると受け取れます。</value></data>
+  <data name="QuestDocument.Avalon.JourneyHuntSkadi" xml:space="preserve"><value>最初の狩りはリカルテン北の森で行います。
+
+Hopyを3体倒し、求められているクリスタルを手に入れて、私のもとへ戻ってきてください。</value></data>
+  <data name="QuestDocument.Avalon.JourneyHuntJin" xml:space="preserve"><value>最初の狩りはピライ近くの森で行います。
+
+Rabiesを3体倒し、求められているクリスタルを手に入れて、私のもとへ戻ってきてください。</value></data>
+  <data name="QuestDocument.Avalon.JourneyCollect" xml:space="preserve"><value>狩りを終えて、求められているクリスタルを持ってきてください。
+
+3体のモンスターを倒したあとも、クリスタルを手に入れるまで狩りを続けてください。</value></data>
+  <data name="QuestDocument.Avalon.JourneyFinish" xml:space="preserve"><value>最初の狩りを完了しました。
+
+クリスタルを納品して、経験値と300ゴールドを受け取り、冒険の旅を完了しましょう。</value></data>
+  <data name="QuestDocument.Avalon.ObjectiveSkadi" xml:space="preserve"><value>リカルテンの Skadi に話しかける。</value></data>
+  <data name="QuestDocument.Avalon.ObjectiveJin" xml:space="preserve"><value>ピライの Jin に話しかける。</value></data>
+  <data name="QuestDocument.Avalon.ObjectivePreparation" xml:space="preserve"><value>武器を装備し、ベルトにポーションをセットする。</value></data>
+  <data name="QuestDocument.Avalon.ObjectiveOther" xml:space="preserve"><value>クエストの説明に従う。</value></data>
+  <data name="QuestDocument.Avalon.RewardPreparation" xml:space="preserve"><value>EXP、500ゴールド、ポーション15個。</value></data>
+  <data name="QuestDocument.Avalon.RewardMeet" xml:space="preserve"><value>初心者用装備と経験値。</value></data>
+  <data name="QuestDocument.Avalon.RewardOther" xml:space="preserve"><value>クエストの説明を参照。</value></data>
+  <data name="QuestRoute.WaitCalculation" xml:space="preserve"><value>現在の経路計算が終わるまでお待ちください。</value></data>
+  <data name="QuestRoute.Unreachable" xml:space="preserve"><value>この経路では目的地に到達できません。</value></data>
+  <data name="QuestRoute.Calculating" xml:space="preserve"><value>経路を計算しています...</value></data>
+  <data name="QuestRoute.NoSafeRoute" xml:space="preserve"><value>安全な経路が見つかりませんでした。</value></data>
+  <data name="QuestRoute.Following" xml:space="preserve"><value>クエストの経路を進んでいます...</value></data>
+  <data name="QuestRoute.Arrived" xml:space="preserve"><value>クエストの目標地点に到着しました。</value></data>
+  <data name="QuestRoute.CannotWalk" xml:space="preserve"><value>今はキャラクターが歩けません。</value></data>
+  <data name="QuestRoute.Obstacle" xml:space="preserve"><value>障害物によって経路が中断されました。</value></data>
+  <data name="QuestRoute.ApproachingGuide" xml:space="preserve"><value>ガイドに近づいています...</value></data>
+  <data name="QuestRoute.EnterField" xml:space="preserve"><value>この経路を始めるには{0}に入ってください。</value></data>
+  <data name="Chat.Event.CrystalsOff" xml:space="preserve"><value>クリスタルイベントは無効です。</value></data>
+  <data name="Chat.Event.CrystalsHalfDay" xml:space="preserve"><value>クリスタルイベント：正午から深夜まで。</value></data>
+  <data name="Chat.Event.CrystalsAllDay" xml:space="preserve"><value>クリスタルイベント：終日。</value></data>
+  <data name="Chat.Event.Drops" xml:space="preserve"><value>イベントのドロップが変更されました。カレンダーを確認してください。</value></data>
+  <data name="Chat.Event.Aging" xml:space="preserve"><value>全体のエイジング設定が変更されました。</value></data>
+  <data name="Chat.Event.Mixing" xml:space="preserve"><value>全体のミックスと錬金の設定が変更されました。</value></data>
+  <data name="Chat.Event.Exp" xml:space="preserve"><value>EXPイベント：{0}%。</value></data>
+  <data name="Chat.Event.ExpMultiplier" xml:space="preserve"><value>全体EXP倍率：{0}倍。</value></data>
+  <data name="News.Kind.Event" xml:space="preserve"><value>イベント</value></data>
+  <data name="News.Kind.Improvement" xml:space="preserve"><value>改善</value></data>
+  <data name="News.Kind.News" xml:space="preserve"><value>お知らせ</value></data>
+  <data name="News.Loading" xml:space="preserve"><value>読み込み中…</value></data>
+  <data name="News.Unavailable" xml:space="preserve"><value>お知らせフィードを利用できません。</value></data>
+  <data name="News.None" xml:space="preserve"><value>お知らせはありません。</value></data>
+  <data name="News.Link.Title" xml:space="preserve"><value>リンクを開きますか？</value></data>
+  <data name="News.Link.Cancel" xml:space="preserve"><value>キャンセル</value></data>
+  <data name="News.Link.Open" xml:space="preserve"><value>開く</value></data>
+  <data name="News.Ticket.Sent" xml:space="preserve"><value>チケットを送信しました。</value></data>
+  <data name="News.Ticket.Replied" xml:space="preserve"><value>返信を送信しました。</value></data>
+  <data name="News.Ticket.Edited" xml:space="preserve"><value>チケットを変更しました。</value></data>
+  <data name="News.Ticket.Closed" xml:space="preserve"><value>チケットをキャンセルしました。</value></data>
+  <data name="News.Ticket.Waiting" xml:space="preserve"><value>サーバーを待っています...</value></data>
+  <data name="News.Ticket.Invalid" xml:space="preserve"><value>件名と内容を入力してください。</value></data>
+  <data name="News.Ticket.Error" xml:space="preserve"><value>サポートを利用できません。</value></data>
+  <data name="News.Ticket.Refresh" xml:space="preserve"><value>更新</value></data>
+  <data name="News.Ticket.New" xml:space="preserve"><value>+ 新規チケット</value></data>
+  <data name="News.Ticket.None" xml:space="preserve"><value>チケットはありません。</value></data>
+  <data name="News.Ticket.Back" xml:space="preserve"><value>‹ 戻る</value></data>
+  <data name="News.Ticket.Edit" xml:space="preserve"><value>編集</value></data>
+  <data name="News.Ticket.Confirm" xml:space="preserve"><value>確認</value></data>
+  <data name="News.Ticket.Cancel" xml:space="preserve"><value>チケットをキャンセル</value></data>
+  <data name="News.Ticket.CancelledByYou" xml:space="preserve"><value>あなたがチケットをキャンセルしました。</value></data>
+  <data name="News.Ticket.ClosedByStaff" xml:space="preserve"><value>スタッフがチケットを終了しました。</value></data>
+  <data name="News.Ticket.ReplyHint" xml:space="preserve"><value>返信を入力...</value></data>
+  <data name="News.Ticket.ReplySend" xml:space="preserve"><value>送信</value></data>
+  <data name="News.Ticket.Subject" xml:space="preserve"><value>件名</value></data>
+  <data name="News.Ticket.Description" xml:space="preserve"><value>内容</value></data>
+  <data name="News.Ticket.Send" xml:space="preserve"><value>チケットを送信</value></data>
+  <data name="News.Ticket.FormBack" xml:space="preserve"><value>戻る</value></data>
+  <data name="News.Ticket.SaveChanges" xml:space="preserve"><value>変更を保存</value></data>
+  <data name="News.Ticket.Status.Answered" xml:space="preserve"><value>回答済み</value></data>
+  <data name="News.Ticket.Status.Closed" xml:space="preserve"><value>終了</value></data>
+  <data name="News.Ticket.Status.Cancelled" xml:space="preserve"><value>キャンセル済み</value></data>
+  <data name="News.Ticket.Status.Open" xml:space="preserve"><value>受付中</value></data>
+  <data name="News.Link.Discord" xml:space="preserve"><value>コミュニティのDiscord招待リンクを新しいタブで開きますか？</value></data>
+  <data name="News.Link.Instagram" xml:space="preserve"><value>コミュニティのInstagramを新しいタブで開きますか？</value></data>
+  <data name="News.Link.X" xml:space="preserve"><value>コミュニティのXを新しいタブで開きますか？</value></data>
+  <data name="News.Ticket.OneMessage" xml:space="preserve"><value>メッセージ1件</value></data>
+  <data name="News.Ticket.Messages" xml:space="preserve"><value>メッセージ{0}件</value></data>
+  <data name="News.Ticket.Details" xml:space="preserve"><value>作成 {0} · {1} · 更新 {2}</value></data>
+  <data name="News.Ticket.Opened" xml:space="preserve"><value>{0}に{1}が作成</value></data>
+  <data name="News.Ticket.Tab.News" xml:space="preserve"><value>お知らせ</value></data>
+  <data name="News.Ticket.Tab.Mine" xml:space="preserve"><value>自分のチケット</value></data>
+  <data name="News.Ticket.Tab.New" xml:space="preserve"><value>新規チケット</value></data>
+  <data name="News.Ticket.EditHint" xml:space="preserve"><value>スタッフが回答するまでは、このチケットを編集またはキャンセルできます。</value></data>
+  <data name="News.Ticket.Category.Bug" xml:space="preserve"><value>不具合を報告</value></data>
+  <data name="News.Ticket.Category.Improvement" xml:space="preserve"><value>改善を提案</value></data>
+  <data name="News.Ticket.Category.Other" xml:space="preserve"><value>その他</value></data>
+  <data name="News.Ticket.CategoryImprovement" xml:space="preserve"><value>改善</value></data>
+  <data name="News.Ticket.CategoryBug" xml:space="preserve"><value>不具合</value></data>
+  <data name="News.Ticket.CategoryOther" xml:space="preserve"><value>その他</value></data>
+  <data name="Party.RequestSent" xml:space="preserve"><value>リクエストを送信しました。</value></data>
+  <data name="Party.Creating" xml:space="preserve"><value>作成中...</value></data>
+  <data name="Party.Create" xml:space="preserve"><value>パーティー作成</value></data>
+  <data name="Party.OpenHint" xml:space="preserve"><value>公開：誰でも自由に参加できます</value></data>
+  <data name="Party.Open" xml:space="preserve"><value>公開</value></data>
+  <data name="Party.Closed" xml:space="preserve"><value>非公開</value></data>
+  <data name="Party.FindParty" xml:space="preserve"><value>パーティー検索</value></data>
+  <data name="Party.Searching" xml:space="preserve"><value>パーティーを検索しています...</value></data>
+  <data name="Party.NoOpenParties" xml:space="preserve"><value>現在、公開中のパーティーはありません。</value></data>
+  <data name="Party.Refresh" xml:space="preserve"><value>更新</value></data>
+  <data name="Party.Back" xml:space="preserve"><value>戻る</value></data>
+  <data name="Party.Request" xml:space="preserve"><value>申請</value></data>
+  <data name="Party.Join" xml:space="preserve"><value>参加</value></data>
+  <data name="Party.Empty.Party" xml:space="preserve"><value>パーティーに参加していません。</value></data>
+  <data name="Party.Empty.Friends" xml:space="preserve"><value>まだフレンドがいません。</value></data>
+  <data name="Party.Empty.Clan" xml:space="preserve"><value>クランに所属していません。</value></data>
+  <data name="Party.Empty.Blocked" xml:space="preserve"><value>ブロックしている人はいません。</value></data>
+  <data name="Party.Empty.Recent" xml:space="preserve"><value>最近の会話はありません。</value></data>
+  <data name="Party.Empty.FriendsHint" xml:space="preserve"><value>下で名前を追加するか、ターゲットのフレンドボタンを使ってください。</value></data>
+  <data name="Party.Empty.PartyHint" xml:space="preserve"><value>検索から参加するか、名前を指定してプレイヤーを招待してください。</value></data>
+  <data name="Party.Empty.BlockedHint" xml:space="preserve"><value>ブロックしたプレイヤーはあなたにささやきを送れません。</value></data>
+  <data name="Party.Empty.RecentHint" xml:space="preserve"><value>最近ささやきを交わした相手がここに表示されます。</value></data>
+  <data name="Party.Empty.PartyHintEnd" xml:space="preserve"><value></value></data>
+  <data name="Party.SelectName" xml:space="preserve"><value>リストから名前を選ぶと操作が表示されます。</value></data>
+  <data name="Party.VisitClanMaster" xml:space="preserve"><value>街のクランマスターを訪ねてください。</value></data>
+  <data name="Party.CharacterName" xml:space="preserve"><value>キャラクター名</value></data>
+  <data name="Party.Invite" xml:space="preserve"><value>招待</value></data>
+  <data name="Party.Block" xml:space="preserve"><value>ブロック</value></data>
+  <data name="Party.Add" xml:space="preserve"><value>追加</value></data>
+  <data name="Party.Profile" xml:space="preserve"><value>キャラクタープロフィール</value></data>
+  <data name="Party.Command.Leader" xml:space="preserve"><value>リーダー</value></data>
+  <data name="Party.Command.Disband" xml:space="preserve"><value>解散</value></data>
+  <data name="Party.Command.Kick" xml:space="preserve"><value>追放</value></data>
+  <data name="Party.Command.Leave" xml:space="preserve"><value>脱退</value></data>
+  <data name="Party.Title" xml:space="preserve"><value>パーティー   {0}/{1}</value></data>
+  <data name="Party.DirectoryDetail" xml:space="preserve"><value>平均レベル {0} · {1}</value></data>
+  <data name="Party.Profile.Class" xml:space="preserve"><value>クラス   {0}</value></data>
+  <data name="Party.Profile.Level" xml:space="preserve"><value>レベル   {0}</value></data>
+  <data name="Party.Profile.Clan" xml:space="preserve"><value>クラン   {0}</value></data>
+  <data name="Party.Tab.Party" xml:space="preserve"><value>パーティー</value></data>
+  <data name="Party.Tab.Friends" xml:space="preserve"><value>フレンド</value></data>
+  <data name="Party.Tab.Clan" xml:space="preserve"><value>クラン</value></data>
+  <data name="Party.Tab.Blocked" xml:space="preserve"><value>ブロック</value></data>
+  <data name="Party.Tab.Recent" xml:space="preserve"><value>最近</value></data>
+  <data name="Party.Action.Whisper" xml:space="preserve"><value>ささやき</value></data>
+  <data name="Party.Action.Find" xml:space="preserve"><value>検索</value></data>
+  <data name="Party.Action.Profile" xml:space="preserve"><value>プロフィール</value></data>
+  <data name="Party.Action.Party" xml:space="preserve"><value>パーティー</value></data>
+  <data name="Party.Action.Remove" xml:space="preserve"><value>削除</value></data>
+  <data name="Party.Action.ClanChat" xml:space="preserve"><value>クランチャット</value></data>
+  <data name="Party.Action.Unblock" xml:space="preserve"><value>ブロック解除</value></data>
+  <data name="Party.Action.Friend" xml:space="preserve"><value>フレンド</value></data>
+  <data name="Party.Action.Block" xml:space="preserve"><value>ブロック</value></data>
+  <data name="Party.Map" xml:space="preserve"><value>マップ {0}</value></data>
+</root>

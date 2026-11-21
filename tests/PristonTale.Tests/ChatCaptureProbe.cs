@@ -25,7 +25,7 @@ namespace PristonTale.Tests;
 internal sealed class ChatCaptureProbe : Game
 {
     private sealed record Scenario(string Name, int Width, int Height, bool Open = true, bool Focused = true, HudChatTab Tab = HudChatTab.All,
-        int NoticeMode = 0, Keys Panel = Keys.None, bool Bubbles = false);
+        int NoticeMode = 0, Keys Panel = Keys.None, bool Bubbles = false, bool Translated = false);
 
     private static readonly Scenario[] Scenarios =
     [
@@ -40,7 +40,9 @@ internal sealed class ChatCaptureProbe : Game
         new("chat-1280", 1280, 720),
         new("chat-1600x1200-scale2", 1600, 1200),
         new("bubbles-800", 800, 600, Open: false, Focused: false, Bubbles: true),
-        new("bubbles-chat-1280", 1280, 720, Focused: false, Bubbles: true)
+        new("bubbles-chat-1280", 1280, 720, Focused: false, Bubbles: true),
+        // Last: it leaves the log with translated lines and the client in Portuguese.
+        new("chat-translated-pt-1280", 1280, 720, Focused: false, Translated: true)
     ];
 
     private readonly string _assetRoot;
@@ -54,7 +56,8 @@ internal sealed class ChatCaptureProbe : Game
     private int _scenario;
     private int _frames;
     private bool _prepared;
-    private readonly PresentationSettings _presentation = new();
+    // The tutorial's tips would cover the chat's lines on the level-1 character.
+    private readonly PresentationSettings _presentation = new() { Requested = new ClientSettings { TutorialTips = false } };
 
     public ChatCaptureProbe(string assetRoot, string contentRoot, string output, string? background)
     {
@@ -76,7 +79,7 @@ internal sealed class ChatCaptureProbe : Game
     {
         Directory.CreateDirectory(_output);
         _batch = new SpriteBatch(GraphicsDevice);
-        var font = Content.Load<SpriteFont>("Fonts/UI");
+        var font = new Gameplay.UI.Rendering.UiFonts(Content);
         var context = new ScreenContext(GraphicsDevice, Content, _batch, font, _assetRoot, null!, ConsoleClientLog.Instance, _ => { }, _presentation);
         _hud = new GameplayHud(context, _ => Task.FromResult(new InventoryOutcome(false, 0, GameText.Of(GameTextId.RequestRefused))));
         _hud.CharacterName = "Panzer";
@@ -167,6 +170,15 @@ internal sealed class ChatCaptureProbe : Game
             {
                 window.Click(HudLayout.Create(scenario.Width, scenario.Height), HudChatWindow.NoticeButton(HudLayout.Create(scenario.Width, scenario.Height)).Center,
                     side: false);
+            }
+
+            if (scenario.Translated)
+            {
+                Gameplay.Localization.ClientText.Use(ClientSettings.BrazilianPortugueseLanguage);
+                _hud.Chat.Receive(new ChatLineInfo(ChatKind.Player, 0, "Rosalind: anyone want to hunt in the Bamboo Forest?"), 0);
+                _hud.Chat.Receive(new ChatLineInfo(ChatKind.Player, 0, "Rosalind: alguém quer caçar na Floresta de Bambu?", GameText.Of(GameTextId.ChatTranslated)), 0);
+                _hud.Chat.Receive(new ChatLineInfo(ChatKind.Whisper, 0, "From> Kenji: bring two potions"), 0);
+                _hud.Chat.Receive(new ChatLineInfo(ChatKind.Whisper, 0, "From> Kenji: traga duas poções", GameText.Of(GameTextId.ChatTranslated)), 0);
             }
 
             _points.Clear();

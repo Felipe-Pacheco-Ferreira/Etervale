@@ -61,7 +61,8 @@ public static class CharacterRecordFactory
             Premium: JsonText.EmptyObject,
             LastPlayedAt: null,
             StarterGiftsReceived: 0,
-            Events: JsonText.EmptyObject);
+            Events: JsonText.EmptyObject,
+            Titles: JsonText.EmptyObject);
     }
 
     public static CharacterRecord FromLiveSession(
@@ -75,6 +76,10 @@ public static class CharacterRecordFactory
     {
         ArgumentNullException.ThrowIfNull(loaded);
         ArgumentNullException.ThrowIfNull(character);
+        if (character.IsStandIn)
+        {
+            throw new InvalidOperationException("An event stand-in is never stored.");
+        }
 
         var attributes = character.Attributes;
         var scalars = loaded with
@@ -109,6 +114,7 @@ public static class CharacterRecordFactory
             CharacterStateCodec.CaptureSkills(character),
             SavedPremium.Capture(character),
             QuestStateCodec.Capture(character.Quests),
-            RewardEventStateCodec.Capture(character.Events));
+            RewardEventStateCodec.Capture(character.Events),
+            TitleStateCodec.Capture(character.Titles));
     }
 }

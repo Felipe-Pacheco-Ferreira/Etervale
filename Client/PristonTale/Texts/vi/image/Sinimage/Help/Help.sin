@@ -1,0 +1,71 @@
+*Teclado
+1, 2, 3 : Dùng vật phẩm đặt trong túi phím tắt.
+   W    : Chuyển đổi giữa các chế độ trang bị.
+   E    : Chuyển đổi giữa các chế độ túi đồ.
+   R    : Chuyển đổi giữa chạy và đi bộ.
+   S    : Mở hoặc đóng cửa sổ kỹ năng.
+   C    : Mở hoặc đóng cửa sổ thông tin nhân vật.
+   V    : Mở hoặc đóng cửa sổ túi đồ.
+   D    : Mở hoặc đóng cửa sổ nhóm.
+   X    : Mở hoặc đóng cửa sổ hệ thống.
+   Z    : Chuyển đổi giữa các chế độ camera.
+  Tab   : Hiện hoặc ẩn bản đồ nhỏ.
+ F1~F8  : Chọn kỹ năng.
+ [←] [→] [↓] [↑]  : Phóng to/thu nhỏ và xoay camera.
+Ctrl+[↓] [↑] : Nghiêng camera lên/xuống.
+ Enter  : Vào chế độ trò chuyện. Nhấn lần nữa để đóng.
+Phím cách: Đóng cửa sổ hiện tại.
+Ctrl+Home: Chụp màn hình hiện tại.
+           (Lưu dạng .jpg trong thư mục ảnh chụp của game)
+Ctrl+End : Chụp màn hình hiện tại.
+           (Lưu dạng .bmp trong thư mục ảnh chụp của game)
+Page Up  : Chuyển camera sang góc nhìn từ trên.
+Page Down: Chuyển camera sang góc nhìn từ dưới.
+  ESC    : Hủy hành động hiện tại.
+
+
+*Mouse
+Nhấp trái       : .Di chuyển nhân vật
+                  .Nhặt vật phẩm
+                  .Nói chuyện với NPC
+                  .Di chuyển vật phẩm
+                  .Các nút menu
+                  .Chọn kỹ năng của nút trái
+Nhấp phải       : .Chọn kỹ năng của nút phải
+                  .Dùng kỹ năng đã chọn
+Di chuyển chuột : Di chuyển con trỏ trên màn hình.
+Lăn lên/xuống: Nghiêng camera lên/xuống.
+Kéo con lăn     : Tiến/lùi để phóng to hoặc thu nhỏ.
+                  Sang hai bên để xoay camera.
+
+
+* Lệnh
+ /:tên nhân vật <Tìm nhân vật>
+ /:(nhập tên nhân vật cần tìm)
+
+ /:tên nhân vật tin nhắn <thì thầm>
+ /:(tên nhân vật) tin nhắn
+
+ <trả lời thì thầm> Nhấn phím mũi tên lên/xuống
+    để thì thầm lại.
+ //tên nhân vật <Nhóm> //nhân vật
+    (nhập tên nhân vật bạn muốn lập nhóm)
+
+
+* Giao dịch
+1: Nhấp vào nhân vật bạn muốn giao dịch.
+2: Nhấn nút giao dịch để gửi lời mời giao dịch.
+3: Khi được chấp nhận, đặt vật phẩm (hoặc vàng) mong muốn.
+4: Sau khi xác nhận, nhấn nút giao dịch để hoàn tất.
+
+* Nhóm
+1: Nhấp vào nhân vật bạn muốn lập nhóm.
+2: Nhấn nút ở góc trên bên phải để
+ gửi lời mời nhóm.
+
+* Thêm vào danh sách bạn bè
+1: Nhấp vào nhân vật bạn muốn kết bạn.
+2: Nhấn nút ở góc trên bên phải để
+  đăng ký làm bạn bè.
+3: Sau khi đăng ký, nhấp đúp vào tên để thì thầm.
+   (tên sẽ hiện trong khung trò chuyện)

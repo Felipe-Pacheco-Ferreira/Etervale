@@ -4,6 +4,8 @@ using Microsoft.Xna.Framework.Graphics;
 using PristonTale.Assets;
 using PristonTale.Simulation.Characters;
 using PristonTale.Contracts.Characters;
+using PristonTale.Engine3D.Rendering;
+using PristonTale.Gameplay.UI.Rendering;
 
 namespace PristonTale.Gameplay.Screens.CharacterSelect;
 
@@ -45,7 +47,7 @@ internal sealed class CharacterSelectView
     private const float InfoPanelValueBaselineAdjustment = -2f;
 
     private readonly SpriteBatch _sb;
-    private readonly SpriteFont _font;
+    private readonly UiFonts _fonts;
     private readonly CharSelectAssets _assets;
     private readonly CharacterSelectCamera _camera;
 
@@ -54,11 +56,11 @@ internal sealed class CharacterSelectView
     private Viewport _screen;
 
     // uiScale: the 2D layer is laid out on a screen this many times smaller and drawn this many times larger.
-    public CharacterSelectView(SpriteBatch spriteBatch, SpriteFont font, CharSelectAssets assets, CharacterSelectCamera camera, float buttonScale,
+    public CharacterSelectView(SpriteBatch spriteBatch, UiFonts fonts, CharSelectAssets assets, CharacterSelectCamera camera, float buttonScale,
         float uiScale)
     {
         _sb = spriteBatch;
-        _font = font;
+        _fonts = fonts;
         _assets = assets;
         _camera = camera;
         _buttonScale = buttonScale;
@@ -91,7 +93,7 @@ internal sealed class CharacterSelectView
 
         if (!string.IsNullOrEmpty(m.ErrorMessage))
         {
-            _sb.DrawString(_font, m.ErrorMessage,
+            _sb.DrawString(_fonts.Current, m.ErrorMessage,
                 new Vector2(viewport.Width / 2f - 128f, viewport.Height / 2f + viewport.Height / 6f), Color.Gold);
         }
 
@@ -153,10 +155,10 @@ internal sealed class CharacterSelectView
             _sb.Draw(_assets.TitleBox, new Rectangle(viewport.Width / 2 - 128, 0, 256, 128), Color.White);
         }
 
-        if (ClientText.Language == "pt-BR")
+        if (ClientText.Language != ClientSettings.EnglishLanguage)
         {
-            var title = stateIndex switch { 0 => "Personagens", 1 => "Tribo", 2 => "Classe", _ => "Rosto" };
-            DrawLocalizedLabel(title, new Rectangle(viewport.Width / 2 - 64, 53, 128, 30));
+            var title = stateIndex switch { 0 => "CharSelect.Title.Characters", 1 => "CharSelect.Title.Tribe", 2 => "CharSelect.Title.Class", _ => "CharSelect.Title.Face" };
+            DrawLocalizedLabel(ClientText.Get(title), new Rectangle(viewport.Width / 2 - 64, 53, 128, 30));
         }
         else if (_assets.TitleTxt != null)
         {
@@ -191,8 +193,8 @@ internal sealed class CharacterSelectView
                 ? 1f
                 : 0.5f + 0.5f * (0.5f + 0.5f * MathF.Sin((float)m.ElapsedSeconds * 3f));
             var bounds = CharSelectLayout.NewCharPrompt(viewport);
-            if (ClientText.Language == "pt-BR")
-                DrawLocalizedLabel("Criar personagem", bounds, opacity);
+            if (ClientText.Language != ClientSettings.EnglishLanguage)
+                DrawLocalizedLabel(ClientText.Get("CharSelect.NewCharacter"), bounds, opacity);
             else
                 _sb.Draw(_assets.NewCharBig, bounds, Color.White * opacity);
         }
@@ -364,7 +366,7 @@ internal sealed class CharacterSelectView
     }
 
     private void SmallValue(string text, float x, float y, Color color, float scale = 1f) =>
-        _sb.DrawString(_font, text, new Vector2(x, y), color, 0f, Vector2.Zero, InfoPanelValueScale * scale, SpriteEffects.None, 0f);
+        _sb.DrawString(_fonts.Current, text, new Vector2(x, y), color, 0f, Vector2.Zero, InfoPanelValueScale * scale, SpriteEffects.None, 0f);
 
     private void DrawRaceMark(Rectangle rectangle, Texture2D mark, Texture2D logo)
     {
@@ -435,16 +437,16 @@ internal sealed class CharacterSelectView
         var bounds = new Rectangle(x, y, texture.Width, texture.Height);
         bounds = CharSelectLayout.ScaleButton(bounds, viewport, _buttonScale, leftAligned);
         _sb.Draw(texture, bounds, Color.White);
-        if (ClientText.Language != "pt-BR")
+        if (ClientText.Language == ClientSettings.EnglishLanguage)
             return;
 
-        var label = texture == _assets.BtNewChar ? "Criar"
-            : texture == _assets.BtSelect ? "Selecionar"
-            : texture == _assets.BtExit ? "Sair"
-            : texture == _assets.BtBack ? "Voltar"
-            : texture == _assets.BtDelete ? "Excluir" : null;
+        var label = texture == _assets.BtNewChar ? "CharSelect.Button.Create"
+            : texture == _assets.BtSelect ? "CharSelect.Button.Select"
+            : texture == _assets.BtExit ? "CharSelect.Button.Exit"
+            : texture == _assets.BtBack ? "CharSelect.Button.Back"
+            : texture == _assets.BtDelete ? "CharSelect.Button.Delete" : null;
         if (label != null)
-            DrawLocalizedLabel(label, bounds);
+            DrawLocalizedLabel(ClientText.Get(label), bounds);
     }
 
     private void DrawLocalizedLabel(string text, Rectangle bounds, float opacity = 1f)
@@ -452,10 +454,10 @@ internal sealed class CharacterSelectView
         var inset = bounds;
         inset.Inflate(-bounds.Width / 10, -bounds.Height / 6);
         _sb.Draw(_assets.Pixel, inset, new Color(30, 22, 15) * opacity);
-        var size = _font.MeasureString(text);
+        var size = _fonts.Current.MeasureString(text);
         var scale = MathF.Min(inset.Width * 0.9f / size.X, inset.Height * 0.9f / size.Y);
         var position = bounds.Center.ToVector2() - size * (scale * 0.5f);
-        _sb.DrawString(_font, text, position, new Color(242, 212, 148) * opacity,
+        _sb.DrawString(_fonts.Current, text, position, new Color(242, 212, 148) * opacity,
             0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
     }
 }

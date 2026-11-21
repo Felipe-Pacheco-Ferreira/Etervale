@@ -105,6 +105,9 @@ public sealed record ItemDefinition(
     public bool IsEquippable => EquipSlot.HasValue;
     public bool IsStackable => MaxStack > 1;
 
+    // A unique, a named unique or a piece of a set: the drops the ground labels and the party's loot alerts single out.
+    public bool IsRare => UniqueItem != 0 || UniqueVariant > 0 || SetCode != 0;
+
     public bool IsWeapon => ItemEquipmentMetadata.SlotOf(Kind) == EquipmentSlot.Weapon;
 }
 

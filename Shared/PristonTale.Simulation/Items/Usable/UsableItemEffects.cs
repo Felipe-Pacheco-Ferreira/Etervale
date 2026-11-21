@@ -66,6 +66,7 @@ public static class UsableItemEffects
                 if (AgingTarget(character, rule.Argument) is { } item)
                 {
                     Aging.AgingRules.Count(item, item.Maturity.Goal);
+                    character.Titles.RecordAging(item.UpgradeLevel);
                     character.TouchInventory();
                 }
 

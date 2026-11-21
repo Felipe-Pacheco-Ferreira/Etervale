@@ -4,12 +4,16 @@ using PristonTale.Gameplay.UI.Chat;
 using PristonTale.Gameplay.UI.Rendering;
 using PristonTale.Contracts.World;
 using PristonTale.Gameplay.UI.Clans;
+using PristonTale.Gameplay.Localization;
+using PristonTale.Simulation.Titles;
 
 namespace PristonTale.Gameplay.UI.Widgets;
 
 // Name boxes over the scene: an NPC's name always within 768 units of the camera, a party member's always with its life
 // bar, a clan mate's always and another player's while it is under the cursor or the clicked target, a player's clan in
-// a "[Clan]" line over its name (for another clan only while hovered or clicked, as in the original), a monster's only
+// a "[Clan]" line over its name (for another clan only while hovered or clicked, as in the original) and its title over
+// both in its rarity's colour (TitleRules, HudNameColors.Title), a player with the
+// PvP mode on always within that range, its name in HudNameColors.Pvp (a murderer's in HudNameColors.Murderer), a monster's only
 // while it is under the cursor or is the clicked target. A summon or crystal pet's box shows within
 // the same range, with its owner's name in parentheses on a second line and, on the viewer's own, its life bar. Farther
 // boxes draw first; the hovered and the clicked one draw last. Every box is HudPainter.NameBox,
@@ -32,6 +36,14 @@ public sealed partial class HudCombat
     // Whether a player is in the local player's party.
     public Func<ulong, bool> InParty { get; set; } = static _ => false;
 
+    // A player's name in the PvP mode's colours (a murderer, PvP on), null with PvP off or for anything else.
+    private static Color? PvpColor(Entity entity) => entity.Spawn.Player switch
+    {
+        { Murderer: true } => HudNameColors.Murderer,
+        { Pvp: true } => HudNameColors.Pvp,
+        _ => null
+    };
+
     // Whether a monster's name box carries its life bar.
     public static bool ShowsPlateBar(bool classic, bool hovered, bool traced, bool attacked) => classic ? hovered : traced || attacked;
 
@@ -47,7 +59,7 @@ public sealed partial class HudCombat
             var member = kind == EntityKind.Player && InParty(id);
             var mate = kind == EntityKind.Player && !self && OwnClan != 0 && ClanOf(id) == OwnClan;
             var summon = kind == EntityKind.Monster && entity.Spawn.OwnerId != 0;
-            var shown = kind == EntityKind.Npc || member || mate || self || kind == EntityKind.Player && (focus || filter.AllPlayers)
+            var shown = kind == EntityKind.Npc || member || mate || self || kind == EntityKind.Player && (focus || filter.AllPlayers || PvpColor(entity) is not null)
                 || (kind == EntityKind.Monster && entity.Life > 0 && (summon || focus));
             if (shown && filter.Allows(kind, focus, member, self) && project(id) is { } point
                 && (focus || member || self || point.Depth < HudNameColors.OverheadDepth))
@@ -64,23 +76,25 @@ public sealed partial class HudCombat
             var monster = entity.Spawn.Kind == EntityKind.Monster;
             var member = entity.Spawn.Kind == EntityKind.Player;
             var summon = monster && entity.Spawn.OwnerId != 0;
-            var color = id == _self ? NamePlateFilter.ColorOf(filter.OwnColor)
-                : member || summon ? HudNameColors.Party : !monster ? HudNameColors.Npc : id == traced ? HudNameColors.HoveredMonster : HudNameColors.Monster;
+            var color = PvpColor(entity) ?? (id == _self ? NamePlateFilter.ColorOf(filter.OwnColor)
+                : member || summon ? HudNameColors.Party : !monster ? HudNameColors.Npc : id == traced ? HudNameColors.HoveredMonster : HudNameColors.Monster);
             var owner = summon ? OwnerLabel(entity) : null;
             var clan = member || entity.Spawn.Kind == EntityKind.Player && (id == hovered || id == traced || OwnClan != 0 && ClanOf(id) == OwnClan)
                 ? ClanLine(id)
                 : null;
+            var title = entity.Spawn.Player is { Title: var code } && TitleRules.IsTitle(code) ? new PlateTitle(ClientText.TitleName(code),
+                HudNameColors.Title(TitleRules.Of((TitleCode)code).Rarity)) : default;
             var x = (int)(point.Screen.X / scale);
             var y = (int)(point.Screen.Y / scale);
             var ownSummon = summon && entity.Spawn.OwnerId == _self;
             if (classic)
             {
-                DrawClassicPlate(painter, layout, Name(id), owner ?? clan, owner is null && clan is not null, x, y, color, id == hovered,
+                DrawClassicPlate(painter, layout, Name(id), owner ?? clan, owner is null && clan is not null, title, x, y, color, id == hovered,
                     member && id != _self || ownSummon || monster && !summon && ShowsPlateBar(true, id == hovered, id == traced, entity.Attacked) ? entity : null);
             }
             else
             {
-                DrawPlate(painter, layout, Name(id), owner ?? clan, owner is null && clan is not null, x, y, color, id == hovered,
+                DrawPlate(painter, layout, Name(id), owner ?? clan, owner is null && clan is not null, title, x, y, color, id == hovered,
                     member && id != _self || ownSummon || monster && !summon && ShowsPlateBar(false, id == hovered, id == traced, entity.Attacked) ? entity : null);
             }
         }
@@ -143,16 +157,21 @@ public sealed partial class HudCombat
         return summon.OwnerLabel;
     }
 
-    // A box that would leave the screen is not drawn, as in the original. A second line (a summon's owner under the name,
-    // a player's clan over it) grows the box upwards.
-    private static void DrawClassicPlate(HudPainter painter, HudLayout layout, string name, string owner, bool clanLine, int anchorX, int anchorY, Color color,
-        bool hovered, Entity bar)
+    // A player's title over its clan and name (TitleRules): the title's name in its rarity's colour; Text null for none.
+    private readonly record struct PlateTitle(string Text, Color Color);
+
+    // A box that would leave the screen is not drawn, as in the original. Another line (a summon's owner under the name,
+    // a player's clan over it, its title over both) grows the box upwards.
+    private static void DrawClassicPlate(HudPainter painter, HudLayout layout, string name, string owner, bool clanLine, PlateTitle title, int anchorX,
+        int anchorY, Color color, bool hovered, Entity bar)
     {
         var nameWidth = painter.Measure(name);
         var ownerWidth = owner is null ? 0 : painter.Measure(owner) + (clanLine ? ClanMarks.Span : 0);
-        var width = Math.Max(nameWidth, ownerWidth);
+        var titleWidth = title.Text is null ? 0 : painter.Measure(title.Text);
+        var width = Math.Max(Math.Max(nameWidth, ownerWidth), titleWidth);
         var lineHeight = Math.Max(16, painter.TextHeight);
-        var extraLine = owner is null ? 0 : lineHeight;
+        var titleLine = title.Text is null ? 0 : lineHeight;
+        var extraLine = (owner is null ? 0 : lineHeight) + titleLine;
         var frameHeight = 4 + lineHeight + extraLine + 6 + 2;
         var x = anchorX - width / 2 - 9;
         var y = anchorY - ClassicPlateLift - extraLine;
@@ -164,16 +183,22 @@ public sealed partial class HudCombat
         painter.Flush();
         painter.NameBox(new Rectangle(x, y, width + 18, frameHeight), hovered);
         painter.Flush();
-        var nameTop = clanLine ? y + 5 + 2 + lineHeight : y + 5 + 2;
+        if (title.Text is not null)
+        {
+            painter.Text(title.Text, anchorX - titleWidth / 2, y + 5 + 2, title.Color, false);
+        }
+
+        var top = y + titleLine;
+        var nameTop = clanLine ? top + 5 + 2 + lineHeight : top + 5 + 2;
         painter.Text(name, anchorX - nameWidth / 2, nameTop, color, false);
         if (owner is not null && clanLine)
         {
-            painter.ClanMark(anchorX - ownerWidth / 2, y + 5 + (lineHeight - ClanMarks.Size) / 2);
-            painter.Text(owner, anchorX - ownerWidth / 2 + ClanMarks.Span, y + 5 + 2, HudNameColors.Clan, false);
+            painter.ClanMark(anchorX - ownerWidth / 2, top + 5 + (lineHeight - ClanMarks.Size) / 2);
+            painter.Text(owner, anchorX - ownerWidth / 2 + ClanMarks.Span, top + 5 + 2, HudNameColors.Clan, false);
         }
         else if (owner is not null)
         {
-            painter.Text(owner, anchorX - ownerWidth / 2, y + 5 + 2 + lineHeight, HudNameColors.Player, false);
+            painter.Text(owner, anchorX - ownerWidth / 2, top + 5 + 2 + lineHeight, HudNameColors.Player, false);
         }
 
         if (bar is not null)
@@ -183,13 +208,16 @@ public sealed partial class HudCombat
     }
 
     // The name box around the smaller text, the capitals centred inside with room for descenders.
-    private static void DrawPlate(HudPainter painter, HudLayout layout, string name, string owner, bool clanLine, int anchorX, int anchorY, Color color, bool hovered,
-        Entity bar)
+    private static void DrawPlate(HudPainter painter, HudLayout layout, string name, string owner, bool clanLine, PlateTitle title, int anchorX, int anchorY,
+        Color color, bool hovered, Entity bar)
     {
         var nameWidth = painter.MeasureAt(name, PlateTextScale);
         var ownerWidth = owner is null ? 0 : painter.MeasureAt(owner, PlateTextScale) + (clanLine ? ClanMarks.Span : 0);
+        var titleWidth = title.Text is null ? 0 : painter.MeasureAt(title.Text, PlateTextScale);
         var (line, textTop) = painter.NameBoxText(PlateTextScale, PlatePadY);
-        var (width, height) = HudPainter.NameBoxExtent(Math.Max(nameWidth, ownerWidth), line, owner is null ? 1 : 2);
+        var titleLine = title.Text is null ? 0 : line;
+        var (width, height) = HudPainter.NameBoxExtent(Math.Max(Math.Max(nameWidth, ownerWidth), titleWidth), line,
+            (owner is null ? 1 : 2) + (title.Text is null ? 0 : 1));
         var x = anchorX - width / 2;
         var y = anchorY - PlateLift - height;
         if (x < 0 || y < 0 || x + width > layout.Width || y + height + 1 + PlateBarHeight > layout.Height)
@@ -198,11 +226,16 @@ public sealed partial class HudCombat
         }
 
         painter.DrawNameBox(new Rectangle(x, y, width, height), hovered);
-        var top = y + textTop;
+        if (title.Text is not null)
+        {
+            painter.Text(title.Text, anchorX - titleWidth / 2, y + textTop, title.Color, PlateTextScale);
+        }
+
+        var top = y + textTop + titleLine;
         painter.Text(name, anchorX - nameWidth / 2, clanLine ? top + line : top, color, PlateTextScale);
         if (owner is not null && clanLine)
         {
-            painter.ClanMark(anchorX - ownerWidth / 2, y + HudPainter.NameBoxTop + (line - ClanMarks.Size) / 2);
+            painter.ClanMark(anchorX - ownerWidth / 2, y + titleLine + HudPainter.NameBoxTop + (line - ClanMarks.Size) / 2);
             painter.Text(owner, anchorX - ownerWidth / 2 + ClanMarks.Span, top, HudNameColors.Clan, PlateTextScale);
         }
         else if (owner is not null)

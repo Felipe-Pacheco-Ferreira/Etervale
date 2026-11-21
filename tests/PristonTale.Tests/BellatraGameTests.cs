@@ -33,6 +33,24 @@ internal static class BellatraGameTests
             + "team is told, one picked before the round stays on the ground, and others may not take what lies in the arena", SealsAsync);
         yield return ("an entrant away from the arena at round 1 loses its place and the game ends with nobody; a day without entrants opens nothing",
             AbsentAsync);
+        yield return ("every player is told once when Bellatra's tickets go on sale at dawn, never while Bellatra is closed", OpeningAsync);
+    }
+
+    private static async Task OpeningAsync()
+    {
+        var open = await Arena.CreateAsync(BellatraMode.Always, 50);
+        open.AtHour(3);
+        open.Announced();
+        open.AtHour(4);
+        open.Seconds(5);
+        Assert.True(open.Announced() is [GameTextId.BellatraOpening], "the opening of the ticket sales was not told once");
+        open.AtHour(5);
+        Assert.True(open.Announced().Length == 0, "the second hour of the sales was told again");
+
+        var closed = await Arena.CreateAsync(BellatraMode.Off, 50);
+        closed.AtHour(3);
+        closed.AtHour(4);
+        Assert.True(closed.Announced().Length == 0, "a closed Bellatra was told open");
     }
 
     private static async Task GameAsync()
@@ -223,6 +241,15 @@ internal static class BellatraGameTests
 
         private BellatraView? _board;
         private readonly List<GameTextId> _notices = [];
+        private readonly List<GameTextId> _announced = [];
+
+        // The lines the ticks sent every player since the last call.
+        public GameTextId[] Announced()
+        {
+            GameTextId[] announced = [.. _announced];
+            _announced.Clear();
+            return announced;
+        }
 
         // The board of the latest snapshot the player was sent (null once it is hidden).
         public BellatraView? LastBoard()
@@ -288,6 +315,10 @@ internal static class BellatraGameTests
                 if (notice.To == Player.EntityId)
                 {
                     _notices.Add(notice.Text.Id);
+                }
+                else if (notice.To == WorldNotice.Everyone)
+                {
+                    _announced.Add(notice.Text.Id);
                 }
             }
         }

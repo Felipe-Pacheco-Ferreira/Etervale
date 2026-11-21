@@ -10,6 +10,9 @@ internal sealed class MonsterDamageLog
 
     public long FirstAttackerLastHitMs { get; private set; }
 
+    // The life each player took, kept only for a scheduled boss (the boss roulette, Tally); null otherwise.
+    public Dictionary<ulong, long>? ByPlayer { get; private set; }
+
     public void RecordHit(ulong attackerId, int damage, bool monsterAtFullLifeBeforeHit, long nowMs)
     {
         if (attackerId == 0 || damage <= 0)
@@ -25,5 +28,12 @@ internal sealed class MonsterDamageLog
             FirstAttackerDamage += damage;
             FirstAttackerLastHitMs = nowMs;
         }
+    }
+
+    // The life a player took from a scheduled boss (only what the boss had left, not the blow's overkill).
+    public void Tally(ulong attackerId, int dealt)
+    {
+        ByPlayer ??= new Dictionary<ulong, long>();
+        ByPlayer[attackerId] = ByPlayer.GetValueOrDefault(attackerId) + dealt;
     }
 }

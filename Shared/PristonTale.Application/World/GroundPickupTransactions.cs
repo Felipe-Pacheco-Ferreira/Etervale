@@ -21,6 +21,17 @@ internal static class GroundPickupTransactions
             return new(original, null, null, new(false, original.InventoryRevision, GameText.Of(GameTextId.DropOutOfReach)));
         }
 
+        // A Battle Royale player drinks a potion of its event it picks up at once and takes nothing else; out, it takes
+        // nothing, and nobody else takes the event's potions.
+        var eventDrop = field.EventDrops?.Contains(dropId) == true;
+        if (player.Royale is not null || eventDrop)
+        {
+            var drunk = eventDrop && item is not null && WorldServer.DrinkRoyalePotion(player, item.Definition.Code);
+            field.GroundLoot.Resolve(dropId, command.OperationId, committed: drunk);
+            return new(original, null, null, drunk ? new(true, original.InventoryRevision, GameText.None)
+                : new(false, original.InventoryRevision, GameText.Of(GameTextId.DropOutOfReach)));
+        }
+
         // In Bellatra's arena only entrants take what lies there, and a surprise breaks its seal at once instead of
         // reaching the bag; one that cannot break stays on the ground. The broken seal changes no character, so it is not
         // remembered as an inventory operation: a retry finds the drop gone.

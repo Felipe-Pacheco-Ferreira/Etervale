@@ -6,6 +6,7 @@ using PristonTale.Client.Net.WorldCatalog;
 using PristonTale.Protocol.Binary;
 using PristonTale.Protocol.Packets;
 using PristonTale.Simulation.Characters;
+using PristonTale.Simulation.Combat;
 using PristonTale.Simulation.Items;
 using PristonTale.Simulation.Items.Usable;
 using PristonTale.Simulation.World.Loot;
@@ -180,6 +181,27 @@ internal sealed class PresenceDecoder : IEventHandleReader
             EtervaleOpcodes.TradeDetails => OnTradeDetails(TradeDetailsPacket.Read(packet)),
             EtervaleOpcodes.TradeState => OnTradeState(TradeStatePacket.Read(packet)),
             EtervaleOpcodes.TradeAsked => OnTradeAsked(TradeAskedPacket.Read(packet)),
+            EtervaleOpcodes.DuelAsked => DuelAskedPacket.Read(packet) is var asked
+                ? new PresenceUpdate(_tick, [], [], [], [], FieldId) { DuelRequest = new DuelRequestInfo(asked.FromId, asked.FromName) }
+                : null,
+            EtervaleOpcodes.ArenaState => ArenaStatePacket.Read(packet) is var arena
+                ? new PresenceUpdate(_tick, [], [], [], [], FieldId)
+                {
+                    Arena = new ArenaInfo((Simulation.Combat.ArenaMode)arena.Mode, arena.Queued, arena.Out, arena.OwnStanding, arena.FoeStanding, arena.SecondsLeft)
+                }
+                : null,
+            EtervaleOpcodes.Titles => TitlesPacket.Read(packet) is var titles
+                ? new PresenceUpdate(_tick, [], [], [], [], FieldId) { Titles = new TitlesInfo(titles.Shown, titles.Owned) }
+                : null,
+            EtervaleOpcodes.RoyaleState => RoyaleStatePacket.Read(packet) is var royale
+                ? new PresenceUpdate(_tick, [], [], [], [], FieldId)
+                {
+                    Royale = new RoyaleInfo(royale.State, royale.Standing, royale.Total, royale.Radius, royale.SecondsToShrink, royale.SecondsLeft)
+                }
+                : null,
+            EtervaleOpcodes.DuelState => DuelStatePacket.Read(packet) is var duel
+                ? new PresenceUpdate(_tick, [], [], [], [], FieldId) { Duel = new DuelInfo(duel.OpponentId, duel.OpponentName, duel.Center, duel.SecondsLeft, duel.OutsideSecondsLeft) }
+                : null,
             EtervaleOpcodes.ContactList => OnContactList(ContactListPacket.Read(packet)),
             EtervaleOpcodes.Weather => new PresenceUpdate(_tick, [], [], [], [], FieldId) { Weather = WeatherPacket.Read(packet).Weather },
             _ => NotPresence(out presence)
@@ -672,7 +694,8 @@ internal sealed class PresenceDecoder : IEventHandleReader
                 entry.SoundCode, Position(entry.X, entry.Y, entry.Z), GameUnits.FromAngle(entry.Angle))
             {
                 Clip = entry.Clip,
-                Skill = (entry.Flags & CombatEventFlags.Skill) != 0
+                Skill = (entry.Flags & CombatEventFlags.Skill) != 0,
+                Element = Enum.IsDefined((Element)entry.Element) ? (Element)entry.Element : Element.Bionic
             });
         }
 
@@ -817,12 +840,17 @@ internal sealed class PresenceDecoder : IEventHandleReader
                 Phoenix = looks.Phoenix,
                 BigHead = looks.BigHead,
                 Mounted = looks.Mounted,
+                Pvp = looks.Pvp,
+                Murderer = looks.Murderer,
+                Duelling = looks.Duelling,
+                ArenaSide = looks.ArenaSide,
                 WeaponGlow = Glow(looks.WeaponGlow),
                 OffHandGlow = Glow(looks.OffHandGlow),
                 ShopSign = looks.ShopSign,
                 ClanId = (long)looks.ClanId,
                 ClanName = looks.ClanName,
-                ClanMark = looks.ClanMark
+                ClanMark = looks.ClanMark,
+                Title = looks.Title
             };
         }
 

@@ -1,0 +1,71 @@
+*Keyboard
+1, 2, 3 : Ginagamit ang mga item sa shortcut inventory.
+   W    : Nagpapalit ng equipment mode.
+   E    : Nagpapalit ng inventory mode.
+   R    : Nagpapalit ng takbo at lakad.
+   S    : Binubuksan o isinasara ang skill window.
+   C    : Binubuksan o isinasara ang character info window.
+   V    : Binubuksan o isinasara ang inventory window.
+   D    : Binubuksan o isinasara ang party window.
+   X    : Binubuksan o isinasara ang system window.
+   Z    : Nagpapalit ng camera mode.
+  Tab   : Ipinapakita o itinatago ang minimap.
+ F1~F8  : Pumipili ng mga skill.
+ [←] [→] [↓] [↑]  : Nag-zoom in/out at nagpapaikot ng camera.
+Ctrl+[↓] [↑] : Itinataas/ibinababa ang anggulo ng camera.
+ Enter  : Pumapasok sa chat mode. Pindutin ulit para isara.
+Space Bar: Isinasara ang kasalukuyang window.
+Ctrl+Home: Kumukuha ng screenshot.
+           (Sine-save bilang .jpg sa screenshot folder ng laro)
+Ctrl+End : Kumukuha ng screenshot.
+           (Sine-save bilang .bmp sa screenshot folder ng laro)
+Page Up  : Inililipat ang camera sa tanaw mula sa itaas.
+Page Down: Inililipat ang camera sa tanaw mula sa ibaba.
+  ESC    : Kinakansela ang kasalukuyang aksyon.
+
+
+*Mouse
+Left click      : .Ginagalaw ang character
+                  .Pumupulot ng mga item
+                  .Kumakausap ng mga NPC
+                  .Ginagalaw ang mga item
+                  .Mga menu button
+                  .Pumipili ng skill sa kaliwang button
+Right click     : .Pumipili ng skill sa kanang button
+                  .Ginagamit ang napiling skill
+Igalaw ang mouse: Ginagalaw ang pointer sa screen.
+Wheel pataas/pababa: Itinataas/ibinababa ang anggulo ng camera.
+I-drag ang wheel: Pasulong/paatras para mag-zoom in o out.
+                  Pakaliwa/pakanan para paikutin ang camera.
+
+
+* Mga Command
+ /:pangalan ng character <Hanapin ang character>
+ /:(i-type ang pangalan ng hinahanap na character)
+
+ /:pangalan ng character mensahe <whisper>
+ /:(pangalan ng character) mensahe
+
+ <sagutin ang whisper> Pindutin ang pataas/pababang arrow
+    para mag-whisper ulit.
+ //pangalan ng character <Party> //character
+    (i-type ang pangalan ng character na gusto mong maka-party)
+
+
+* Trade
+1: I-click ang character na gusto mong ka-trade.
+2: Pindutin ang trade button para humiling ng trade.
+3: Kapag tinanggap, ilagay ang mga item (o gold) na gusto mo.
+4: Pagkatapos mag-confirm, pindutin ang trade button para tapusin.
+
+* Party
+1: I-click ang character na gusto mong maka-party.
+2: Pindutin ang button sa kanang itaas na sulok para
+ mag-invite sa party.
+
+* Idagdag sa friend list
+1: I-click ang character na gusto mong maging friend.
+2: Pindutin ang button sa kanang itaas na sulok para
+  i-register siya bilang friend.
+3: Kapag na-register na, i-double click ang pangalan para mag-whisper.
+   (lalabas ang pangalan sa chat box)

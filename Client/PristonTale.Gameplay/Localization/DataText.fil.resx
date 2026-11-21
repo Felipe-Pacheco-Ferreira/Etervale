@@ -1,0 +1,617 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Castle.BC101.Effect" xml:space="preserve"><value>Invincible sa loob ng ilang sandali; kalahati ng attack power</value></data>
+  <data name="Castle.BC102.Effect" xml:space="preserve"><value>Critical rate +5%</value></data>
+  <data name="Castle.BC103.Effect" xml:space="preserve"><value>Evasion rate +5%</value></data>
+  <data name="Castle.BC106.Effect" xml:space="preserve"><value>Binabawasan ng 50% ang atake ng Fire Crystal Tower</value></data>
+  <data name="Castle.BC107.Effect" xml:space="preserve"><value>Binabawasan ng 50% ang atake ng Ice Crystal Tower</value></data>
+  <data name="Castle.BC108.Effect" xml:space="preserve"><value>Binabawasan ng 50% ang atake ng Lightning Crystal Tower</value></data>
+  <data name="Castle.BC109.Effect" xml:space="preserve"><value>+20% damage kapag tinamaan ang isang Fighter</value></data>
+  <data name="Castle.BC110.Effect" xml:space="preserve"><value>+20% damage kapag tinamaan ang isang Mechanician</value></data>
+  <data name="Castle.BC111.Effect" xml:space="preserve"><value>+20% damage kapag tinamaan ang isang Pikeman</value></data>
+  <data name="Castle.BC112.Effect" xml:space="preserve"><value>+20% damage kapag tinamaan ang isang Archer</value></data>
+  <data name="Castle.BC113.Effect" xml:space="preserve"><value>+20% damage kapag tinamaan ang isang Knight</value></data>
+  <data name="Castle.BC114.Effect" xml:space="preserve"><value>+20% damage kapag tinamaan ang isang Atalanta</value></data>
+  <data name="Castle.BC115.Effect" xml:space="preserve"><value>+20% damage kapag tinamaan ang isang Magician</value></data>
+  <data name="Castle.BC116.Effect" xml:space="preserve"><value>+20% damage kapag tinamaan ang isang Priestess</value></data>
+  <data name="Class.Archer.0" xml:space="preserve"><value>Archer</value></data>
+  <data name="Class.Archer.1" xml:space="preserve"><value>Huntress Master</value></data>
+  <data name="Class.Archer.2" xml:space="preserve"><value>Dion's Disciple</value></data>
+  <data name="Class.Archer.3" xml:space="preserve"><value>Sagittarion</value></data>
+  <data name="Class.Archer.4" xml:space="preserve"><value>Iskar</value></data>
+  <data name="Class.Assassin.0" xml:space="preserve"><value>Assassin</value></data>
+  <data name="Class.Assassin.1" xml:space="preserve"><value>Rogue</value></data>
+  <data name="Class.Assassin.2" xml:space="preserve"><value>Shadow</value></data>
+  <data name="Class.Assassin.3" xml:space="preserve"><value>Shadow Walker</value></data>
+  <data name="Class.Assassin.4" xml:space="preserve"><value>Shadow Master</value></data>
+  <data name="Class.Atalanta.0" xml:space="preserve"><value>Atalanta</value></data>
+  <data name="Class.Atalanta.1" xml:space="preserve"><value>Valkyrie</value></data>
+  <data name="Class.Atalanta.2" xml:space="preserve"><value>Brunhild</value></data>
+  <data name="Class.Atalanta.3" xml:space="preserve"><value>Valhalla</value></data>
+  <data name="Class.Atalanta.4" xml:space="preserve"><value>Queen of Valhalla</value></data>
+  <data name="Class.Fighter.0" xml:space="preserve"><value>Fighter</value></data>
+  <data name="Class.Fighter.1" xml:space="preserve"><value>Warrior</value></data>
+  <data name="Class.Fighter.2" xml:space="preserve"><value>Champion</value></data>
+  <data name="Class.Fighter.3" xml:space="preserve"><value>Immortal Warrior</value></data>
+  <data name="Class.Fighter.4" xml:space="preserve"><value>Warlord</value></data>
+  <data name="Class.Knight.0" xml:space="preserve"><value>Knight</value></data>
+  <data name="Class.Knight.1" xml:space="preserve"><value>Paladin</value></data>
+  <data name="Class.Knight.2" xml:space="preserve"><value>Holy Knight</value></data>
+  <data name="Class.Knight.3" xml:space="preserve"><value>SaintKnight</value></data>
+  <data name="Class.Knight.4" xml:space="preserve"><value>Valiant</value></data>
+  <data name="Class.Magician.0" xml:space="preserve"><value>Magician</value></data>
+  <data name="Class.Magician.1" xml:space="preserve"><value>Wizard</value></data>
+  <data name="Class.Magician.2" xml:space="preserve"><value>RoyalWizard</value></data>
+  <data name="Class.Magician.3" xml:space="preserve"><value>ArchMage</value></data>
+  <data name="Class.Magician.4" xml:space="preserve"><value>Elemental Master</value></data>
+  <data name="Class.MartialArtist.0" xml:space="preserve"><value>Martial Artist</value></data>
+  <data name="Class.MartialArtist.1" xml:space="preserve"><value>Striker</value></data>
+  <data name="Class.MartialArtist.2" xml:space="preserve"><value>Trick Artist</value></data>
+  <data name="Class.MartialArtist.3" xml:space="preserve"><value>Master</value></data>
+  <data name="Class.MartialArtist.4" xml:space="preserve"><value>Grand Master</value></data>
+  <data name="Class.Mechanician.0" xml:space="preserve"><value>Mechanician</value></data>
+  <data name="Class.Mechanician.1" xml:space="preserve"><value>Mechanic Master</value></data>
+  <data name="Class.Mechanician.2" xml:space="preserve"><value>Metal Leader</value></data>
+  <data name="Class.Mechanician.3" xml:space="preserve"><value>Metallion</value></data>
+  <data name="Class.Mechanician.4" xml:space="preserve"><value>Metal Rage</value></data>
+  <data name="Class.Pikeman.0" xml:space="preserve"><value>Pikeman</value></data>
+  <data name="Class.Pikeman.1" xml:space="preserve"><value>Combatant</value></data>
+  <data name="Class.Pikeman.2" xml:space="preserve"><value>Lancer</value></data>
+  <data name="Class.Pikeman.3" xml:space="preserve"><value>Lancelot</value></data>
+  <data name="Class.Pikeman.4" xml:space="preserve"><value>Bayiolunt</value></data>
+  <data name="Class.Priestess.0" xml:space="preserve"><value>Priestess</value></data>
+  <data name="Class.Priestess.1" xml:space="preserve"><value>Saintess</value></data>
+  <data name="Class.Priestess.2" xml:space="preserve"><value>Bishop</value></data>
+  <data name="Class.Priestess.3" xml:space="preserve"><value>Celestial</value></data>
+  <data name="Class.Priestess.4" xml:space="preserve"><value>Arc Angel</value></data>
+  <data name="Class.Shaman.0" xml:space="preserve"><value>Shaman</value></data>
+  <data name="Class.Shaman.1" xml:space="preserve"><value>Summoner</value></data>
+  <data name="Class.Shaman.2" xml:space="preserve"><value>High Summoner</value></data>
+  <data name="Class.Shaman.3" xml:space="preserve"><value>Soul Catcher</value></data>
+  <data name="Class.Shaman.4" xml:space="preserve"><value>Soul Master</value></data>
+  <data name="Quest.4th Rank-Up Test(Finished)" xml:space="preserve"><value>Pagsusulit sa 4th Rank-Up(Tapos na)</value></data>
+  <data name="Quest.4th Rank-Up Test[1]" xml:space="preserve"><value>Pagsusulit sa 4th Rank-Up[1]</value></data>
+  <data name="Quest.4th Rank-Up Test[2]" xml:space="preserve"><value>Pagsusulit sa 4th Rank-Up[2]</value></data>
+  <data name="Quest.4th Rank-Up Test[3]" xml:space="preserve"><value>Pagsusulit sa 4th Rank-Up[3]</value></data>
+  <data name="Quest.4th Rank-Up Test[4]" xml:space="preserve"><value>Pagsusulit sa 4th Rank-Up[4]</value></data>
+  <data name="Quest.4th Rank-Up Test[5]" xml:space="preserve"><value>Pagsusulit sa 4th Rank-Up[5]</value></data>
+  <data name="Quest.4th Rank-Up Test[6]" xml:space="preserve"><value>Pagsusulit sa 4th Rank-Up[6]</value></data>
+  <data name="Quest.A lost Hammer" xml:space="preserve"><value>Ang Nawawalang Martilyo</value></data>
+  <data name="Quest.A lost Hammer(Complete)" xml:space="preserve"><value>Ang Nawawalang Martilyo(Tapos na)</value></data>
+  <data name="Quest.A tired warehouse keeper" xml:space="preserve"><value>Ang Pagod na Warehouse Keeper</value></data>
+  <data name="Quest.A tired warehouse keeper(Complete)" xml:space="preserve"><value>Ang Pagod na Warehouse Keeper(Tapos na)</value></data>
+  <data name="Quest.Bitter ordeal" xml:space="preserve"><value>Mapait na Pagsubok</value></data>
+  <data name="Quest.Bitter ordeal(Complete)" xml:space="preserve"><value>Mapait na Pagsubok(Tapos na)</value></data>
+  <data name="Quest.Candy Delivery" xml:space="preserve"><value>Paghahatid ng Kendi</value></data>
+  <data name="Quest.Candy Delivery(Complete)" xml:space="preserve"><value>Paghahatid ng Kendi(Tapos na)</value></data>
+  <data name="Quest.Capturing the devil" xml:space="preserve"><value>Paghuli sa Demonyo</value></data>
+  <data name="Quest.Capturing the devil(Complete)" xml:space="preserve"><value>Paghuli sa Demonyo(Tapos na)</value></data>
+  <data name="Quest.Clever Newter" xml:space="preserve"><value>Ang Matalinong si Newter</value></data>
+  <data name="Quest.Clever Newter(Complete)" xml:space="preserve"><value>Ang Matalinong si Newter(Tapos na)</value></data>
+  <data name="Quest.Delivery bomb" xml:space="preserve"><value>Paghahatid ng Bomba</value></data>
+  <data name="Quest.Delivery bomb(Complete)" xml:space="preserve"><value>Paghahatid ng Bomba(Tapos na)</value></data>
+  <data name="Quest.Destroyed destruction weapon" xml:space="preserve"><value>Ang Nawasak na Sandata ng Pagkawasak</value></data>
+  <data name="Quest.Destroyed destruction weapon(Complete)" xml:space="preserve"><value>Ang Nawasak na Sandata ng Pagkawasak(Tapos na)</value></data>
+  <data name="Quest.Devious Necromancer" xml:space="preserve"><value>Ang Tusong Necromancer</value></data>
+  <data name="Quest.Devious Necromancer(Complete)" xml:space="preserve"><value>Ang Tusong Necromancer(Tapos na)</value></data>
+  <data name="Quest.Enclosed Fury" xml:space="preserve"><value>Nakakulong na si Fury</value></data>
+  <data name="Quest.Enclosed Fury(completed)" xml:space="preserve"><value>Nakakulong na si Fury(Tapos na)</value></data>
+  <data name="Quest.Eternal Love1" xml:space="preserve"><value>Walang Hanggang Pag-ibig 1</value></data>
+  <data name="Quest.Eternal Love1(Complete)" xml:space="preserve"><value>Walang Hanggang Pag-ibig 1(Tapos na)</value></data>
+  <data name="Quest.Eternal Love2" xml:space="preserve"><value>Walang Hanggang Pag-ibig 2</value></data>
+  <data name="Quest.Eternal Love2(Complete)" xml:space="preserve"><value>Walang Hanggang Pag-ibig 2(Tapos na)</value></data>
+  <data name="Quest.For her" xml:space="preserve"><value>Para sa Kanya</value></data>
+  <data name="Quest.For her(completed)" xml:space="preserve"><value>Para sa Kanya(Tapos na)</value></data>
+  <data name="Quest.Fury's phantasma(Complete)" xml:space="preserve"><value>Ang Multo ni Fury(Tapos na)</value></data>
+  <data name="Quest.Fury's phantasma[1]" xml:space="preserve"><value>Ang Multo ni Fury[1]</value></data>
+  <data name="Quest.Fury's phantasma[2]" xml:space="preserve"><value>Ang Multo ni Fury[2]</value></data>
+  <data name="Quest.Fury's phantasma[3]" xml:space="preserve"><value>Ang Multo ni Fury[3]</value></data>
+  <data name="Quest.Fury's phantasma[4]" xml:space="preserve"><value>Ang Multo ni Fury[4]</value></data>
+  <data name="Quest.Fury's phantasma[5]" xml:space="preserve"><value>Ang Multo ni Fury[5]</value></data>
+  <data name="Quest.Goblin Hill" xml:space="preserve"><value>Goblin Hill</value></data>
+  <data name="Quest.Goblin Hill(Complete)" xml:space="preserve"><value>Goblin Hill(Tapos na)</value></data>
+  <data name="Quest.Helping Michelle" xml:space="preserve"><value>Pagtulong kay Michelle</value></data>
+  <data name="Quest.Helping Michelle(completed)" xml:space="preserve"><value>Pagtulong kay Michelle(Tapos na)</value></data>
+  <data name="Quest.Invaders chopped up" xml:space="preserve"><value>Tinadtad ang mga Mananakop</value></data>
+  <data name="Quest.Invaders chopped up(Complete)" xml:space="preserve"><value>Tinadtad ang mga Mananakop(Tapos na)</value></data>
+  <data name="Quest.Job Quest 3th(Complete)" xml:space="preserve"><value>Job Quest ng 3rd Rank(Tapos na)</value></data>
+  <data name="Quest.Job Quest 3th[1]" xml:space="preserve"><value>Job Quest ng 3rd Rank[1]</value></data>
+  <data name="Quest.Job Quest 3th[2]" xml:space="preserve"><value>Job Quest ng 3rd Rank[2]</value></data>
+  <data name="Quest.Job Quest 3th[3]" xml:space="preserve"><value>Job Quest ng 3rd Rank[3]</value></data>
+  <data name="Quest.Job Quest 3th[4]" xml:space="preserve"><value>Job Quest ng 3rd Rank[4]</value></data>
+  <data name="Quest.Lovers of history1" xml:space="preserve"><value>Mga Mahilig sa Kasaysayan 1</value></data>
+  <data name="Quest.Lovers of history1(Complete)" xml:space="preserve"><value>Mga Mahilig sa Kasaysayan 1(Tapos na)</value></data>
+  <data name="Quest.Lovers of history2" xml:space="preserve"><value>Mga Mahilig sa Kasaysayan 2</value></data>
+  <data name="Quest.Lovers of history2(Complete)" xml:space="preserve"><value>Mga Mahilig sa Kasaysayan 2(Tapos na)</value></data>
+  <data name="Quest.Manufacturing bomb" xml:space="preserve"><value>Paggawa ng Bomba</value></data>
+  <data name="Quest.Manufacturing bomb(Complete)" xml:space="preserve"><value>Paggawa ng Bomba(Tapos na)</value></data>
+  <data name="Quest.Miranda's location" xml:space="preserve"><value>Kinaroroonan ni Miranda</value></data>
+  <data name="Quest.Miranda's location(Complete)" xml:space="preserve"><value>Kinaroroonan ni Miranda(Tapos na)</value></data>
+  <data name="Quest.Mission from the ancestor" xml:space="preserve"><value>Misyon mula sa Ninuno</value></data>
+  <data name="Quest.Mission from the ancestor(Complete)" xml:space="preserve"><value>Misyon mula sa Ninuno(Tapos na)</value></data>
+  <data name="Quest.One-eyed Monsters" xml:space="preserve"><value>Mga Halimaw na Isa ang Mata</value></data>
+  <data name="Quest.One-eyed Monsters(Complete)" xml:space="preserve"><value>Mga Halimaw na Isa ang Mata(Tapos na)</value></data>
+  <data name="Quest.Patron's request" xml:space="preserve"><value>Hiling ng Patron</value></data>
+  <data name="Quest.Patron's request(Complete)" xml:space="preserve"><value>Hiling ng Patron(Tapos na)</value></data>
+  <data name="Quest.Questionable document" xml:space="preserve"><value>Kahina-hinalang Dokumento</value></data>
+  <data name="Quest.Questionable document(Complete)" xml:space="preserve"><value>Kahina-hinalang Dokumento(Tapos na)</value></data>
+  <data name="Quest.Rank up quest" xml:space="preserve"><value>Rank-Up Quest</value></data>
+  <data name="Quest.Rank up quest (Completed)" xml:space="preserve"><value>Rank-Up Quest (Tapos na)</value></data>
+  <data name="Quest.Rank up quest [Second]" xml:space="preserve"><value>Rank-Up Quest [Pangalawa]</value></data>
+  <data name="Quest.Rank up quest second[1]" xml:space="preserve"><value>Pangalawang Rank-Up Quest[1]</value></data>
+  <data name="Quest.Rank up quest second[2]" xml:space="preserve"><value>Pangalawang Rank-Up Quest[2]</value></data>
+  <data name="Quest.Rank up quest second[3]" xml:space="preserve"><value>Pangalawang Rank-Up Quest[3]</value></data>
+  <data name="Quest.Rank up quest second[4]" xml:space="preserve"><value>Pangalawang Rank-Up Quest[4]</value></data>
+  <data name="Quest.Rank up quest second[5]" xml:space="preserve"><value>Pangalawang Rank-Up Quest[5]</value></data>
+  <data name="Quest.Rank up quest second[Completed]" xml:space="preserve"><value>Pangalawang Rank-Up Quest[Tapos na]</value></data>
+  <data name="Quest.Rank up quest(Completed)" xml:space="preserve"><value>Rank-Up Quest(Tapos na)</value></data>
+  <data name="Quest.Rank-up Exam (Done)" xml:space="preserve"><value>Rank-Up Exam (Tapos na)</value></data>
+  <data name="Quest.Report delivery" xml:space="preserve"><value>Paghahatid ng Ulat</value></data>
+  <data name="Quest.Report delivery(Complete)" xml:space="preserve"><value>Paghahatid ng Ulat(Tapos na)</value></data>
+  <data name="Quest.Ring purification1" xml:space="preserve"><value>Paglilinis ng Singsing 1</value></data>
+  <data name="Quest.Ring purification1(Complete)" xml:space="preserve"><value>Paglilinis ng Singsing 1(Tapos na)</value></data>
+  <data name="Quest.Ring purification2" xml:space="preserve"><value>Paglilinis ng Singsing 2</value></data>
+  <data name="Quest.Ring purification2(Complete)" xml:space="preserve"><value>Paglilinis ng Singsing 2(Tapos na)</value></data>
+  <data name="Quest.Shattering Ancient weapon" xml:space="preserve"><value>Pagwasak sa Sinaunang Sandata</value></data>
+  <data name="Quest.Shattering Ancient weapon(Complete)" xml:space="preserve"><value>Pagwasak sa Sinaunang Sandata(Tapos na)</value></data>
+  <data name="Quest.Signs of fear" xml:space="preserve"><value>Mga Senyales ng Takot</value></data>
+  <data name="Quest.Signs of fear(Complete)" xml:space="preserve"><value>Mga Senyales ng Takot(Tapos na)</value></data>
+  <data name="Quest.Soul of Devil" xml:space="preserve"><value>Kaluluwa ng Demonyo</value></data>
+  <data name="Quest.Soul of Devil(Complete)" xml:space="preserve"><value>Kaluluwa ng Demonyo(Tapos na)</value></data>
+  <data name="Quest.Tears of Khalia" xml:space="preserve"><value>Mga Luha ni Khalia</value></data>
+  <data name="Quest.Tears of Khalia(completed)" xml:space="preserve"><value>Mga Luha ni Khalia(Tapos na)</value></data>
+  <data name="Quest.Test of Kingdom" xml:space="preserve"><value>Pagsubok ng Kaharian</value></data>
+  <data name="Quest.Test of Kingdom(Complete)" xml:space="preserve"><value>Pagsubok ng Kaharian(Tapos na)</value></data>
+  <data name="Quest.The Cave" xml:space="preserve"><value>Ang Kuweba</value></data>
+  <data name="Quest.The Cave(completed)" xml:space="preserve"><value>Ang Kuweba(Tapos na)</value></data>
+  <data name="Quest.Threats of the Undead" xml:space="preserve"><value>Banta ng mga Undead</value></data>
+  <data name="Quest.Threats of the Undead(Complete)" xml:space="preserve"><value>Banta ng mga Undead(Tapos na)</value></data>
+  <data name="Quest.Village of Eura(completed)" xml:space="preserve"><value>Nayon ng Eura(Tapos na)</value></data>
+  <data name="Quest.Village of eura" xml:space="preserve"><value>Nayon ng Eura</value></data>
+  <data name="Quest.War of the Ancient" xml:space="preserve"><value>Digmaan ng mga Sinauna</value></data>
+  <data name="Quest.War of the Ancient(Complete)" xml:space="preserve"><value>Digmaan ng mga Sinauna(Tapos na)</value></data>
+  <data name="Skill.01010001.Description" xml:space="preserve"><value>Pansamantalang pinapataas ang block rate ng gamit na shield</value></data>
+  <data name="Skill.01010001.Name" xml:space="preserve"><value>Extreme Shield</value></data>
+  <data name="Skill.01010002.Description" xml:space="preserve"><value>Naghahagis ng bomba sa mga kalaban sa loob ng saklaw ng pagsabog</value></data>
+  <data name="Skill.01010002.Name" xml:space="preserve"><value>Mechanic Bomb</value></data>
+  <data name="Skill.01010003.Description" xml:space="preserve"><value>Pansamantalang pinapataas ang kakayahan ng katawan na sumipsip ng damage</value></data>
+  <data name="Skill.01010003.Name" xml:space="preserve"><value>Physical Absorption</value></data>
+  <data name="Skill.01010004.Description" xml:space="preserve"><value>Permanenteng pinapataas ang resistance sa lason</value></data>
+  <data name="Skill.01010004.Name" xml:space="preserve"><value>Poison Attribute</value></data>
+  <data name="Skill.01020001.Description" xml:space="preserve"><value>Ibinubuhos ang lakas sa isang malakas na hampas</value></data>
+  <data name="Skill.01020001.Name" xml:space="preserve"><value>Great Smash</value></data>
+  <data name="Skill.01020002.Description" xml:space="preserve"><value>Ino-optimize ang mga sandata para permanenteng tumaas ang attack power</value></data>
+  <data name="Skill.01020002.Name" xml:space="preserve"><value>Maximize</value></data>
+  <data name="Skill.01020003.Description" xml:space="preserve"><value>Ino-automate ang mga projectile weapon para pansamantalang tumaas ang bilis at attack power</value></data>
+  <data name="Skill.01020003.Name" xml:space="preserve"><value>Automation</value></data>
+  <data name="Skill.01020004.Description" xml:space="preserve"><value>Inaatake ang mga kalapit na kalaban ng malalakas na kidlat</value></data>
+  <data name="Skill.01020004.Name" xml:space="preserve"><value>Spark</value></data>
+  <data name="Skill.01040001.Description" xml:space="preserve"><value>Pinapataas ang defense ng armor ng mechanician sa limitadong oras.</value></data>
+  <data name="Skill.01040001.Name" xml:space="preserve"><value>Metal Armor</value></data>
+  <data name="Skill.01040002.Description" xml:space="preserve"><value>Tumpak at tuloy-tuloy na atake sa mga kalaban. Pinapataas ang attack rate</value></data>
+  <data name="Skill.01040002.Name" xml:space="preserve"><value>Grand Smash</value></data>
+  <data name="Skill.01040003.Description" xml:space="preserve"><value>Ino-optimize ang mga item na may espesyalisasyon ng mechanician.</value></data>
+  <data name="Skill.01040003.Name" xml:space="preserve"><value>Mechanic Weapon Mastery</value></data>
+  <data name="Skill.01040004.Description" xml:space="preserve"><value>Bumubuo ng hindi nakikitang electric guard.</value></data>
+  <data name="Skill.01040004.Name" xml:space="preserve"><value>Spark Shield</value></data>
+  <data name="Skill.01080001.Description" xml:space="preserve"><value>Inaatake ang mga kalapit na halimaw gamit ang kuryente ng isang malakas na hampas.</value></data>
+  <data name="Skill.01080001.Name" xml:space="preserve"><value>Impulsion</value></data>
+  <data name="Skill.01080002.Description" xml:space="preserve"><value>Tinitipon ang mga kalapit na halimaw sa pamamagitan ng malakas na sigaw.</value></data>
+  <data name="Skill.01080002.Name" xml:space="preserve"><value>Compulsion</value></data>
+  <data name="Skill.01080003.Description" xml:space="preserve"><value>Lumilikha ng malakas na magnetic sphere sa napiling user.</value></data>
+  <data name="Skill.01080003.Name" xml:space="preserve"><value>Magnetic Sphere</value></data>
+  <data name="Skill.01080004.Description" xml:space="preserve"><value>Pinapataas ang defense at attack rate mo gamit ang matibay na bakal ng baluti ng Golem.</value></data>
+  <data name="Skill.01080004.Name" xml:space="preserve"><value>Metal Golem</value></data>
+  <data name="Skill.01100001.Description" xml:space="preserve"><value>Mabilis na nagtatanim ng mga mina sa paligid para abutin ang mga kalaban sa saklaw.</value></data>
+  <data name="Skill.01100001.Name" xml:space="preserve"><value>Land Mining</value></data>
+  <data name="Skill.01100002.Description" xml:space="preserve"><value>Pansamantalang pinapataas ang attack speed.</value></data>
+  <data name="Skill.01100002.Name" xml:space="preserve"><value>Hyper Sonic</value></data>
+  <data name="Skill.01100003.Description" xml:space="preserve"><value>4 na malalakas na atake na nagdudulot ng nakamamatay na damage.</value></data>
+  <data name="Skill.01100003.Name" xml:space="preserve"><value>Rolling Smash</value></data>
+  <data name="Skill.01100004.Description" xml:space="preserve"><value>Pinapataas ang minimum at maximum attack power mo at ang maximum attack ng party.</value></data>
+  <data name="Skill.01100004.Name" xml:space="preserve"><value>Power Enhancement</value></data>
+  <data name="Skill.02010001.Description" xml:space="preserve"><value>Pinapataas ang husay sa mga melee weapon, kaya permanenteng tumataas ang attack power</value></data>
+  <data name="Skill.02010001.Name" xml:space="preserve"><value>Melee Mastery</value></data>
+  <data name="Skill.02010002.Description" xml:space="preserve"><value>Permanenteng pinapataas ang resistance sa apoy</value></data>
+  <data name="Skill.02010002.Name" xml:space="preserve"><value>Fire Attribute</value></data>
+  <data name="Skill.02010003.Description" xml:space="preserve"><value>Nagngangalit sa maikling panahon, pero nawawalan ng HP sa bawat atake</value></data>
+  <data name="Skill.02010003.Name" xml:space="preserve"><value>Raving</value></data>
+  <data name="Skill.02010004.Description" xml:space="preserve"><value>Pinapataas ang attack rate para tumpak na matamaan ang kalaban</value></data>
+  <data name="Skill.02010004.Name" xml:space="preserve"><value>Impact</value></data>
+  <data name="Skill.02020001.Description" xml:space="preserve"><value>Mas malakas na bersyon ng Impact</value></data>
+  <data name="Skill.02020001.Name" xml:space="preserve"><value>Triple Impact</value></data>
+  <data name="Skill.02020002.Description" xml:space="preserve"><value>Naghahatid ng malakas at nakamamatay na hampas sa kalaban</value></data>
+  <data name="Skill.02020002.Name" xml:space="preserve"><value>Brutal Swing</value></data>
+  <data name="Skill.02020003.Description" xml:space="preserve"><value>Umaatungal nang nakabibingi na nagpapatulala at nagpapalito sa mga kalaban sandali</value></data>
+  <data name="Skill.02020003.Name" xml:space="preserve"><value>Roar</value></data>
+  <data name="Skill.02020004.Description" xml:space="preserve"><value>Hinihiram ang kakayahan ng maalamat na bayaning si Zechram</value></data>
+  <data name="Skill.02020004.Name" xml:space="preserve"><value>Rage of Zechram</value></data>
+  <data name="Skill.02040001.Description" xml:space="preserve"><value>Pinapataas ang attack rate sa loob ng ilang sandali.</value></data>
+  <data name="Skill.02040001.Name" xml:space="preserve"><value>Concentration</value></data>
+  <data name="Skill.02040002.Description" xml:space="preserve"><value>Dumudurog at malalakas na atake sa mga kalaban.</value></data>
+  <data name="Skill.02040002.Name" xml:space="preserve"><value>Avenging Crash</value></data>
+  <data name="Skill.02040003.Description" xml:space="preserve"><value>Pinapataas ang attack speed ng palakol sa limitadong oras.</value></data>
+  <data name="Skill.02040003.Name" xml:space="preserve"><value>Swift Axe</value></data>
+  <data name="Skill.02040004.Description" xml:space="preserve"><value>Ginamit ng mga ninuno para talunin ang mga demonyo. Malakas na atake na dalawang beses tumatama sa kalaban.</value></data>
+  <data name="Skill.02040004.Name" xml:space="preserve"><value>Bone Crash</value></data>
+  <data name="Skill.02080001.Description" xml:space="preserve"><value>Ang pinakamalakas na dobleng hampas laban sa halimaw.</value></data>
+  <data name="Skill.02080001.Name" xml:space="preserve"><value>Destroyer</value></data>
+  <data name="Skill.02080002.Description" xml:space="preserve"><value>Pumapasok sa wala sa sariling estado, pero bumabagsak nang husto ang absorption</value></data>
+  <data name="Skill.02080002.Name" xml:space="preserve"><value>Berserker</value></data>
+  <data name="Skill.02080003.Description" xml:space="preserve"><value>Inaatake ang mga halimaw gamit ang malakas na pag-ikot.</value></data>
+  <data name="Skill.02080003.Name" xml:space="preserve"><value>Cyclone Strike</value></data>
+  <data name="Skill.02080004.Description" xml:space="preserve"><value>Permanenteng pinapataas ang HP.</value></data>
+  <data name="Skill.02080004.Name" xml:space="preserve"><value>Boost Health</value></data>
+  <data name="Skill.02100001.Description" xml:space="preserve"><value>Inihahagis ang kalaban sa ere at inaatake nang 3 beses.</value></data>
+  <data name="Skill.02100001.Name" xml:space="preserve"><value>Down Hit</value></data>
+  <data name="Skill.02100002.Description" xml:space="preserve"><value>Tumatakbo papunta sa kalaban at napapatulala ito.</value></data>
+  <data name="Skill.02100002.Name" xml:space="preserve"><value>Power Rush</value></data>
+  <data name="Skill.02100003.Description" xml:space="preserve"><value>Iniikot ang sandata sa mabagal pero malalakas na galaw.</value></data>
+  <data name="Skill.02100003.Name" xml:space="preserve"><value>Mortal Blow</value></data>
+  <data name="Skill.02100004.Description" xml:space="preserve"><value>Binabawasan ang absorption para tumaas ang attack damage.</value></data>
+  <data name="Skill.02100004.Name" xml:space="preserve"><value>Bloody Berserker</value></data>
+  <data name="Skill.03010001.Description" xml:space="preserve"><value>Lumilikha ng ipu-ipo na tumutulak at sumusugat sa mga kalaban</value></data>
+  <data name="Skill.03010001.Name" xml:space="preserve"><value>Pike Wind</value></data>
+  <data name="Skill.03010002.Description" xml:space="preserve"><value>Permanenteng pinapataas ang resistance sa yelo</value></data>
+  <data name="Skill.03010002.Name" xml:space="preserve"><value>Ice Attribute</value></data>
+  <data name="Skill.03010003.Description" xml:space="preserve"><value>Tinatarget ang mahihinang bahagi ng kalaban para tumaas ang tsansa ng critical hit</value></data>
+  <data name="Skill.03010003.Name" xml:space="preserve"><value>Critical Hit</value></data>
+  <data name="Skill.03010004.Description" xml:space="preserve"><value>Tumatalon sa ere at bumabagsak na may malakas na hampas</value></data>
+  <data name="Skill.03010004.Name" xml:space="preserve"><value>Jumping Crash</value></data>
+  <data name="Skill.03020001.Description" xml:space="preserve"><value>Binibigyan ang sandata ng katangian ng yelo para sa malakas na atake</value></data>
+  <data name="Skill.03020001.Name" xml:space="preserve"><value>Ground Pike</value></data>
+  <data name="Skill.03020002.Description" xml:space="preserve"><value>Tumatawag ng buhawi para atakihin ang mga kalapit na kalaban</value></data>
+  <data name="Skill.03020002.Name" xml:space="preserve"><value>Tornado</value></data>
+  <data name="Skill.03020003.Description" xml:space="preserve"><value>Permanenteng pinapataas ang defense kapag may hawak na polearm</value></data>
+  <data name="Skill.03020003.Name" xml:space="preserve"><value>Weapon Defence Mastery</value></data>
+  <data name="Skill.03020004.Description" xml:space="preserve"><value>Pinupuno ang sandata ng lakas para sa mapaminsalang atake</value></data>
+  <data name="Skill.03020004.Name" xml:space="preserve"><value>Expansion</value></data>
+  <data name="Skill.03040001.Description" xml:space="preserve"><value>Itinutusok ang sibat sa lupa para atakihin ang mga kalaban.</value></data>
+  <data name="Skill.03040001.Name" xml:space="preserve"><value>Venom Spear</value></data>
+  <data name="Skill.03040002.Description" xml:space="preserve"><value>Ginagawa kang invisible sa limitadong oras.</value></data>
+  <data name="Skill.03040002.Name" xml:space="preserve"><value>Vanish</value></data>
+  <data name="Skill.03040003.Description" xml:space="preserve"><value>Permanenteng pinapataas ang tsansa ng critical attack (%)</value></data>
+  <data name="Skill.03040003.Name" xml:space="preserve"><value>Critical Mastery</value></data>
+  <data name="Skill.03040004.Description" xml:space="preserve"><value>Umiikot na critical attack na may 3 hampas</value></data>
+  <data name="Skill.03040004.Name" xml:space="preserve"><value>Chain Lance</value></data>
+  <data name="Skill.03080001.Description" xml:space="preserve"><value>Hinahanap ang mahinang bahagi ng halimaw at pinapataas ang konsentrasyon.</value></data>
+  <data name="Skill.03080001.Name" xml:space="preserve"><value>Assassin Eye</value></data>
+  <data name="Skill.03080002.Description" xml:space="preserve"><value>Nag-iipon ng lakas para sa tuloy-tuloy na atake.</value></data>
+  <data name="Skill.03080002.Name" xml:space="preserve"><value>Charging Strike</value></data>
+  <data name="Skill.03080003.Description" xml:space="preserve"><value>Ginagawang malabo ang katawan mo.</value></data>
+  <data name="Skill.03080003.Name" xml:space="preserve"><value>Vague</value></data>
+  <data name="Skill.03080004.Description" xml:space="preserve"><value>Ang mga afterimage ay sunod-sunod na nagdudulot ng malakas na damage sa halimaw.</value></data>
+  <data name="Skill.03080004.Name" xml:space="preserve"><value>Shadow Master</value></data>
+  <data name="Skill.03100001.Description" xml:space="preserve"><value>Umiikot nang patayo sa ere at lumalapag na may malakas na atake.</value></data>
+  <data name="Skill.03100001.Name" xml:space="preserve"><value>Dancing Reaper</value></data>
+  <data name="Skill.03100002.Description" xml:space="preserve"><value>Malalaking sibat ang lumilitaw mula sa lupa para atakihin ang mga kalaban.</value></data>
+  <data name="Skill.03100002.Name" xml:space="preserve"><value>Final Spear</value></data>
+  <data name="Skill.03100003.Description" xml:space="preserve"><value>Binabawasan ang absorption para tumaas ang damage at accuracy.</value></data>
+  <data name="Skill.03100003.Name" xml:space="preserve"><value>Amplified</value></data>
+  <data name="Skill.03100004.Description" xml:space="preserve"><value>Umiikot sa paligid para umatake, at ninanakaw ang buhay ng mga kalaban.</value></data>
+  <data name="Skill.03100004.Name" xml:space="preserve"><value>Side Spin Attack</value></data>
+  <data name="Skill.04010001.Description" xml:space="preserve"><value>Tumatawag ng lawin para magbantay sa paligid, na nagpapataas ng attack rate</value></data>
+  <data name="Skill.04010001.Name" xml:space="preserve"><value>Scout Hawk</value></data>
+  <data name="Skill.04010002.Description" xml:space="preserve"><value>Permanenteng pinapataas ang attack power gamit ang pana at crossbow</value></data>
+  <data name="Skill.04010002.Name" xml:space="preserve"><value>Shooting Mastery</value></data>
+  <data name="Skill.04010003.Description" xml:space="preserve"><value>Binibigyan ang palaso ng katangian ng hangin para tumaas ang attack power</value></data>
+  <data name="Skill.04010003.Name" xml:space="preserve"><value>Wind Arrow</value></data>
+  <data name="Skill.04010004.Description" xml:space="preserve"><value>Bumabaril ng nakatutok na tira na may mas mataas na attack rate at power</value></data>
+  <data name="Skill.04010004.Name" xml:space="preserve"><value>Perfect Aim</value></data>
+  <data name="Skill.04020001.Description" xml:space="preserve"><value>Sinasanay ang paningin tulad ng maalamat na archer na si Dion para permanenteng tumaas ang attack rate</value></data>
+  <data name="Skill.04020001.Name" xml:space="preserve"><value>Dion's Eye</value></data>
+  <data name="Skill.04020002.Description" xml:space="preserve"><value>Tumatawag ng mabangis na lawin para atakihin ang mga kalapit na kalaban</value></data>
+  <data name="Skill.04020002.Name" xml:space="preserve"><value>Falcon</value></data>
+  <data name="Skill.04020003.Description" xml:space="preserve"><value>Pumapana sa napiling lugar, sasabog ito at magpapaulan ng apoy sa mga kalaban</value></data>
+  <data name="Skill.04020003.Name" xml:space="preserve"><value>Arrow of Rage</value></data>
+  <data name="Skill.04020004.Description" xml:space="preserve"><value>Naghahagis ng sunod-sunod na tumatagos na palaso sa iisang target</value></data>
+  <data name="Skill.04020004.Name" xml:space="preserve"><value>Avalanche</value></data>
+  <data name="Skill.04040001.Description" xml:space="preserve"><value>Tuloy-tuloy na elemental na atake sa mga kalaban</value></data>
+  <data name="Skill.04040001.Name" xml:space="preserve"><value>Elemental Shot</value></data>
+  <data name="Skill.04040002.Description" xml:space="preserve"><value>Tumatawag ng lawin para atakihin ang mga kalaban</value></data>
+  <data name="Skill.04040002.Name" xml:space="preserve"><value>Golden Falcon</value></data>
+  <data name="Skill.04040003.Description" xml:space="preserve"><value>Dalawang beses na pumapana ng sumasabog na palaso. Nagdudulot ng area damage sa mga kalaban.</value></data>
+  <data name="Skill.04040003.Name" xml:space="preserve"><value>Bomb Shot</value></data>
+  <data name="Skill.04040004.Description" xml:space="preserve"><value>Tumpak at tuloy-tuloy na atake na tumatagos sa mga kalaban.</value></data>
+  <data name="Skill.04040004.Name" xml:space="preserve"><value>Perforation</value></data>
+  <data name="Skill.04080001.Description" xml:space="preserve"><value>Tinatawag ang Wolverine.</value></data>
+  <data name="Skill.04080001.Name" xml:space="preserve"><value>Recall Wolverine</value></data>
+  <data name="Skill.04080002.Description" xml:space="preserve"><value>Mahusay na umiiwas sa mga atake ng kalaban.</value></data>
+  <data name="Skill.04080002.Name" xml:space="preserve"><value>Evasion Mastery</value></data>
+  <data name="Skill.04080003.Description" xml:space="preserve"><value>Malawak na atake gamit ang enerhiya ng Phoenix.</value></data>
+  <data name="Skill.04080003.Name" xml:space="preserve"><value>Phoenix Shot</value></data>
+  <data name="Skill.04080004.Description" xml:space="preserve"><value>Pinapahusay ang mga kakayahan mo sa perpektong pagsasanib sa kalikasan.</value></data>
+  <data name="Skill.04080004.Name" xml:space="preserve"><value>Force of Nature</value></data>
+  <data name="Skill.04100001.Description" xml:space="preserve"><value>Tumatalon at sinisipa ang kalaban, na napapatulala.</value></data>
+  <data name="Skill.04100001.Name" xml:space="preserve"><value>Evasion Shot</value></data>
+  <data name="Skill.04100002.Description" xml:space="preserve"><value>Pumapana ng dalawang electric na palaso sa isang malakas na atake.</value></data>
+  <data name="Skill.04100002.Name" xml:space="preserve"><value>Thunder Roop</value></data>
+  <data name="Skill.04100003.Description" xml:space="preserve"><value>Pinupuno ang palaso ng enerhiya ng kalikasan at lumilikha ng ipuipo.</value></data>
+  <data name="Skill.04100003.Name" xml:space="preserve"><value>Nature Splash</value></data>
+  <data name="Skill.04100004.Description" xml:space="preserve"><value>Tinatarget ang mahinang bahagi ng kalaban at pinapabagal ito.</value></data>
+  <data name="Skill.04100004.Name" xml:space="preserve"><value>Circle Trap</value></data>
+  <data name="Skill.05010001.Description" xml:space="preserve"><value>Naghahagis ng mapaminsalang espada para atakihin ang mga kalaban</value></data>
+  <data name="Skill.05010001.Name" xml:space="preserve"><value>Sword Blast</value></data>
+  <data name="Skill.05010002.Description" xml:space="preserve"><value>Nagiging banal para tumaas ang absorption laban sa mga undead.</value></data>
+  <data name="Skill.05010002.Name" xml:space="preserve"><value>Holy Body</value></data>
+  <data name="Skill.05010003.Description" xml:space="preserve"><value>Ang pisikal na pagsasanay ay permanenteng nagpapataas ng stamina</value></data>
+  <data name="Skill.05010003.Name" xml:space="preserve"><value>Physical Training</value></data>
+  <data name="Skill.05010004.Description" xml:space="preserve"><value>Gumagawa ng 2 sunod na atake sa mga kalaban.</value></data>
+  <data name="Skill.05010004.Name" xml:space="preserve"><value>Double Crash</value></data>
+  <data name="Skill.05020001.Description" xml:space="preserve"><value>Pinapataas ang atake laban sa mga undead sa pamamagitan ng matapang na lakas.</value></data>
+  <data name="Skill.05020001.Name" xml:space="preserve"><value>Holy Valor</value></data>
+  <data name="Skill.05020002.Description" xml:space="preserve"><value>Inaatake ang lahat ng kalaban sa saklaw.</value></data>
+  <data name="Skill.05020002.Name" xml:space="preserve"><value>Brandish</value></data>
+  <data name="Skill.05020003.Description" xml:space="preserve"><value>Hinihiwa ang maraming kalaban nang may malaking lakas at diwa.</value></data>
+  <data name="Skill.05020003.Name" xml:space="preserve"><value>Piercing</value></data>
+  <data name="Skill.05020004.Description" xml:space="preserve"><value>Pinapataas ang defense sa loob ng ilang sandali.</value></data>
+  <data name="Skill.05020004.Name" xml:space="preserve"><value>Drastic Spirit</value></data>
+  <data name="Skill.05040001.Description" xml:space="preserve"><value>Permanenteng pinapahusay ang atake sa paggamit ng mga espada.</value></data>
+  <data name="Skill.05040001.Name" xml:space="preserve"><value>Sword Mastery</value></data>
+  <data name="Skill.05040002.Description" xml:space="preserve"><value>Sinisipsip ang attack power ng undead na halimaw at ibinabalik ang HP.</value></data>
+  <data name="Skill.05040002.Name" xml:space="preserve"><value>Divine Inhalation</value></data>
+  <data name="Skill.05040003.Description" xml:space="preserve"><value>Banal na engkanto na umaakit sa mga halimaw.</value></data>
+  <data name="Skill.05040003.Name" xml:space="preserve"><value>Holy Incantation</value></data>
+  <data name="Skill.05040004.Description" xml:space="preserve"><value>Nakamamatay na krus na atake sa mga kalaban.</value></data>
+  <data name="Skill.05040004.Name" xml:space="preserve"><value>Grand Cross</value></data>
+  <data name="Skill.05080001.Description" xml:space="preserve"><value>Humahampas pababa nang may malaking lakas, nakabaluktot ang katawan paatras.</value></data>
+  <data name="Skill.05080001.Name" xml:space="preserve"><value>Sword of Justice</value></data>
+  <data name="Skill.05080002.Description" xml:space="preserve"><value>Lumilikha ng banal na shield na pinagpala ng Diyos</value></data>
+  <data name="Skill.05080002.Name" xml:space="preserve"><value>Godly Shield</value></data>
+  <data name="Skill.05080003.Description" xml:space="preserve"><value>Ipinagkakaloob ang dakilang kapangyarihan ng Holy Knight sa ngalan ng Diyos.</value></data>
+  <data name="Skill.05080003.Name" xml:space="preserve"><value>God Bless</value></data>
+  <data name="Skill.05080004.Description" xml:space="preserve"><value>Inaatake ang halimaw gamit ang kapangyarihan ng Diyos, sa isang di-matatalong sayaw ng espada.</value></data>
+  <data name="Skill.05080004.Name" xml:space="preserve"><value>Divine Piercing</value></data>
+  <data name="Skill.05100001.Description" xml:space="preserve"><value>Malakas na atake sa kaluluwa ng kalaban.</value></data>
+  <data name="Skill.05100001.Name" xml:space="preserve"><value>Soul Breaker</value></data>
+  <data name="Skill.05100002.Description" xml:space="preserve"><value>Sumusugod sa mga kalapit na kalaban at gumagawa ng hiwang kalahating buwan.</value></data>
+  <data name="Skill.05100002.Name" xml:space="preserve"><value>Crescent Moon</value></data>
+  <data name="Skill.05100003.Description" xml:space="preserve"><value>Tinatawag ang banal na kapangyarihan sa espada mo para atakihin ang kalaban.</value></data>
+  <data name="Skill.05100003.Name" xml:space="preserve"><value>Saint Blade</value></data>
+  <data name="Skill.05100004.Description" xml:space="preserve"><value>Nagbibigay ng kakayahang magdulot ng dagdag na damage sa mga undead na halimaw.</value></data>
+  <data name="Skill.05100004.Name" xml:space="preserve"><value>Holy Benedic</value></data>
+  <data name="Skill.06010001.Description" xml:space="preserve"><value>Naghahagis ng shield para atakihin ang mga kalaban.</value></data>
+  <data name="Skill.06010001.Name" xml:space="preserve"><value>Shield Strike</value></data>
+  <data name="Skill.06010002.Description" xml:space="preserve"><value>Naghahagis ng sibat na lumilikha ng mga ilusyon</value></data>
+  <data name="Skill.06010002.Name" xml:space="preserve"><value>Farina</value></data>
+  <data name="Skill.06010003.Description" xml:space="preserve"><value>Sinasanay ang mga atake ng javelin para permanenteng tumaas ang damage.</value></data>
+  <data name="Skill.06010003.Name" xml:space="preserve"><value>Throwing Mastery</value></data>
+  <data name="Skill.06010004.Description" xml:space="preserve"><value>Inaatake ang kalaban gamit ang banal na javelin.</value></data>
+  <data name="Skill.06010004.Name" xml:space="preserve"><value>Bigger Spear</value></data>
+  <data name="Skill.06020001.Description" xml:space="preserve"><value>Pinapataas ang abot at attack rate ng javelin.</value></data>
+  <data name="Skill.06020001.Name" xml:space="preserve"><value>Windy</value></data>
+  <data name="Skill.06020002.Description" xml:space="preserve"><value>Pinapataas ang attack rate at power gamit ang pagpilipit.</value></data>
+  <data name="Skill.06020002.Name" xml:space="preserve"><value>Twist Javelin</value></data>
+  <data name="Skill.06020003.Description" xml:space="preserve"><value>Sinisipsip ang buhay ng kalaban.</value></data>
+  <data name="Skill.06020003.Name" xml:space="preserve"><value>Soul Sucker</value></data>
+  <data name="Skill.06020004.Description" xml:space="preserve"><value>Inaatake ang kalaban gamit ang kapangyarihan ng apoy.</value></data>
+  <data name="Skill.06020004.Name" xml:space="preserve"><value>Fire Javelin</value></data>
+  <data name="Skill.06040001.Description" xml:space="preserve"><value>Tuloy-tuloy na atake sa mga kalaban sa napakabilis na takbo.</value></data>
+  <data name="Skill.06040001.Name" xml:space="preserve"><value>Split Javelin</value></data>
+  <data name="Skill.06040002.Description" xml:space="preserve"><value>Pinapataas ang attack damage ng mga miyembro ng party.</value></data>
+  <data name="Skill.06040002.Name" xml:space="preserve"><value>Triumph of Valhalla</value></data>
+  <data name="Skill.06040003.Description" xml:space="preserve"><value>Pinapataas ang lightning elemental damage ng javelin.</value></data>
+  <data name="Skill.06040003.Name" xml:space="preserve"><value>Lightning Javelin</value></data>
+  <data name="Skill.06040004.Description" xml:space="preserve"><value>Malakas na tornado na atake laban sa mga kalaban.</value></data>
+  <data name="Skill.06040004.Name" xml:space="preserve"><value>Storm Javelin</value></data>
+  <data name="Skill.06080001.Description" xml:space="preserve"><value>Lumilikha ng espasyo gamit ang kapangyarihan ng Valhalla.</value></data>
+  <data name="Skill.06080001.Name" xml:space="preserve"><value>Hall of Valhalla</value></data>
+  <data name="Skill.06080002.Description" xml:space="preserve"><value>Inaatake ang kalaban sa pamamagitan ng mataas na talon, taglay ang lakas ng galit.</value></data>
+  <data name="Skill.06080002.Name" xml:space="preserve"><value>X-Rage</value></data>
+  <data name="Skill.06080003.Description" xml:space="preserve"><value>Habang aktibo, pinapataas ang ice skill mo sa loob ng ilang sandali.</value></data>
+  <data name="Skill.06080003.Name" xml:space="preserve"><value>Frost Javelin</value></data>
+  <data name="Skill.06080004.Description" xml:space="preserve"><value>Mabilis at tuloy-tuloy na atake.</value></data>
+  <data name="Skill.06080004.Name" xml:space="preserve"><value>Vengeance</value></data>
+  <data name="Skill.06100001.Description" xml:space="preserve"><value>Pinagagaan at pinabibilis ang katawan mo.</value></data>
+  <data name="Skill.06100001.Name" xml:space="preserve"><value>Talaria</value></data>
+  <data name="Skill.06100002.Description" xml:space="preserve"><value>Tinatawag ang javelin na tumatarget sa puso ng kalaban gamit ang enerhiya ng Valhalla at ibinabaon ito sa lupa.</value></data>
+  <data name="Skill.06100002.Name" xml:space="preserve"><value>Galaxy Coup</value></data>
+  <data name="Skill.06100003.Description" xml:space="preserve"><value>Tinatawag ang Arcuda.</value></data>
+  <data name="Skill.06100003.Name" xml:space="preserve"><value>Summon Arcuda</value></data>
+  <data name="Skill.06100004.Description" xml:space="preserve"><value>Naghahagis ng 2 javelin nang sunod-sunod, na nagdudulot ng critical hit.</value></data>
+  <data name="Skill.06100004.Name" xml:space="preserve"><value>Snippy Fear</value></data>
+  <data name="Skill.07010001.Description" xml:space="preserve"><value>Nagpapagaling ng buhay gamit ang banal na mahika.</value></data>
+  <data name="Skill.07010001.Name" xml:space="preserve"><value>Healing</value></data>
+  <data name="Skill.07010002.Description" xml:space="preserve"><value>Naghahagis ng banal na sinag sa mga kalaban.</value></data>
+  <data name="Skill.07010002.Name" xml:space="preserve"><value>Holy Bolt</value></data>
+  <data name="Skill.07010003.Description" xml:space="preserve"><value>Pinakakawalan ang mga mahiwagang kislap para atakihin ang mga kalaban.</value></data>
+  <data name="Skill.07010003.Name" xml:space="preserve"><value>Multispark</value></data>
+  <data name="Skill.07010004.Description" xml:space="preserve"><value>Pinahihina ang atake ng kalaban sa loob ng ilang sandali.</value></data>
+  <data name="Skill.07010004.Name" xml:space="preserve"><value>Holy Mind</value></data>
+  <data name="Skill.07020001.Description" xml:space="preserve"><value>Permanenteng pinapataas ang mana recovery.</value></data>
+  <data name="Skill.07020001.Name" xml:space="preserve"><value>Meditation</value></data>
+  <data name="Skill.07020002.Description" xml:space="preserve"><value>Inaatake ang mga kalaban gamit ang banal na kidlat.</value></data>
+  <data name="Skill.07020002.Name" xml:space="preserve"><value>Divine Lightning</value></data>
+  <data name="Skill.07020003.Description" xml:space="preserve"><value>Ibinabalik ang mga atake ng undead sa pamamagitan ng paglikha ng banal na mahiwagang shield.</value></data>
+  <data name="Skill.07020003.Name" xml:space="preserve"><value>Holy Reflection</value></data>
+  <data name="Skill.07020004.Description" xml:space="preserve"><value>Pinapagaling ang buhay ng isang miyembro ng party.</value></data>
+  <data name="Skill.07020004.Name" xml:space="preserve"><value>Grand Healing</value></data>
+  <data name="Skill.07040001.Description" xml:space="preserve"><value>Dalawang beses na bumabato ng bola ng lakas sa mga kalaban.</value></data>
+  <data name="Skill.07040001.Name" xml:space="preserve"><value>Vigor Ball</value></data>
+  <data name="Skill.07040002.Description" xml:space="preserve"><value>Binubuhay ang isang nalaglag na miyembro ng party.</value></data>
+  <data name="Skill.07040002.Name" xml:space="preserve"><value>Resurrection</value></data>
+  <data name="Skill.07040003.Description" xml:space="preserve"><value>Nakamamatay na engkanto laban sa mga undead na halimaw. Permanenteng damage sa mga undead.</value></data>
+  <data name="Skill.07040003.Name" xml:space="preserve"><value>Extinction</value></data>
+  <data name="Skill.07040004.Description" xml:space="preserve"><value>Pinapataas ang buhay ng mga miyembro ng party sa loob ng ilang sandali.</value></data>
+  <data name="Skill.07040004.Name" xml:space="preserve"><value>Virtual Life</value></data>
+  <data name="Skill.07080001.Description" xml:space="preserve"><value>Inihahagis ang napakalaking bloke ng yelo para atakihin ang mga kalaban.</value></data>
+  <data name="Skill.07080001.Name" xml:space="preserve"><value>Glacial Spike</value></data>
+  <data name="Skill.07080002.Description" xml:space="preserve"><value>Pagkatapos ng sakripisyo niya, tuloy-tuloy na ibinabalik ang lakas ng mga kasama.</value></data>
+  <data name="Skill.07080002.Name" xml:space="preserve"><value>Regeneration Field</value></data>
+  <data name="Skill.07080003.Description" xml:space="preserve"><value>Inaatake ang mga halimaw gamit ang malalakas na kulog.</value></data>
+  <data name="Skill.07080003.Name" xml:space="preserve"><value>Chain Lightning</value></data>
+  <data name="Skill.07080004.Description" xml:space="preserve"><value>Sinisipsip ang atake ng mga undead na halimaw, ibinabalik ang HP at taglay ang kakayahan ng summoner.</value></data>
+  <data name="Skill.07080004.Name" xml:space="preserve"><value>Summon Muspell</value></data>
+  <data name="Skill.07100001.Description" xml:space="preserve"><value>Pinakakawalan ang malakas na shock wave sa mga kalapit na kalaban.</value></data>
+  <data name="Skill.07100001.Name" xml:space="preserve"><value>Spirit Impact</value></data>
+  <data name="Skill.07100002.Description" xml:space="preserve"><value>Tinatawag ang matalim na sibat ng yelo para atakihin ang kalaban.</value></data>
+  <data name="Skill.07100002.Name" xml:space="preserve"><value>Piercing Ice</value></data>
+  <data name="Skill.07100003.Description" xml:space="preserve"><value>Tinatawag ang anghel na may hilig sa mga atake ng kidlat.</value></data>
+  <data name="Skill.07100003.Name" xml:space="preserve"><value>Summon Ramiel</value></data>
+  <data name="Skill.07100004.Description" xml:space="preserve"><value>Pinapataas ang defense at absorption mo sa biyaya ng Diyos.</value></data>
+  <data name="Skill.07100004.Name" xml:space="preserve"><value>Blessing Krishna</value></data>
+  <data name="Skill.08010001.Description" xml:space="preserve"><value>Isinasakripisyo ang sarili para tumaas ang diwa.</value></data>
+  <data name="Skill.08010001.Name" xml:space="preserve"><value>Agony</value></data>
+  <data name="Skill.08010002.Description" xml:space="preserve"><value>Nagpapabagsak ng maliliit na bolang apoy para atakihin ang mga kalaban</value></data>
+  <data name="Skill.08010002.Name" xml:space="preserve"><value>Fire Bolt</value></data>
+  <data name="Skill.08010003.Description" xml:space="preserve"><value>Pinapataas ang mga elemental na katangian gamit ang matibay na diwa sa loob ng ilang sandali.</value></data>
+  <data name="Skill.08010003.Name" xml:space="preserve"><value>Zenith</value></data>
+  <data name="Skill.08010004.Description" xml:space="preserve"><value>Nagpapabagsak ng malalaking bolang apoy para atakihin ang mga kalaban</value></data>
+  <data name="Skill.08010004.Name" xml:space="preserve"><value>Fire Ball</value></data>
+  <data name="Skill.08020001.Description" xml:space="preserve"><value>Pinapataas ang maximum mana</value></data>
+  <data name="Skill.08020001.Name" xml:space="preserve"><value>Mental Mastery</value></data>
+  <data name="Skill.08020002.Description" xml:space="preserve"><value>Haligi ng tubig ang humahampas sa mga kalaban</value></data>
+  <data name="Skill.08020002.Name" xml:space="preserve"><value>Watornado</value></data>
+  <data name="Skill.08020003.Description" xml:space="preserve"><value>Pinalalakas ang elemento ng atake sa sandata ng isang miyembro ng party</value></data>
+  <data name="Skill.08020003.Name" xml:space="preserve"><value>Enchant Weapon</value></data>
+  <data name="Skill.08020004.Description" xml:space="preserve"><value>Pumapalabas ng malakas na sinag mula sa mga palad</value></data>
+  <data name="Skill.08020004.Name" xml:space="preserve"><value>Dead Ray</value></data>
+  <data name="Skill.08040001.Description" xml:space="preserve"><value>Bumubuo ng mahiwagang shield sa paligid ng katawan</value></data>
+  <data name="Skill.08040001.Name" xml:space="preserve"><value>Energy Shield</value></data>
+  <data name="Skill.08040002.Description" xml:space="preserve"><value>Malakas na atake ng lupa sa mga kalaban sa saklaw.</value></data>
+  <data name="Skill.08040002.Name" xml:space="preserve"><value>Diastrophism</value></data>
+  <data name="Skill.08040003.Description" xml:space="preserve"><value>Tumatawag ng multo para tumaas ang magic damage</value></data>
+  <data name="Skill.08040003.Name" xml:space="preserve"><value>Spirit Elemental</value></data>
+  <data name="Skill.08040004.Description" xml:space="preserve"><value>Lumilitaw ang multo ng espada at ginagamit ang kapangyarihan ng elemento para atakihin ang mga kalaban.</value></data>
+  <data name="Skill.08040004.Name" xml:space="preserve"><value>Dancing Sword</value></data>
+  <data name="Skill.08080001.Description" xml:space="preserve"><value>Tinatawag ang malakas na elemental na gawa sa apoy.</value></data>
+  <data name="Skill.08080001.Name" xml:space="preserve"><value>Fire Elemental</value></data>
+  <data name="Skill.08080002.Description" xml:space="preserve"><value>Inaatake ang mga halimaw sa harap gamit ang malalakas na apoy.</value></data>
+  <data name="Skill.08080002.Name" xml:space="preserve"><value>Flame Wave</value></data>
+  <data name="Skill.08080003.Description" xml:space="preserve"><value>Binabawasan ang mga kakayahan ng halimaw sa pamamagitan ng pagbaluktot ng espasyo.</value></data>
+  <data name="Skill.08080003.Name" xml:space="preserve"><value>Distortion</value></data>
+  <data name="Skill.08080004.Description" xml:space="preserve"><value>Inaatake ang mga kalapit na halimaw gamit ang mga tinawag na meteorite.</value></data>
+  <data name="Skill.08080004.Name" xml:space="preserve"><value>Meteo</value></data>
+  <data name="Skill.08100001.Description" xml:space="preserve"><value>Ginagamit ang kapangyarihan ni Silraphim para atakihin ang mga kalapit na kalaban.</value></data>
+  <data name="Skill.08100001.Name" xml:space="preserve"><value>Silraphim</value></data>
+  <data name="Skill.08100002.Description" xml:space="preserve"><value>Pinaliliit ang kalaban, binabawasan ang HP at damage nito.</value></data>
+  <data name="Skill.08100002.Name" xml:space="preserve"><value>Vis Tenus</value></data>
+  <data name="Skill.08100003.Description" xml:space="preserve"><value>Bumubuo ng primordial na bolang apoy para sa malakas na atake.</value></data>
+  <data name="Skill.08100003.Name" xml:space="preserve"><value>Prima Ignis</value></data>
+  <data name="Skill.08100004.Description" xml:space="preserve"><value>Binabawasan ang maximum MP mo para tumaas ang magic power.</value></data>
+  <data name="Skill.08100004.Name" xml:space="preserve"><value>Third Anima</value></data>
+  <data name="Skill.10010001.Description" xml:space="preserve"><value>Sumusugod nang diretso sa kalaban at nagdudulot ng damage.</value></data>
+  <data name="Skill.10010001.Name" xml:space="preserve"><value>Stinger</value></data>
+  <data name="Skill.10010002.Description" xml:space="preserve"><value>Nagdudulot ng tuloy-tuloy na damage sa kalaban habang umiikot</value></data>
+  <data name="Skill.10010002.Name" xml:space="preserve"><value>Running Hit</value></data>
+  <data name="Skill.10010003.Description" xml:space="preserve"><value>Permanenteng pinapataas ang base attack power ng mga sandatang uri ng dagger</value></data>
+  <data name="Skill.10010003.Name" xml:space="preserve"><value>Dual Wield Mastery</value></data>
+  <data name="Skill.10010004.Description" xml:space="preserve"><value>Binabawasan ang damage ng target na kalaban sa loob ng ilang sandali</value></data>
+  <data name="Skill.10010004.Name" xml:space="preserve"><value>Wisp</value></data>
+  <data name="Skill.10020001.Description" xml:space="preserve"><value>Dalawang beses na mabilis na inaatake ang kalaban gamit ang sandatang may lason.</value></data>
+  <data name="Skill.10020001.Name" xml:space="preserve"><value>Venom Thorn</value></data>
+  <data name="Skill.10020002.Description" xml:space="preserve"><value>Ibinabahagi ang liksi ng Assassin at pinapataas ang evasion ng party.</value></data>
+  <data name="Skill.10020002.Name" xml:space="preserve"><value>Alas</value></data>
+  <data name="Skill.10020003.Description" xml:space="preserve"><value>Itinutusok ang mga dagger sa lupa at napapatulala ang mga kalapit na kalaban.</value></data>
+  <data name="Skill.10020003.Name" xml:space="preserve"><value>Soul Shock</value></data>
+  <data name="Skill.10020004.Description" xml:space="preserve"><value>Permanenteng pinapataas ang accuracy at evasion.</value></data>
+  <data name="Skill.10020004.Name" xml:space="preserve"><value>Attack Mastery</value></data>
+  <data name="Skill.10040001.Description" xml:space="preserve"><value>Sumusulong at umaatras, na nagdudulot ng mabigat na damage sa isang kalaban.</value></data>
+  <data name="Skill.10040001.Name" xml:space="preserve"><value>Sore Blade</value></data>
+  <data name="Skill.10040002.Description" xml:space="preserve"><value>Tumatalon papunta sa kalaban, na nagpapakawala ng alon ng enerhiya sa mga kalapit na kalaban.</value></data>
+  <data name="Skill.10040002.Name" xml:space="preserve"><value>Gust Slash</value></data>
+  <data name="Skill.10040003.Description" xml:space="preserve"><value>Nag-iipon ng ki sa katawan para tumaas ang attack speed.</value></data>
+  <data name="Skill.10040003.Name" xml:space="preserve"><value>Inpes</value></data>
+  <data name="Skill.10040004.Description" xml:space="preserve"><value>Nagtatago sa anino, na nagdudulot ng mabigat na damage sa susunod na kalabang matamaan.</value></data>
+  <data name="Skill.10040004.Name" xml:space="preserve"><value>Blind</value></data>
+  <data name="Skill.10080001.Description" xml:space="preserve"><value>Pinupuno ng hangin ang mga talim, na dalawang beses tumatama sa kalaban.</value></data>
+  <data name="Skill.10080001.Name" xml:space="preserve"><value>Cripple</value></data>
+  <data name="Skill.10080002.Description" xml:space="preserve"><value>Pinapataas ang tsansa ng critical gamit ang naka-equip na dagger.</value></data>
+  <data name="Skill.10080002.Name" xml:space="preserve"><value>Assassin Mastery</value></data>
+  <data name="Skill.10080003.Description" xml:space="preserve"><value>Nagpapakawala ng alon ng lason sa paligid, na nilalason ang mga kalapit na kalaban.</value></data>
+  <data name="Skill.10080003.Name" xml:space="preserve"><value>Polluted</value></data>
+  <data name="Skill.10080004.Description" xml:space="preserve"><value>Mabilis na gumagalaw at tinatamaan ang kalaban gamit ang sarili niyang anino.</value></data>
+  <data name="Skill.10080004.Name" xml:space="preserve"><value>Ninja Shadow</value></data>
+  <data name="Skill.10100001.Description" xml:space="preserve"><value>Nagtatago sa anino at nagdudulot ng area damage gamit ang higanteng apoy.</value></data>
+  <data name="Skill.10100001.Name" xml:space="preserve"><value>Shadow Bomb</value></data>
+  <data name="Skill.10100002.Description" xml:space="preserve"><value>Tumatalon sa kinatatayuan at ginagamit ang enerhiya ng gravity para hiwain ang kalaban.</value></data>
+  <data name="Skill.10100002.Name" xml:space="preserve"><value>Rising Slash</value></data>
+  <data name="Skill.10100003.Description" xml:space="preserve"><value>Nagdudulot ng damage sa pamamagitan ng paulit-ulit na pagsipa sa kalaban.</value></data>
+  <data name="Skill.10100003.Name" xml:space="preserve"><value>Violent Stab</value></data>
+  <data name="Skill.10100004.Description" xml:space="preserve"><value>Lumilipad sa ere para magdulot ng malawakang damage.</value></data>
+  <data name="Skill.10100004.Name" xml:space="preserve"><value>Storm</value></data>
+  <data name="Skill.20010001.Description" xml:space="preserve"><value>Mabilis na sumisipa gamit ang kanang paa.</value></data>
+  <data name="Skill.20010001.Name" xml:space="preserve"><value>Low Kick</value></data>
+  <data name="Skill.20010002.Description" xml:space="preserve"><value>Permanenteng pinapataas ang attack power sa pamamagitan ng mahigpit na pagsasanay.</value></data>
+  <data name="Skill.20010002.Name" xml:space="preserve"><value>Strength Mastery</value></data>
+  <data name="Skill.20010003.Description" xml:space="preserve"><value>Paulit-ulit na humahampas gamit ang centrifugal force para magdulot ng nakamamatay na damage sa mga kalaban.</value></data>
+  <data name="Skill.20010003.Name" xml:space="preserve"><value>Double Backspin Blow</value></data>
+  <data name="Skill.20010004.Description" xml:space="preserve"><value>Itinutuon ang lakas sa kanang braso para sa malakas na suntok.</value></data>
+  <data name="Skill.20010004.Name" xml:space="preserve"><value>Hyper Punch</value></data>
+  <data name="Skill.20020001.Description" xml:space="preserve"><value>Nilalamon ng galit, pansamantalang tumataas ang attack speed niya.</value></data>
+  <data name="Skill.20020001.Name" xml:space="preserve"><value>Rage</value></data>
+  <data name="Skill.20020002.Description" xml:space="preserve"><value>Tumatalon sa ere, umiikot at malakas na sumisipa gamit ang mga paa.</value></data>
+  <data name="Skill.20020002.Name" xml:space="preserve"><value>Twister Kick</value></data>
+  <data name="Skill.20020003.Description" xml:space="preserve"><value>Sumusulong gamit ang siko, na nagpapakawala ng alon ng lakas sa mga kalapit na kalaban.</value></data>
+  <data name="Skill.20020003.Name" xml:space="preserve"><value>Elbow Rush</value></data>
+  <data name="Skill.20020004.Description" xml:space="preserve"><value>Permanenteng pinapataas ang stamina at accuracy sa tuloy-tuloy na pagsasanay.</value></data>
+  <data name="Skill.20020004.Name" xml:space="preserve"><value>Stamina Mastery</value></data>
+  <data name="Skill.20040001.Description" xml:space="preserve"><value>Pansamantalang pinapataas ang HP para maiwasan ang kamatayan.</value></data>
+  <data name="Skill.20040001.Name" xml:space="preserve"><value>Deep Breath</value></data>
+  <data name="Skill.20040002.Description" xml:space="preserve"><value>Nagpapakawala ng agos ng enerhiya na nagdudulot ng nakamamatay na damage sa isang kalaban.</value></data>
+  <data name="Skill.20040002.Name" xml:space="preserve"><value>Tiger Cannon</value></data>
+  <data name="Skill.20040003.Description" xml:space="preserve"><value>Nag-iipon ng enerhiya para maglabas ng malakas na sigaw, na binabawasan ang mga kakayahan ng mga kalapit na kalaban.</value></data>
+  <data name="Skill.20040003.Name" xml:space="preserve"><value>War Cry</value></data>
+  <data name="Skill.20040004.Description" xml:space="preserve"><value>Mabilis na tumatalon sa ere at lumilipad pababa, na dalawang beses nagdudulot ng tuloy-tuloy at malawakang damage sa kalaban.</value></data>
+  <data name="Skill.20040004.Name" xml:space="preserve"><value>Leap Smash</value></data>
+  <data name="Skill.20080001.Description" xml:space="preserve"><value>Paulit-ulit na inaatake ang target gamit ang mga kamao nang 4 na beses.</value></data>
+  <data name="Skill.20080001.Name" xml:space="preserve"><value>Barrage</value></data>
+  <data name="Skill.20080002.Description" xml:space="preserve"><value>Pansamantalang pinapataas ang defense.</value></data>
+  <data name="Skill.20080002.Name" xml:space="preserve"><value>Nerves of Steel</value></data>
+  <data name="Skill.20080003.Description" xml:space="preserve"><value>Sumusulong, at dalawang beses binabangga ang kalaban gamit ang balikat.</value></data>
+  <data name="Skill.20080003.Name" xml:space="preserve"><value>Shoulder Charge</value></data>
+  <data name="Skill.20080004.Description" xml:space="preserve"><value>Nagdudulot ng nakamamatay na damage sa kalaban sa pamamagitan ng 3 sunod na sipa.</value></data>
+  <data name="Skill.20080004.Name" xml:space="preserve"><value>Typhoon Kick</value></data>
+  <data name="Skill.20100001.Description" xml:space="preserve"><value>Permanenteng pinapataas ang defense.</value></data>
+  <data name="Skill.20100001.Name" xml:space="preserve"><value>Defense Mastery</value></data>
+  <data name="Skill.20100002.Description" xml:space="preserve"><value>Tumatalon sa ere at sinisipa ang kalaban nang tatlong beses.</value></data>
+  <data name="Skill.20100002.Name" xml:space="preserve"><value>Hunting Hawk</value></data>
+  <data name="Skill.20100003.Description" xml:space="preserve"><value>Tumatalon sa ere at dalawang beses hinahampas ang lupa, na nagdudulot ng damage sa mga kalapit na kalaban.</value></data>
+  <data name="Skill.20100003.Name" xml:space="preserve"><value>Line Break</value></data>
+  <data name="Skill.20100004.Description" xml:space="preserve"><value>Pinalalakas ang loob ng mga miyembro ng party, kaya mas lumalakas sila.</value></data>
+  <data name="Skill.20100004.Name" xml:space="preserve"><value>Hard Training</value></data>
+  <data name="Skill.50010001.Description" xml:space="preserve"><value>Tinatamaan ang kalaban ng malakas na sinag ng dark magic na likha ng sorcery</value></data>
+  <data name="Skill.50010001.Name" xml:space="preserve"><value>Dark Bolt</value></data>
+  <data name="Skill.50010002.Description" xml:space="preserve"><value>Gumagawa ng sunod-sunod na area attack gamit ang malalakas na sinag ng dark magic</value></data>
+  <data name="Skill.50010002.Name" xml:space="preserve"><value>Dark Wave</value></data>
+  <data name="Skill.50010003.Description" xml:space="preserve"><value>Naghahagis ng sumpa sa mga kalaban, na pansamantalang nagpapabagal sa kanila</value></data>
+  <data name="Skill.50010003.Name" xml:space="preserve"><value>Inertia</value></data>
+  <data name="Skill.50010004.Description" xml:space="preserve"><value>Sa pamamagitan ng mental na pagsasanay, permanenteng tumataas ang recovery ng MP potion at ang kapasidad ng mana</value></data>
+  <data name="Skill.50010004.Name" xml:space="preserve"><value>Inner Peace</value></data>
+  <data name="Skill.50020001.Description" xml:space="preserve"><value>Gumagamit ng malakas na sorcery para magdulot ng damage sa kalaban at sa mga kalapit na target.</value></data>
+  <data name="Skill.50020001.Name" xml:space="preserve"><value>Spiritual Flare</value></data>
+  <data name="Skill.50020002.Description" xml:space="preserve"><value>Ikinukulong ang kaluluwa ng target gamit ang sorcery.</value></data>
+  <data name="Skill.50020002.Name" xml:space="preserve"><value>Spiritual Manacle</value></data>
+  <data name="Skill.50020003.Description" xml:space="preserve"><value>Tinitipon ang mga kalapit na kalaban sa iisang lugar.</value></data>
+  <data name="Skill.50020003.Name" xml:space="preserve"><value>Hunt</value></data>
+  <data name="Skill.50020004.Description" xml:space="preserve"><value>Tinatawag si Migal para tumaas ang attack damage mo at ng mga miyembro ng party.</value></data>
+  <data name="Skill.50020004.Name" xml:space="preserve"><value>Advent Migal</value></data>
+  <data name="Skill.50040001.Description" xml:space="preserve"><value>Pinapataas ang absorption kapalit ng maximum mana.</value></data>
+  <data name="Skill.50040001.Name" xml:space="preserve"><value>Rainmaker</value></data>
+  <data name="Skill.50040002.Description" xml:space="preserve"><value>Pinababagsak ang mga sinumpang multo para magdulot ng malawakang damage sa mga kalapit na kalaban.</value></data>
+  <data name="Skill.50040002.Name" xml:space="preserve"><value>Phantom Call</value></data>
+  <data name="Skill.50040003.Description" xml:space="preserve"><value>Gamit ang lakas ng multo, nagdudulot ng damage sa kalaban at sinisipsip ang buhay nito.</value></data>
+  <data name="Skill.50040003.Name" xml:space="preserve"><value>Haunt</value></data>
+  <data name="Skill.50040004.Description" xml:space="preserve"><value>Nagdudulot ng damage gamit ang mga kuko ng tinawag na multo.</value></data>
+  <data name="Skill.50040004.Name" xml:space="preserve"><value>Scratch</value></data>
+  <data name="Skill.50080001.Description" xml:space="preserve"><value>Tinatawag ang isang Sinumpang Bloody Knight gamit ang sorcery.</value></data>
+  <data name="Skill.50080001.Name" xml:space="preserve"><value>Recall Hestian</value></data>
+  <data name="Skill.50080002.Description" xml:space="preserve"><value>Nagdudulot ng damage sa pamamagitan ng pagpapakawala ng agos ng kadiliman sa kalaban.</value></data>
+  <data name="Skill.50080002.Name" xml:space="preserve"><value>Judgement</value></data>
+  <data name="Skill.50080003.Description" xml:space="preserve"><value>Tinatawag si Midranda para tumaas ang attack speed mo at ng mga miyembro ng party.</value></data>
+  <data name="Skill.50080003.Name" xml:space="preserve"><value>Advent Midranda</value></data>
+  <data name="Skill.50080004.Description" xml:space="preserve"><value>Taglay ang kapangyarihan ni Midranda at Migal, nagdudulot ng damage sa mga kalapit na kalaban.</value></data>
+  <data name="Skill.50080004.Name" xml:space="preserve"><value>Mourning Pray</value></data>
+  <data name="Skill.50100001.Description" xml:space="preserve"><value>Gamit ang malakas na sorcery, nagbibigay ng dagdag na mana sa user.</value></data>
+  <data name="Skill.50100001.Name" xml:space="preserve"><value>Creed</value></data>
+  <data name="Skill.50100002.Description" xml:space="preserve"><value>Nagdudulot ng sinumpang damage sa mga kalapit na kalaban.</value></data>
+  <data name="Skill.50100002.Name" xml:space="preserve"><value>Press Of Deity</value></data>
+  <data name="Skill.50100003.Description" xml:space="preserve"><value>Tinatawag ang mga espiritu ng lupa para atakihin ang kalaban.</value></data>
+  <data name="Skill.50100003.Name" xml:space="preserve"><value>Ghostly Nail</value></data>
+  <data name="Skill.50100004.Description" xml:space="preserve"><value>Permanenteng pinapataas ang buhay gamit ang kapangyarihan ng sorcery.</value></data>
+  <data name="Skill.50100004.Name" xml:space="preserve"><value>High Regeneration</value></data>
+</root>

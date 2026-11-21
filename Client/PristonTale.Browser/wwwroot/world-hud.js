@@ -1,5 +1,8 @@
 import { makeDraggable } from './draggable.js';
 import { createTouchHud, touchOnlyDevice } from './touch-hud.js';
+import { say, table, word } from './page-language.js';
+
+const qualityPhrase = say('Qualidade: ', 'Quality: ');
 
 const words = {
     'pt-BR': {
@@ -10,7 +13,8 @@ const words = {
         news: 'News & Support', 'auto-hunt-panel': 'Auto-hunt', 'close-hunt': 'Close',
         hunting: 'On', idle: 'Off', more: 'More',
         calendar: 'Calendar', auction: 'Auction', security: 'Security', drops: 'Recent drops',
-        'coin-history': 'Coin history', events: 'Events', 'tower-defender': 'Tower Defender', eragon: 'Eragon Lair',
+        'coin-history': 'Coin history', events: 'Events', 'arena-solo': 'Arena 1x1', 'arena-trio': 'Arena 3x3', royale: 'Battle Royale', 'tower-defender': 'Tower Defender',
+        eragon: 'Eragon Lair',
         ranking: 'Rankings', rewards: 'Item distributor', 'item-shop': 'Item Shop', 'community-buffs': 'Community buffs',
         'start-hunt': 'Start', 'pause-hunt': 'Pause',
         'hunt-requirement': 'Requires an active hunting quest outside town.',
@@ -29,6 +33,9 @@ const tips = {
         drops: 'Os itens raros que acabaram de cair no servidor.',
         'coin-history': 'Suas compras e gastos de Coins.',
         events: 'Os eventos ativos e os próximos.',
+        'arena-solo': 'Entre na fila da arena 1x1 enquanto ela está aberta.',
+        'arena-trio': 'O líder de um grupo de 3 coloca o grupo na fila da arena 3x3.',
+        royale: 'Inscreve você no próximo Battle Royale nos 10 minutos antes do horário.',
         'tower-defender': 'O evento de defesa de torres entre duas equipes.',
         eragon: 'Entre no Lar do Eragon.',
         ranking: 'Os melhores jogadores e clãs.',
@@ -45,6 +52,9 @@ const tips = {
         drops: 'The rare items that just dropped on the server.',
         'coin-history': 'Your Coin purchases and spending.',
         events: 'The running and upcoming events.',
+        'arena-solo': 'Join the 1x1 arena queue while it is open.',
+        'arena-trio': 'The leader of a party of 3 queues the party for the 3x3 arena.',
+        royale: 'Registers you for the next Battle Royale in the 10 minutes before its hour.',
         'tower-defender': 'The tower defense event between two teams.',
         eragon: 'Enter the Eragon Lair.',
         ranking: 'The best players and clans.',
@@ -53,6 +63,12 @@ const tips = {
         'community-buffs': 'See how much each global buff still needs and donate any amount of Coins: a full goal turns the buff on for everyone.'
     }
 };
+
+// The ping's colour on the touch HUD's readout, as the Android client's: good under 80 ms, fair under 200, else poor.
+export function latencyGrade(milliseconds) {
+    if (!Number.isFinite(milliseconds)) return '';
+    return milliseconds < 80 ? 'good' : milliseconds < 200 ? 'fair' : 'poor';
+}
 
 export function createWorldHud(root, getHost, getLanguage, getQualityLabel = () => '', getRenderCount = () => null, interfaceChoice = {}) {
     const part = role => root.querySelector('[data-role="' + role + '"]');
@@ -70,7 +86,7 @@ export function createWorldHud(root, getHost, getLanguage, getQualityLabel = () 
     Object.assign(quality.style, badgeStyle, { bottom: 'max(6px, env(safe-area-inset-bottom))' });
     hud.append(quality);
     function updateQuality() {
-        quality.textContent = (getLanguage() === 'en' ? 'Quality: ' : 'Qualidade: ') + getQualityLabel();
+        quality.textContent = word(qualityPhrase, getLanguage()) + getQualityLabel();
         sceneQuality.textContent = quality.textContent;
         touch.refresh();
     }
@@ -86,7 +102,7 @@ export function createWorldHud(root, getHost, getLanguage, getQualityLabel = () 
     const controls = hud.querySelector?.('.world-hud-controls');
     controls?.addEventListener('pointerover', event => {
         const button = event.target.closest('[data-world-action]');
-        const text = button && (tips[getLanguage()] ?? tips['pt-BR'])[button.dataset.worldAction];
+        const text = button && table(tips, 'worldTips', getLanguage())[button.dataset.worldAction];
         if (!text) return;
         tipTitle.textContent = button.querySelector('[data-world-label]')?.textContent ?? '';
         tipText.textContent = text;
@@ -175,7 +191,7 @@ export function createWorldHud(root, getHost, getLanguage, getQualityLabel = () 
 
     function updateHunt() {
         const running = getHost()?.WorldAutoHuntActive() ?? false;
-        const labels = words[getLanguage()] ?? words['pt-BR'];
+        const labels = table(words, 'world', getLanguage());
         for (const button of huntButtons) {
             button.setAttribute('aria-pressed', String(running));
             button.setAttribute('aria-label', labels[running ? 'pause-hunt' : 'start-hunt']);
@@ -185,6 +201,7 @@ export function createWorldHud(root, getHost, getLanguage, getQualityLabel = () 
 
     function showPing(value) {
         ping.textContent = Number.isFinite(value) ? value + ' ms' : '';
+        ping.dataset.latency = latencyGrade(value);
     }
 
     async function measurePing() {
@@ -265,7 +282,7 @@ export function createWorldHud(root, getHost, getLanguage, getQualityLabel = () 
             renderStart = null;
             pingTime = 0;
             const actions = new Set((getHost()?.WorldActions() ?? '').split(','));
-            const labels = words[getLanguage()] ?? words['pt-BR'];
+            const labels = table(words, 'world', getLanguage());
             for (const button of hud.querySelectorAll('[data-world-optional]')) {
                 button.hidden = false;
                 button.disabled = !actions.has(button.dataset.worldAction);
@@ -326,3 +343,6 @@ export function createWorldHud(root, getHost, getLanguage, getQualityLabel = () 
         }
     };
 }
+
+// The language tables, for the catalogs of the other languages and their test.
+export const worldTables = { world: words, worldTips: tips };

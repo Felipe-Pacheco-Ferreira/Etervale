@@ -175,7 +175,7 @@ public sealed partial class GameplayHud
         catch (Exception exception)
         {
             _rewardDeadline = 0;
-            _rewardMessage = ClientText.Language == "pt-BR" ? "Não foi possível atualizar as recompensas." : "Could not update rewards.";
+            _rewardMessage = ClientText.Get("Rewards.UpdateFailed");
             _context.Log.Warn($"[Quest] daily reward request failed: {exception.Message}");
         }
     }

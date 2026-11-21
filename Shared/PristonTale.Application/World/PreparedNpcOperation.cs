@@ -6,7 +6,7 @@ namespace PristonTale.Application.World;
 
 // A validated NPC service request. The warehouse, when set, is stored with the snapshot; the commit applies the
 // candidate, the gold change and the arrival. Tax: the castle's tax the gold change was charged with. BellatraTeam: the
-// team a Bellatra ticket enters (none: -1).
+// team a Bellatra ticket enters (none: -1). Aged: the item an aging raised, for the notice of a high aging.
 public sealed record PreparedNpcOperation(
     PlayerCharacter Original,
     PlayerCharacter? Candidate,
@@ -16,5 +16,6 @@ public sealed record PreparedNpcOperation(
     WarehouseStorage? Warehouse = null,
     long ExpectedWarehouseRevision = 0,
     int Tax = 0,
-    int BellatraTeam = -1)
+    int BellatraTeam = -1,
+    Simulation.Items.ItemInstance? Aged = null)
     : PreparedOperation(Original, Candidate, Snapshot);

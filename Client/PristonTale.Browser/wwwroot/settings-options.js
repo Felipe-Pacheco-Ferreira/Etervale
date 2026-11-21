@@ -1,4 +1,6 @@
-export const say = (pt, en) => ({ 'pt-BR': pt, en });
+import { pageLanguages, say, word } from './page-language.js';
+
+export { say };
 const opt = (value, pt, en = pt, unavailable = false) => [value, say(pt, en), unavailable];
 const card = (pt, en, rows, meta = {}) => ({ title: say(pt, en), rows, ...meta });
 const toggle = (field, pt, en, extra = {}) => ({ field, label: say(pt, en), toggle: true, unavailable: !field, ...extra });
@@ -69,13 +71,16 @@ export const qualityChoices = [
     ...levels.slice().reverse(),
     opt('Custom', 'Personalizado', 'Custom')
 ];
+const automaticPhrase = say('Automático', 'Automatic');
+const dynamicPhrase = say('dinâmica', 'dynamic');
+const shadowsPhrase = say('sombras', 'shadows');
 export function qualityLabel(profile, effectiveQuality, language = 'pt-BR') {
     const label = key => {
         const phrase = qualityChoices.find(([value]) => value === key)?.[1];
-        return phrase?.[language] ?? phrase?.['pt-BR'] ?? '';
+        return word(phrase, language);
     };
     if (profile === 'Auto') {
-        const automatic = language === 'en' ? 'Automatic' : 'Automático';
+        const automatic = word(automaticPhrase, language);
         const effective = effectiveQuality === 'Ultra' ? 'High' : effectiveQuality;
         return ['VeryLow', 'Low', 'Medium', 'High'].includes(effective) ? automatic + ' · ' + label(effective) : automatic;
     }
@@ -86,12 +91,12 @@ export function dynamicResolutionLabel(state, requestedScale = 1, language = 'pt
     let label = '';
     if (Number.isFinite(state.scale) && state.scale > 0 && Number.isFinite(requestedScale) && state.scale < requestedScale - 0.0001
         && Number.isInteger(state.width) && state.width > 0 && Number.isInteger(state.height) && state.height > 0) {
-        label = ` · 3D ${state.width}×${state.height} (${Math.round(state.scale * 100)}%, ${language === 'en' ? 'dynamic' : 'dinâmica'})`;
+        label = ` · 3D ${state.width}×${state.height} (${Math.round(state.scale * 100)}%, ${word(dynamicPhrase, language)})`;
     }
     const rate = state.shadowUpdateRate;
     const cap = Number.isFinite(requestedShadowRate) && requestedShadowRate >= 0 ? requestedShadowRate : 60;
     if (Number.isInteger(rate) && rate > 0 && (cap === 0 || rate < cap)) {
-        label += ` · ${language === 'en' ? 'shadows' : 'sombras'} ${rate} Hz`;
+        label += ` · ${word(shadowsPhrase, language)} ${rate} Hz`;
     }
     return label;
 }
@@ -126,18 +131,16 @@ export const unavailableShortcuts = {
     character: [
         [3, say('Traje', 'Costume'), 'T'],
         [3, say('Pontos de status +10 (segurar)', 'Stat points +10 (hold)'), 'B'],
-        [3, say('Auto-caça: ligar / desligar', 'Toggle auto hunt'), 'P'],
-        [3, say('Modo PK: ligar / desligar', 'Toggle PK mode'), 'K']
+        [3, say('Auto-caça: ligar / desligar', 'Toggle auto hunt'), 'P']
     ],
     voice: [[0, say('Ligar / desligar microfone', 'Toggle microphone'), 'B']],
     camera: [
-        [0, say('Modo da câmera', 'Camera mode'), 'Z'],
-        [0, say('Câmera 2D / 3D (dungeons)', '2D / 3D dungeon camera'), 'Shift + Z']
+        [0, say('Modo da câmera', 'Camera mode'), 'Z']
     ]
 };
 
 // The languages the game has texts for (ClientSettings.SupportedLanguages).
-const languages = [opt('pt-BR', 'Português', 'Portuguese'), opt('en', 'English')];
+const languages = pageLanguages.map(([code, name]) => [code, name]);
 
 // What a side mouse button does (ClientSettings.CameraMouse4/5, the CameraMouseAction values).
 const mouseActions = [
@@ -225,6 +228,12 @@ export const tabs = {
                 { field: 'uiScale', label: say('Escala do HUD', 'HUD scale'), hudScale: true },
                 toggle('centeredInterface', 'Interface centralizada', 'Centered interface', info(
                     'A barra de baixo fica no centro da tela larga; desligada, à esquerda.', 'The bottom bar sits in the middle of a wide screen; off, at the left.')),
+                toggle('classicInterface', 'Interface clássica', 'Classic interface', info(
+                    'O HUD com a arte do jogo original, como no PC: chat, grupo, missões e menu.',
+                    'The HUD with the original game\'s art, as on PC: chat, party, quests and menu.')),
+                toggle('moveChat', 'Mover chat', 'Move chat', info(
+                    'Arraste o chat pela área das mensagens. "Redefinir interface" (aba Outros) o devolve ao lugar.',
+                    'Drag the chat by its message area. "Reset interface" (Other tab) puts it back.')),
                 toggle('chatFilter', 'Censura de chat', 'Chat filter', info('Palavrões no que os jogadores escrevem aparecem como ***.',
                     'Swear words in what players write show as ***.')),
                 toggle('hideOtherPlayers', 'Esconder outros jogadores', 'Hide other players', info(
@@ -263,6 +272,11 @@ export const tabs = {
                 toggle('showOtherPlayersDamage', 'Dano de outros jogadores', 'Damage from other players', { ...yes,
                     ...info('Mostra, menores e mais claros, os golpes entre outros jogadores e monstros.', 'Shows, smaller and lighter, hits between other players and monsters.') }),
                 toggle('spreadDamageNumbers', 'Espalhar números', 'Spread numbers'),
+                toggle('showElementIcon', 'Ícone do elemento', 'Element icon', { ...yes,
+                    ...info('Golpes de fogo, gelo, raio e veneno mostram o ícone do elemento ao lado do número.',
+                        'Fire, ice, lightning and poison hits show the element’s icon beside the number.') }),
+                toggle('colorDamageByElement', 'Colorir número pelo elemento', 'Color number by element', info(
+                    'Golpes com elemento pintam o número na cor do elemento.', 'Hits with an element paint the number in the element’s colour.')),
                 toggle('hidePotionHeals', 'Mostrar cura de poções', 'Show healing from potions', { invert: true })
             ])
         ]
@@ -270,16 +284,22 @@ export const tabs = {
     audio: [
         [
             card('Música de fundo', 'Background music', [
-                toggle('musicEnabled', 'Ativar música', 'Enable music'), volume('musicVolumePercent', 100),
-                caption('No navegador, vale para a música de abertura; o som dentro do jogo ainda não toca no navegador.',
-                    'In the browser it applies to the opening music; in-game sound does not play in the browser yet.')
+                toggle('musicEnabled', 'Ativar música', 'Enable music'), volume('musicVolumePercent', 100)
+            ]),
+            card('Efeitos sonoros', 'Sound effects', [
+                toggle('soundEnabled', 'Ativar efeitos sonoros', 'Enable sound effects'), volume('soundVolumePercent', 100)
             ])
         ]
     ],
     other: [
         [
             card('Idioma', 'Language', [
-                select('language', 'Idioma do jogo', 'Game language', languages, { wide: true })
+                select('language', 'Idioma do jogo', 'Game language', languages, { wide: true }),
+                // Shown only while the game server translates the chat (BrowserHost.ChatTranslationAvailable).
+                select('chatTranslateTo', 'Traduzir chat para', 'Translate chat to', [
+                    opt('', 'Não traduzir', 'Do not translate'), opt('game', 'Idioma do jogo', 'Game language'), ...languages
+                ], { wide: true, serverTranslation: true, ...info('As mensagens de outros jogadores chegam também traduzidas, marcadas com (traduzido).',
+                    'Messages from other players also arrive translated, marked (translated).') })
             ]),
             card('Jogo', 'Game', [
                 toggle('showMinimap', 'Mostrar minimapa', 'Show minimap', yes),
@@ -287,6 +307,11 @@ export const tabs = {
                     ...info('O personagem entra no mapa correndo; R troca entre correr e andar.', 'Your character enters each map running; R switches between running and walking.') }),
                 toggle('prioritizePlayers', 'Prioridade a jogadores (PvP)', 'Prioritize players (PvP)', info(
                     'Um jogador sob o cursor tem prioridade sobre um monstro mais perto.', 'A player under the cursor wins over a nearer monster.')),
+                // The mode lives on the server (BrowserHost.SwitchPvp asks it); the answer comes in the chat.
+                action('Modo PvP: ligar / desligar', 'PvP mode: on / off',
+                    'Nos mapas de caça você luta com quem também está com PvP ligado, fora do seu grupo e do seu clã. O servidor responde no chat.',
+                    'In hunting fields you fight players who also have PvP on, outside your party and clan. The server answers in the chat.',
+                    'switch-pvp'),
                 toggle('confirmClose', 'Confirmar antes de fechar o jogo', 'Confirm before closing the game', { ...yes,
                     ...info('O navegador pergunta antes de fechar ou recarregar a aba durante o jogo.', 'The browser asks before closing or reloading the tab while you play.') }),
                 toggle('notifyOnDeath', 'Avisar quando meu personagem morrer', 'Notify me when my character dies', info(
@@ -305,7 +330,10 @@ export const tabs = {
                     ...info('Mostra avisos do guia de nível do Noxius.', 'Shows notices from Noxius’s level guide.')
                 }),
                 toggle('minimapGuide', 'Guia no minimapa', 'Minimap guide', { ...yes,
-                    ...info('Uma seta no minimapa aponta para o destino da missão que você está seguindo.', 'An arrow on the minimap points to the quest destination you follow.') })
+                    ...info('Uma seta no minimapa aponta para o destino da missão que você está seguindo.', 'An arrow on the minimap points to the quest destination you follow.') }),
+                toggle('tutorialTips', 'Dicas do tutorial', 'Tutorial tips', { ...yes,
+                    ...info('Até o nível 20, balões explicam o básico: andar, atacar, inventário, habilidades. Cada dica some quando você clica em Entendi.',
+                        'Up to level 20, boxes explain the basics: moving, attacking, inventory, skills. Each tip goes away when you click Got it.') })
             ]),
             card('Modo streamer', 'Streamer mode', [
                 toggle('streamerMode', 'Modo streamer', 'Streamer mode', info('Esconde do chat as mensagens escolhidas abaixo.',
@@ -318,12 +346,17 @@ export const tabs = {
             card('Janelas', 'Windows', [
                 action('Redefinir posição das janelas', 'Reset window positions', 'Arraste as janelas pelo título; clique duplo no título volta uma janela ao lugar.',
                     'Drag windows by their title; double-click a title to put a window back.', 'reset-windows'),
-                action('Redefinir interface', 'Reset interface', 'As janelas e a escala do HUD voltam ao padrão (salve para aplicar a escala).',
-                    'Windows and the HUD scale return to default (save to apply the scale).', 'reset-interface')
+                action('Redefinir interface', 'Reset interface',
+                    'As janelas, a escala do HUD, o lugar do chat, a interface clássica, mover chat e as dicas voltam ao padrão (salve para aplicar).',
+                    'Windows, the HUD scale, the chat\'s place, classic interface, move chat and tips return to default (save to apply).', 'reset-interface')
             ])
         ],
         [
             card('Câmera', 'Camera', [
+                select('dungeonCamera', 'Câmera em dungeons', 'Dungeon camera', [
+                    opt('TopDown', '2D (vista de cima)', '2D (top-down)'), opt('Free', '3D (câmera normal)', '3D (normal camera)')
+                ], info('Vale só dentro das dungeons. A vista de cima não gira; a roda do mouse aproxima e afasta. Shift + Z alterna.',
+                    'Applies inside dungeons only. The top-down view does not turn; the mouse wheel zooms. Shift + Z switches.')),
                 toggle('cameraMouseButtons', 'Girar câmera com o mouse (Mouse 4 / Mouse 5)', 'Rotate camera with mouse buttons 4 and 5', {
                     kind: 'side-buttons', ...info('Ativa os atalhos padrão de giro nos botões laterais.', 'Enables default rotation on the side buttons.')
                 }),
@@ -345,6 +378,25 @@ export const tabs = {
                 toggle('hideBellatraResults', 'Bellatra: resultados', 'Bellatra results', { invert: true }),
                 toggle('hideBellatraBossNotices', 'Bellatra: boss derrotado', 'Bellatra boss defeated', { invert: true }),
                 toggle('hideBellatraTeamNotices', 'Bellatra: avisos da equipe', 'Bellatra team notices', { invert: true }),
+                select('bellatraOpeningNotice', 'Aviso de abertura do Bellatra', 'Bellatra opening notice',
+                    [opt('Both', 'Chat e tela', 'Chat and screen'), opt('Chat', 'Só chat', 'Chat only'), off]),
+                toggle('hideAgingNotices', 'Aging de outros jogadores', 'Other players’ aging', { invert: true,
+                    ...info('Aviso quando alguém faz aging alto (a partir de +10).', 'A notice when somebody reaches a high aging (+10 and above).') }),
+                toggle('hideLevelUpNotices', 'Level up de outros jogadores', 'Other players’ level ups', { invert: true,
+                    ...info('Aviso quando alguém chega a um nível marco (100, 110, 120...).', 'A notice when somebody reaches a milestone level (100, 110, 120...).') }),
+                toggle('hideDuelNotices', 'Duelos de outros jogadores', 'Other players’ duels', { invert: true,
+                    ...info('Aviso no chat do mapa de quem venceu um duelo.', 'A notice in the map’s chat of who won a duel.') }),
+                toggle('hideArenaNotices', 'Arenas: abertura e resultados', 'Arenas: opening and results', { invert: true,
+                    ...info('Aviso quando a arena abre e de quem venceu cada partida.', 'A notice when the arena opens and of who won each match.') }),
+                toggle('hideRoyaleNotices', 'Battle Royale', 'Battle Royale', { invert: true,
+                    ...info('Aviso das inscrições, do início e do vencedor do Battle Royale.', 'A notice of the Battle Royale’s registration, start and winner.') }),
+                toggle('hideTitleNotices', 'Títulos ganhos e perdidos', 'Titles earned and lost', { invert: true,
+                    ...info('Aviso de quem conquistou um título lendário ou de posição, e de quem o perdeu para outro jogador.',
+                        'A notice of who earned a legendary or position title, and of who lost one to another player.') }),
+                toggle('hideBossRouletteNotices', 'Vencedores da Roleta de boss', 'Boss roulette winners', { invert: true,
+                    ...info('Aviso de quem ganhou o prêmio da roleta quando um boss de horário morre.', 'A notice of who won the roulette prize when a scheduled boss dies.') }),
+                select('partyLootAlerts', 'Alertas de loot do grupo', 'Party loot alerts',
+                    [opt('All', 'Todos os itens', 'All items'), opt('Rare', 'Só itens raros', 'Rare items only'), off]),
                 caption('Avisos de GM, de manutenção e da sua conta sempre aparecem.', 'GM, maintenance and account notices always show.')
             ]),
             card('Itens no chão', 'Ground items', [

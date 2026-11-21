@@ -4,6 +4,7 @@ using PristonTale.Client.Net.Presence;
 using PristonTale.Simulation.Social;
 using PristonTale.Contracts.World;
 using PristonTale.Contracts.Social;
+using PristonTale.Contracts.Texts;
 using PristonTale.Gameplay.UI.Rendering;
 using PristonTale.Gameplay.Localization;
 
@@ -45,6 +46,9 @@ public sealed class HudChat
 
     internal Func<ChatLineInfo, bool> HideLine { get; set; }
 
+    // A server line entered the log, with its words (the HUD repeats some in the notice strip).
+    internal Action<ChatLineInfo, string> LineLogged { get; set; }
+
     public bool KeyboardCaptured => Window.Focused;
 
     public void Observe(PresenceUpdate update, double nowMs)
@@ -75,23 +79,24 @@ public sealed class HudChat
 
         if (line.Kind is ChatKind.CalendarEvent or ChatKind.GlobalBuff)
         {
-            var portuguese = ClientText.Language == "pt-BR";
             var message = (line.Kind, line.Text) switch
             {
-                (ChatKind.CalendarEvent, "crystals:0") => portuguese ? "Evento de cristais desativado." : "Crystal event disabled.",
-                (ChatKind.CalendarEvent, "crystals:1") => portuguese ? "Evento de cristais: das 12h à meia-noite." : "Crystal event: noon to midnight.",
-                (ChatKind.CalendarEvent, "crystals:2") => portuguese ? "Evento de cristais: o dia inteiro." : "Crystal event: all day.",
-                (ChatKind.CalendarEvent, "drops") => portuguese ? "Os drops de evento mudaram. Consulte o calendário." : "Event drops changed. Check the calendar.",
-                (ChatKind.GlobalBuff, "aging") => portuguese ? "As condições globais de Aging mudaram." : "Global Aging settings changed.",
-                (ChatKind.GlobalBuff, "mixing") => portuguese ? "As condições globais de Mix e Alquimia mudaram." : "Global mixing and alchemy settings changed.",
-                (ChatKind.CalendarEvent, _) => portuguese ? $"Evento de EXP: {line.Text}%." : $"EXP event: {line.Text}%.",
-                _ => portuguese ? $"Multiplicador global de EXP: {line.Text}x." : $"Global EXP multiplier: {line.Text}x."
+                (ChatKind.CalendarEvent, "crystals:0") => ClientText.Get("Chat.Event.CrystalsOff"),
+                (ChatKind.CalendarEvent, "crystals:1") => ClientText.Get("Chat.Event.CrystalsHalfDay"),
+                (ChatKind.CalendarEvent, "crystals:2") => ClientText.Get("Chat.Event.CrystalsAllDay"),
+                (ChatKind.CalendarEvent, "drops") => ClientText.Get("Chat.Event.Drops"),
+                (ChatKind.GlobalBuff, "aging") => ClientText.Get("Chat.Event.Aging"),
+                (ChatKind.GlobalBuff, "mixing") => ClientText.Get("Chat.Event.Mixing"),
+                (ChatKind.CalendarEvent, _) => ClientText.Format("Chat.Event.Exp", line.Text),
+                _ => ClientText.Format("Chat.Event.ExpMultiplier", line.Text)
             };
             Window.Log.Add(message, ChatKind.Notice);
             return;
         }
 
-        var text = line.Line.IsNone ? line.Text : ClientText.Format(line.Line);
+        // A translated line keeps its words in Text; its phrase only adds the "(translated)" mark.
+        var text = line.Line.IsNone ? line.Text
+            : line.Line.Id == GameTextId.ChatTranslated ? ClientText.Format(ClientText.GameKey(GameTextId.ChatTranslated), line.Text) : ClientText.Format(line.Line);
         if (CensorEnabled?.Invoke() == true && (line.SpeakerId != 0 || ChatLineFilter.Written(line.Kind)))
         {
             text = ChatCensor.MaskMessage(text);
@@ -115,6 +120,7 @@ public sealed class HudChat
         }
 
         Window.Log.Add(text, line.Kind);
+        LineLogged?.Invoke(line, text);
         if (HudChatWindow.WhisperPartnerOf(line.Kind, text) is { } partner)
         {
             WhisperPartner?.Invoke(partner);
@@ -191,6 +197,13 @@ public sealed class HudChat
         {
             Submit(nowMs, tab);
         }
+    }
+
+    // A line typed outside the chat window (the browser's touch chat), sent as Enter sends the window's line.
+    public void SubmitText(string text, double nowMs)
+    {
+        Window.Input.Set(text);
+        Submit(nowMs, Window.Log.Tab);
     }
 
     private void Submit(double nowMs, HudChatTab tab)

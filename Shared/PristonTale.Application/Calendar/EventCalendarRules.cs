@@ -47,7 +47,9 @@ public static class EventCalendarRules
             Bellatra = options.Bellatra.Mode,
             CrystalEvent = options.CrystalEvent,
             ExperiencePercent = KillReward.EventPercent(options.ExperienceEventPercent),
-            Drops = options.ItemEvents.Running
+            Drops = options.ItemEvents.Running,
+            ArenaHours = options.Arena.Hours,
+            RoyaleHours = options.Royale.Hours
         };
     }
 

@@ -23,13 +23,14 @@ internal interface IFieldSkillHost
     Dictionary<ulong, WorldPlayer>.ValueCollection Players { get; }
     (float DurationMs, float HitAtMs) PlayerSwingTiming(WorldPlayer player);
     void EmitCombatEvent(in CombatEventView combatEvent);
-    KillPayout? ApplyPlayerDamage(WorldPlayer player, MonsterInstance monster, int damage, bool crit, bool forceFlinch = false, ulong sourceEntityId = 0);
+    KillPayout? ApplyPlayerDamage(WorldPlayer player, MonsterInstance monster, int damage, bool crit, bool forceFlinch = false, ulong sourceEntityId = 0,
+        Element element = Element.Bionic);
     MonsterAiTuning TuningFor(MonsterDefinition definition);
     bool TryFindMonsterDefinition(string name, [MaybeNullWhen(false)] out MonsterDefinition definition);
     MonsterInstance AddSummon(MonsterDefinition definition, Vector3 position, float facing);
     bool PlayersFight { get; }
     bool MayFight(WorldPlayer attacker, WorldPlayer target);
-    void HurtPlayer(WorldPlayer attacker, WorldPlayer target, int damage, bool crit);
+    void HurtPlayer(WorldPlayer attacker, WorldPlayer target, int damage, bool crit, Element element = Element.Bionic);
     bool MonsterStandsAt(Vector3 point);
 }
 
@@ -405,9 +406,10 @@ internal sealed partial class FieldSkills
         return true;
     }
 
-    private void Pay(WorldPlayer caster, MonsterInstance monster, int damage, bool crit, bool forceFlinch = false, ulong source = 0)
+    private void Pay(WorldPlayer caster, MonsterInstance monster, int damage, bool crit, bool forceFlinch = false, ulong source = 0,
+        Element element = Element.Bionic)
     {
-        if (_host.ApplyPlayerDamage(caster, monster, damage, crit, forceFlinch, source) is { } payout)
+        if (_host.ApplyPlayerDamage(caster, monster, damage, crit, forceFlinch, source, element) is { } payout)
         {
             _payouts.Add(payout);
         }
@@ -490,7 +492,7 @@ internal sealed partial class FieldSkills
                     return SupportBlocked(player, rule) ? SkillCastVerdict.AlreadyActive : SkillCastVerdict.Accepted;
                 }
 
-                if (!_host.TryGetPlayer(request.TargetId, out var ally) || ally.IsDead || rule.Allies is { Party: true, AnyClicked: false } && !player.SharesPartyWith(ally)
+                if (!_host.TryGetPlayer(request.TargetId, out var ally) || ally.IsDead || rule.Allies is { Party: true, AnyClicked: false } && !player.SharesPartyWith(ally) || !player.MaySupport(ally)
                     || rule.AllyClasses.Length > 0 && !rule.AllyClasses.Contains(ally.Character.Class.Class))
                 {
                     return SkillCastVerdict.InvalidTarget;

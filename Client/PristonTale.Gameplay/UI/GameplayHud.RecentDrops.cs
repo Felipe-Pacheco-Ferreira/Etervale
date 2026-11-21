@@ -65,17 +65,16 @@ public sealed partial class GameplayHud
         }
 
         var box = DropHistoryBox(layout);
-        var portuguese = ClientText.Language == "pt-BR";
         _painter.ColorBox(box, 156, 116, 53, 255);
         var interior = box;
         interior.Inflate(-1, -1);
         _painter.ColorBox(interior, 27, 21, 14, 248);
         _painter.ColorBox(new Rectangle(interior.X, interior.Y, interior.Width, 35), 57, 43, 22, 255);
-        _painter.Text(portuguese ? "Últimos drops avistados" : "Recently seen drops", box.X + 12, box.Y + 11, Color.Gold);
+        _painter.Text(ClientText.Get("RecentDrops.Title"), box.X + 12, box.Y + 11, Color.Gold);
         _painter.Text("X", box.Right - 25, box.Y + 11, Color.Wheat);
         if (_recentDrops.Count == 0)
         {
-            _painter.Text(portuguese ? "Nenhum item avistado nesta sessão." : "No items seen this session.", box.X + 12, box.Y + 45, Color.Wheat);
+            _painter.Text(ClientText.Get("RecentDrops.None"), box.X + 12, box.Y + 45, Color.Wheat);
             return;
         }
 

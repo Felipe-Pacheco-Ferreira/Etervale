@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using PristonTale.Engine3D.Rendering;
@@ -14,31 +15,37 @@ namespace PristonTale.Gameplay.UI.Widgets;
 // The interface scale (uiScale) cycles through UiScales; the browser's page panel takes any step between them.
 internal sealed partial class HudSettingsPanel
 {
-    private const int FirstSpecOption = 214;
+    private const int FirstSpecOption = ChatTranslateOption + 1;
+    private const int DungeonCameraOption = 214;
+    private const int MoveChatOption = 215;
+    private const int TutorialTipsOption = 216;
+    private const int ResetInterfaceOption = 217;
+    // Shown only while the server translates the chat (ChatTranslationAvailable).
+    private const int ChatTranslateOption = 218;
     // The HUD scale's row, between the voice rows and the loot level rows.
     private const int UiScaleOption = 115;
     private static readonly float[] UiScales = [0.75f, 0.9f, 1f, 1.1f, 1.25f, 1.5f];
     private static readonly int[] MouseActions = Enum.GetValues<CameraMouseAction>().Select(action => (int)action).ToArray();
-    private static readonly (JobBitCode Job, string Portuguese, string English)[] LootJobs =
+    private static readonly (JobBitCode Job, string Label)[] LootJobs =
     [
-        (JobBitCode.Mechanician, "Mecânico", "Mechanician"), (JobBitCode.Fighter, "Lutador", "Fighter"),
-        (JobBitCode.Pikeman, "Pike", "Pikeman"), (JobBitCode.Archer, "Arqueira", "Archer"),
-        (JobBitCode.Knight, "Cavaleiro", "Knight"), (JobBitCode.Atalanta, "Atalanta", "Atalanta"),
-        (JobBitCode.Priestess, "Sacerdotisa", "Priestess"), (JobBitCode.Magician, "Mago", "Magician"),
-        (JobBitCode.Assassin, "Assassina", "Assassin"), (JobBitCode.MartialArtist, "Artista marcial", "Martial artist"),
-        (JobBitCode.Shaman, "Xamã", "Shaman")
+        (JobBitCode.Mechanician, "LootFilter.Job.Mechanician"), (JobBitCode.Fighter, "LootFilter.Job.Fighter"),
+        (JobBitCode.Pikeman, "LootFilter.Job.Pikeman"), (JobBitCode.Archer, "LootFilter.Job.Archer"),
+        (JobBitCode.Knight, "LootFilter.Job.Knight"), (JobBitCode.Atalanta, "LootFilter.Job.Atalanta"),
+        (JobBitCode.Priestess, "LootFilter.Job.Priestess"), (JobBitCode.Magician, "LootFilter.Job.Magician"),
+        (JobBitCode.Assassin, "LootFilter.Job.Assassin"), (JobBitCode.MartialArtist, "LootFilter.Job.MartialArtist"),
+        (JobBitCode.Shaman, "LootFilter.Job.Shaman")
     ];
     private static readonly int[] EquipmentLevels = [.. Enumerable.Range(0, 256)];
     private const int RowHeight = 22;
     private static readonly int[][] Tabs =
     [
         Columns([11, -2, 9, 13, 10, 12, 21, -3, 24, 25, 26, 23, 22, -4, 0, 1, 2, 3, 4, 7, 8, UiScaleOption],
-            [209, 210, 211, 17, 18]),
+            [209, 210, 211, 17, 18, MoveChatOption, ResetInterfaceOption]),
         [5, 6, 100, 101, 110, 111, 103, 108, 102, 109, 104, 112, 105, 113, 106, 114, 107, 114],
         [],
-        Columns([19, -5, 14, 20, 15, 16, 32, 30, 31, 33, -6, 27, 28, 29,
+        Columns([19, -5, 14, 20, TutorialTipsOption, 15, 16, 32, 30, 31, 33, -6, 27, 28, 29,
             .. Enumerable.Range(34, GroundLootFilter.Labels.Length), 190, 191, 192, 193, 194, 196, .. Enumerable.Range(FirstSpecOption, LootJobs.Length)],
-            [195, -7, 197, 200, 201, -8, 198, 199, 202, 203, 204, 205, 206, 207, 208, 212, 213])
+            [195, -7, DungeonCameraOption, 197, 200, 201, -8, 198, 199, 202, 203, 204, 205, 206, 207, 208, 212, 213, ChatTranslateOption])
     ];
 
     private static int[] Columns(int[] left, int[] right)
@@ -58,8 +65,13 @@ internal sealed partial class HudSettingsPanel
         return rows;
     }
 
-    private static readonly string[] PortugueseTabs = ["Vídeo", "Áudio", "Teclas", "Outros"];
-    private static readonly string[] EnglishTabs = ["Video", "Audio", "Keys", "Other"];
+    private static readonly string[] TabLabels = ["Settings.Tab.Video", "Settings.Tab.Audio", "Settings.Tab.Keys", "Settings.Tab.Other"];
+    private static readonly string[] VoiceChannels = ["Settings.Voice.Nearby", "Settings.Voice.Party", "Settings.Voice.Clan", "Settings.Voice.Map"];
+    public const int InventoryShortcut = 0;
+    public const int CharacterShortcut = 1;
+    public const int SkillsShortcut = 2;
+    public const int SettingsShortcut = 7;
+    public const int FirstBeltShortcut = 10;
     public const int FirstSkillShortcut = 13;
     public const int MinimapShortcut = FirstSkillShortcut + HudSkillBindings.ShortcutCount;
     public const int NewsShortcut = MinimapShortcut + 1;
@@ -69,6 +81,8 @@ internal sealed partial class HudSettingsPanel
     public const int VoiceShortcut = FirstActionBarShortcut + HudSkillBindings.ShortcutCount;
     public const int HideHudShortcut = VoiceShortcut + 1;
     public const int PersistentInfoShortcut = HideHudShortcut + 1;
+    public const int DungeonCameraShortcut = PersistentInfoShortcut + 1;
+    public const int PvpShortcut = DungeonCameraShortcut + 1;
     private static readonly Keys[] ActionBarKeys = [Keys.D4, Keys.D5, Keys.D6, Keys.D7, Keys.D8, Keys.D9, Keys.D0, Keys.OemMinus];
     internal static Keys CameraKey(ClientSettings settings, Keys action) => action switch
     {
@@ -80,32 +94,33 @@ internal sealed partial class HudSettingsPanel
         Keys.PageDown => KeyOf(settings, FirstCameraShortcut + 5),
         _ => action
     };
-    private static readonly (string Portuguese, string English, Keys Key)[] Shortcuts =
+    // A shortcut's name is its phrase key; Number, when not zero, is the slot the phrase numbers.
+    private static readonly (string Name, int Number, Keys Key)[] Shortcuts =
     [
-        ("Inventário", "Inventory", Keys.V), ("Personagem", "Character", Keys.C), ("Habilidades", "Skills", Keys.S),
-        ("Missões", "Quests", Keys.Q), ("Social", "Social", Keys.D), ("Menu do sistema", "System menu", Keys.X),
-        ("Correr / andar", "Run / walk", Keys.R), ("Configurações", "Settings", Keys.F10),
-        ("Trocar bolsa (A/B)", "Switch bag (A/B)", Keys.E), ("Trocar conjunto de armas", "Switch weapon set", Keys.W),
-        ("Poção do cinto 1", "Belt potion 1", Keys.D1), ("Poção do cinto 2", "Belt potion 2", Keys.D2),
-        ("Poção do cinto 3", "Belt potion 3", Keys.D3),
-        .. Enumerable.Range(0, HudSkillBindings.ShortcutCount)
-            .Select(index => ($"Atalho de habilidade {index + 1}", $"Skill shortcut {index + 1}", Keys.F1 + index)),
-        ("Minimapa", "Minimap", Keys.Tab), ("Novidades", "News", Keys.H), ("Nomes dos itens no chão", "Ground item names", Keys.A),
-        ("Girar câmera à esquerda", "Rotate camera left", Keys.Left), ("Girar câmera à direita", "Rotate camera right", Keys.Right),
-        ("Aproximar câmera", "Zoom in", Keys.Up), ("Afastar câmera", "Zoom out", Keys.Down),
-        ("Inclinar câmera para cima", "Tilt camera up", Keys.PageUp), ("Inclinar câmera para baixo", "Tilt camera down", Keys.PageDown),
-        .. ActionBarKeys.Select((key, index) => ($"Barra de ações: espaço {index + 1}", $"Action bar: slot {index + 1}", key)),
-        ("Pressionar para falar", "Push to talk", Keys.G),
-        ("Esconder todo o HUD (para prints)", "Hide the whole HUD (for screenshots)", Keys.F12),
-        ("Informações fixas sobre os personagens", "Persistent character information", Keys.Back)
+        ("Shortcut.Inventory", 0, Keys.V), ("Shortcut.Character", 0, Keys.C), ("Shortcut.Skills", 0, Keys.S),
+        ("Shortcut.Quests", 0, Keys.Q), ("Shortcut.Social", 0, Keys.D), ("Shortcut.SystemMenu", 0, Keys.X),
+        ("Shortcut.RunWalk", 0, Keys.R), ("Shortcut.Settings", 0, Keys.F10),
+        ("Shortcut.SwitchBag", 0, Keys.E), ("Shortcut.SwitchWeapons", 0, Keys.W),
+        ("Shortcut.BeltPotion", 1, Keys.D1), ("Shortcut.BeltPotion", 2, Keys.D2), ("Shortcut.BeltPotion", 3, Keys.D3),
+        .. Enumerable.Range(0, HudSkillBindings.ShortcutCount).Select(index => ("Shortcut.Skill", index + 1, Keys.F1 + index)),
+        ("Shortcut.Minimap", 0, Keys.Tab), ("Shortcut.News", 0, Keys.H), ("Shortcut.GroundNames", 0, Keys.A),
+        ("Shortcut.RotateLeft", 0, Keys.Left), ("Shortcut.RotateRight", 0, Keys.Right),
+        ("Shortcut.ZoomIn", 0, Keys.Up), ("Shortcut.ZoomOut", 0, Keys.Down),
+        ("Shortcut.TiltUp", 0, Keys.PageUp), ("Shortcut.TiltDown", 0, Keys.PageDown),
+        .. ActionBarKeys.Select((key, index) => ("Shortcut.ActionBar", index + 1, key)),
+        ("Shortcut.PushToTalk", 0, Keys.G),
+        ("Shortcut.HideHud", 0, Keys.F12),
+        ("Shortcut.PersistentInfo", 0, Keys.Back),
+        ("Shortcut.DungeonCamera", 0, Keys.Z),
+        ("Shortcut.Pvp", 0, Keys.K)
     ];
 
     private static readonly int[] ShortcutRows = Columns(
-        [1, 0, 2, 3, 4, 5, 7, NewsShortcut, -9, MinimapShortcut, GroundLabelsShortcut, PersistentInfoShortcut, HideHudShortcut, -10, 6, 8, 9, -11,
+        [1, 0, 2, 3, 4, 5, 7, NewsShortcut, -9, MinimapShortcut, GroundLabelsShortcut, PersistentInfoShortcut, HideHudShortcut, -10, 6, 8, 9, PvpShortcut, -11,
             VoiceShortcut],
         [.. Enumerable.Range(FirstSkillShortcut, HudSkillBindings.ShortcutCount),
          .. Enumerable.Range(FirstActionBarShortcut, ActionBarKeys.Length), -12, 10, 11, 12,
-         -7, .. Enumerable.Range(FirstCameraShortcut, 6)]);
+         -7, .. Enumerable.Range(FirstCameraShortcut, 6), DungeonCameraShortcut]);
 
     private const int CloudQualities = (int)CloudQuality.High + 1;
 
@@ -117,7 +132,12 @@ internal sealed partial class HudSettingsPanel
     private static readonly int[] ShadowUpdateRates = [30, 60, 120, 0];
     private readonly PresentationSettings _settings;
     private readonly string[] _labels = new string[FirstSpecOption + LootJobs.Length];
+    private readonly string[] _shortcutNames = new string[Shortcuts.Length];
     private ClientSettings _labelSettings;
+    private bool _labelTranslation;
+
+    // The server translates the chat, so its row shows (GameplayHud sets it from the connection).
+    public bool ChatTranslationAvailable { get; set; }
 
     public HudSettingsPanel(PresentationSettings settings) => _settings = settings;
 
@@ -230,7 +250,15 @@ internal sealed partial class HudSettingsPanel
     public string ShortcutLabel(int index) => BindingLabel(BindingOf(_settings.Requested, index));
     public bool DefaultInventoryKey => _settings.Requested.ShortcutKeys is not { Length: > 0 };
 
-    private static bool SupportsModifiers(int index) => index < 10 || (index >= FirstSkillShortcut && index < MinimapShortcut) || index == MinimapShortcut || index == NewsShortcut || (index >= FirstActionBarShortcut && index < VoiceShortcut);
+    private static bool SupportsModifiers(int index) => index < 10 || (index >= FirstSkillShortcut && index < MinimapShortcut) || index == MinimapShortcut
+        || index == NewsShortcut || (index >= FirstActionBarShortcut && index < VoiceShortcut) || index == DungeonCameraShortcut;
+
+    private static int DefaultBinding(int index) => (int)Shortcuts[index].Key | (index == DungeonCameraShortcut ? ShiftMask : 0);
+
+    internal static ClientSettings WithDungeonCameraSwitched(ClientSettings settings) => settings with
+    {
+        DungeonCamera = settings.DungeonCamera == DungeonCameraMode.TopDown ? DungeonCameraMode.Free : DungeonCameraMode.TopDown
+    };
 
     public bool ShortcutPressed(KeyboardState keyboard, KeyboardState previous, int index)
     {
@@ -257,13 +285,13 @@ internal sealed partial class HudSettingsPanel
             return bindings[index] & (SupportsModifiers(index) ? KeyMask | ShiftMask | AltMask : KeyMask);
         }
 
-        return (int)Shortcuts[index].Key;
+        return DefaultBinding(index);
     }
 
     private static bool ValidKey(Keys key) => key is Keys.V or Keys.C or Keys.S or Keys.Q or Keys.D or Keys.X or Keys.R
         or Keys.Left or Keys.Right or Keys.Up or Keys.Down or Keys.PageUp or Keys.PageDown
         or (>= Keys.D0 and <= Keys.D9) or Keys.OemMinus or Keys.G or Keys.A or Keys.Tab or Keys.H or Keys.E or Keys.W or Keys.D1 or Keys.D2 or Keys.D3
-        or (>= Keys.F1 and <= Keys.F8) or Keys.F10 or Keys.F11 or Keys.F12 or Keys.Back or Keys.OemOpenBrackets or Keys.OemCloseBrackets or Keys.OemSemicolon;
+        or (>= Keys.F1 and <= Keys.F8) or Keys.F10 or Keys.F11 or Keys.F12 or Keys.Back or Keys.Z or Keys.K or Keys.OemOpenBrackets or Keys.OemCloseBrackets or Keys.OemSemicolon;
 
     public void CaptureKey(KeyboardState keyboard, KeyboardState previous)
     {
@@ -311,19 +339,22 @@ internal sealed partial class HudSettingsPanel
     private static ShortcutGroup GroupOfShortcut(int slot) => slot switch
     {
         MinimapShortcut or GroundLabelsShortcut or HideHudShortcut or PersistentInfoShortcut => ShortcutGroup.Interface,
-        6 or 8 or 9 => ShortcutGroup.Character,
+        6 or 8 or 9 or PvpShortcut => ShortcutGroup.Character,
         VoiceShortcut => ShortcutGroup.Voice,
         (>= FirstSkillShortcut and < MinimapShortcut) or (>= FirstActionBarShortcut and < VoiceShortcut) => ShortcutGroup.Skills,
         >= 10 and < FirstSkillShortcut => ShortcutGroup.Potions,
-        >= FirstCameraShortcut and < FirstActionBarShortcut => ShortcutGroup.Camera,
+        (>= FirstCameraShortcut and < FirstActionBarShortcut) or DungeonCameraShortcut => ShortcutGroup.Camera,
         _ => ShortcutGroup.Windows
     };
 
-    internal static string ShortcutName(int index, bool portuguese) => portuguese ? Shortcuts[index].Portuguese : Shortcuts[index].English;
+    internal static string ShortcutName(int index, string language) => NumberedShortcut(index, ClientText.Get(Shortcuts[index].Name, language));
+
+    private static string NumberedShortcut(int index, string phrase) =>
+        Shortcuts[index].Number == 0 ? phrase : string.Format(CultureInfo.InvariantCulture, phrase, Shortcuts[index].Number);
 
     internal static string PageShortcutLabel(ClientSettings settings, int index) => PageBindingLabel(BindingOf(settings, index));
 
-    internal static string PageShortcutDefaultLabel(int index) => PageBindingLabel((int)Shortcuts[index].Key);
+    internal static string PageShortcutDefaultLabel(int index) => PageBindingLabel(DefaultBinding(index));
 
     private static string PageBindingLabel(int binding)
     {
@@ -348,7 +379,7 @@ internal sealed partial class HudSettingsPanel
     }
 
     internal static ClientSettings ResetShortcut(ClientSettings settings, int slot) =>
-        slot >= 0 && slot < Shortcuts.Length ? Rebind(settings, slot, Shortcuts[slot].Key, 0) : null;
+        slot >= 0 && slot < Shortcuts.Length ? Rebind(settings, slot, Shortcuts[slot].Key, DefaultBinding(slot) & ~KeyMask) : null;
 
     internal static ClientSettings Rebind(ClientSettings current, int slot, Keys key, bool shift, bool alt) =>
         Rebind(current, slot, key, (shift ? ShiftMask : 0) | (alt ? AltMask : 0));
@@ -565,6 +596,11 @@ internal sealed partial class HudSettingsPanel
                 211 => current with { AlwaysShowGroundLabels = !current.AlwaysShowGroundLabels },
                 212 => current with { InvertCameraOrbit = !current.InvertCameraOrbit },
                 213 => current with { InvertCameraScroll = !current.InvertCameraScroll },
+                DungeonCameraOption => WithDungeonCameraSwitched(current),
+                MoveChatOption => current with { MoveChat = !current.MoveChat },
+                TutorialTipsOption => current with { TutorialTips = !current.TutorialTips },
+                ResetInterfaceOption => current.WithInterfaceReset(),
+                ChatTranslateOption when ChatTranslationAvailable => current with { ChatTranslateTo = NextChatTranslation(current.ChatTranslateTo, direction) },
                 UiScaleOption => current with { UiScale = NextUiScale(current.UiScale, direction) },
                 >= FirstSpecOption and var spec => current with { HiddenGroundSpecJobs =
                     current.HiddenGroundSpecJobs ^ (uint)LootJobs[spec - FirstSpecOption].Job },
@@ -686,12 +722,13 @@ internal sealed partial class HudSettingsPanel
     private void RefreshLabels()
     {
         var settings = _draft ?? _settings.Requested;
-        if (_labelSettings == settings)
+        if (_labelSettings == settings && _labelTranslation == ChatTranslationAvailable)
         {
             return;
         }
 
         _labelSettings = settings;
+        _labelTranslation = ChatTranslationAvailable;
         _labels[0] = ClientText.Format("Settings.Window", ClientText.Get("Settings.WindowMode." + settings.WindowMode));
         _labels[1] = settings.Monitor < 0 ? ClientText.Get("Settings.MonitorCurrent") : ClientText.Format("Settings.Monitor", settings.Monitor);
         _labels[2] = settings.WindowMode == WindowMode.Borderless
@@ -722,96 +759,120 @@ internal sealed partial class HudSettingsPanel
         _labels[17] = ClientText.Get(settings.RealisticSky ? "Settings.SkyRealistic" : "Settings.SkyClassic");
         _labels[18] = ClientText.Format("Settings.Clouds", ClientText.Get("Settings.Clouds." + settings.CloudQuality));
         _labels[19] = ClientText.Format("Settings.Language", ClientText.Get("Language." + settings.Language));
-        _labels[20] = ClientText.Language == "pt-BR" ? $"Guia de nível: {(settings.LevelGuide ? "Ligado" : "Desligado")}" : $"Level guide: {(settings.LevelGuide ? "On" : "Off")}";
-        var portuguese = ClientText.Language == "pt-BR";
-        _labels[21] = Toggle(portuguese ? "Reflexos em tela" : "Screen reflections", settings.ScreenSpaceReflections);
-        _labels[22] = Toggle(portuguese ? "Neblina" : "Fog", settings.DistanceFog != DistanceFogMode.Off);
-        _labels[23] = Toggle(portuguese ? "Luz volumétrica" : "Volumetric light", settings.VolumetricLight);
-        _labels[24] = Toggle(portuguese ? "Cores (LUT)" : "Color grading", settings.ColorGrading);
-        _labels[25] = Toggle(portuguese ? "Exposição automática" : "Auto exposure", settings.AutoExposure);
-        _labels[26] = Toggle("Bloom", settings.Bloom != BloomQuality.Off);
-        _labels[27] = Toggle(portuguese ? "Mostrar ouro no chão" : "Show ground gold", !settings.HideGroundGold);
-        _labels[28] = Toggle(portuguese ? "Mostrar poções no chão" : "Show ground potions", !settings.HideGroundPotions);
-        _labels[29] = Toggle(portuguese ? "Mostrar armas no chão" : "Show ground weapons", !settings.HideGroundWeapons);
-        _labels[30] = Toggle(portuguese ? "Chat de comércio" : "Trade chat", !settings.HideTradeChat);
-        _labels[31] = Toggle(portuguese ? "Avisos do Castelo Bless" : "Bless Castle notices", !settings.HideCastleNotices);
-        _labels[32] = Toggle(portuguese ? "Mostrar jogadores online" : "Show online players", !settings.HideOnlineCount);
-        _labels[33] = Toggle(portuguese ? "Usar o filtro de loot" : "Use loot filter", !settings.DisableGroundLootFilter);
-        _labels[190] = LevelLabel(portuguese ? "Nível mínimo" : "Minimum level", settings.GroundMinimumEquipmentLevel);
-        _labels[191] = LevelLabel(portuguese ? "Nível máximo" : "Maximum level", settings.GroundMaximumEquipmentLevel);
-        _labels[192] = Toggle(portuguese ? "Sempre mostrar equipamentos raros" : "Always show rare equipment", settings.AlwaysShowRareGroundEquipment);
-        _labels[194] = portuguese ? "Mostrar tudo (filtro de loot)" : "Show all (loot filter)";
+        _labels[20] = Toggle("Settings.Row.LevelGuide", settings.LevelGuide);
+        _labels[21] = Toggle("Settings.Row.ScreenReflections", settings.ScreenSpaceReflections);
+        _labels[22] = Toggle("Settings.Row.Fog", settings.DistanceFog != DistanceFogMode.Off);
+        _labels[23] = Toggle("Settings.Row.VolumetricLight", settings.VolumetricLight);
+        _labels[24] = Toggle("Settings.Row.ColorGrading", settings.ColorGrading);
+        _labels[25] = Toggle("Settings.Row.AutoExposure", settings.AutoExposure);
+        _labels[26] = Toggle("Settings.Row.Bloom", settings.Bloom != BloomQuality.Off);
+        _labels[27] = Toggle("Settings.Row.GroundGold", !settings.HideGroundGold);
+        _labels[28] = Toggle("Settings.Row.GroundPotions", !settings.HideGroundPotions);
+        _labels[29] = Toggle("Settings.Row.GroundWeapons", !settings.HideGroundWeapons);
+        _labels[30] = Toggle("Settings.Row.TradeChat", !settings.HideTradeChat);
+        _labels[31] = Toggle("Settings.Row.CastleNotices", !settings.HideCastleNotices);
+        _labels[32] = Toggle("Settings.Row.OnlinePlayers", !settings.HideOnlineCount);
+        _labels[33] = Toggle("Settings.Row.UseLootFilter", !settings.DisableGroundLootFilter);
+        _labels[190] = LevelLabel("Settings.Row.MinimumLevel", settings.GroundMinimumEquipmentLevel);
+        _labels[191] = LevelLabel("Settings.Row.MaximumLevel", settings.GroundMaximumEquipmentLevel);
+        _labels[192] = Toggle("Settings.Row.RareEquipment", settings.AlwaysShowRareGroundEquipment);
+        _labels[194] = ClientText.Get("Settings.Row.ShowAll");
         var alwaysShow = string.Join(", ", settings.AlwaysShowGroundNames ?? []);
-        var channels = portuguese ? new[] { "Perto", "Grupo", "Clã", "Todos no mapa" } : new[] { "Nearby", "Party", "Clan", "Everyone on the map" };
-        _labels[103] = Toggle(portuguese ? "Chat de voz" : "Voice chat", settings.VoiceEnabled);
-        for (var channel = 0; channel < channels.Length; channel++)
+        _labels[103] = Toggle("Settings.VoiceChat", settings.VoiceEnabled);
+        for (var channel = 0; channel < VoiceChannels.Length; channel++)
         {
-            _labels[104 + channel] = Toggle(channels[channel], (settings.VoiceReceiveMask & (1 << channel)) != 0);
+            _labels[104 + channel] = Toggle(VoiceChannels[channel], (settings.VoiceReceiveMask & (1 << channel)) != 0);
         }
-        _labels[108] = (portuguese ? "Falar para: " : "Speak to: ") + channels[Math.Clamp(settings.VoiceTransmitChannel, 0, 3)];
-        _labels[109] = (portuguese ? "Tecla de falar: " : "Push to talk: ") + BindingLabel(BindingOf(settings, VoiceShortcut));
-        _labels[110] = portuguese ? "Chat de voz" : "Voice chat";
-        _labels[111] = portuguese ? "Microfone" : "Microphone";
-        _labels[112] = (portuguese ? "Dispositivo: " : "Device: ") +
-            (string.IsNullOrEmpty(settings.VoiceMicrophone) ? (portuguese ? "Padrão do sistema" : "System default") : settings.VoiceMicrophone);
-        _labels[113] = portuguese ? "Modo: Pressionar para falar" : "Mode: Push to talk";
-        _labels[196] = (portuguese ? "Sempre mostrar: " : "Always show: ") + alwaysShow;
+        _labels[108] = ClientText.Format("Settings.Row.SpeakTo", ClientText.Get(VoiceChannels[Math.Clamp(settings.VoiceTransmitChannel, 0, 3)]));
+        _labels[109] = ClientText.Format("Settings.Row.PushToTalkKey", BindingLabel(BindingOf(settings, VoiceShortcut)));
+        _labels[110] = ClientText.Get("Settings.VoiceChat");
+        _labels[111] = ClientText.Get("Settings.Microphone");
+        _labels[112] = ClientText.Format("Settings.Row.Device",
+            string.IsNullOrEmpty(settings.VoiceMicrophone) ? ClientText.Get("Settings.Row.SystemDefault") : settings.VoiceMicrophone);
+        _labels[113] = ClientText.Get("Settings.Row.PushToTalkMode");
+        _labels[196] = ClientText.Format("Settings.Row.AlwaysShow", alwaysShow);
         var mouseButtons = settings.CameraMouseButtons switch
         {
-            1 => portuguese ? "Invertidos" : "Swapped",
-            2 => portuguese ? "Desligados" : "Off",
-            _ => portuguese ? "Padrão" : "Default"
+            1 => "Settings.MouseButtons.Swapped",
+            2 => "Settings.MouseButtons.Off",
+            _ => "Settings.MouseButtons.Default"
         };
-        _labels[197] = (portuguese ? "Botões laterais da câmera: " : "Camera side buttons: ") + mouseButtons;
-        _labels[198] = Toggle(portuguese ? "Bellatra: derrota do chefe" : "Bellatra boss defeat", !settings.HideBellatraBossNotices);
-        _labels[203] = Toggle(portuguese ? "Clã: entradas e saídas" : "Clan: joins and departures", !settings.HideClanMembershipNotices);
-        _labels[205] = Toggle(portuguese ? "Recompensas de evento" : "Event rewards", !settings.HideEventRewardNotices);
-        _labels[206] = Toggle(portuguese ? "Ativação de buffs premium" : "Premium buff activation", settings.ShowPremiumBuffNotices);
-        _labels[207] = Toggle(portuguese ? "Calendário de eventos" : "Event calendar notices", !settings.HideCalendarNotices);
-        _labels[209] = Toggle(portuguese ? "Mostrar nomes dos personagens" : "Show character names", !settings.HideUnfocusedNames);
-        _labels[210] = Toggle(portuguese ? "Mostrar dano" : "Show damage", !settings.HideDamageNumbers);
-        _labels[211] = Toggle(portuguese ? "Nomes de todos os itens no chão" : "Always show ground item names", settings.AlwaysShowGroundLabels);
-        _labels[212] = Toggle(portuguese ? "Inverter giro da câmera" : "Invert camera rotation", settings.InvertCameraOrbit);
-        _labels[213] = Toggle(portuguese ? "Inverter rolagem da câmera" : "Invert camera scroll", settings.InvertCameraScroll);
-        _labels[UiScaleOption] = (portuguese ? "Escala do HUD: " : "HUD scale: ") + Math.Round(settings.UiScale * 100) + "%";
-        _labels[208] = Toggle(portuguese ? "Bônus globais" : "Global bonus notices", !settings.HideGlobalBuffNotices);
-        _labels[204] = Toggle(portuguese ? "EXP ganha" : "EXP gained", settings.ShowExperienceNotices);
-        _labels[202] = Toggle(portuguese ? "Bellatra: avisos de resultado" : "Bellatra result notices", !settings.HideBellatraResults);
-        _labels[199] = Toggle(portuguese ? "Bellatra: selos da equipe" : "Bellatra team seals", !settings.HideBellatraTeamNotices);
+        _labels[197] = ClientText.Format("Settings.Row.CameraSideButtons", ClientText.Get(mouseButtons));
+        _labels[198] = Toggle("Settings.Row.BellatraBoss", !settings.HideBellatraBossNotices);
+        _labels[203] = Toggle("Settings.Row.ClanMembership", !settings.HideClanMembershipNotices);
+        _labels[205] = Toggle("Settings.Row.EventRewards", !settings.HideEventRewardNotices);
+        _labels[206] = Toggle("Settings.Row.PremiumBuffs", settings.ShowPremiumBuffNotices);
+        _labels[207] = Toggle("Settings.Row.EventCalendar", !settings.HideCalendarNotices);
+        _labels[209] = Toggle("Settings.Row.CharacterNames", !settings.HideUnfocusedNames);
+        _labels[210] = Toggle("Settings.Row.Damage", !settings.HideDamageNumbers);
+        _labels[211] = Toggle("Settings.Row.GroundItemNames", settings.AlwaysShowGroundLabels);
+        _labels[212] = Toggle("Settings.Row.InvertCameraRotation", settings.InvertCameraOrbit);
+        _labels[213] = Toggle("Settings.Row.InvertCameraScroll", settings.InvertCameraScroll);
+        _labels[DungeonCameraOption] = ClientText.Get(settings.DungeonCamera == DungeonCameraMode.TopDown
+            ? "Settings.Row.DungeonCameraTopDown"
+            : "Settings.Row.DungeonCameraNormal");
+        _labels[UiScaleOption] = ClientText.Format("Settings.Row.HudScale", Math.Round(settings.UiScale * 100));
+        _labels[MoveChatOption] = Toggle("Settings.Row.MoveChat", settings.MoveChat);
+        _labels[TutorialTipsOption] = Toggle("Settings.Row.TutorialTips", settings.TutorialTips);
+        _labels[ResetInterfaceOption] = ClientText.Get("Settings.Row.ResetInterface");
+        _labels[ChatTranslateOption] = ClientText.Format("Settings.Row.ChatTranslateTo", settings.ChatTranslateTo switch
+        {
+            "" => ClientText.Get("Settings.ChatTranslate.Off"),
+            ClientSettings.GameLanguageTranslation => ClientText.Get("Settings.ChatTranslate.Game"),
+            var language => ClientText.Get("Language." + language)
+        });
+        _labels[208] = Toggle("Settings.Row.GlobalBonuses", !settings.HideGlobalBuffNotices);
+        _labels[204] = Toggle("Settings.Row.ExpGained", settings.ShowExperienceNotices);
+        _labels[202] = Toggle("Settings.Row.BellatraResults", !settings.HideBellatraResults);
+        _labels[199] = Toggle("Settings.Row.BellatraSeals", !settings.HideBellatraTeamNotices);
         _labels[200] = "Mouse 4: " + MouseActionLabel(settings.CameraMouse4);
         _labels[201] = "Mouse 5: " + MouseActionLabel(settings.CameraMouse5);
 
-        string MouseActionLabel(CameraMouseAction action) => action switch
+        static string MouseActionLabel(CameraMouseAction action) => ClientText.Get(action switch
         {
-            CameraMouseAction.Disabled => portuguese ? "Desligado" : "Off",
-            CameraMouseAction.RotateLeft => portuguese ? "Girar à esquerda" : "Rotate left",
-            CameraMouseAction.RotateRight => portuguese ? "Girar à direita" : "Rotate right",
-            CameraMouseAction.ZoomIn => portuguese ? "Aproximar" : "Zoom in",
-            CameraMouseAction.ZoomOut => portuguese ? "Afastar" : "Zoom out",
-            CameraMouseAction.TiltUp => portuguese ? "Inclinar para cima" : "Tilt up",
-            CameraMouseAction.TiltDown => portuguese ? "Inclinar para baixo" : "Tilt down",
-            _ => portuguese ? "Padrão" : "Default"
-        };
+            CameraMouseAction.Disabled => "Settings.MouseAction.Off",
+            CameraMouseAction.RotateLeft => "Settings.MouseAction.RotateLeft",
+            CameraMouseAction.RotateRight => "Settings.MouseAction.RotateRight",
+            CameraMouseAction.ZoomIn => "Settings.MouseAction.ZoomIn",
+            CameraMouseAction.ZoomOut => "Settings.MouseAction.ZoomOut",
+            CameraMouseAction.TiltUp => "Settings.MouseAction.TiltUp",
+            CameraMouseAction.TiltDown => "Settings.MouseAction.TiltDown",
+            _ => "Settings.MouseButtons.Default"
+        });
 
-        _labels[195] = Toggle(portuguese ? "Rastreador de missões" : "Quest tracker", !settings.HideQuestTracker);
-        _labels[193] = Toggle(portuguese ? "Sem especialização" : "Without specialization", !settings.HideGroundEquipmentWithoutSpec);
+        _labels[195] = Toggle("Settings.Row.QuestTracker", !settings.HideQuestTracker);
+        _labels[193] = Toggle("Settings.Row.WithoutSpecialization", !settings.HideGroundEquipmentWithoutSpec);
         for (var index = 0; index < LootJobs.Length; index++)
         {
             var job = LootJobs[index];
-            _labels[FirstSpecOption + index] = Toggle(portuguese ? job.Portuguese : job.English,
-                (settings.HiddenGroundSpecJobs & (uint)job.Job) == 0);
+            _labels[FirstSpecOption + index] = Toggle(job.Label, (settings.HiddenGroundSpecJobs & (uint)job.Job) == 0);
         }
 
-        string LevelLabel(string name, int level) => name + ": " + (level > 0 ? level.ToString() : portuguese ? "Sem limite" : "Unlimited");
+        static string LevelLabel(string key, int level) => ClientText.Format(key, level > 0 ? level.ToString(CultureInfo.InvariantCulture) : ClientText.Get("Settings.Row.Unlimited"));
 
         for (var i = 0; i < GroundLootFilter.Labels.Length; i++)
         {
-            var label = GroundLootFilter.Labels[i];
-            _labels[34 + i] = Toggle(portuguese ? label.Portuguese : label.English, !GroundLootFilter.Hidden(settings, i));
+            _labels[34 + i] = Toggle(GroundLootFilter.Labels[i], !GroundLootFilter.Hidden(settings, i));
         }
 
-        string Toggle(string name, bool enabled) => $"{name}: {(portuguese ? (enabled ? "Ligado" : "Desligado") : (enabled ? "On" : "Off"))}";
+        for (var index = 0; index < Shortcuts.Length; index++)
+        {
+            _shortcutNames[index] = NumberedShortcut(index, ClientText.Get(Shortcuts[index].Name));
+        }
+
+        // A switch row: the drawing reads the phrase's value after the last ": " (or full-width colon) as on or off.
+        static string Toggle(string key, bool enabled) => ClientText.Format(enabled ? "Settings.Toggle.On" : "Settings.Toggle.Off", ClientText.Get(key));
     }
+
+    // Off, the game's language, then each supported language.
+    internal static string NextChatTranslation(string current, int direction)
+    {
+        var choices = ChatTranslationChoices;
+        var index = Math.Max(0, Array.IndexOf(choices, current));
+        return choices[(index + direction + choices.Length) % choices.Length];
+    }
+
+    private static readonly string[] ChatTranslationChoices = ["", ClientSettings.GameLanguageTranslation, .. ClientSettings.SupportedLanguages];
 
     private static string NextLanguage(string language, int direction)
     {

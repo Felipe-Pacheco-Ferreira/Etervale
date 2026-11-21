@@ -105,7 +105,8 @@ public sealed partial class HudQuestDocuments(string assetRoot, IClientLog log)
                 Flush(paragraphs, current);
             }
 
-            if (current.Length > 0)
+            // Chinese and Japanese lines join without a space.
+            if (current.Length > 0 && !HudTextLayout.IsCjk(current[^1]) && !HudTextLayout.IsCjk(line[0]))
             {
                 current.Append(' ');
             }

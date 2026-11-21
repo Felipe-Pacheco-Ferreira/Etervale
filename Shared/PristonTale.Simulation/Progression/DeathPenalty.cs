@@ -13,7 +13,8 @@ public readonly record struct RestartOffer(bool FieldOpen, bool Scroll, ulong Ex
 // thirty-third, a fiftieth from level 85 after the level 85 quest or wearing the aging ring at +6, a hundredth wearing it
 // at +8, nothing in the castle field), and standing up again in
 // the field where the player fell takes a hundredth more. A Resurrection Scroll carried at death is used up instead and
-// waives both. Experience never drops below the start of the current level.
+// waives both. A player slain by another in the PvP mode (Combat.PvpRules) loses nothing. Experience never drops below
+// the start of the current level.
 public static class DeathPenalty
 {
     public const int FirstLevel = 11;
@@ -91,12 +92,13 @@ public static class DeathPenalty
         return experience >= start && experience - start >= ExperienceShare(level, FieldDivisor);
     }
 
-    // The offer a dead player's restart window shows; RestartTransactions takes exactly these shares.
-    public static RestartOffer Offer(PlayerCharacter character, FieldState field)
+    // The offer a dead player's restart window shows; RestartTransactions takes exactly these shares. A player slain by
+    // another (Combat.PvpRules) takes none and keeps its scroll.
+    public static RestartOffer Offer(PlayerCharacter character, FieldState field, bool slainByPlayer = false)
     {
         ArgumentNullException.ThrowIfNull(character);
-        var scroll = ScrollAnchor(character) >= 0;
-        var divisor = scroll ? 0 : Divisor(character, field);
+        var scroll = !slainByPlayer && ScrollAnchor(character) >= 0;
+        var divisor = scroll || slainByPlayer ? 0 : Divisor(character, field);
         var start = ExperienceTable.ForLevel(Math.Clamp(character.Level, 1, ExperienceTable.MaximumLevel));
         var above = character.Experience > start ? character.Experience - start : 0;
         var experience = Math.Min(ExperienceShare(character.Level, divisor), above);

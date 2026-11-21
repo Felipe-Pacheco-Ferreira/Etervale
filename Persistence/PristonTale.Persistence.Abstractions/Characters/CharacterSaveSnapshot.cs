@@ -7,7 +7,8 @@ public sealed record CharacterSaveSnapshot(
     SavedSkills Skills,
     SavedPremium Premium,
     SavedQuests? Quests = null,
-    SavedRewardEvents? Events = null)
+    SavedRewardEvents? Events = null,
+    SavedTitles? Titles = null)
 {
     public CharacterRecord Encode()
     {
@@ -18,7 +19,8 @@ public sealed record CharacterSaveSnapshot(
             Skills = CharacterJson.Write(Skills),
             Premium = CharacterJson.Write(Premium),
             Quests = Quests is null ? Scalars.Quests : CharacterJson.Write(Quests),
-            Events = Events is null ? Scalars.Events : CharacterJson.Write(Events)
+            Events = Events is null ? Scalars.Events : CharacterJson.Write(Events),
+            Titles = Titles is null ? Scalars.Titles : CharacterJson.Write(Titles)
         };
     }
 }

@@ -1,7 +1,7 @@
 namespace PristonTale.Persistence.Abstractions.Rankings;
 
 // A character of the public rankings, with its clan's name when it has one.
-public sealed record RankedCharacter(string Name, int JobCode, short Tier, int Level, long Exp, string? ClanName);
+public sealed record RankedCharacter(string Name, int JobCode, short Tier, int Level, long Exp, string? ClanName, long Id);
 
 public sealed record WorldTotals(long Accounts, long Characters);
 

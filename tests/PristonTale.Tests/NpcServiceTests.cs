@@ -44,6 +44,8 @@ internal static class NpcServiceTests
         yield return ("Bless Castle's tax raises each shop unit's price, a stack's as the catalog offers it, not the aging percent, and its part is gathered",
             CastleTaxAsync);
         yield return ("cursed Milter sends a character of the Endless Tower's level to its first floor for free", MilterAsync);
+        yield return ("an aging that rises to the server's notice level is told to every player once its commit lands, a lower one to nobody",
+            AgingNoticeAsync);
         yield return ("SQLite warehouse repository writes the character and warehouse together under a revision", RepositoryAsync);
     }
 
@@ -410,6 +412,45 @@ internal static class NpcServiceTests
         Assert.True(remaining is > 59_000 and <= 60_000, $"teleport did not carry the cooldown to the new field clock ({remaining} ms left)");
     }
 
+    private static async Task AgingNoticeAsync()
+    {
+        var options = WorldServerOptions.Default with
+        {
+            Aging = Simulation.Items.Aging.AgingSettings.Default with { FailurePercent = 0, DoublePercent = 0 },
+            Notices = ServerNoticeOptions.Default with { AgingFrom = 1 }
+        };
+        var fixture = await Fixture.CreateAsync(100_000, [new NpcService(NpcServiceKind.ItemAging)], options: options);
+        var (world, npc, session, service) = (fixture.World, fixture.NpcId, fixture.Session, fixture.Npc);
+
+        async Task<ItemInstance> Age(int anchor)
+        {
+            var character = session.Character!;
+            var axe = AgingTests.Axe(1000);
+            Assert.True(character.Inventory.TryPlace(axe, anchor), "the axe did not fit");
+            ItemInstance[] sheltoms = [AgingTests.Sheltom(3), AgingTests.Sheltom(3), AgingTests.Sheltom(4), AgingTests.Sheltom(4), AgingTests.Sheltom(5)];
+            for (var index = 0; index < sheltoms.Length; index++)
+            {
+                Assert.True(character.Inventory.TryPlace(sheltoms[index], 40 + index), "a sheltom did not fit");
+            }
+
+            var aged = await WorldPump.RunAsync(world, service.RequestAsync(session.SessionToken, new NpcServiceCommand(Guid.NewGuid(), npc, NpcServiceKind.ItemAging,
+                NpcServiceAction.Age, character.InventoryRevision, ItemId: axe.InstanceId, Materials: [.. sheltoms.Select(static sheltom => sheltom.InstanceId)])));
+            var owned = session.Character!.FindOwnedItem(axe.InstanceId);
+            Assert.True(aged.Outcome.Ok && owned is not null && Simulation.Items.Aging.AgingRules.MaturingTo(owned) == 1, "the axe was not aged toward +1");
+            return axe;
+        }
+
+        world.TakeTickNotices();
+        var first = await Age(0);
+        Assert.True(world.TakeTickNotices() is [{ To: WorldNotice.Everyone, Kind: Contracts.Social.ChatKind.Notice, Text: var text }]
+            && text == GameText.Of(GameTextId.AgingNotice, "Trader", first.Definition.Name, "1"), "the aging to the notice level was not told to everybody");
+
+        await WorldPump.RunAsync(world, world.ApplyOptionsAsync(options with { Notices = ServerNoticeOptions.Default with { AgingFrom = 2 } }));
+        world.TakeTickNotices();
+        await Age(8);
+        Assert.True(world.TakeTickNotices().Length == 0, "an aging below the notice level was told");
+    }
+
     private static async Task CastleTaxAsync()
     {
         var fixture = await Fixture.CreateAsync(10_000, [new NpcService(NpcServiceKind.Shop), new NpcService(NpcServiceKind.ItemAging)]);
@@ -585,7 +626,7 @@ internal static class NpcServiceTests
         public required WorldPlayer Player { get; init; }
         public required ItemCatalog Items { get; init; }
 
-        public static async Task<Fixture> CreateAsync(long money, IReadOnlyList<NpcService> services, WorldCatalog? catalog = null)
+        public static async Task<Fixture> CreateAsync(long money, IReadOnlyList<NpcService> services, WorldCatalog? catalog = null, WorldServerOptions? options = null)
         {
             var classes = new CharacterClassRegistry();
             var starter = CharacterRecordFactory.NewStarter(classes, 1, "Trader", 0, PlayerClass.Fighter, 3) with { Id = 1 };
@@ -605,7 +646,7 @@ internal static class NpcServiceTests
             };
             catalog ??= new WorldCatalog();
             var log = new RecordingLog();
-            var world = new WorldServer(holder, catalog, log: log);
+            var world = new WorldServer(holder, catalog, options: options, log: log);
             var sessions = new SessionRegistry();
             var session = sessions.Create(1, "owner");
             var sessionService = new SessionAppService(sessions, classes, characters, new ImmediateSaves(characters), catalog, world, holder);

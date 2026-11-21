@@ -21,7 +21,7 @@ internal static class HelpGuideTests
         yield return ("the level guide offers a page on reaching its level or entering fresh, and its notice opens a summary that closes", NoticeAsync);
         yield return ("the help window moves between help, the guide's list of reached subjects and a page, and switches the level guide", WindowAsync);
         yield return ("a text of the data is read from its translation in the shown language, English included, and from the data without one", TranslationAsync);
-        yield return ("the Brazilian Portuguese texts translate the help, the level guide's subjects, the helper pet, the quest dialogs and every quest window description, and English the dialogs the data holds in Portuguese, in UTF-8", TranslationsAsync);
+        yield return ("the Brazilian Portuguese texts translate the help, the level guide's subjects, the helper pet, the quest dialogs and every quest window description, every other language the same texts, and English the dialogs the data holds in Portuguese, in UTF-8", TranslationsAsync);
     }
 
     private const string Subjects = """
@@ -165,6 +165,22 @@ internal static class HelpGuideTests
         foreach (var file in files)
         {
             _ = strict.GetString(File.ReadAllBytes(Path.Combine(root, file)));
+        }
+
+        // Every other language translates the same texts as Brazilian Portuguese.
+        foreach (var language in ClientSettings.SupportedLanguages.Where(static code => code is not (ClientSettings.EnglishLanguage or ClientSettings.BrazilianPortugueseLanguage)))
+        {
+            var other = Path.Combine(LocalizationTests.RepositoryRoot(), "Client", "PristonTale", "Texts", language);
+            var otherFiles = Directory.Exists(other)
+                ? Directory.EnumerateFiles(other, "*", SearchOption.AllDirectories).Select(path => Path.GetRelativePath(other, path).Replace(Path.DirectorySeparatorChar, '/'))
+                    .ToHashSet(StringComparer.Ordinal)
+                : [];
+            var different = files.Except(otherFiles).Concat(otherFiles.Except(files)).ToArray();
+            Assert.True(different.Length == 0, $"the {language} texts differ from the Brazilian Portuguese ones: " + string.Join(", ", different.Take(20)));
+            foreach (var file in otherFiles)
+            {
+                _ = strict.GetString(File.ReadAllBytes(Path.Combine(other, file)));
+            }
         }
 
         // English translates only the dialogs the data holds in another language, each also in Brazilian Portuguese.

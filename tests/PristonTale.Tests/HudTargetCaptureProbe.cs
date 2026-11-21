@@ -161,7 +161,7 @@ internal sealed class HudTargetCaptureProbe : Game
         _crowns = new CrownPresentation(actorScene, loader, _assetRoot, ConsoleClientLog.Instance);
 
         _batch = new SpriteBatch(GraphicsDevice);
-        var font = Content.Load<SpriteFont>("Fonts/UI");
+        var font = new Gameplay.UI.Rendering.UiFonts(Content);
         var context = new ScreenContext(GraphicsDevice, Content, _batch, font, _assetRoot, null!, ConsoleClientLog.Instance, _ => { }, _presentation);
         _hud = new GameplayHud(context, _ => Task.FromResult(new InventoryOutcome(false, 0, GameText.Of(GameTextId.RequestRefused))))
         {

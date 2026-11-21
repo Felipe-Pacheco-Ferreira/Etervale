@@ -111,6 +111,9 @@ public sealed partial class FieldInstance : ISpawnSink, IPlayerProximity, IField
     internal FieldItemEvents ItemEvents { get; } = new();
     internal FieldStatusBook Statuses { get; } = new();
     internal FieldPresenceFrames Frames { get; } = new();
+
+    // The players who gained levels this step, taken by the world after the fields step (WorldServer.AnnounceLevels).
+    internal List<(string Name, int From, int To)> LevelGains { get; } = [];
     private readonly FieldDescriptors _descriptors = new();
     public long NowMs => (long)_nowMs;
     public int PlayerCount => _players.Count;
@@ -175,6 +178,7 @@ public sealed partial class FieldInstance : ISpawnSink, IPlayerProximity, IField
             }
 
             attacker.SetAttackTarget(targetEntityId, sustained);
+            attacker.HoldPvp();
             return true;
         }
 
@@ -259,6 +263,7 @@ public sealed partial class FieldInstance : ISpawnSink, IPlayerProximity, IField
 
         foreach (var player in _players.Values)
         {
+            player.TickPvp(dtMs);
             if (player.IsDead)
             {
                 player.TickDead(dtMs);
@@ -296,10 +301,11 @@ public sealed partial class FieldInstance : ISpawnSink, IPlayerProximity, IField
 
             _combat.StepPlayerAttack(player);
             StepPlayer(player, nowMs);
-            player.TakeProgressCues(out var leveledUp, out var learned);
-            if (leveledUp)
+            player.TakeProgressCues(out var previousLevel, out var learned);
+            if (player.Character.Level > previousLevel)
             {
                 EmitCombatEvent(new CombatEventView(player.EntityId, player.EntityId, CombatEventKind.LevelUp));
+                LevelGains.Add((player.Character.Name, previousLevel, player.Character.Level));
             }
 
             if (learned)
@@ -343,6 +349,7 @@ public sealed partial class FieldInstance : ISpawnSink, IPlayerProximity, IField
         {
             var dropPosition = Terrain.SettleNear(killed.Position, FieldTerrain.DropTolerance);
             GroundLoot.Place(reward, dropPosition, killed.Def.Drops.AllPlayersSeeDrops, nowMs, _rng);
+            DrawBossRoulette(killed, reward);
             if (reward.CreditedPlayerId != 0)
             {
                 CallKillSummons(killed, reward.CreditedPlayerId);
@@ -364,8 +371,8 @@ public sealed partial class FieldInstance : ISpawnSink, IPlayerProximity, IField
 
     Dictionary<ulong, WorldPlayer>.ValueCollection IFieldSkillHost.Players => _players.Values;
 
-    KillPayout? IFieldSkillHost.ApplyPlayerDamage(WorldPlayer player, MonsterInstance monster, int damage, bool crit, bool forceFlinch, ulong sourceEntityId) =>
-        _combat.ApplyPlayerDamage(player, monster, damage, crit, NowMs, forceFlinch, sourceEntityId, skill: true);
+    KillPayout? IFieldSkillHost.ApplyPlayerDamage(WorldPlayer player, MonsterInstance monster, int damage, bool crit, bool forceFlinch, ulong sourceEntityId,
+        Element element) => _combat.ApplyPlayerDamage(player, monster, damage, crit, NowMs, forceFlinch, sourceEntityId, skill: true, element);
 
     bool IFieldSkillHost.TryFindMonsterDefinition(string name, [MaybeNullWhen(false)] out MonsterDefinition definition) =>
         _catalog.TryFind(name, out definition);

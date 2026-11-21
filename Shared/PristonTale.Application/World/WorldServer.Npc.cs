@@ -123,6 +123,13 @@ public sealed partial class WorldServer
                 EnterBellatra(session, operation.BellatraTeam);
             }
 
+            if (operation.Aged is { } aged && Simulation.Items.Aging.AgingRules.MaturingTo(aged) is var level
+                && Simulation.Social.ServerNoticeRules.TellsAging(level, _options.Notices.AgingFrom))
+            {
+                Announce(GameText.Of(GameTextId.AgingNotice, operation.Original.Name, aged.Definition.Name,
+                    level.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+            }
+
             return true;
         }, waitForCapacity: true);
     }

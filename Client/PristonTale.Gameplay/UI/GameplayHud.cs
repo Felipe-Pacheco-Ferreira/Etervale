@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using PristonTale.Contracts.Texts;
 using Microsoft.Xna.Framework.Input;
 using PristonTale.Gameplay.Screens.Framework;
@@ -145,6 +146,13 @@ public sealed partial class GameplayHud : IDisposable
         _chat.GlobalBonusLine = ReceiveGlobalBonuses;
         _chat.TicketLine = _news.ReceiveTicket;
         _chat.HideLine = line => ChatLineFilter.Hides(_context.Presentation.Requested, line);
+        _chat.LineLogged = (line, text) =>
+        {
+            if (ChatLineFilter.OnScreen(_context.Presentation.Requested, line))
+            {
+                _notice.Show(text);
+            }
+        };
         _chat.CensorEnabled = () => _context.Presentation.Requested.ChatFilter;
         _clanWindow = new HudClanWindow(context.Log);
         _castleWindow.AskAmount = AskWithdrawal;
@@ -161,13 +169,13 @@ public sealed partial class GameplayHud : IDisposable
         _sprites.Request(HudQuestArt.All);
         _sprites.Request(Bellatra.HudBellatraResult.Art);
         SetUpBellatraShow();
-        _painter = new HudPainter(context.SpriteBatch, context.Font, _sprites);
+        _painter = new HudPainter(context.SpriteBatch, context.Fonts, _sprites);
         _icons = new HudItemIcons(context.GraphicsDevice, context.AssetRoot, context.Log);
         _personalShop = new HudPersonalShopController(context.Log) { Notify = _notice.Show, AskCount = (first, second, maximum, accepted) => _countBox.Open(first, second, maximum, accepted) };
         _benches = [_aging, _mix, _smelting, _manufacture, _mixtureReset];
         _serviceWindows = [_shop, _warehouse, .. _benches, _personalShop.Window, _trade];
         _sprites.Request(HudPersonalShopArt.All);
-        _skills = new HudSkillsPanel(context.Font, _sprites);
+        _skills = new HudSkillsPanel(context.Fonts, _sprites);
         _skillHud = new HudSkillHud(_sprites, context.GraphicsDevice);
         _inventory = new HudInventoryController(context, applyInventory);
         _progression = new HudProgressionController(applyProgression, context.Log);
@@ -273,6 +281,9 @@ public sealed partial class GameplayHud : IDisposable
     public bool AssetsFailed => _sprites.Failed || _icons.Failed;
     public bool IconsIdle => _icons.IsIdle && _sprites.IsIdle && !_questDocuments.IsLoading && !_helpTexts.IsLoading;
     public long TextureBytes => _sprites.TextureBytes;
+
+    // The status window's art, whose resistance boxes give the damage numbers' element icons (DamageElementStyle).
+    public Texture2D ElementArt => _sprites.Get(HudArt.Status);
     public bool RightAttackEnabled => _bindings.RightSkillId == HudSkillBindings.BasicAttackId;
     internal uint LeftSkillId => _bindings.LeftSkillId;
     internal HudItemUseController ItemUse => _itemUse;
@@ -295,6 +306,11 @@ public sealed partial class GameplayHud : IDisposable
 
     // R or the bar's walk/run button.
     public event Action RunToggleRequested;
+
+    // The PvP shortcut (K) or the browser panel's PvP button: the scene asks the server for the other state.
+    public event Action PvpToggleRequested;
+
+    public void RequestPvpToggle() => PvpToggleRequested?.Invoke();
 
     // Quit in the exit button's menu.
     public event Action ExitRequested;
@@ -474,7 +490,7 @@ public sealed partial class GameplayHud : IDisposable
             current.Timers.Any(timer => timer.RemainingSeconds > 0 &&
                 !previous.Timers.Any(old => old.Kind == timer.Kind && old.RemainingSeconds > 0)))
         {
-            _chat.Assist(ClientText.Language == "pt-BR" ? "Buff premium ativado." : "Premium buff activated.");
+            _chat.Assist(ClientText.Get("Premium.BuffActivated"));
         }
 
         _previousPremiumTimers = PremiumTimers;
@@ -519,6 +535,7 @@ public sealed partial class GameplayHud : IDisposable
         _partyRequest.Update(_clock.Elapsed.TotalMilliseconds);
         _clanRequest.Update(_clock.Elapsed.TotalMilliseconds);
         _tradeRequest.Update(_clock.Elapsed.TotalMilliseconds);
+        UpdateDuelRequest();
         UpdateContacts(_clock.Elapsed.TotalMilliseconds);
         _bellatraResult.Update(_clock.Elapsed.TotalMilliseconds, _npcOpen);
         _bellatraShow?.Update(elapsedSeconds);
@@ -548,6 +565,7 @@ public sealed partial class GameplayHud : IDisposable
         var pointer = layout.ToLogical(mouse.Position);
         _mail.UpdateDrag(layout, pointer, mouse.LeftButton == ButtonState.Pressed);
         _news.UpdateDrag(layout, pointer, mouse.LeftButton == ButtonState.Pressed);
+        UpdateChatPlace(layout, pointer, mouse.LeftButton == ButtonState.Pressed);
         _mail.RefreshInbox(_chat);
         _news.UpdateTickets();
         if (_news.UpdateNotices(_context.Presentation.Requested) is { } seen)
@@ -607,7 +625,7 @@ public sealed partial class GameplayHud : IDisposable
             state is not null && state.Experience > previous.Experience)
         {
             var gain = state.Experience - previous.Experience;
-            var text = ClientText.Language == "pt-BR" ? $"EXP ganha: {gain:N0}" : $"EXP gained: {gain:N0}";
+            var text = ClientText.Format("Hud.ExpGained", gain);
             _chat.Assist(text);
         }
 
@@ -636,8 +654,9 @@ public sealed partial class GameplayHud : IDisposable
             return;
         }
 
-        _hoveredButton = ButtonAt(design);
-        _hoveredToggle = ToggleAt(design);
+        var touchHud = TouchHudShown;
+        _hoveredButton = touchHud ? null : ButtonAt(design);
+        _hoveredToggle = touchHud ? null : ToggleAt(design);
         UpdateHelpPet(state, layout, pointer, design, mouse, _clock.Elapsed.TotalMilliseconds);
         UpdateHelp(state);
         var clicked = mouse.LeftButton == ButtonState.Pressed && _previousMouse.LeftButton == ButtonState.Released;
@@ -754,7 +773,7 @@ public sealed partial class GameplayHud : IDisposable
         var hoveredSkill = _skillSlide.FullyOpen && _skillMaster == 0 ? _skills.HoveredSkill(skillOrigin, pointer) : 0;
         _bindings.Update(typing ? default : keyboard, mouse, hoveredSkill);
         PointerCaptured = clickTaken || _news.Captures(pointer) || _mail.Captures(pointer) || Captures(layout, pointer, design) ||
-            _chat.Window.Contains(layout, pointer, SideWindowOpen) || _inventory.Dragging != Guid.Empty || _warehouse.Dragging != Guid.Empty;
+            !touchHud && _chat.Window.Contains(layout, pointer, SideWindowOpen) || _inventory.Dragging != Guid.Empty || _warehouse.Dragging != Guid.Empty;
         _inventory.PickupLocked = PlayerActing || storedCarried;
         _inventory.ActionStarts = PlayerActionStarts;
         _inventory.Update(state, layout, _inventorySlide.FullyOpen && !_settingsOpen && !ModalOpen, keyboard, mouse);
@@ -831,25 +850,38 @@ public sealed partial class GameplayHud : IDisposable
         if (MinimapShown)
         {
             Combat.CollectNpcPositions(_minimapNpcs);
-            _minimap.Draw(_painter, layout, World, _minimapNpcs, MinimapParty(), HudMinimap.Box(layout).Contains(pointer), MinimapGuide());
+            _minimap.Draw(_painter, layout, World, _minimapNpcs, MinimapParty(), HudMinimap.Box(layout).Contains(pointer), MinimapGuide(), MinimapZone());
         }
 
-        Combat.DrawTarget(_painter, layout, TargetId, _context.Presentation.Requested.ClassicTargetHealthBar, _portrait.Texture(TargetId),
-            ShowsPlayerButtons, _context.Presentation.Requested.ShowPartyDps);
+        var touchHud = TouchHudShown;
+        if (!touchHud)
+        {
+            Combat.DrawTarget(_painter, layout, TargetId, _context.Presentation.Requested.ClassicTargetHealthBar, _portrait.Texture(TargetId),
+                ShowsPlayerButtons, _context.Presentation.Requested.ShowPartyDps);
+        }
         if (ShowsPlayerButtons)
         {
+            // The Duel button first: a hovered button's tip draws over it.
+            HudPlayerButtons.DrawDuel(_painter, HudCombat.TargetFrame(layout), pointer, ClientText.Get("Duel.Button"));
             HudPlayerButtons.Draw(_painter, HudCombat.TargetFrame(layout), pointer, ClanButton);
         }
         _premium.Draw(_painter, _clock.Elapsed.TotalMilliseconds);
         _siegeBoard.Draw(_painter, layout, InCastleField, _clock.Elapsed.TotalMilliseconds, Combat.OwnClan);
         _bellatraBoard.Draw(_painter, layout);
+        DrawDuel(layout);
+        DrawArena(layout);
+        DrawRoyale(layout);
         _personalShop.Draw(_painter);
-        _chat.Window.Draw(_painter, layout, SideWindowOpen);
+        if (!touchHud)
+        {
+            _chat.Window.Draw(_painter, layout, SideWindowOpen);
+        }
 
         if (_statusSlide.Visible)
         {
             _status.ClanName = Clan.Name;
             _status.Draw(_painter, PanelOrigin(layout, _statusSlide), _state, pointer, pressed, _statusSlide.FullyOpen);
+            DrawTitlePlaque(PanelOrigin(layout, _statusSlide), pointer);
         }
 
         if (_skillSlide.Visible)
@@ -887,12 +919,15 @@ public sealed partial class GameplayHud : IDisposable
         }
 
         _painter.Flush();
-        var left = _bindings.LeftSkillId == HudSkillBindings.BasicAttackId;
-        _bar.Draw(_painter, layout, _state, new HudBarView(World.TimeOfDay, World.Running, MapVisible, left, RightAttackEnabled,
-            _hoveredButton, pressed && _hoveredButton is not null, _hoveredToggle));
-        _inventoryPanel.DrawBelt(_painter, layout.BottomBarOrigin, _state, _inventory, _icons);
-        DrawActionBar(layout);
-        _skillHud.DrawSockets(_painter, layout.BottomBarOrigin, _bindings.LeftSkillId, _bindings.RightSkillId, Cooldowns, SkillClockMs);
+        if (!touchHud)
+        {
+            var left = _bindings.LeftSkillId == HudSkillBindings.BasicAttackId;
+            _bar.Draw(_painter, layout, _state, new HudBarView(World.TimeOfDay, World.Running, MapVisible, left, RightAttackEnabled,
+                _hoveredButton, pressed && _hoveredButton is not null, _hoveredToggle));
+            _inventoryPanel.DrawBelt(_painter, layout.BottomBarOrigin, _state, _inventory, _icons);
+            DrawActionBar(layout);
+            _skillHud.DrawSockets(_painter, layout.BottomBarOrigin, _bindings.LeftSkillId, _bindings.RightSkillId, Cooldowns, SkillClockMs);
+        }
         if (Statuses is not null && SelfId != 0)
         {
             _skillHud.DrawBuffs(_painter, _premiumKeeps.With(Statuses.For(SelfId), PremiumTimers, SkillClockMs), SkillClockMs);
@@ -919,7 +954,10 @@ public sealed partial class GameplayHud : IDisposable
             _painter.Text(text, counter.X + 25, counter.Y + 4, Color.White, shadow: false);
         }
 
-        _bar.DrawHoverText(_painter, layout, _state, pointer);
+        if (!touchHud)
+        {
+            _bar.DrawHoverText(_painter, layout, _state, pointer);
+        }
         if (_systemMenu)
         {
             HudSystemMenu.Draw(_painter, layout, pointer);
@@ -934,7 +972,7 @@ public sealed partial class GameplayHud : IDisposable
         _news.Draw(_painter);
         _painter.Flush();
         _helpPet.Draw(_painter, pointer);
-        DrawHelp(pointer);
+        DrawHelp(layout, pointer);
 
         var trainer = _skillSlide.FullyOpen ? _skillMaster : 0;
         _skills.DrawMasterBox(_painter, _state, trainer, trainer != 0 && _quests.ClassChangeNpc == trainer);
@@ -1059,6 +1097,7 @@ public sealed partial class GameplayHud : IDisposable
         _partyRequest.Draw(_painter, pointer, _clock.Elapsed.TotalMilliseconds);
         _clanRequest.Draw(_painter, pointer, _clock.Elapsed.TotalMilliseconds);
         _tradeRequest.Draw(_painter, pointer, _clock.Elapsed.TotalMilliseconds);
+        _duelRequest.Draw(_painter, pointer, _clock.Elapsed.TotalMilliseconds);
         _restart.Draw(_painter, layout, pointer, RestartOffer?.FieldOpen == true, InCastleField);
         _painter.Flush();
         _notice.Draw(_painter, layout);
@@ -1068,9 +1107,10 @@ public sealed partial class GameplayHud : IDisposable
 
     private HudLayout Layout() => HudLayout.Of(_context.GraphicsDevice.Viewport, _context.Presentation.Requested.UiScale) with
     {
-        Browser = OperatingSystem.IsBrowser(),
+        Browser = HudLayout.BrowserLook(OperatingSystem.IsBrowser(), _context.Presentation.Requested),
         CenteredBar = _context.Presentation.Requested.CenteredInterface,
-        SidePanelOpen = SideWindowOpen
+        SidePanelOpen = SideWindowOpen,
+        Touch = TouchHudShown
     };
 
     private static Point PanelOrigin(HudLayout layout, HudSlide slide) => HudInventoryLayout.Origin(layout, slide.Offset);

@@ -27,4 +27,15 @@ public static partial class BrowserHost
 
     [JSExport]
     public static string TouchState() => WebWorldHud.Current?.TouchState() ?? string.Empty;
+
+    // The newest chat lines for the touch HUD's chat (GameplayHud.TouchChat) and a line its chat window sends.
+    [JSExport]
+    public static string TouchChat(int lines) => WebWorldHud.Current?.TouchChat(lines) ?? string.Empty;
+
+    [JSExport]
+    public static void TouchChatSend(string text) => WebWorldHud.Current?.TouchChatSend(text);
+
+    // A skill button's or belt potion's picture named in TouchState, decoded (GameplayHud.TouchPicture).
+    [JSExport]
+    public static byte[] TouchPicture(string path) => WebWorldHud.Current?.TouchPicture(path) ?? [];
 }

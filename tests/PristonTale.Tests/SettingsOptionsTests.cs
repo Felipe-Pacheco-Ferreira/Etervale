@@ -11,8 +11,10 @@ using PristonTale.Engine3D.Rendering;
 using PristonTale.Gameplay.Effects;
 using PristonTale.Gameplay.UI;
 using PristonTale.Gameplay.UI.Chat;
+using PristonTale.Gameplay.UI.Help;
 using PristonTale.Gameplay.UI.Widgets;
 using PristonTale.Simulation.Characters;
+using PristonTale.Simulation.Combat;
 using PristonTale.Simulation.World.Npcs;
 
 namespace PristonTale.Tests;
@@ -21,12 +23,23 @@ namespace PristonTale.Tests;
 // each setting changes what the game does.
 internal static class SettingsOptionsTests
 {
+    private static Task SplitOptionAsync()
+    {
+        Assert.True(Gameplay.UI.Widgets.HudSettingsPanel.SplitOption("Clouds: Low: On") == ("Clouds: Low", "On")
+            && Gameplay.UI.Widgets.HudSettingsPanel.SplitOption("泛光：开") == ("泛光", "开")
+            && Gameplay.UI.Widgets.HudSettingsPanel.SplitOption("Reset the interface") is null, "a settings row was split wrongly");
+        return Task.CompletedTask;
+    }
+
     public static IEnumerable<(string, Func<Task>)> Cases()
     {
         yield return ("every row of the browser's Settings panel edits a setting of the client document", PanelFieldsAsync);
+        yield return ("a settings row splits its value at the last colon, the full-width one of Chinese and Japanese too", SplitOptionAsync);
         yield return ("the new settings validate, round-trip and reach the renderer only when they change it", ValidationAsync);
         yield return ("name plates follow the per-kind switches, the own name and hide other players", NamePlatesAsync);
         yield return ("the chat filter hides boss notices and streamer lines and masks swear words whole", ChatAsync);
+        yield return ("the server notice options hide aging and level notices, the party's loot by rarity and Bellatra's opening, or keep it off the screen",
+            ServerNoticesAsync);
         yield return ("a potion's heal is the life gained after it, once, within its window", PotionHealAsync);
         yield return ("the party's damage per second counts the last five seconds on the target", PartyDpsAsync);
         yield return ("the skill effect switch hides other players' effects except those aimed at the player", SkillEffectsAsync);
@@ -35,6 +48,70 @@ internal static class SettingsOptionsTests
         yield return ("lighter textures halve their sides down to the smallest kept, weighting colour by alpha", TexturesAsync);
         yield return ("the minimap guide holds a far destination to the box's edge", MinimapGuideAsync);
         yield return ("damage numbers scale with the chosen size", DamageSizeAsync);
+        yield return ("an element hit's number takes its icon and colour as the options say, a physical hit keeps its look", DamageElementAsync);
+        yield return ("the chat is dragged only with move chat on, stays on the screen, keeps its place and Reset interface brings it back", MoveChatAsync);
+        yield return ("a tutorial tip shows to each character until closed, never with tips off or past their last level", TutorialTipsAsync);
+        yield return ("the classic interface draws the browser's HUD as on the desktop", ClassicInterfaceAsync);
+    }
+
+    private static Task MoveChatAsync()
+    {
+        var layout = HudLayout.Create(1280, 720);
+        var window = new HudChatWindow();
+        window.OpenInput();
+        var onLog = new Point(150, 450 + layout.BottomOffset);
+        Assert.True(window.Click(layout, onLog, side: false) && !window.Dragging, "the chat was picked up with move chat off");
+        window.Movable = true;
+        Assert.True(window.Click(layout, onLog, side: false) && window.Dragging, "a press on the log did not pick the chat up");
+        Assert.True(!window.UpdateDrag(layout, onLog + new Point(400, -200), pressed: true) && window.Offset == new Point(400, -200),
+            "the chat did not follow the pointer");
+        Assert.True(window.UpdateDrag(layout, onLog + new Point(400, -200), pressed: false) && !window.Dragging, "letting go did not drop the chat");
+        Assert.True(window.Contains(layout, onLog + new Point(400, -200), side: false) && !window.Contains(layout, onLog, side: false),
+            "the chat was not hit where it was dropped");
+        Assert.True(HudChatWindow.ClampOffset(layout, new Point(5000, -5000)) is { X: > 0, Y: < 0 } far
+            && HudChatWindow.Box(layout, false) is var box && box.Right + far.X <= layout.Width && HudChatWindow.Box(layout, true).Top + far.Y >= 0,
+            "the chat left the screen");
+
+        var moved = new ClientSettings { MoveChat = true, ChatOffsetX = 400, ChatOffsetY = -200, ClassicInterface = true, TutorialTips = false, UiScale = 1.25f };
+        var reloaded = ClientSettingsStore.Parse(ClientSettingsStore.Serialize(moved), ConsoleClientLog.Instance);
+        Assert.True(reloaded is { ChatOffsetX: 400, ChatOffsetY: -200, MoveChat: true }, "the chat's place was not kept");
+        Assert.True((moved with { ChatOffsetX = int.MaxValue }).Validate(ConsoleClientLog.Instance).ChatOffsetX == ClientSettings.MostChatOffset,
+            "an out-of-range chat place was kept");
+        var reset = moved.WithInterfaceReset();
+        Assert.True(reset is { ChatOffsetX: 0, ChatOffsetY: 0, MoveChat: false, ClassicInterface: false, TutorialTips: true, UiScale: 1f },
+            "Reset interface did not bring the interface back");
+        return Task.CompletedTask;
+    }
+
+    private static Task TutorialTipsAsync()
+    {
+        var settings = new ClientSettings();
+        Assert.True(HudTutorialTips.Current(settings, "Ann", 1) == 0, "a new character did not see the first tip");
+        var closed = HudTutorialTips.Closed(settings, "Ann", HudTutorialTips.Tips[0].Id);
+        Assert.True(HudTutorialTips.Current(closed, "Ann", 1) == 1 && HudTutorialTips.Current(closed, "Bob", 1) == 0,
+            "a closed tip came back, or closed for another character");
+        Assert.True(ReferenceEquals(HudTutorialTips.Closed(closed, "Ann", HudTutorialTips.Tips[0].Id), closed), "a tip was closed twice");
+        Assert.True(HudTutorialTips.Current(closed with { TutorialTips = false }, "Ann", 1) < 0 && HudTutorialTips.Current(closed, "Ann", HudTutorialTips.MostLevel + 1) < 0,
+            "a tip showed with tips off or past the last level");
+        var all = settings;
+        foreach (var tip in HudTutorialTips.Tips)
+        {
+            all = HudTutorialTips.Closed(all, "Ann", tip.Id);
+        }
+
+        Assert.True(HudTutorialTips.Current(all, "Ann", 1) < 0, "a tip showed after all were closed");
+        var full = settings with { TutorialTipsClosed = [.. Enumerable.Range(0, HudTutorialTips.MostClosed).Select(index => $"Old{index}/Move")] };
+        Assert.True(HudTutorialTips.Closed(full, "Ann", "Move").TutorialTipsClosed is { Length: HudTutorialTips.MostClosed } kept && kept[^1] == "Ann/Move" && kept[0] == "Old1/Move",
+            "the closed tips grew past their limit or dropped the newest");
+        return Task.CompletedTask;
+    }
+
+    private static Task ClassicInterfaceAsync()
+    {
+        var classic = new ClientSettings { ClassicInterface = true };
+        Assert.True(HudLayout.BrowserLook(true, new ClientSettings()) && !HudLayout.BrowserLook(true, classic) && !HudLayout.BrowserLook(false, new ClientSettings()),
+            "the classic interface did not switch the browser's look off");
+        return Task.CompletedTask;
     }
 
     private static readonly ChatLineInfo Whisper = new(ChatKind.Whisper, 0, "From> Ann: hi");
@@ -111,6 +188,35 @@ internal static class SettingsOptionsTests
         Assert.True(ChatCensor.Mask("Ann: vai PUTÁ merda!") == "Ann: vai **** *****!" && ChatCensor.Mask("o computador") == "o computador",
             "the censor missed a word or masked part of one");
         Assert.True(ChatCensor.MaskMessage("From> Merda: oi merda") == "From> Merda: oi *****", "the censor masked the speaker's name");
+        return Task.CompletedTask;
+    }
+
+    private static Task ServerNoticesAsync()
+    {
+        var aging = new ChatLineInfo(ChatKind.Notice, 0, "", GameText.Of(GameTextId.AgingNotice, "Ann", "Axe", "12"));
+        var level = new ChatLineInfo(ChatKind.Notice, 0, "", GameText.Of(GameTextId.LevelNotice, "Ann", "100"));
+        var loot = new ChatLineInfo(ChatKind.Party, 0, "", GameText.Of(GameTextId.PartyLoot, "Ann", "Axe"));
+        var rare = new ChatLineInfo(ChatKind.Party, 0, "", GameText.Of(GameTextId.PartyRareLoot, "Ann", "Axe"));
+        var bellatra = new ChatLineInfo(ChatKind.Notice, 0, "", GameText.Of(GameTextId.BellatraOpening));
+        var defaults = new ClientSettings();
+        Assert.True(!ChatLineFilter.Hides(defaults, aging) && !ChatLineFilter.Hides(defaults, level) && ChatLineFilter.Hides(defaults, loot)
+            && !ChatLineFilter.Hides(defaults, rare) && !ChatLineFilter.Hides(defaults, bellatra) && ChatLineFilter.OnScreen(defaults, bellatra)
+            && !ChatLineFilter.OnScreen(defaults, aging), "the default notices changed");
+        var hidden = defaults with { HideAgingNotices = true, HideLevelUpNotices = true, PartyLootAlerts = PartyLootAlerts.Off, BellatraOpeningNotice = BellatraOpeningNotice.Off };
+        Assert.True(ChatLineFilter.Hides(hidden, aging) && ChatLineFilter.Hides(hidden, level) && ChatLineFilter.Hides(hidden, loot)
+            && ChatLineFilter.Hides(hidden, rare) && ChatLineFilter.Hides(hidden, bellatra), "a notice switched off still showed");
+        var chatOnly = defaults with { PartyLootAlerts = PartyLootAlerts.All, BellatraOpeningNotice = BellatraOpeningNotice.Chat };
+        Assert.True(!ChatLineFilter.Hides(chatOnly, loot) && !ChatLineFilter.Hides(chatOnly, bellatra) && !ChatLineFilter.OnScreen(chatOnly, bellatra),
+            "every item's loot was hidden, or Bellatra's opening reached the screen in the chat-only choice");
+        var streamer = defaults with { StreamerMode = true, StreamerHidesWholeChat = true };
+        Assert.True(!ChatLineFilter.Hides(streamer, rare), "the whole-chat streamer mode hid the party's loot notice");
+
+        var read = ClientSettingsStore.Parse(ClientSettingsStore.Serialize(hidden), NullClientLog.Instance);
+        Assert.True(read is { HideAgingNotices: true, HideLevelUpNotices: true, PartyLootAlerts: PartyLootAlerts.Off, BellatraOpeningNotice: BellatraOpeningNotice.Off },
+            "the notice options did not round-trip");
+        Assert.True(hidden with { PartyLootAlerts = (PartyLootAlerts)9, BellatraOpeningNotice = (BellatraOpeningNotice)9 } is var invalid
+            && invalid.Validate(NullClientLog.Instance) is { PartyLootAlerts: PartyLootAlerts.Rare, BellatraOpeningNotice: BellatraOpeningNotice.Both },
+            "an unknown notice choice was kept");
         return Task.CompletedTask;
     }
 
@@ -200,6 +306,30 @@ internal static class SettingsOptionsTests
             "a near destination was moved");
         var far = HudMinimap.GuideOffset(player, new Vector3(1000f, 0f, 90_000f), 640f);
         Assert.True(far.X == 0f && far.Y == 58f, "a far destination was not held to the edge on its bearing");
+        return Task.CompletedTask;
+    }
+
+    private static Task DamageElementAsync()
+    {
+        var defaults = new ClientSettings();
+        Assert.True(defaults is { ShowElementIcon: true, ColorDamageByElement: false }, "the element options do not default to icon on, colour off");
+        var read = ClientSettingsStore.Parse(ClientSettingsStore.Serialize(defaults with { ShowElementIcon = false, ColorDamageByElement = true }),
+            NullClientLog.Instance);
+        Assert.True(read is { ShowElementIcon: false, ColorDamageByElement: true }, "the element options did not round-trip");
+
+        var white = Color.White;
+        var fire = DamageElementStyle.NumberColor(white, Element.Fire, colorByElement: true);
+        Assert.True(fire != white && fire != DamageElementStyle.NumberColor(white, Element.Ice, colorByElement: true),
+            "fire and ice numbers do not take their own colours");
+        Assert.True(DamageElementStyle.NumberColor(white, Element.Fire, colorByElement: false) == white
+            && DamageElementStyle.NumberColor(white, Element.Bionic, colorByElement: true) == white, "a number took a colour the options or the hit do not give");
+
+        Element[] withIcon = [Element.Fire, Element.Ice, Element.Lighting, Element.Poison];
+        var icons = withIcon.Select(element => DamageElementStyle.IconOf(element, showIcon: true)).ToArray();
+        Assert.True(icons.All(icon => icon.Width == DamageElementStyle.IconPixels && icon.Height == DamageElementStyle.IconPixels)
+            && icons.Distinct().Count() == withIcon.Length, "fire, ice, lightning and poison do not each have their own icon");
+        Assert.True(withIcon.All(element => DamageElementStyle.IconOf(element, showIcon: false).IsEmpty)
+            && DamageElementStyle.IconOf(Element.Bionic, showIcon: true).IsEmpty, "an icon showed with the option off or on a physical hit");
         return Task.CompletedTask;
     }
 

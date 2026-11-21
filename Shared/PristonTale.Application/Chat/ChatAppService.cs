@@ -49,6 +49,9 @@ public sealed class ChatAppService
     public Action<string, string, string>? ObserveDeliveredWhisper { get; init; }
     public Action<string, string>? ObserveGroupChat { get; init; }
 
+    // Translates what players write for those who asked (null: the server has no translation service).
+    public ChatTranslation? Translation { get; init; }
+
     // The client's flood rules, checked again on lines that reach other players. A party, trade or clan line counts
     // toward the rapid-line rule only, as the client counts its channel lines; commands and the yahoo word are free.
     private bool Floods(ChatMember member, string line, bool channel) =>
@@ -130,11 +133,13 @@ public sealed class ChatAppService
 
         var line = new ChatLine(ChatKind.Party, entityId, ChatRules.Shorten(ChatRules.Compose(member.Name, text)));
         ObserveGroupChat?.Invoke("party", line.Text);
+        Func<string, string> compose = translated => ChatRules.Shorten(ChatRules.Compose(member.Name, translated));
         foreach (var id in _parties.MembersOf(entityId))
         {
             if (id != entityId && Directory.TryGet(id, out var hearer))
             {
                 hearer.Link.Deliver(line);
+                Translation?.Offer(hearer, member, ChatKind.Party, entityId, text, compose);
             }
         }
 
@@ -289,11 +294,13 @@ public sealed class ChatAppService
         }
 
         Directory.RecordLocalMessage(line.Text);
+        Func<string, string> compose = translated => ChatRules.Shorten(ChatRules.Compose(member.Name, translated));
         foreach (var id in near)
         {
             if (Directory.TryGet(id, out var hearer))
             {
                 hearer.Link.Deliver(line);
+                Translation?.Offer(hearer, member, ChatKind.Player, member.EntityId, text, compose);
             }
         }
     }
@@ -350,6 +357,14 @@ public sealed class ChatAppService
             if (message.Length > 0 && !Floods(member, message, channel: true))
             {
                 Directory.Broadcast(new ChatLine(ChatKind.Trade, 0, ChatRules.ClipToCapacity(ChatRules.Compose(member.Name, message))));
+                if (Translation is { } translation)
+                {
+                    Func<string, string> compose = translated => ChatRules.ClipToCapacity(ChatRules.Compose(member.Name, translated));
+                    foreach (var other in Directory.Members)
+                    {
+                        translation.Offer(other, member, ChatKind.Trade, 0, message, compose);
+                    }
+                }
             }
 
             return Task.FromResult(true);
@@ -380,6 +395,21 @@ public sealed class ChatAppService
             return InviteToPartyAsync(member, text, party);
         }
 
+        if (DuelRequestLength(text) is var duel and > 0)
+        {
+            return ChallengeDuelAsync(member, text, duel);
+        }
+
+        if (ArenaCommand(text) is var (isArena, mode) && isArena)
+        {
+            return JoinArenaAsync(member, mode);
+        }
+
+        if (RoyaleCommand(text) is { } join)
+        {
+            return JoinRoyaleAsync(member, join);
+        }
+
         var clan = _clans.ClanOf(member.EntityId);
         if (clan != 0 && ChatCommandText.Match("/CLAN>", text) is var clanLength and > 0)
         {
@@ -388,11 +418,13 @@ public sealed class ChatAppService
             {
                 var line = new ChatLine(ChatKind.Clan, 0, ChatRules.ClipToCapacity(member.Name + "> " + message));
                 ObserveGroupChat?.Invoke("clan", line.Text);
+                Func<string, string> compose = translated => ChatRules.ClipToCapacity(member.Name + "> " + translated);
                 foreach (var other in Directory.Members)
                 {
                     if (_clans.ClanOf(other.EntityId) == clan)
                     {
                         other.Link.Deliver(line);
+                        Translation?.Offer(other, member, ChatKind.Clan, 0, message, compose);
                     }
                 }
             }
@@ -468,6 +500,101 @@ public sealed class ChatAppService
         return true;
     }
 
+    // "/duelo name" or "/duel name", any case: a challenge to a duel (DuelRules), also what the Duel button under a player's
+    // portrait sends. The world answers the challenger in a system line.
+    private static int DuelRequestLength(string text)
+    {
+        foreach (var command in (ReadOnlySpan<string>)["/duelo ", "/duel "])
+        {
+            if (text.StartsWith(command, StringComparison.OrdinalIgnoreCase))
+            {
+                return command.Length;
+            }
+        }
+
+        return 0;
+    }
+
+    // "/arena 1x1", "/arena 3x3" or "/arena sair" (also "leave"), any case: join the arena's queue (ArenaRules) or leave
+    // it, also what the quick menu's arena entries send. The world answers in system lines.
+    private static (bool IsArena, Simulation.Combat.ArenaMode? Mode) ArenaCommand(string text)
+    {
+        const string command = "/arena ";
+        if (!text.StartsWith(command, StringComparison.OrdinalIgnoreCase))
+        {
+            return (false, null);
+        }
+
+        var word = text[command.Length..].Trim();
+        if (Simulation.Combat.ArenaRules.ModeOf(word) is { } mode)
+        {
+            return (true, mode);
+        }
+
+        return (string.Equals(word, "sair", StringComparison.OrdinalIgnoreCase) || string.Equals(word, "leave", StringComparison.OrdinalIgnoreCase), null);
+    }
+
+    // "/royale" registers for the Battle Royale (true), "/royale sair" or "/royale leave" takes the registration back
+    // (false); anything else is no Battle Royale command (null).
+    private static bool? RoyaleCommand(string text)
+    {
+        const string command = "/royale";
+        if (!text.StartsWith(command, StringComparison.OrdinalIgnoreCase) || text.Length > command.Length && text[command.Length] != ' ')
+        {
+            return null;
+        }
+
+        var word = text[command.Length..].Trim();
+        return word.Length == 0 ? true
+            : string.Equals(word, "sair", StringComparison.OrdinalIgnoreCase) || string.Equals(word, "leave", StringComparison.OrdinalIgnoreCase) ? false
+            : null;
+    }
+
+    private async Task<bool> JoinRoyaleAsync(ChatMember member, bool join)
+    {
+        try
+        {
+            await World.JoinRoyaleAsync(member.Session, join);
+        }
+        catch (WorldBusyException)
+        {
+        }
+
+        return true;
+    }
+
+    private async Task<bool> JoinArenaAsync(ChatMember member, Simulation.Combat.ArenaMode? mode)
+    {
+        try
+        {
+            await World.JoinArenaAsync(member.Session, mode);
+        }
+        catch (WorldBusyException)
+        {
+        }
+
+        return true;
+    }
+
+    private async Task<bool> ChallengeDuelAsync(ChatMember member, string text, int length)
+    {
+        var name = ChatCommandText.ReadWord(text, ref length);
+        if (name.Length == 0)
+        {
+            return true;
+        }
+
+        try
+        {
+            await World.ChallengeDuelAsync(member.Session, name);
+        }
+        catch (WorldBusyException)
+        {
+        }
+
+        return true;
+    }
+
     // "/:name text" or "/;name text": the sender sees "To> name: text", the receiver "From> sender: text". A receiver who
     // refuses whispers or ignores the sender, or a missing text, gets the sender a server line instead.
     private void Whisper(ChatMember sender, string text)
@@ -507,6 +634,7 @@ public sealed class ChatAppService
 
         sender.Link.Deliver(new ChatLine(ChatKind.Whisper, 0, ChatRules.ClipToCapacity("To> " + name + ": " + message)));
         target.Link.Deliver(new ChatLine(ChatKind.Whisper, 0, ChatRules.ClipToCapacity("From> " + sender.Name + ": " + message)));
+        Translation?.Offer(target, sender, ChatKind.Whisper, 0, message.Trim(), translated => ChatRules.ClipToCapacity("From> " + sender.Name + ": " + translated));
         ObserveDeliveredWhisper?.Invoke(sender.Name, target.Name, message.Trim());
     }
 }

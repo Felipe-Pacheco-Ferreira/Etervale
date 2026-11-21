@@ -19,6 +19,7 @@ composes, shows and limits what the player types.
 | `Shared/PristonTale.Simulation/Social/ChatRules.cs` | Limits (78 typed, 70 relayed, 255 per message), spoken range, bubble and flood timings, `Compose`, `Shorten` |
 | `Shared/PristonTale.Simulation/Social/ChatFloodGuard.cs` | The flood rules for one speaker, used by the chat input and by the server |
 | `Shared/PristonTale.Application/Chat/ChatAppService.cs` | Spoken and party lines, player commands, whispers, the standing notice on heartbeat |
+| `Shared/PristonTale.Application/Chat/ChatTranslation.cs`, `Server/PristonTale.Server/Chat/ChatTranslators.cs` | The chat's translation: cache, characters per minute, the translated line; the DeepL and Google translators and their settings |
 | `Shared/PristonTale.Application/Chat/ChatDirectory.cs` | Players in the world by entity, name and account; level, whisper refusal, notice state |
 | `Shared/PristonTale.Application/Chat/ChatLine.cs`, `IChatLink.cs` | `ChatKind`, the line a player receives, the session-side delivery port |
 | `Shared/PristonTale.Application/Chat/SocialRosters.cs` | `IPartyRoster` (the world's `PartyRoster` by default), `IClanRoster` and its empty default |
@@ -31,7 +32,7 @@ composes, shows and limits what the player types.
 | `.../GameMasters/GameMasterServices.cs` | `GameMasterOptions`, `IServerOperations`, item-creation overrides |
 | `.../GameMasters/ShutdownCountdown.cs`, `CurrencyLedger.cs`, `GmGifts.cs` | Shutdown notices; gold that left the economy (also logged per period, [application.md](application.md#game-logs)); durable item gifts |
 | `Shared/PristonTale.Application/World/WorldServer.Chat.cs`, `WorldServer.GameMasters.cs` | Tick-side reads and changes |
-| `Shared/PristonTale.Protocol/Packets/ChatPackets.cs` | The typed line the client sends and the lines it receives |
+| `Shared/PristonTale.Protocol/Packets/ChatPackets.cs` | The typed line the client sends, the lines it receives and the language it wants them translated to |
 | `Shared/PristonTale.Contracts/Social/ChatKind.cs` | The kind of a chat line, used by the server, the wire and the chat log |
 | `Server/PristonTale.Server/Net/ClientSession.Chat.cs` | `IChatLink` over the session: chat lines, forced warps, close requests |
 | `Server/PristonTale.Server/Net/GameServerControl.cs` | `IServerOperations` for the host: user limit, blocked logins, shutdown |
@@ -50,6 +51,7 @@ character).
 | Direction | Message | Body |
 | --- | --- | --- |
 | Client to server | `ChatSay` `0x45540C01` | `uint8 Party (0 spoken line or command, 1 party), uint8 0, text` |
+| Client to server | `ChatTranslateTo` `0x45540C02` | `uint16 0, text Language` (at most 16 bytes): the language other players' lines are translated to, "" for none |
 | Server to client | `ChatLine` `0x45540C00` | `uint8 Kind, uint8 0, uint64 Speaker (0 for server lines), text, game text Line`: over the speaker when the receiver sees it, else in the log. A server line of the game (party, trade, contacts, whisper answers, gifts, sales) is `Line`, which the client words in its language; what players say and game-master lines are `text`, shown as they are |
 | Server to client | `CloseRequest` `0x45540D03` | The client saves nothing more and quits (the shutdown) |
 
@@ -67,6 +69,7 @@ Kinds: 0 server, 1 whisper, 2 system, 3 notice, 4 party, 5 clan, 6 trade, 9 assi
 | Party chat | The other members of the sender's party | `Name: text` in the party kind |
 | `/>text` (Moderator) | Everybody at once | `Notice> text` |
 | `/>>text` (Moderator) | Each player in the world, once, with the next heartbeat | `Notice> text`; players who enter later skip it |
+| A high aging, a milestone level, Bellatra's tickets on sale | Everybody, notice kind | A `GameText` the client can hide; a party member's monster loot goes to the other members in the party kind ([application.md](application.md#server-notices)) |
 | A message in the Discord bot's public channel | Everybody, on the trade channel | `[Discord] author: text`, one line, the author cut to 24 characters and the text to 78 (`ExternalChat`) |
 
 - Lines starting with `/` (or `` ` `` and `/`) are commands: never spoken, answered only when a command matches.
@@ -88,13 +91,49 @@ Kinds: 0 server, 1 whisper, 2 system, 3 notice, 4 party, 5 clan, 6 trade, 9 assi
   ([application.md](application.md#clans)); `/CLAN> text` reaches the online members of the speaker's clan.
 - `//party name` (or `//PARTY`) asks that player to group, as the button under a player's portrait does; an unknown
   name answers `name is currently offline, or cannot be found`.
+- `/duelo name` or `/duel name` (any case) challenges that player to a duel, as the Duel button under a player's portrait
+  does; the world answers the challenger in a system line ([application.md](application.md#duels)).
+- `/arena 1x1`, `/arena 3x3` or `/arena sair` (also `leave`, any case) joins the arena's queue alone or with the party the
+  player leads, or leaves it, as the quick menu's arena entries do; the world answers in system lines
+  ([application.md](application.md#arena)).
+- `/royale` or `/royale sair` (also `leave`, any case) registers for the next Battle Royale in the 10 minutes before
+  its hour, or takes the registration back, as the quick menu's "Battle Royale" entry does; the world answers in system
+  lines ([application.md](application.md#battle-royale)).
 - English builds had no chat profanity filter, so none is applied.
+
+## Chat translation
+
+A paid service translates what players write for those who ask (`ChatTranslation`, `IChatTranslator`). The server's
+`appsettings.json` chooses it (`ChatTranslation:Provider` `DeepL` or `Google`, the owner's `ApiKey`,
+`CharactersPerMinute`; [server.md](server.md#settings)); without a provider or a key nothing is translated,
+`WorldJoined`'s flag is clear and the clients hide the option. The key never leaves the server.
+
+- The client sends `ChatTranslateTo` with the language it wants (`chatTranslateTo`, [client-settings.md](client-settings.md))
+  on entering the world and when it changes; the session keeps it on the chat member (`ChatMember.TranslateTo`), a
+  catalog language or none.
+- Spoken, party, clan, trade lines and whispers (to the receiver) are delivered at once as always; for each hearer who
+  asked for another language than the speaker's (`PlayerSession.Language`), the translation follows as a second line of
+  the same kind and speaker, built as the original was ("Name: ...", "From> name: ...", "Name> ..."), with
+  `GameTextId.ChatTranslated` as its marker: the client shows the text with the language's "(translated)" mark, so a
+  bubble shows the translation once it arrives and the log keeps both lines. Server lines, notices and the Discord
+  relay are never translated.
+- Requests run off the caller and off the tick. The same text in the same language is asked once while it stays in the
+  cache (4096 entries, emptied when full); a hearer's new requests take at most `CharactersPerMinute` characters a minute
+  (`ChatMember.TakeTranslation`). A failed request sends nothing, keeps the original, is not cached, and is logged at most
+  once a minute. DeepL uses the free plan's address for a key ending in `:fx`; Google receives its key in the
+  `X-Goog-Api-Key` header. Both translate to English, Brazilian Portuguese, Spanish, Simplified Chinese and Japanese, and Google also to
+  Filipino and Vietnamese (`ChatTranslators.cs`; DeepL is not mapped for those two, so their readers keep the original
+  line there).
 
 ## Client chat window
 
 - Default window at (0,408), 305x210 logical pixels, 12 lines; with the status, skill or inventory window open it
   shrinks to (0,294), 300x116, 8 lines. Lines wrap at 264 pixels; the newest sits at the bottom. The UI font is taller than the
   classic 12-pixel line, so each block shows as many lines as fit its classic area.
+- The whole window, tabs, buttons and input line included, sits `HudChatWindow.Offset` design pixels from that place
+  (`chatOffsetX`/`chatOffsetY`, [client-settings.md](client-settings.md)), held on the screen in both places
+  (`ClampOffset`). With `moveChat` on, a press on the open log that is not a tab, a button or a whisper line picks it
+  up (`Click` keeps the anchor, `UpdateDrag` follows the pointer and reports the release, and the HUD saves the place).
 - Tabs at the bottom: All, Clan, Party, Trade, Whisper; each holds 64 lines and scrolls back 32 (Page Up, Page Down).
   The notice button cycles the assistant lines: off, a 3-line split above the chat, the assistant page.
 - Colours: server (255,128,96), whisper (150,190,255), notice (230,160,255), party (200,255,0), clan (255,255,80),

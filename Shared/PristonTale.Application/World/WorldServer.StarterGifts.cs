@@ -39,7 +39,7 @@ public sealed partial class WorldServer
         foreach (var connection in _connections.Values)
         {
             if (connection.Session is { IsPlaying: true } session && !connection.GiftRequested && serverTick >= connection.NextGiftTick
-                && connection.Player.Character.StarterGiftsReceived < StarterGifts.Count)
+                && connection.Player.Home is null && connection.Player.Character.StarterGiftsReceived < StarterGifts.Count)
             {
                 connection.GiftRequested = true;
                 _starterGifts.Writer.TryWrite(session);

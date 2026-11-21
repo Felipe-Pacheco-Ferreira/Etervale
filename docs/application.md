@@ -35,6 +35,12 @@ into it is described in [server.md](server.md); skill resolution details are in 
 | `Clans/ClanAppService.cs`, `Clans/ClanTexts.cs`, `Clans/IClanMarkStore.cs`, `World/WorldServer.Clans.cs`, `World/WorldServer.NpcPayments.cs` | The clans: founding, invitations, ranks, leaving, expelling, entrusting, the chief's mark upload, dissolution and the chat roster (below) |
 | `Clans/IClanDirectory.cs`, `Castle/CastleAppService.cs`, `Castle/CastleWorld.cs` | Bless Castle: the owner clan, the tax, the soul fountain and the siege's schedule and clock (below); the clans it reads through `IClanDirectory`, the world through `ICastleWorld` |
 | `World/WorldServer.Castle.cs`, `World/FieldInstance.Castle.cs`, `World/CastleSiege.cs` | The siege in the castle field: its defenders, the clans' damage board, the tower's fall and the published `CastleSiegeView` |
+| `World/FieldInstance.Pvp.cs`, `World/WorldPlayer.Pvp.cs` | Who fights whom (the castle's battle zone or the PvP mode in a hunting field), the PvP switch, its hold, the murderer's mark and a death at another player's hands ([PvP mode](#pvp-mode)) |
+| `World/Duels/Duel.cs`, `World/WorldServer.Duels.cs` | Duels: the challenge and its answer, the running duels and their end, and the fields' fight results told on the tick ([Duels](#duels)) |
+| `World/Arena/ArenaMatch.cs`, `World/WorldServer.Arena.cs` | The arena: its queue, the pairing, the running matches, their end and the results handed to storage ([Arena](#arena)) |
+| `World/Royale/RoyaleEvent.cs`, `World/WorldServer.Royale.cs`, `World/WorldPlayer.Royale.cs` | The Battle Royale: registration, the start with the stand-ins, the zone, the potions, the places and the results handed to the prizes' storage ([Battle Royale](#battle-royale)) |
+| `World/WorldServer.Titles.cs` | Titles: permanent titles earned on the tick, position titles passed to their holders, the title over the name and the owner's titles ([Titles](#titles)) |
+| `World/FieldInstance.BossRoulette.cs`, `World/WorldServer.BossRoulette.cs` | The boss roulette: the draw at a scheduled boss's death, the notices and the result handed to storage ([Boss roulette](#boss-roulette)) |
 | `Chat/`, `GameMasters/` | Chat routing, whispers and notices; game-master commands, levels and audit ([chat-and-gm.md](chat-and-gm.md)) |
 | `World/WorldServer.Chat.cs`, `World/WorldServer.GameMasters.cs` | Players in hearing range; tick-side game-master reads and changes (kill, hide, move, spawn, drop, gifts) |
 | `Shared/PristonTale.Contracts/Sessions/*Outcome.cs`, `CharacterSummary.cs`; `Contracts/World/Restart.cs`, `WingGateTrip.cs` | Result records returned to the edge and read by the client (login, characters, world entry, restart, wing trips); failure enums carry stable codes |
@@ -270,9 +276,11 @@ Durable entry points (`Prepare*Async`, `Commit*Async`, `CheckNpcServiceAsync`, `
   Resurrection Scroll carried, the death's experience and gold shares). A `RestartRequest` (field, town, exit) is a
   durable operation: the tick prepares a candidate that uses up a carried BI104 or else takes the death's share (from
   level 11: a thirty-third of the level's experience span and of the gold, a fiftieth at level 85+ after the level 85
-  quest, nothing in the castle field), refuses the field restart when it is closed (castle field; below level 11 outside
-  a forest; from level 11 when the experience above the level's start no longer covers a hundredth of the span), and in
-  the field takes that hundredth of experience and gold unless the scroll was used. Experience never drops below the
+  quest, nothing in the castle field), refuses the field restart when it is closed (castle field; below level 11
+  outside a forest; from level 11 when the experience above the level's start no longer covers a hundredth of the
+  span), and in the field takes that hundredth of experience and gold unless the scroll was used. A player
+  slain by another in the PvP mode (`WorldPlayer.SlainByPlayer`, cleared by any revive; never in the castle) takes no
+  share at all and keeps its scroll, in the offer, the restart and a save while down ([PvP mode](#pvp-mode)). Experience never drops below the
   level's start. The candidate stands up at half life (mana and stamina as they were) at the field's start point
   nearest to where it fell, or at a random start point of its town (Ricarten for Fighter to Pikeman and the assassin,
   Pillai for the Morion classes), on the highest floor there (its height goes in the forced `FieldWarp`); the record is
@@ -314,9 +322,12 @@ Player basic attack:
 7. `KillPayout` drops fall around the corpse (`FieldGroundLoot.Place`, see Ground loot); each item copy is made
    there with `ItemRoller.Create` from the field's stream (see [simulation.md](simulation.md#items)).
 
-Player against player: only in the castle field's battle zone (south of `CastleSiegeRules.BattleLineZ`, both players
-in it), between players of different clans (a player without a clan fights anyone), never during the castle league
-(`FieldInstance.PlayersFight`, from `WorldServerOptions.CastleLeague`) nor on a dead or hidden player. The target is
+Player against player (`FieldInstance.MayFight`): in the castle field's battle zone (south of
+`CastleSiegeRules.BattleLineZ`, both players in it), between players of different clans (a player without a clan
+fights anyone), never during the castle league (`FieldInstance.PlayersFight`, from `WorldServerOptions.CastleLeague`);
+in a hunting field by the PvP mode ([PvP mode](#pvp-mode)); two duellists only each other ([Duels](#duels)); an arena
+match's sides only each other ([Arena](#arena)); a Battle Royale's players only each other ([Battle Royale](#battle-royale)); never on a dead or
+hidden player. The target is
 taken like a monster's (`SetAttackTarget`), the swing waits for range, and when it lands with the target still in
 range the target's evasion rolls first (effects and passives, `IPlayerSkillCombat.Evades`); then the attacker's normal
 attack meets the target's defence, block and flat absorption (`CombatProfileFactory.ForPlayerDefender`,
@@ -336,8 +347,8 @@ and a clicked player's main hit's power meets the player through `SkillFormulas.
 with the rule's divisor or none, a bonus against the player brood, flat absorption, the dealt and taken effects).
 Areas and bursts take the foes inside them after the monsters under the same cap, rolling accuracy where the area
 does; the clicked player joins beyond the cap when the rule puts its target in the area. Every such hit goes through
-`FieldCombat.HurtPlayer` (Might Stone, shields, the board). Skill effects, pushes and life-share damage never reach
-players, nor do familiars and summons.
+`FieldCombat.HurtPlayer` (in a hunting field the PvP damage percent first, then Might Stone, shields, the board). Skill
+effects, pushes and life-share damage never reach players, nor do familiars and summons.
 
 Monster attacks (`ResolveMonsterHit`): basic hits check reach, reflection and evasion hooks, roll with
 `CombatResolver.ResolveMonsterAttack` (the player's block chance; a block emits `Block`), scale by modifiers and undead
@@ -349,6 +360,211 @@ another monster, a wild one's on a summon and a summon's on a wild one alike, is
 accuracy versus the target's defence at their levels, the damage (or skill damage) roll, the great bosses' multiplier
 and the target's absorption. A stunned
 player starts no swing and its movement reports are ignored.
+
+### PvP mode
+
+Outside Bless Castle players fight each other only by their PvP mode (`Simulation/Combat/PvpRules.cs`; the server's
+state is `WorldPlayer.Pvp`, `FieldInstance.Pvp.cs` applies it):
+
+- Switch: `PvpSwitch` (`0x45540D09`, [protocol.md](protocol.md)) asks `WorldServer.SwitchPvpAsync` for on or off. On
+  needs level 50 (`PvpRules.MinimumLevel`) and works anywhere, at once. Off waits until 60 s passed
+  (`PvpCombatMsLeft`, `PvpRules.CombatHoldMs`) since the player last locked another player as its target
+  (`SetAttackTarget`) or a blow that hurt passed between it and another player, and never while it is a murderer. The
+  player is told every answer as a system line (`GameTextId.PvpOn`, `PvpOff`, `PvpLevel`, `PvpInCombat`,
+  `PvpMurderer`, with the seconds left). The mode starts off at an entry into the world, unless the player left
+  within the hold or marked a murderer: then, while the server runs, it enters with what is left of both on the real
+  clock and PvP on (`WorldServer.Pvp.cs`, by character name), so leaving clears neither.
+- Who fights whom (`PvpRules.MayFight`): only in a hunting field (`FieldState` forest, ruin, desert, dungeon, iron,
+  ice; never a town, a room, the quest arena, an action field or the castle, which keeps the siege's rules), both
+  players with PvP on, never party members (`WorldPlayer.SharesPartyWith`) nor clan mates, unless the target is a
+  murderer: a murderer is fought by anyone with PvP on, its own party and clan too. Area skills reach such players as
+  in the castle (`IFieldSkillHost.PlayersFight` is true in a hunting field).
+- Damage: a blow between players in a hunting field takes `pvp.damage_percent` of its damage (50 by default, 1 to
+  1000, [server.md](server.md); `FieldCombat.PvpDamagePercent`, at least 1 for a blow that hurts) before the Might
+  Stone and the shields. The castle's blows are not changed.
+- Murderer: killing a player who is not a murderer in a hunting field marks the killer for 10 minutes
+  (`WorldPlayer.MurdererMsLeft`, `PvpRules.MurdererMs`) and tells it (`GameTextId.PvpMurder`, with the victim and the
+  minutes, on the tick after the fields step: `FieldInstance.TakeFightResults`); killing a murderer leaves the killer
+  clean. The mark keeps the killer's PvP on and counts down in the field, and on the real clock while the player is
+  away. Castle and duel blows touch neither the hold, the mark nor the death (`FieldInstance.RecordPvpBlow`).
+- Death: the slain player (`WorldPlayer.SlainByPlayer`) loses no experience, gold or item and keeps its Resurrection
+  Scroll; it stands up as after any death (the 10 s guard included).
+- Looks: `PlayerAppearanceView.Pvp` and `Murderer` travel in the player's `EntityDescription` flags (8 PvP on,
+  16 murderer), so a change raises the descriptor revision and every viewer, the player included, sees it. The client
+  ([client.md](client.md)) colours those names and checks the same `PvpRules.MayFight` before it takes a player as a
+  target.
+
+### Duels
+
+Two players may agree to fight in a duel (`Simulation/Combat/DuelRules.cs`, `World/WorldServer.Duels.cs`; a running
+duel is `World/Duels/Duel.cs`, held by both sides' `WorldPlayer.Duel`):
+
+- Challenge: the chat line `/duelo name` or `/duel name` ([chat-and-gm.md](chat-and-gm.md); the Duel button under a
+  player's portrait sends it) reaches `WorldServer.ChallengeDuelAsync`. Both must be visible (a hidden game master is
+  answered as not found), the target another player in
+  the same hunting field (`DuelRules.FieldAllows`, as the PvP mode) within `ArenaRadius` (500) of the challenger, and
+  neither may be dead or duelling, nor the target waiting on somebody else's challenge; whatever their level or PvP
+  mode. The challenger is told the answer (`GameTextId.DuelChallenged`, `DuelNotFound`, `DuelTooFar`, `DuelField`,
+  `DuelBusy`, `DuelSelf`), and the target gets the challenge (`WorldPlayer.DuelRequest`, `DuelAsked` on the wire) for
+  `InviteMs` (20 s). `DuelAnswer` ([protocol.md](protocol.md)) refuses it (the challenger is told `DuelRefused`) or
+  accepts it: the same checks run again and the duel starts at once, its arena the circle of `ArenaRadius` around the
+  point between the two (`DuelStarted` to both; their attack targets are cleared).
+- Who fights whom (`FieldInstance.MayFight`): two duellists fight each other alone; nobody else fights either of them,
+  whatever the PvP mode or the castle. Blows take the PvP mode's damage percent as any blow between players in a
+  hunting field, and touch neither the PvP hold nor the murderer's mark. `PlayerAppearanceView.Duelling` (description flag
+  32) tells every viewer, so no client takes a duellist as its target unless it is the opponent.
+- Win: `FieldCombat.HurtPlayer` never lets a duel blow take the last life (`DuelRules.Blow`, after the shields; not
+  while a guard runs): the blow that would leaves 1 and wins (`IFieldCombatHost.DuelWon`). Nobody dies and nothing is
+  lost. The field keeps the win in a list, since fields step in parallel; after the step `WorldServer.StepFights`
+  takes it (`FieldInstance.TakeFightResults`, with the murders) and ends the duel.
+- Other ends, checked by `StepFights` every tick: a duellist dead (a monster's blow), gone from the field or the world
+  loses; one out of the arena (`DuelRules.InArena`, on the ground plane) `OutsideMs` (5 s) in a row loses (both at
+  once: a draw); `LimitMs` (3 min) is a draw.
+- Results: each duellist is told `DuelWon`, `DuelLost` or `DuelDraw` with the other's name; every other player of the
+  field reads `DuelNotice` (the winner, the loser) or `DuelDrawNotice`, which the client may hide (`hideDuelNotices`,
+  [client-settings.md](client-settings.md)). There is no score yet.
+- HUD: every snapshot carries the duellist's `DuelView` (the opponent, the arena's center, the whole seconds left and,
+  out of the arena, the seconds before it loses), rebuilt by `Duel` only when a shown second changes; the server sends
+  it as `DuelState` then and once with no opponent when the duel ended ([client.md](client.md)).
+
+### Arena
+
+Matches between players at set hours (`Simulation/Combat/ArenaRules.cs`, `World/WorldServer.Arena.cs`; a running match
+is `World/Arena/ArenaMatch.cs`, each member's place in it `WorldPlayer.Arena`, an `ArenaSeat`):
+
+- Opening: from each of `arena.hours` (server-local, [server.md](server.md); `ArenaOptions.Hours`) for
+  `ArenaRules.OpenMinutes` (30). `WorldServer.StepArena` (after the fields step, from `StepFights`) tells everyone when it
+  opens (`GameTextId.ArenaOpen`) and empties the queue when it closes (`ArenaQueueClosed`). The event calendar shows the
+  openings ([Event calendar](#event-calendar)).
+- Queue: the chat lines `/arena 1x1`, `/arena 3x3` and `/arena sair` (or `leave`; [chat-and-gm.md](chat-and-gm.md); the
+  quick menu's arena entries send the first two) reach `WorldServer.JoinArenaAsync`. 1x1 queues the player alone; 3x3
+  needs the player to lead a party of exactly 3 and queues the party. Every member must be in the world, alive,
+  visible, at level 100 or more (`ArenaRules.Band`: 100-119, 120-139, 140+; the team's band is its highest member's),
+  neither duelling, playing nor already queued, and not in Bellatra or the quest arena (the fields a return scroll
+  cannot leave; `ArenaClosed` with the hours, `ArenaLevel`, `ArenaParty`, `ArenaBusy` otherwise). The field and place
+  each member queues from are kept to go back to. Each member is told `ArenaQueued`; leaving takes the whole team out
+  (`ArenaLeft`). A queued player may not duel. The mode names are `ArenaRules.ModeName` and `ModeOf`.
+- Pairing: every `PairEveryMs` (60 s) while open, teams with a member no longer free (gone, dead, hidden, duelling, in
+  Bellatra or the quest arena) or, for 3x3, no longer sharing a party of three leave the queue, then the
+  oldest two of one mode and band start a match: each side's members go to the arena's field (field 32, the quest
+  arena) at their side's places (`ArenaRules.Place`: one where the quest arena takes a player in, the other where its
+  opponent stands, members 40 units apart), dismounted, their targets cleared and their whole life given back
+  (`ArenaStarted` with the other side's names).
+- Fighting (`FieldInstance.MayFight`): a match's players fight only the other side of their own match while neither
+  is out; nobody else fights them. The presence encoder shows a player in the arena's field only the players of its
+  own match (`EntityView.ArenaMatch`; the quest arena's other players stay hidden as before). Blows take the PvP mode's
+  damage percent (`IFieldCombatHost.ScalesPlayerBlows`) and count for the attacker's side (`ArenaMatch.Damage`). A blow
+  that would kill leaves 1 life (`DuelRules.Blow`, as in a duel) and takes the target out (`IFieldCombatHost.Spared`,
+  settled on the tick by `StepFights`; `ArenaOut`); an out player stays in the field until the match ends. Dying or
+  leaving the world takes a player out too; one who leaves the arena's field on its own is out and no longer in the
+  match, so it stays where it went.
+- End: when a side has nobody left (both at once: a draw), or at `MatchMs` (5 min), when the side that dealt more
+  damage wins and equal damage draws (`ArenaRules.Outcome`). Every member still in the match goes back to the field and
+  place it queued from with its whole life (a dead one stands up there) and is told `ArenaWon`, `ArenaLost` (with the
+  points) or `ArenaDraw`; everyone reads `ArenaNotice` (the mode, the winners, the losers) or `ArenaDrawNotice`, which
+  the client may hide (`hideArenaNotices`, [client-settings.md](client-settings.md)). Nothing is lost.
+- Points and prizes: `WorldServer.ArenaResultRecorded` hands each match's `ArenaResult` (the world clock's
+  server-local week's Monday, `WorldServer.ArenaWeek`; the band; every member's character and outcome) to the server's
+  `ArenaScoreService`, which stores it off the tick (`IArenaRepository.RecordAsync`, [persistence.md](persistence.md)):
+  a win adds 20 points (`ArenaRules.WinPoints`) to the character's week in its band, a loss takes 10 (`LossPoints`)
+  down to 0, a draw nothing. Every 5 minutes the service pays the week before `ArenaWeek` once per band (`AwardAsync`):
+  the best `ArenaRules.PrizePlaces` (3) with points each receive their place's gold (`arena.prize_first`, `_second`,
+  `_third`) by the game mail. A week is paid only during the week after it, so one whose following week the server
+  spends entirely down is not paid. The website shows the current week's best of each band
+  ([website.md](website.md)).
+- HUD: every snapshot carries the player's `ArenaView` (queued for a mode, or the players standing on each side, the
+  seconds left and whether it is out), rebuilt only when it changes; the server sends it as `ArenaState`
+  ([protocol.md](protocol.md)) then and once empty when the player neither queues nor plays. `PlayerAppearanceView.ArenaSide`
+  (description flags 64 and 128) tells every viewer which side a player still fights for ([client.md](client.md)).
+
+### Battle Royale
+
+A last-survivor event at set hours (`Simulation/Combat/RoyaleRules.cs`, `RoyaleKits.cs`, `World/WorldServer.Royale.cs`;
+a running event is `World/Royale/RoyaleEvent.cs`, each player's place in it `WorldPlayer.Royale`, a `RoyaleSeat`):
+
+- Registration: in the `RegistrationMinutes` (10) before each of `royale.hours` (server-local, [server.md](server.md);
+  `RoyaleOptions.Hours`; no hour may be the arena's, both using the quest arena's field). `WorldServer.StepRoyale` (from
+  `StepFights`, after the arena) tells everyone when it opens (`RoyaleOpen`). The chat line `/royale` (the quick menu's
+  "Battle Royale" entry) registers the player and `/royale sair` (or `leave`) takes it back ([chat-and-gm.md](chat-and-gm.md),
+  `WorldServer.JoinRoyaleAsync`): alive, shown, at level 80 or more, in no duel, arena queue, match or event, and not in
+  Bellatra or the quest arena, up to `MaximumPlayers` (50) (`RoyaleClosed` with the hours, `RoyaleLevel`, `RoyaleBusy`,
+  `RoyaleFull` otherwise). The field and place the player registered from are kept (`WorldPlayer.RoyaleEntry`). A
+  registered player may not queue for the arena.
+- Start: at the hour, the registered players still in the world, free and with no character change in flight (the
+  session's save gate free) start; the others are told `RoyaleSkipped`. Fewer than `MinimumPlayers` (10) cancel it
+  (`RoyaleCancelled` to everyone). Each player fights as its stand-in (`RoyaleKits.StandIn` with its class's `Kit`, picked once per class and event; [simulation.md](simulation.md)):
+  its class at level 100 with the class's attribute table and the kit, its own tier and skill ranks.
+  `WorldPlayer.TakeStandIn` puts the stand-in in `Character` and keeps the player's own character in `Home`; it goes,
+  dismounted and with its running statuses dropped, to its place on a circle around the arena's centre
+  (`RoyaleRules.Place`), and everyone reads `RoyaleStarted`.
+- The own character is never touched: saves store the session's character, which is the own one, at the place the
+  player registered from (`WorldServer.SavedPlace`, also an arena player's place it queued from); a stand-in is marked
+  (`PlayerCharacter.IsStandIn`), so a character change never starts from it (`CloneForInventoryOperation` throws) and
+  it is never stored (`CharacterRecordFactory.Capture` throws). Neither starter gifts nor quest upkeep are offered while
+  a stand-in fights (`WorldPlayer.Home`), and a party's gold share committed during the event reaches the own character.
+- Fighting (`FieldInstance.MayFight`, `WorldPlayer.RoyaleFoeOf`): the event's players fight each other while neither is
+  out, without parties (`SharesPartyWith` is false in the event), and nobody else fights them. Blows take the PvP mode's
+  damage percent and count for the attacker (`RoyaleSeat.Damage`). A blow that would kill leaves 1 life and takes the
+  target out (`IFieldCombatHost.Spared`, settled by `StepFights`; `RoyaleOut`). The presence encoder shows the event's
+  players to its players in the arena's field, and those out only to those out too. Nobody heals or buffs another player
+  in the event, nor anyone outside it a player in it (`WorldPlayer.MaySupport`, the ally skills of `FieldSkills`).
+- The zone: centred on the arena's floor, its radius shrinks from 1000 to 150 in `ZoneSteps` (5) steps of 2 minutes
+  (`RoyaleRules.Radius`); every second a player standing outside loses 5% of its whole life, and what would kill leaves 1
+  and takes it out. Every 30 s potions (PL104 and PM104 in turn) appear inside the zone, one per 5 players standing; a
+  player standing in the event drinks one it picks up at once for 30% of its whole life or mana
+  (`WorldServer.DrinkRoyalePotion`, `GroundPickupTransactions`) and takes nothing else from the ground. The event keeps
+  the ids of the potions it laid (`FieldGroundLoot.PlaceEventItem`, `RoyaleEvent.Potions`, the field's `EventDrops`):
+  nobody else takes them, and those left are taken away at the end (`Withdraw`).
+- Leaving: leaving the world takes a player out; one who dies (only a game master's kill can) is out and stands up with
+  1 life to watch; one who leaves the arena's field gets its own character back where it went, without the statuses
+  it had, and is out.
+- End: one or nobody standing, or `LimitMs` (15 min). The places (`RoyaleEvent.Ranking`) are those standing by the
+  damage they dealt, then those out, the last out first. Every player still in the event loses the statuses it had there
+  and gets its own character back (`ReturnHome`), goes with its whole life (a dead one stands up) to where it registered from, gains
+  `RoyaleRules.Experience` (2% of what its level still lacks) and is told `RoyalePlace`; everyone reads `RoyaleWinner`,
+  which the client may hide with the other event notices (`hideRoyaleNotices`, [client-settings.md](client-settings.md)).
+- Prizes: `WorldServer.RoyaleResultRecorded` hands the places (`RoyaleResult`, keyed by the event's server-local
+  yyyymmddhh) to the server's `RoyalePrizeService`, which mails the first three their gold (`royale.prize_first`,
+  `_second`, `_third`) once per event (`IRoyaleRepository.AwardAsync`, [persistence.md](persistence.md)). The places
+  wait in memory until paid, so a server stop in between loses that event's prizes.
+- HUD: every snapshot carries the player's `RoyaleView` (registered with how many are, or the players standing of all,
+  the zone's radius, the seconds until it shrinks and until the limit, and whether it is out), rebuilt only when it
+  changes; the server sends it as `RoyaleState` ([protocol.md](protocol.md)) then and once empty afterwards
+  ([client.md](client.md)).
+
+### Titles
+
+A title is a line over a player's name, only a look (`Simulation/Titles/TitleRules.cs`, `TitleBook.cs`;
+`World/WorldServer.Titles.cs`; [simulation.md](simulation.md)):
+
+- Permanent titles are kept for good once earned: levels 100, 120, 140 and 160 (Veteran, Master, Legend, Immortal),
+  an item aged to +14 and to the highest level (Artisan, Master Artisan; the level an item reaches when it matures,
+  `PlayerCharacter.MatureAgedItems`, or with the aging mastery item; on each entry the items the character owns count
+  too, so one aged before titles existed or by a game master does), the Adventurer's Journey finished (Adventurer),
+  1,000 and 100,000 monsters killed (Hunter, Exterminator) and 100 bosses (Boss Hunter). Kills count for the credited
+  killer
+  (`FieldInstance.CreditQuests`). `WorldServer.StepTitles` (every tick, after the fields step) observes each player's
+  own book (the real character, never an event's stand-in) and marks what it now meets.
+- Position titles belong to one character at a time (`WorldServer.PassTitle`, on the tick): the first of each arena
+  band in the week before (Arena King 100-119, 120-139, 140+), the last Battle Royale's winner (Survivor, from
+  `EndRoyale`), the chief of the clan that owns the castle (Castle Lord) and the first of the level ranking (The
+  Strongest). The server's `TitleService` loads the stored holders at start (`LoadTitleHoldersAsync`, a title the world
+  already handed keeps its holder) and every `TitleRules.PositionCheck` (5 minutes) reads the arena, the castle and the
+  ranking and hands each first to `AwardTitleAsync`; a title passes only to another character, and a position nobody
+  holds leaves it where it is. Until the stored holders are loaded (retried every 30 seconds) no shown position is
+  dropped. `TitlePassed` hands each change to the service, which stores it off the tick
+  ([server.md](server.md), [persistence.md](persistence.md)).
+- Choosing (`ChooseTitleAsync`, the `ChooseTitle` message): a permanent title earned, a position the character holds, or
+  none (`TitleBook.Choose`); anything else changes nothing. A shown position the character no longer holds is dropped on
+  the next tick. The title shown is `WorldPlayer.Title`, carried in the player's description
+  (`PlayerAppearanceView.Title`) to every viewer.
+- Notices: the owner is told each title it gets (`TitleEarned`, with how to show it). A legendary title (Immortal,
+  Master Artisan and every position) is also told to every player: `TitleGained` when it is earned or a position gets
+  its first holder, `TitleLost` when a position changes hands; the one who lost it is told `TitleTaken`. The client may
+  hide `TitleGained` and `TitleLost` (`hideTitleNotices`, [client-settings.md](client-settings.md)). A title travels in
+  a game text as its code, worded by the client.
+- Owner view: when the book's revision or the holders change, the snapshot carries a new `TitleView` (the title shown
+  and those owned, permanent and held); the server sends it as `Titles` ([protocol.md](protocol.md)).
 
 ### Player skills (`FieldSkills`)
 
@@ -387,6 +603,30 @@ summon status ends. Charmed wild monsters become summons for the charm duration.
   throw `NotSupportedException`.
 - The reserved copy keeps the rolled values of the drop under the drop's id. A pickup that would carry the character
   over the weight limit is refused with the `OverWeight` game text.
+
+### Boss roulette
+
+When a scheduled boss dies (`MonsterInstance.Scheduled`, set by `FieldSpawner.SpawnScheduledBosses`), one of those who
+fought it wins a prize (`Simulation/World/Loot/BossRoulette.cs`; `World/FieldInstance.BossRoulette.cs`,
+`World/WorldServer.BossRoulette.cs`):
+
+- Damage: `MonsterDamageLog.Tally` keeps the life each player took (a blow's overkill left out) only for a scheduled
+  boss, handed out on its `KillPayout.BossDamage`.
+- Entrants (`FieldInstance.DrawBossRoulette`, in the field step): the players still in the field when the boss dies who
+  took at least `BossRoulette.MinimumSharePercent` (1%) of its life, and their party members in the field (a heal
+  cannot be tied to one boss, so support counts through the party); one who died or left before loses its place.
+- Chances (`BossRoulette.Chances`): each one's share of the entrants' damage, raised to `FloorPercent` (5%, a
+  supporter's) with the difference taken from the others by their chances, then, once four or more take part (with
+  fewer no cap can hold), lowered to `CapPercent` (30%) with the difference given to the others the same way. `Draw`
+  rolls once with the field's generator; `Prize` picks a stone of the boss's level tier (`AgingRules.KeyOf`: below 80
+  an aging stone or copper ore, 80 to 109 a super aging stone or elder copper ore, 110 and up a superior copper ore or
+  super aging stone). A scheduled boss a monster's blow kills (no player's payout) draws nothing.
+- After the fields step (`WorldServer.AnnounceRoulettes`) every player reads `BossRouletteWinner`, which the client
+  may hide (`hideBossRouletteNotices`, [client-settings.md](client-settings.md)), and the winner `BossRouletteWon`.
+  `BossRouletteDrawn` hands the result (`BossRouletteResult`: field, boss, every entrant with its character, damage and
+  chance, the winner and the prize) to the server's `BossRouletteService`, which keeps the draw and mails the prize to
+  the winner's account off the tick (`IBossRouletteRepository.RecordAsync`, [persistence.md](persistence.md)); the
+  item waits in the item distributor. A draw whose winner's character is unknown is kept without a mail.
 
 ## Durable operations
 
@@ -869,6 +1109,20 @@ characters, so a relog keeps a player's place and score.
   path of every character change, a fixed gold amount, tried again a few times while the player is busy with another
   change; the player is told the prize, the gold limit that refused it or why it failed. A prize still waiting when the
   server stops, or owed to a player who left, is lost.
+
+## Server notices
+
+The world tells players of other players' feats as `WorldNotice`s (`WorldServer.Notices.cs`); one addressed to
+`WorldNotice.Everyone` reaches every player in the chat (`ChatDirectory.Deliver`). The limits are server settings
+(`ServerNoticeOptions`, the `notices.*` rows, [server.md](server.md#server-settings-table)) and the rules are
+`ServerNoticeRules` (Simulation). Each line is a `GameText` the client can hide ([client-settings.md](client-settings.md)).
+
+| Notice | When | Who | Text |
+| --- | --- | --- | --- |
+| A high aging | The commit of an aging that succeeded (a success or a double), its item maturing toward `notices.aging_from` or above (`PreparedNpcOperation.Aged`, `AgingRules.MaturingTo`); never a fall or a lower level | Everybody, notice kind | `AgingNotice` player, item, the level it matures to |
+| A milestone level | A player whose level passed a multiple of `notices.level_every` from `notices.level_from` on, the highest one when several levels came at once; the fields record each step's gains (`FieldInstance.LevelGains`) and the world reads them after the fields step (`WorldServer.AnnounceLevels`) | Everybody, notice kind | `LevelNotice` player, level |
+| Party loot | The commit of a pickup of a monster's drop (gold and thrown items excluded) by a party member | The other members, party kind | `PartyRareLoot` for a unique or set item (`ItemDefinition.IsRare`, the rule of the ground labels too), else `PartyLoot`, member and item |
+| Bellatra opens | The game clock reaching `BellatraRules.TicketHour` while Bellatra is open and between games (`WorldServer.StepBellatra`) | Everybody, notice kind | `BellatraOpening` |
 
 ## Event calendar
 

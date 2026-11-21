@@ -2,6 +2,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using PristonTale.Engine3D.Rendering;
 using PristonTale.Gameplay.Localization;
+using PristonTale.Simulation.Combat;
 
 namespace PristonTale.Gameplay.Effects;
 
@@ -28,12 +29,20 @@ public sealed class FloatingCombatText
     // Spread numbers land this far apart (world units) instead of in a narrow column.
     private const float SpreadUnits = 40f;
 
+    // The element icon's side as a share of the number's line height, and its gap from the number as a share of its side.
+    private const float IconHeight = 0.8f;
+    private const float IconGap = 0.15f;
+
     private readonly Entry[] _entries = new Entry[Capacity];
     private int _next;
 
     // The settings' number size and spread (DamageNumberSize, SpreadDamageNumbers).
     public float SizeScale { get; set; } = 1f;
     public bool Spread { get; set; }
+
+    // The settings' element options (ShowElementIcon, ColorDamageByElement); the icons come from Draw's element art.
+    public bool ShowElementIcon { get; set; } = true;
+    public bool ColorByElement { get; set; }
 
     public static float ScaleOf(DamageNumberSize size) => size switch
     {
@@ -57,7 +66,7 @@ public sealed class FloatingCombatText
         }
     }
 
-    public void Add(Vector3 worldPosition, int amount, FloatingTextKind kind)
+    public void Add(Vector3 worldPosition, int amount, FloatingTextKind kind, Element element = Element.Bionic)
     {
         var text = kind switch
         {
@@ -71,7 +80,7 @@ public sealed class FloatingCombatText
         var offset = Spread
             ? new Vector3(jitter * SpreadUnits, 0f, ((_next * 53) % 21 - 10) / 10f * SpreadUnits)
             : new Vector3(jitter * 15f, 0f, 0f);
-        _entries[_next] = new Entry(worldPosition + offset, text, kind, 0f);
+        _entries[_next] = new Entry(worldPosition + offset, text, kind, element, 0f);
         _next = (_next + 1) % Capacity;
     }
 
@@ -86,7 +95,7 @@ public sealed class FloatingCombatText
         }
     }
 
-    public void Draw(SpriteBatch batch, SpriteFont font, Viewport viewport, Matrix view, Matrix projection)
+    public void Draw(SpriteBatch batch, SpriteFont font, Viewport viewport, Matrix view, Matrix projection, Texture2D elementArt)
     {
         var begun = false;
         for (var index = 0; index < _entries.Length; index++)
@@ -118,13 +127,28 @@ public sealed class FloatingCombatText
             var size = font.MeasureString(entry.Text) * scale * pop;
             var at = new Vector2(projected.X - size.X / 2f, projected.Y - size.Y);
             batch.DrawString(font, entry.Text, at + new Vector2(1.5f, 1.5f), Color.Black * (0.75f * alpha), 0f, Vector2.Zero, scale * pop, SpriteEffects.None, 0f);
-            batch.DrawString(font, entry.Text, at, color * alpha, 0f, Vector2.Zero, scale * pop, SpriteEffects.None, 0f);
+            batch.DrawString(font, entry.Text, at, DamageElementStyle.NumberColor(color, entry.Element, ColorByElement) * alpha, 0f, Vector2.Zero, scale * pop, SpriteEffects.None, 0f);
+            DrawIcon(batch, elementArt, entry.Element, at, size, alpha);
         }
 
         if (begun)
         {
             batch.End();
         }
+    }
+
+    // The element's symbol right of the number, as tall as the number's text.
+    private void DrawIcon(SpriteBatch batch, Texture2D art, Element element, Vector2 at, Vector2 size, float alpha)
+    {
+        var source = DamageElementStyle.IconOf(element, ShowElementIcon);
+        if (art is null || source.IsEmpty)
+        {
+            return;
+        }
+
+        var side = size.Y * IconHeight;
+        var target = new Rectangle((int)(at.X + size.X + IconGap * side), (int)(at.Y + (size.Y - side) / 2f), (int)side, (int)side);
+        batch.Draw(art, target, source, DamageElementStyle.IconTint(element) * alpha);
     }
 
     private static (Color Color, float Scale) Style(FloatingTextKind kind) => kind switch
@@ -137,11 +161,12 @@ public sealed class FloatingCombatText
         _ => (new Color(255, 255, 235), 1f)
     };
 
-    private struct Entry(Vector3 position, string text, FloatingTextKind kind, float age)
+    private struct Entry(Vector3 position, string text, FloatingTextKind kind, Element element, float age)
     {
         public Vector3 Position = position;
         public string Text = text;
         public FloatingTextKind Kind = kind;
+        public Element Element = element;
         public float Age = age;
     }
 }

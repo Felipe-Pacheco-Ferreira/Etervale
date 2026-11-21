@@ -3,6 +3,8 @@ using PristonTale.Engine3D.Diagnostics;
 using PristonTale.Engine3D.IO;
 using PristonTale.Engine3D.Rendering;
 using PristonTale.Gameplay.Input;
+using PristonTale.Gameplay.UI;
+using PristonTale.Gameplay.UI.Widgets;
 using PristonTale.Simulation.Characters;
 using PristonTale.Simulation.Skills;
 
@@ -15,7 +17,9 @@ internal static class TouchInputTests
         yield return ("a finger landing at the lower left is the joystick and a still one there is a tap", JoystickAsync);
         yield return ("a finger dragged elsewhere turns the camera, two pinch its distance, and neither is a tap", CameraAsync);
         yield return ("touch skill buttons keep chosen learned skills and fill the rest with learned skills in order", SkillSlotsAsync);
-        yield return ("the interface type picks the touch HUD on touch-only devices when automatic and round-trips", InterfaceModeAsync);
+        yield return ("the interface type picks the touch HUD on touch-only devices when automatic, round-trips, and needs the page's fingers",
+            InterfaceModeAsync);
+        yield return ("the touch HUD moves the minimap to the upper right corner, clear of the skill wheel, and leaves it in place otherwise", MinimapCornerAsync);
     }
 
     private static Task JoystickAsync()
@@ -103,6 +107,35 @@ internal static class TouchInputTests
         Assert.True(parsed?.InterfaceMode == InterfaceMode.Touch, "the document's interface type was not read");
         var saved = ClientSettingsStore.Parse(ClientSettingsStore.Serialize(new ClientSettings { InterfaceMode = InterfaceMode.Pc }), NullClientLog.Instance);
         Assert.True(saved?.InterfaceMode == InterfaceMode.Pc, "the interface type did not round-trip");
+
+        // The canvas leaves out what the page's touch HUD replaces only where the page reports fingers.
+        var touch = new ClientSettings { InterfaceMode = InterfaceMode.Touch };
+        var (fingers, device) = (WebWorldHud.Fingers, WebWorldHud.TouchDevice);
+        try
+        {
+            WebWorldHud.Fingers = null;
+            Assert.True(!WebWorldHud.TouchActive(touch), "the touch HUD was in use without the page's fingers");
+            WebWorldHud.Fingers = new Fingers();
+            WebWorldHud.TouchDevice = false;
+            Assert.True(WebWorldHud.TouchActive(touch) && !WebWorldHud.TouchActive(new ClientSettings()), "the interface type did not decide the touch HUD");
+            WebWorldHud.TouchDevice = true;
+            Assert.True(WebWorldHud.TouchActive(new ClientSettings()), "automatic did not use the touch HUD on a touch-only device");
+        }
+        finally
+        {
+            (WebWorldHud.Fingers, WebWorldHud.TouchDevice) = (fingers, device);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private static Task MinimapCornerAsync()
+    {
+        var layout = HudLayout.Create(844, 390) with { Browser = true };
+        var box = HudMinimap.Box(layout with { Touch = true });
+        Assert.True(box.Right < layout.Width && box.Top > 0 && box.Bottom < layout.Height / 2 && box.Right > layout.Width - 20,
+            "the touch HUD's minimap is not in the upper right corner");
+        Assert.True(HudMinimap.Box(layout).Bottom > layout.Height / 2, "the minimap left the lower right corner without the touch HUD");
         return Task.CompletedTask;
     }
 

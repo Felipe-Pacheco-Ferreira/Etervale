@@ -3,7 +3,6 @@ using PristonTale.Engine3D.Diagnostics;
 using PristonTale.Engine3D.IO;
 using PristonTale.Gameplay.Effects;
 using PristonTale.Simulation.Items;
-using PristonTale.Assets;
 using PristonTale.Contracts.Characters;
 using PristonTale.Simulation.Characters;
 
@@ -78,6 +77,13 @@ public sealed class CombatSounds : IDisposable
     {
         get => _bank.Enabled;
         set => _bank.Enabled = value;
+    }
+
+    // The effects volume (0 to 1).
+    public float Gain
+    {
+        get => _bank.Gain;
+        set => _bank.Gain = value;
     }
 
     public void Update() => _bank.Update();
@@ -212,19 +218,7 @@ public sealed class CombatSounds : IDisposable
     }
 
     // The .wav files of a folder as asset-relative paths.
-    private IEnumerable<string> Files(string relativeDirectory)
-    {
-        var directory = AssetFiles.Resolve(Path.Combine(_assetRoot, relativeDirectory));
-        if (!Directory.Exists(directory))
-        {
-            return [];
-        }
-
-        return Directory.EnumerateFiles(directory, "*.wav", SearchOption.TopDirectoryOnly)
-            .Order(StringComparer.OrdinalIgnoreCase)
-            .Select(path => Path.GetRelativePath(_assetRoot, path).Replace('\\', '/'))
-            .ToArray();
-    }
+    private IReadOnlyList<string> Files(string relativeDirectory) => SoundFiles.Waves(_assetRoot, relativeDirectory);
 
     private static readonly string[][] FootstepFiles =
     [

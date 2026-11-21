@@ -1,0 +1,1770 @@
+{
+  "npcs": {
+    "Adventurer Jin": {
+      "name": "Adventurer Jin",
+      "dialog": [
+        "Hello! Ako si Jin. Nalibot ko na ang buong kontinente ng Priston.",
+        "Ilang taon akong naglakbay, pero ngayon ay nagvo-volunteer na ako mula nang dumami ang mga monster.",
+        "May kambal akong kapatid na babae. Mga manlalakbay kami at ngayon ay magkahiwalay. Nasaan kaya siya~"
+      ]
+    },
+    "Adventurer Skadi": {
+      "name": "Adventurer Skadi",
+      "dialog": [
+        "Hello! Ako si Skadi, nalibot ko na ang buong kontinente ng Priston.",
+        "Ipinanganak ako sa pamilya ng mga manlalakbay, may kambal na kapatid na lalaki. Nagvo-volunteer ako sa nayon sa mapanganib na panahong ito.",
+        "Pwede mo bang sabihan ng 'hello' ang bunso kong kapatid? ^0^"
+      ]
+    },
+    "Agni": {
+      "name": "Agni",
+      "dialog": [
+        "Sumaiyo nawa ang lakas ng apoy at tapang sa hinaharap...",
+        "Late ka na! Nagsimula na ang laban sa Ardor.",
+        "Aling team ang mananalo?",
+        "Mukhang malakas ka rin.",
+        "Pasensya na, hindi ka pa pwedeng pumasok sa Ardor ngayon.",
+        "Sa oras na ito araw-araw, ibinibigay ang mga reward at nililinis at minimaintain ang stadium.",
+        "Pakibalik na lang mamaya.",
+        "Mukhang masyado ka pang maaga para pumasok sa Ardor. Kailangan mo ng mas maraming EXP."
+      ]
+    },
+    "Ahin": {
+      "name": "Ahin",
+      "dialog": [
+        "Siguradong matapang kang mandirigma para makarating nang ganito kalayo.",
+        "May inihanda akong regalo para sa iyo",
+        "Dahil kapos ako sa oras, isang item lang ang pwede mong bilhin sa loob ng 3 minuto.",
+        "Hanggang sa muli. Paalam."
+      ]
+    },
+    "Allya's Store": {
+      "name": "Tindahan ni Allya",
+      "dialog": []
+    },
+    "Arad, the Crystal Master": {
+      "name": "Arad, ang Crystal Master",
+      "dialog": []
+    },
+    "Arad, the Crystal Master 2": {
+      "name": "Arad, ang Crystal Master",
+      "dialog": []
+    },
+    "Arcane Moriph": {
+      "name": "Arcane Moriph",
+      "dialog": [
+        "Pwedeng mawala ang mga item habang nire-reinforce. Mas mabuti pa ang mix, na pinagsasama ang mga skill nang isang beses lang.",
+        "Ginawa ang aging para mailabas ang pinakamalakas na kakayahan ng mga item, pero may tsansa ring mawala ang mga ito.",
+        "Pwede kang mag-aging anumang oras, basta may sheltom at pera kang kailangan.",
+        "Handa ka na ba? Simulan na natin ang aging!"
+      ]
+    },
+    "Arcane's pupil Newtor": {
+      "name": "Newtor, ang estudyante ni Arcane",
+      "dialog": [
+        "Hindi pa bumabalik si Moriph mula nang umalis siya para maghanap ng bagong sheltom. Ako muna ang gagawa ng aging.",
+        "Pakisabi kay Moriph na bumalik na kapag nakita mo siya. Sana ay hindi siya napapahamak.",
+        "Wala akong karanasan ni Moriph, kaya may panganib na pumalpak. Pero gagawin ko ang best ko."
+      ]
+    },
+    "Ariel": {
+      "name": "Ariel",
+      "dialog": [
+        "Sumaiyo nawa ang lakas ng tubig, karunungan at kabutihan...",
+        "Ang Tore ng Pagsubok, ang Bellatra, ay pinamamahalaan ng clan na 'XXX'",
+        "Late ka na! Nagsimula na ang Bellatra.",
+        "Aling team ang mananalo?",
+        "Mukhang malakas ka rin.",
+        "Pasensya na, hindi ka pa pwedeng pumasok sa Bellatra ngayon.",
+        "Sa oras na ito ng araw, ibinibigay ang mga reward at nililinis at minimaintain ang stadium.",
+        "Pakibalik na lang mamaya.",
+        "Mukhang masyado ka pang maaga para pumasok sa Bellatra. Kailangan mo ng mas maraming EXP."
+      ]
+    },
+    "Ascam, the Vendor": {
+      "name": "Ascam, ang Vendor",
+      "dialog": []
+    },
+    "Atlantis Guard": {
+      "name": "Atlantis Guard",
+      "dialog": []
+    },
+    "Atlantis Guard 2": {
+      "name": "Atlantis Guard",
+      "dialog": []
+    },
+    "Atlantis Guard 3": {
+      "name": "Atlantis Guard",
+      "dialog": []
+    },
+    "Atlantis Guard 4": {
+      "name": "Atlantis Guard",
+      "dialog": []
+    },
+    "Atlantis Guard 5": {
+      "name": "Atlantis Guard",
+      "dialog": []
+    },
+    "Barba": {
+      "name": "Barba",
+      "dialog": [
+        "May paraan para protektahan ang mga gamit mo sa magulong panahong ito.",
+        "Ang pag-ukit ng marka sa gamit ay nakakabawas ng panganib na mawala ito.",
+        "Kung gusto mong alisin ang marka, kakailanganin mo ng Brush of Oblivion.",
+        "Ang mga item na may marka ay hindi pwedeng ilipat mula sa inventory mo papunta sa iba."
+      ]
+    },
+    "Baurin": {
+      "name": "Baurin",
+      "dialog": [
+        "Manigong Bagong Taon",
+        "Kung dadalhan mo ako ng dragon capsule, ipapalit ko ito sa regalo."
+      ]
+    },
+    "Bayoo": {
+      "name": "Bayoo",
+      "dialog": [
+        "Ipinagdarasal kong samahan ng kalayaan ng hangin ang iyong paningin...",
+        "Late ka na! Nagsimula na ang laban sa Ardor.",
+        "Aling team ang mananalo?",
+        "Mukhang malakas ka rin.",
+        "Pasensya na, hindi ka pa pwedeng pumasok sa Ardor ngayon.",
+        "Sa oras na ito araw-araw, ibinibigay ang mga reward at nililinis at minimaintain ang stadium.",
+        "Pakibalik na lang mamaya.",
+        "Mukhang masyado ka pang maaga para pumasok sa Ardor. Kailangan mo ng mas maraming EXP."
+      ]
+    },
+    "Bellia": {
+      "name": "Bellia",
+      "dialog": [
+        "Dalhan mo ako ng tatlong crystal mula sa iisang monster at gagawa ako ng triple monster crystal."
+      ]
+    },
+    "Blacksmith Bartz": {
+      "name": "Panday Bartz",
+      "dialog": [
+        "Hindi ko akalaing sasalakayin ni Midranda ang Pillai...",
+        "Lagi kong inakalang ligtas ang Pillai, pero natapos na ang akalang iyon.",
+        "Sugatan ang katawan ko, pero kaya ko pa ring gumawa ng magagandang sandata.",
+        "Hindi ako makapaniwalang naging abo ang masaganang Pillai sa napakaikling panahon."
+      ]
+    },
+    "Blacksmith Dfrain": {
+      "name": "Panday Dfrain",
+      "dialog": [
+        "Ito ang Tower Shield na ginawa ko. Walang ibang makakagawa ng ganito.",
+        "Sa totoo lang, madali akong makakagawa ng mas magagandang armor kaysa dito. Pero para saan pa? Wala namang bumibili.",
+        "Ano? Pabaya akong panday? E ang dakila kong Tower Shield, ha?",
+        "Hindi dito hinahanap ang mga sandata. Kausapin mo si Mr. Bartz sa katabing tindahan. Huwag mo akong istorbohin..."
+      ]
+    },
+    "Blacksmith Goden": {
+      "name": "Panday Goden",
+      "dialog": [
+        "Welcome sa tindahan ni Goden. Gamit para sa mga baguhang mandirigma ang binebenta namin.",
+        "Maraming gamit dito para sa mga baguhang mandirigma.",
+        "Gumawa ako ng ilang bagong item ngayong araw. First-class ang kalidad!",
+        "May hinahanap ka bang iba? Kung ganoon, hanapin mo ang panday na si Gus. Nasa kanlurang bahagi siya ng lungsod."
+      ]
+    },
+    "Blacksmith Gus": {
+      "name": "Panday Gus",
+      "dialog": [
+        "Marami kaming item para sa mga baguhang mandirigma. Tuloy ka!",
+        "Mula sa mga sandata para sa baguhan hanggang sa mga armor ang mga paninda namin. Tingnan mo.",
+        "Hindi mo ba nakita ang hinahanap mo? Pumunta ka sa panday na si Goden. Nasa silangang bahagi siya ng lungsod.",
+        "Hindi ako gumagawa ng parehong sibat na gamit ng mga guard ng lungsod, pero may iba akong item na baka magustuhan mo."
+      ]
+    },
+    "Blacksmith Joao": {
+      "name": "Panday Joao",
+      "dialog": []
+    },
+    "Blacksmith Max": {
+      "name": "Panday Max",
+      "dialog": []
+    },
+    "Blacksmith Pedro": {
+      "name": "Panday Pedro",
+      "dialog": []
+    },
+    "Blacksmith Ruga": {
+      "name": "Panday Ruga",
+      "dialog": [
+        "Wala akong pinakamagagandang gamit, pero baka may magamit ka rito at doon.",
+        "Tingnan mo ang stock ko. May mga gamit na pwedeng gamitin ng mga Tempskron at Morion.",
+        "Wala akong magarbong forge, pero sapat na ang ganda ng mga gamit ko para ibenta.",
+        "Nag-iipon ako ng gold para makatulong sa pagtatayo ng malaking nayon dito."
+      ]
+    },
+    "Blacksmith Umph": {
+      "name": "Panday Umph",
+      "dialog": [
+        "Ito ang mga espesyalidad ng Navisko. Ako lang ang kayang gumawa nito. Tingnan mo ang mahahalaga kong paninda.",
+        "Walang gumagawa sa kontinenteng ito ng mas malalakas na sandata at armor kaysa sa akin.",
+        "Hindi kailanman nagpupunta rito ang mga mandirigma ng SOD. Wala ba silang pakialam sa mga sandata ko? Gaano ba sila kalakas?",
+        "Kung may ibebenta ka, ipakita mo. Kung may kailangan ka, narito ang pinakamalalakas na gamit sa kontinente."
+      ]
+    },
+    "Blacksmith Umph 2": {
+      "name": "Panday Umph",
+      "dialog": [
+        "Ito ang mga espesyalidad ng Navisko. Ako lang ang kayang gumawa nito. Tingnan mo ang mahahalaga kong paninda.",
+        "Walang gumagawa sa kontinenteng ito ng mas malalakas na sandata at armor kaysa sa akin.",
+        "Hindi kailanman nagpupunta rito ang mga mandirigma ng SOD. Wala ba silang pakialam sa mga sandata ko? Gaano ba sila kalakas?",
+        "Kung may ibebenta ka, ipakita mo. Kung may kailangan ka, narito ang pinakamalalakas na gamit sa kontinente."
+      ]
+    },
+    "Bless Castle Guard": {
+      "name": "Bless Castle Guard",
+      "dialog": [
+        "Kasasali ko lang sa militia. Paano nila ako mauutusang mag-guard duty! Hindi makatwiran!",
+        "Kapag bukas ang Bless Castle, maraming mandirigma ang naglalaban dito.",
+        "Hindi ka pa pwedeng pumasok sa kastilyong ito ngayon!",
+        "Huwag mo akong istorbohin, o tatawagin ko ang royal guard para palayasin ka.",
+        "Hoy! Huwag mong itutok sa akin ang sandata mo nang ganyan.",
+        "Kung makita mo ang Cecillia ko, pakisabi na ayos lang ako."
+      ]
+    },
+    "Bridge Guard": {
+      "name": "Bridge Guard",
+      "dialog": [
+        "Mag-ingat. May malalakas na monster pagkatapos ng tulay na ito.",
+        "Mag-ingat. Dahan-dahan lang! Maaaring gumuho ang tulay na ito anumang oras.",
+        "Dito ka lang. May mapanganib na naghihintay sa iyo pagkatapos ng tulay na ito.",
+        "Pupunta ka ba sa Navisko? Huwag kalimutang mag-hello sa desert guard!"
+      ]
+    },
+    "Bronze Wolverine": {
+      "name": "Bronze Wolverine",
+      "dialog": [
+        "Khaaaaaooooooooo! Grrrrrrrrrrrrrreeeeeeeeeeeeeerrrrrr...",
+        "Uuuuuuuuuuuuuuuu~~"
+      ]
+    },
+    "Buma": {
+      "name": "Buma",
+      "dialog": [
+        "Huwag mo akong sasaktan. Ubo ubo",
+        "Nagsisimula ang SOD tuwing madaling-araw. Dumating ka nang maaga.",
+        "Sa mga laban ng SOD ay nakakakuha ka ng points na nagiging gold. Subukan mong makakuha ng pinakamaraming points na kaya mo.",
+        "May level restriction para makapasok sa SOD Amphitheater. Mula level 10, makakapasok ka sa SOD sa pamamagitan ni BUMA.",
+        "Salamat sa paglahok sa SOD. Oras ng SOD: araw-araw, mula 01:00 hanggang 06:00 (GMT+09:00). Enjoy!"
+      ]
+    },
+    "Captured Midranda": {
+      "name": "Nahuling Midranda",
+      "dialog": [
+        "Natalo mo ako at ang mga alipin ko!",
+        "Tatakas ako at maghihiganti!",
+        "Hindi sapat ang lakas ng mga Morion para ikulong ako rito habambuhay!",
+        "Pakiusap po, sir, hindi po ako ang may gawa, kaibigan ko po; gaano po ako katagal na banished, sir?"
+      ]
+    },
+    "Casa": {
+      "name": "Casa",
+      "dialog": [
+        "Sumaiyo nawa ang lakas ng apoy at tapang sa hinaharap...",
+        "Ang Tore ng Pagsubok, ang Bellatra, ay pinamamahalaan ng clan na 'XXX'",
+        "Late ka na! Nagsimula na ang Bellatra.",
+        "Aling team ang mananalo?",
+        "Mukhang malakas ka rin.",
+        "Pasensya na, hindi ka pa pwedeng pumasok sa Bellatra ngayon.",
+        "Sa oras na ito ng araw, ibinibigay ang mga reward at nililinis at minimaintain ang stadium.",
+        "Pakibalik na lang mamaya.",
+        "Mukhang masyado ka pang maaga para pumasok sa Bellatra. Kailangan mo ng mas maraming EXP."
+      ]
+    },
+    "Cave Guard": {
+      "name": "Cave Guard",
+      "dialog": [
+        "Dating tinawag itong Beehive Cave, pero naging lungga ng mga monster nang gumuho ang pader patungo sa Dark Sanctuary, kung saan kumalat ang masamang espiritu.",
+        "Ito ang Beehive Cave. Mga sanay na mandirigma lang ang pwedeng dumaan dito.",
+        "Pwede kang pumunta sa Mushroom Cave, sa lupain ng Tempskron, na patungo rin sa Dark Sanctuary.",
+        "Sa pinakailalim ng kuweba ay may daan patungo sa Dark Sanctuary. Pinamumunuan ng masamang espiritu ang kuweba. Ipinapayo kong lumayo ka."
+      ]
+    },
+    "Cave Guard 2": {
+      "name": "Cave Guard",
+      "dialog": [
+        "Ito ang pasukan ng Mushroom Cave, na patungo sa Dark Sanctuary. Naging mga monster ang mga nilalang sa kuweba dahil sa masamang espiritu mula sa Dark Sanctuary.",
+        "Pwede kang pumunta sa Beehive Cave, sa lupain ng Morion, na patungo rin sa Dark Sanctuary.",
+        "Level 55 pataas lang ang pwedeng dumaan dito.",
+        "Mag-concentrate ka habang nasa Dark Sanctuary, dahil maaaring sipsipin ng kasamaan ang lakas mo."
+      ]
+    },
+    "Chris": {
+      "name": "Chris",
+      "dialog": [
+        "Magbibigay ako ng regalo kung dadalhan mo ako ng 7 bola ng soccer.",
+        "Sobrang mahal ko ang soccer kaya marami akong kinokolektang bola."
+      ]
+    },
+    "Christmas Longbo": {
+      "name": "Christmas Longbo",
+      "dialog": []
+    },
+    "Civilian Minuren": {
+      "name": "Sibilyang si Minuren",
+      "dialog": [
+        "Ang Navisko ay isang maliit na bayan sa gitna ng Tempskron. Kakaunti ang naglalakas-loob na pumasok, dahil sabi nila may mga kakaibang nangyayari doon.",
+        "Sasakit ang mga kalamnan mo pagkagising sa umaga. Baka dahil iyon sa isang water witch sa ilalim ng bayan. Ang lungkot ng lugar na ito!",
+        "Kagabi, napanaginipan kong inatake ako ng isang mechanic. Sobrang sakit at parang totoo. Parang totoo pa rin hanggang ngayon.",
+        "Mula nang magbukas ang SOD Amphitheater, maraming mandirigma ang dumadalaw sa Navisko. Isa na ito sa mga atraksyon ng lupain ng Priston.",
+        "Nakita mo ba ang portal sa gitna ng nayon? Kamangha-manghang aparato iyon na magte-teleport sa iyo sa isang iglap."
+      ]
+    },
+    "Clan Master": {
+      "name": "Clan Master",
+      "dialog": [
+        "Ako ang may hawak ng lahat ng may kinalaman sa mga clan.",
+        "Para gumawa ng clan, kailangan mo ng level 50 pataas at magbayad ng 500,000 gold.",
+        "Kapag mas mataas ang level ng leader ng clan, mas maraming miyembro ang pwedeng magkaroon ng clan.",
+        "Pwede mong gamitin ang clan mark at ang forum sa website ng Priston Tale."
+      ]
+    },
+    "Cleric": {
+      "name": "Cleric",
+      "dialog": []
+    },
+    "Clever Daemon": {
+      "name": "Daemon na Matalino",
+      "dialog": [
+        "Ang tanging paraan para makapunta sa Bless Island ay sa pamamagitan ng teleport.",
+        "Ako lang ang tao na kayang mag-teleport ng mga tao papunta sa Bless Castle."
+      ]
+    },
+    "Clever Newter": {
+      "name": "Newter na Matalino",
+      "dialog": [
+        "Nag-research at nag-aral ako buong buhay ko para sa kasaganaan ng Pillai. Hindi ko maiwan ang lungsod na ito kahit nasugatan na ako nang ganito.",
+        "Hindi ako tumitigil sa pag-iisip kung ano ang magagawa ko para mabawi ang Pillai.",
+        "Gamitin mo ang Teleport Core kapag pupunta ka sa laban; iyon ang crystal na pinag-aralan ko.",
+        "Magiting na mandirigma. Pakiusap, bawiin mo ang aming Pillai."
+      ]
+    },
+    "Convicted Felon, Nadia": {
+      "name": "Nadia, ang Nahatulan",
+      "dialog": [
+        "Nahuli akong nanggugulo at na-disable na ako habambuhay. Huwag mong i-mix ang mga item mo sa 'Mixing Craftsman Morald' para i-reset ang mga stat; hindi mo na maibabalik ang mix sa akin. -->",
+        "Gamitin lang ang opsyonal na Respec Stone kasama ang Teiwaz, Jera at Sol para i-reset ang mga stat ng mga item. Kung nakapag-mix ka ng item nang hindi sinasadya, magbukas ng ticket sa support para mapalitan ito. Isang beses lang ito gagawin. Pagkatapos noon, malas na. -->"
+      ]
+    },
+    "Craftman Salon": {
+      "name": "Craftsman Salon",
+      "dialog": [
+        "Kailangan mo ng recipe at tatlong uri ng rune para makagawa ng item.",
+        "Tingnan mo ang recipe ng mix bago gumawa ng item, dahil nakadepende ang magagawang item sa rune na gagamitin.",
+        "Ako lang ang tao sa kontinente ng Priston na kayang gumawa ng anumang item na gusto mo."
+      ]
+    },
+    "Craftsman Fizk": {
+      "name": "Craftsman Fizk",
+      "dialog": []
+    },
+    "Cuepy Costumes": {
+      "name": "Mga Costume ng Cuepy",
+      "dialog": [
+        "Para lang sa mga babae ang mga costume na ito!"
+      ]
+    },
+    "Danu": {
+      "name": "Danu",
+      "dialog": [
+        "Sumaiyo nawa ang yaman ng lupa at pag-ibig sa iyong buhay...",
+        "Late ka na! Nagsimula na ang laban sa Ardor.",
+        "Aling team ang mananalo?",
+        "Mukhang malakas ka rin.",
+        "Pasensya na, hindi ka pa pwedeng pumasok sa Ardor ngayon.",
+        "Sa oras na ito araw-araw, ibinibigay ang mga reward at nililinis at minimaintain ang stadium.",
+        "Pakibalik na lang mamaya.",
+        "Mukhang masyado ka pang maaga para pumasok sa Ardor. Kailangan mo ng mas maraming EXP."
+      ]
+    },
+    "Desert Guard": {
+      "name": "Desert Guard",
+      "dialog": [
+        "Lumayo ka. Napakadelikado ng lugar na ito at malalakas na mandirigma lang na may pambansang sertipiko ang pwedeng dumaan.",
+        "Level 50 na mandirigma pataas ang pwedeng dumaan dito.",
+        "Restricted area ito, dahil maraming nakamamatay na monster ang gumagala sa disyerto.",
+        "May Cursed Temple sa silangang bahagi ng Ancient Battlefield, sa likod ko."
+      ]
+    },
+    "Dindo, the Alchemist": {
+      "name": "Dindo, ang Alchemist",
+      "dialog": []
+    },
+    "Dingo, the Alchemist": {
+      "name": "Dingo, ang Alchemist",
+      "dialog": []
+    },
+    "Disabled": {
+      "name": "Disabled",
+      "dialog": []
+    },
+    "Donation Event Maria": {
+      "name": "Maria ng Donation Event",
+      "dialog": [
+        "Narinig kong maraming taga-lungsod na ito ang mabuti ang puso. Magandang tulungan mo ng donasyon ang mga taong may kapansanan."
+      ]
+    },
+    "Dos": {
+      "name": "Dos",
+      "dialog": [
+        "Nagtatrabaho ako sa isang lihim na laboratoryo.",
+        "Natutunan ko ang teknik sa paggawa ng mga makukulay na butas sa mga gamit mo.",
+        "Tumatagos ang mga drill ko kahit sa pinakamatitigas na armor."
+      ]
+    },
+    "Dungeon Keeper": {
+      "name": "Dungeon Keeper",
+      "dialog": [
+        "Sinira ni King Hopy ang pader ng dungeon at may natuklasang nakatagong silid. Para saan kaya ang silid na iyon?",
+        "Ito ang dungeon na itinayo ng mga sinaunang tao para magkulong ng isang bagay.",
+        "Level 40 na mandirigma pataas ang pwedeng dumaan dito.",
+        "Lumilitaw si King Hopy, ang kapitan ng hukbo ng mga Hopy, sa Ancient Dungeon. Kinikilabutan ako sa laki ng mga kalamnan at nakakatakot niyang sungay."
+      ]
+    },
+    "Elder Hosean": {
+      "name": "Elder Hosean",
+      "dialog": [
+        "Paano ka napadpad nang ganito kalayo, sa kanayunan?",
+        "Hmm, hmm... Matandang naninirahan lang ako sa malayong kanayunan.",
+        "Pansamantala akong tumutulong sa kaharian sa mga rank test.",
+        "Ingat! Maglakad ka nang maingat, dahil may mga mapanganib na monster sa paligid."
+      ]
+    },
+    "Eura Guard": {
+      "name": "Eura Guard",
+      "dialog": [
+        "Dahil sa malakas na niyebe, hindi ka pwedeng magpatuloy. May utos akong higpitan ang pagpasok sa lugar.",
+        "Dakilang mandirigma ka dahil nakarating ka nang ganito kalayo, pero dahil sa malakas na niyebe ay hindi ka pwedeng magpatuloy.",
+        "Bumalik ka sa nayon ng Eura; baka ma-stuck ka sa niyebe.",
+        "Sabi nila, mas malalakas nang husto ang mga monster sa ice field kaysa sa mga nasa iron field."
+      ]
+    },
+    "Eura Guard 2": {
+      "name": "Eura Guard",
+      "dialog": [
+        "Malakas ang niyebe sa ice field at maaaring makasama sa nayon ng Eura.",
+        "Dahil sa malakas na niyebe, mabagal ang kilos ng mga monster, pero nililimitahan pa rin ng nayon ng Eura ang pagpasok.",
+        "Mukha kang malakas; gusto kitang hamunin balang araw.",
+        "Humihina ang kontinente ng Priston; may mangyayari."
+      ]
+    },
+    "Eura Warehouse Keeper": {
+      "name": "Eura Warehouse Keeper",
+      "dialog": [
+        "Nag-aalala ako sa pag-iingat ng mga item. Maaaring i-freeze ito ng panahong ito!",
+        "Heto na ang mga gamit mo.",
+        "Napakalayo ng narating mo; sikat ka bang mandirigma sa kontinente?",
+        "Mas malamig pa sa hilaga. Pupunta ka ba roon ngayon?"
+      ]
+    },
+    "Event Girl": {
+      "name": "Event Girl",
+      "dialog": [
+        "Nag-aalok kami ng serbisyo sa redistribution ng stat points at skill points. Samantalahin ang serbisyo namin.",
+        "Isang beses ka lang pwedeng mag-redistribute sa bawat pasok sa laro. Pero pwede kang mag-redistribute ulit pagkatapos mong pumasok ulit sa laro."
+      ]
+    },
+    "Event Girl 2": {
+      "name": "Event Girl",
+      "dialog": [
+        "Kung sasabihin mo sa akin ang cheer phrase, magbibigay ako ng item.",
+        "Makakakuha ka ng 'Victory Capsule' sa NPC ng distribution.",
+        "Hangad ko ang maraming swerte",
+        "Ayun na nga"
+      ]
+    },
+    "Event girl, Rosemary": {
+      "name": "Rosemary, ang Event Girl",
+      "dialog": [
+        "Sa special event, pwede mong gamitin ang star points para manood ng pelikula o ipapalit sa mga regalo. Tingnan mo kung may pagkakataon kang manalo ng premyo.",
+        "Ano ang star points? Mga bonus points ito na ipapalit mo sa iba't ibang regalo. Bisitahin ang pahina ng Priston Tale para sa mga detalye."
+      ]
+    },
+    "Force Master": {
+      "name": "Force Master",
+      "dialog": [
+        "Ang mga piraso ng sheltom na nagmana ng di-nakikitang lakas ay tinatawag na Force Orbs.",
+        "Ang teknik na ito ay mula sa ibang kultura, na hindi taga-Tempskron o Morion.",
+        "Tandaan mong nauubos ang mga Force Orb kapag ginamit.",
+        "Sa paggamit ng Force Orbs, magkakaroon ka ng hindi kapani-paniwalang lakas ng pag-atake."
+      ]
+    },
+    "Force Master 2": {
+      "name": "Force Master",
+      "dialog": [
+        "Kapag gumanda ang teknolohiya, magiging posible ang iba't ibang alchemy ng Force Orb.",
+        "Hindi naaapektuhan ng lamig ang performance ng mga Force Orb.",
+        "Mag-hello ka sa Force Master sa Ricarten at Pillai.",
+        "Iminumungkahi kong gumamit ng Force Orbs para labanan ang mas malalakas na monster."
+      ]
+    },
+    "Fraud": {
+      "name": "Impostor",
+      "dialog": [
+        "Sa panahon ngayon, mukhang mahina ang lakas ng isip ng mga adventurer.",
+        "Noong bata pa ako, tinalo ko ang 18 monster nang sabay-sabay.",
+        "Bawat linggo, hahanapan kita ng tamang kalaban. Kaya maghanda ka!"
+      ]
+    },
+    "Fury": {
+      "name": "Fury",
+      "dialog": [
+        "Khaaaaaaaaaaaaaooooooooooooo",
+        "Khhhhhhhhhhhhuuuuuuaaaaaaaaa",
+        "Phhhhhuuuuuuuurrrrrrrrrrr.."
+      ]
+    },
+    "Golden Wolverine": {
+      "name": "Golden Wolverine",
+      "dialog": [
+        "Khhhhhhhaaaaaaaaaaaaaaooooo..!",
+        "Grrrrrrrrrrrrrrr.."
+      ]
+    },
+    "Good boy, Longbo": {
+      "name": "Longbo, ang Good Boy",
+      "dialog": [
+        "Nagbago ang lahat sa isang gabi. Humaba ang mga binti ko. Nag-iba ang mukha ko. At nagbago ang buong lungsod. Sige, sige... Okay lang, pero ano na ang nangyari sa estatwang nandito dati? Ang lungkot na kapag wala siya.",
+        "May malaking estatwa dito dati. Umiidlip ako nang nakasandal doon... Magagandang alaala.",
+        "Narinig mo na ba ang Dark Sanctuary? Nasa pagitan ito ng Beehive Cave at Mushroom Cave. May mga nakakatakot na monster doon!",
+        "Narinig kong may Cursed Temple sa gitna ng disyerto. Hindi pa ako nakakapunta doon. Huwag mo na ring pangarapin, dahil ang pinakamalalakas lang ang nakakatawid sa templo.",
+        "May bayan na tinatawag na Navisko, kung saan nagiging monster ang mga residente kapag gabi. Sinumpa ng masamang espiritu ang bayan. Ang nakakapagtaka, hindi nila alam na nagiging monster sila.",
+        "Kilala mo ba ang portal? Ginawa ito ng isang imbentor para sa teleport. Kamangha-manghang aparato ito na dinadala ka mula sa isang lugar papunta sa iba sa isang iglap. Ang ganda ng mundo...",
+        "Narinig kong may paligsahang pandigma na tinatawag na SOD sa Navisko. Kapag nalampasan mo ang tinukoy na round, makakakuha ka ng cash prize. Mukha kang sapat na malakas. Bakit hindi ka sumali sa SOD?",
+        "Naging good boy na ako, pero tinawag ako ng mga tao na Longbo, ang pasaway. Takot sa akin ang lahat. Kapag sobra mo akong ininis, babalik ako sa dati. Kaya huwag mo nang subukan, ha?"
+      ]
+    },
+    "Guide Ran": {
+      "name": "Guide Ran",
+      "dialog": [
+        "Nandito ako para tulungan ang mga baguhan na mabuhay sa kontinente.",
+        "Magbibigay ako ng ilang kapaki-pakinabang na item kung tutulungan mo ako.",
+        "Pag-abot mo ng level 40, hindi mo na kailangang makipag-usap sa akin.",
+        "Nasa iyo kung tutulong kang ibalik ang kapayapaan matapos ang sabwatan ni Egolanos.",
+        "Kung tutulungan mo ang mga tao sa lungsod, bibigyan ka nila ng maraming item."
+      ]
+    },
+    "Gurf, the Merchant": {
+      "name": "Gurf, ang Merchant",
+      "dialog": []
+    },
+    "Gurf, the Merchant 2": {
+      "name": "Gurf, ang Merchant",
+      "dialog": []
+    },
+    "Hannah's Store": {
+      "name": "Tindahan ni Hannah",
+      "dialog": []
+    },
+    "Helper Pria": {
+      "name": "Helper Pria",
+      "dialog": [
+        "Welcome sa mundo ng Priston Tale.",
+        "Minsan sa isang araw, magbabato kami ng spell sa iyo para tulungan kang lumakas nang mas mabilis."
+      ]
+    },
+    "Helper Stonia": {
+      "name": "Helper Stonia",
+      "dialog": [
+        "Welcome sa mundo ng Priston Tale.",
+        "Minsan sa isang araw, magbabato kami ng spell sa iyo para tulungan ang paglago mo."
+      ]
+    },
+    "Helper Tairee": {
+      "name": "Helper Tairee",
+      "dialog": [
+        "Welcome sa mundo ng Priston Tale.",
+        "Minsan sa isang araw, magbabato kami ng mahiwagang spell sa iyo para tulungan kang lumakas nang mas mabilis."
+      ]
+    },
+    "Hermit": {
+      "name": "Ermitanyo",
+      "dialog": [
+        "Walang tao rito... di ba?",
+        "Magiging ligtas na magtago rito.."
+      ]
+    },
+    "HobGoblin": {
+      "name": "HobGoblin",
+      "dialog": [
+        "Pakisunod ang pila.",
+        "Hoy! Huwag kang sumingit sa pila. Umasal ka naman, pakiusap.",
+        "Nagsisimula ang SOD tuwing madaling-araw. Dumating ka nang maaga.",
+        "May level restriction para makapasok sa SOD Amphitheater. Mula level 10, makakapasok ka sa SOD sa pamamagitan ni BUMA.",
+        "Salamat sa paglahok sa SOD. Oras ng SOD: araw-araw, mula 01:00 hanggang 06:00 (GMT+09:00). Enjoy!"
+      ]
+    },
+    "Hopy Costumes": {
+      "name": "Mga Costume ng Hopy",
+      "dialog": [
+        "Para lang sa mga lalaki ang mga costume na ito!"
+      ]
+    },
+    "Hunter Owen": {
+      "name": "Hunter Owen",
+      "dialog": [
+        "Oh~ Magiting na sundalo. Masaya akong makita ka.",
+        "Ako si Owen, isang hunter. Hindi ako magaling na magaling, pero kaya kong patayin ang karamihan ng mga monster!",
+        "Laging mag-ingat. Napakaligalig ng mga monster."
+      ]
+    },
+    "Imprisoned Valento": {
+      "name": "Nakakulong na Valento",
+      "dialog": []
+    },
+    "Inventor of Warpgate": {
+      "name": "Imbentor ng Warpgate",
+      "dialog": [
+        "Kilala mo ba si Newter ng Pillai? Sa tingin ko ay kinuha niya ang teknik ko...",
+        "Talaga bang pupunta ka sa nayon ng Pillai para subukan ang teleport?",
+        "Apat na lugar lang ang mapupuntahan mo gamit ang teleport, pero mas malayo ang mararating mo sa warpgate!"
+      ]
+    },
+    "Item Distributor": {
+      "name": "Item Distributor",
+      "dialog": [
+        "Tingnan natin kung may nakapangalan sa iyo na pwedeng kunin.",
+        "Sige. Hayaan mong tingnan ko. Hmmm. Hmmmm. Ano nga ulit ang pangalan mo?",
+        "Parang wala akong bagong item para sa iyo. Hayaan mong i-check ko ulit.",
+        "Umorder ka ba ng kahit ano? Kung hindi lumabas, baka kailangan mong pumasok ulit sa mundo!"
+      ]
+    },
+    "Jail Guard": {
+      "name": "Jail Guard",
+      "dialog": [
+        "Ito ang bilangguan para sa mga kriminal. Umasal ka kung ayaw mong makulong dito.",
+        "May mga taong sinusubukang pumasok sa bilangguan para pansinin ng iba. Nakakahiya!",
+        "Narinig kong ikinukulong ng mga Tempskron ang mga lobo sa bilangguan. Sayang naman!",
+        "Nakakainip magbantay ng bilangguan nang mag-isa. Dumaan ka rito kapag may oras ka. Aaaahhh..."
+      ]
+    },
+    "Jasmine, the Stylist": {
+      "name": "Jasmine, ang Stylist",
+      "dialog": []
+    },
+    "Kadomatsu": {
+      "name": "Kadomatsu",
+      "dialog": []
+    },
+    "King Hoppie": {
+      "name": "King Hoppie",
+      "dialog": [
+        "Magbibigay ako ng item kung mabubuo mo ang 8 piraso ng larawan.",
+        "Halos lahat ay nahanap ko na. Balak kong mahanap ang natitira bago mag-July 26, kaya dalhin mo ang natitira bago iyon.",
+        "Kung dadalhan mo ako ng larawan ng Priestess/Mechanic, magbibigay ako ng item.",
+        "Sa tingin ko ay nahanap na ang karamihan ng mga piraso. Hinahanap ko ang kumpletong larawan hanggang July 26."
+      ]
+    },
+    "Kiosk, Rune": {
+      "name": "Kiosk ni Rune",
+      "dialog": [
+        "Hi, ako si Rune. Ako lang dito ang nagbebenta ng potion.",
+        "Napakadelikado ng mga guho. Laging magdala ng life potion.",
+        "Nag-iipon ako ng pera para magtayo ng maayos na nayon dito sa Ruinen.",
+        "Welcome sa tindahan ni Rune! May iba't ibang potion at Color kami."
+      ]
+    },
+    "Knight Commander Derik": {
+      "name": "Knight Commander Derik",
+      "dialog": [
+        "Kung mahusay kang mandirigma, mas mabuting sumali ka sa Kaharian ng mga Knight.",
+        "Para makapasok sa Royal Court, hanapin mo si Royal Mage Ray sa Pillai.",
+        "Natuto ako sa pinakamahusay... si Verkan, ang skill master ng Tempskron."
+      ]
+    },
+    "Lake Guard": {
+      "name": "Lake Guard",
+      "dialog": [
+        "Bukas ang lugar na ito para sa mga mandirigmang aprubado ng kaharian. Lumayo ka, napakadelikado.",
+        "Level 70 na mandirigma pataas ang pwedeng dumaan dito.",
+        "Ipinagbabawal namin ang lugar na ito dahil may mga napakadelikadong monster."
+      ]
+    },
+    "Lauren store": {
+      "name": "Tindahan ni Lauren",
+      "dialog": [
+        "Ang pagkakaroon ng sapat na potion bago mag-hunt ay pangunahing paghahanda.",
+        "Medyo malayo kami sa malaking lungsod, pero nasa amin ang lahat ng kailangan mo.",
+        "Napakalamig ngayon; magpahinga ka muna rito bago umalis.",
+        "Maaaring mag-freeze ang mga potion sa lamig, pero kasing-epektibo pa rin ang mga ito."
+      ]
+    },
+    "MapleTree": {
+      "name": "Maple Tree",
+      "dialog": []
+    },
+    "Marina": {
+      "name": "Marina",
+      "dialog": [
+        "Mahal kong prinsipe, hindi ba siya guwapo?",
+        "Kung hindi lang siya nagyayabang sa iba, perpekto na sana siya..",
+        "Sa totoo lang, sa tingin ko ay nakakabighani rin ang pagiging mayabang niya."
+      ]
+    },
+    "Maron's Witchcraft Store": {
+      "name": "Witchcraft Store ni Maron",
+      "dialog": [
+        "Nagbebenta kami ng gamit sa witchcraft dito. Kung mage ka, maraming kapaki-pakinabang dito.",
+        "Welcome. May gamit kami para sa mga mage at priestess (witchcraft!). Tingnan mo ang mga paninda namin.",
+        "May 2nd branch kami sa Ruinen at 3rd branch sa Navisko. Kung naghahanap ka ng mas malalakas na gamit, bisitahin ang mga branch namin.",
+        "Karamihan ng gamit sa witchcraft sa kontinente ay dinisenyo at ginawa ko."
+      ]
+    },
+    "Maron's store, 2nd branch": {
+      "name": "Tindahan ni Maron, 2nd branch",
+      "dialog": [
+        "Ito ang pangalawang branch ng witchcraft store ni Mr. Maron. Siyempre, si Mr. Maron ang nagsusuplay ng mga paninda niya sa amin.",
+        "Nagbebenta kami ng gamit sa witchcraft na gawa ni Mr. Maron. Tingnan mo.",
+        "Nakita mo? Lahat ng gamit dito ay may autograph ni Mr. Maron.",
+        "Hindi masyadong maunlad ang nayong ito, pero nakakaipon kami ng kaunting pera dahil sa mga manlalakbay."
+      ]
+    },
+    "Maron's store, 3rd branch": {
+      "name": "Tindahan ni Maron, 3rd branch",
+      "dialog": [
+        "Ito ang pangatlong branch ng witchcraft store ni Mr. Maron. Garantisado ang parehong kalidad ng main store.",
+        "Pareho ang kalidad. Ang pagkakaiba lang ay ginawa sa Pillai ang mga item na ito.",
+        "Si Mr. Maron lang ang tao sa buong kontinente na kayang gumawa ng mga gamit na ito.",
+        "Kung kailangan mong bumili ng gamit sa witchcraft, tingnan mong mabuti ang mga paninda namin."
+      ]
+    },
+    "Maron's store, 3rd branch 2": {
+      "name": "Tindahan ni Maron, 3rd branch",
+      "dialog": [
+        "Ito ang pangatlong branch ng witchcraft store ni Mr. Maron. Garantisado ang parehong kalidad ng main store.",
+        "Pareho ang kalidad. Ang pagkakaiba lang ay ginawa sa Pillai ang mga item na ito.",
+        "Si Mr. Maron lang ang tao sa buong kontinente na kayang gumawa ng mga gamit na ito.",
+        "Kung kailangan mong bumili ng gamit sa witchcraft, tingnan mong mabuti ang mga paninda namin."
+      ]
+    },
+    "Maron's store, 3rd branch 3": {
+      "name": "Tindahan ni Maron, 3rd branch",
+      "dialog": [
+        "Ito ang pangatlong branch ng witchcraft store ni Mr. Maron. Garantisado ang parehong kalidad ng main store.",
+        "Pareho ang kalidad. Ang pagkakaiba lang ay ginawa sa Pillai ang mga item na ito.",
+        "Si Mr. Maron lang ang tao sa buong kontinente na kayang gumawa ng mga gamit na ito.",
+        "Kung kailangan mong bumili ng gamit sa witchcraft, tingnan mong mabuti ang mga paninda namin."
+      ]
+    },
+    "Messenger Ian": {
+      "name": "Messenger Ian",
+      "dialog": [
+        "Kumusta? Ako si Ian, ang messenger ng Tempskron.",
+        "Naghahatid ako ng mga madaliang mensahe sa buong kontinente.",
+        "Sa ngayon, pinipigilan ng lahat ng kaharian ng Priston ang mga monster.",
+        "Maraming malalakas na monster sa labas ng nayon, kaya mag-ingat ka."
+      ]
+    },
+    "Messenger Rucia": {
+      "name": "Messenger Rucia",
+      "dialog": [
+        "Kumusta? Ako si Rucia, ang messenger ng Morion.",
+        "Naghahatid ako ng mga madaliang mensahe sa buong kontinente.",
+        "Sa ngayon, pinipigilan ng lahat ng kaharian ng Priston ang mga monster.",
+        "Maraming malalakas na monster sa labas ng nayon, kaya mag-ingat ka."
+      ]
+    },
+    "Milter": {
+      "name": "Milter",
+      "dialog": [
+        "Puno ng mga pinahirapang kaluluwa ang tore. Pakiusap, palayain mo kami...",
+        "Malakas ang sumpa ni Egolanos. Nakakulong kami rito magpakailanman..."
+      ]
+    },
+    "Miscellaneous Store Icyris": {
+      "name": "Miscellaneous Store Icyris",
+      "dialog": [
+        "Sa tingin ko ay magiging nakamamatay na laban ang susunod na siege.",
+        "Ano ang kailangan mo?"
+      ]
+    },
+    "Miscellaneous Store, Allya": {
+      "name": "Miscellaneous Store, Allya",
+      "dialog": [
+        "Ang mga pulang potion ay nagbabalik ng HP at ang mga berde ay nagbabalik ng STM. Lagi mo silang dalhin.",
+        "Kahit ang pinakamalakas na mandirigma ay hindi nananatiling malakas kung walang instant healing potion ko!",
+        "Ako mismo ang gumawa ng lahat ng potion na ibinebenta sa tindahang ito. Anong potion ang kailangan mo?",
+        "Piliin ang potion na bagay sa HP mo."
+      ]
+    },
+    "Miscellaneous Store, Allya 2": {
+      "name": "Miscellaneous Store, Allya",
+      "dialog": [
+        "Ang mga pulang potion ay nagbabalik ng HP at ang mga berde ay nagbabalik ng STM. Lagi mo silang dalhin.",
+        "Kahit ang pinakamalakas na mandirigma ay hindi nananatiling malakas kung walang instant healing potion ko!",
+        "Ako mismo ang gumawa ng lahat ng potion na ibinebenta sa tindahang ito. Anong potion ang kailangan mo?",
+        "Piliin ang potion na bagay sa HP mo."
+      ]
+    },
+    "Miscellaneous Store, Byant": {
+      "name": "Miscellaneous Store, Byant",
+      "dialog": [
+        "Kasinghalaga ng tubig sa disyerto ang mga emergency potion.",
+        "Ito lang ang lugar dito kung saan makakabili ka ng potion.",
+        "Gustong bumili ng maraming potion ng mga tao, dahil palala nang palala ang galit ng mga monster.",
+        "Magdala ka ng sapat na potion para tumawid sa disyerto. Sigurado akong hindi ka na makakabalik dito para bumili pa."
+      ]
+    },
+    "Miscellaneous Store, Lynn": {
+      "name": "Miscellaneous Store, Lynn",
+      "dialog": [
+        "Welcome. Ito ay resting area sa Acacia Forest.",
+        "Sa pasukan ng Acacia Forest ay may lugar na tinatawag na Goblin Hill, kung saan maraming Hobgoblin ang gumagala.",
+        "Nasa kanluran ng Acacia Forest ang Mushroom Cave, pero malalakas na mandirigma lang ang pwedeng dumaan.",
+        "Mag-ingat sa mga cyclops dito. Mas malalakas sila kaysa sa ibang monster."
+      ]
+    },
+    "Miscellaneous Store, Pillia": {
+      "name": "Miscellaneous Store, Pillia",
+      "dialog": [
+        "Malakas ka man o mahina, kailangan mong magdala ng mga potion na ito.",
+        "Kahit ang pinakamalakas na mandirigma ay bugbog sa mga monster kung walang mga potion na ito.",
+        "Hindi kami makagawa ng mana potion gamit ang kasalukuyang teknolohiya.",
+        "Ang personal na pagdadala ng potion ay golden rule ng mga mandirigma."
+      ]
+    },
+    "Mixing Craftsman, Morald": {
+      "name": "Mixing Craftsman, Morald",
+      "dialog": [
+        "Para saan ang mix? Well, maximize mo ang kakayahan ng mga gamit sa isang beses na reinforcement. Mas mabuti ito kaysa sa aging, dahil pwedeng masira ang mga item sa hindi perpektong reinforcement.",
+        "Hindi lang napakaadvanced na teknolohiya ang mix, kundi pinakaligtas ding paraan para pagandahin ang mga gamit.",
+        "Ang mix ay panimulang naiiba sa aging, kung saan pwede mong mawala ang mga item habang nire-reinforce.",
+        "Natuklasan ang mix ilang libong taon na ang nakalipas, pero kalahati lang nito ang naunawaan."
+      ]
+    },
+    "Molly's Disguises": {
+      "name": "Mga Disguise ni Molly",
+      "dialog": [
+        "Itago ang pagkakakilanlan mo gamit ang mga nakakatuwang costume na ito!"
+      ]
+    },
+    "Molly, the granny": {
+      "name": "Lola Molly",
+      "dialog": [
+        "Sa wakas ay dumating na si Midranda sa lugar na ito",
+        "Pakiusap, bawiin mo ang aming Pillai, magiting na mandirigma.",
+        "Dinurog ni Midranda ang matandang ito.",
+        "Makikita ko pa kaya ang buong Pillai bago ako mamatay?"
+      ]
+    },
+    "Moriph, the Mysterious": {
+      "name": "Moriph, ang Mahiwaga",
+      "dialog": []
+    },
+    "Mr. Buma": {
+      "name": "Mr. Buma",
+      "dialog": [
+        "Pwede mo akong tawaging henyo ng clan, 'Mr. Buma'. ubo.. ubo.."
+      ]
+    },
+    "Mr. HobGoblin": {
+      "name": "Mr. HobGoblin",
+      "dialog": [
+        "Hoy, ikaw.. Magbibigay ako ng magandang item kung dadalhan mo ako ng Horn of Babel",
+        "Gusto ko ang horn ng Babel.. May espesyal sa kanya...",
+        "Pagod na ako sa damit ng Goblin at sa tingin ko ay bagay ang Horn of Babel sa taong tulad ko",
+        "Hindi ako makatulog dahil sa Horn of Babel. Pwede mo ba akong dalhan ng Horn of Babel? Magbibigay ako ng magandang item bilang kapalit."
+      ]
+    },
+    "Mythcreature": {
+      "name": "Mythcreature",
+      "dialog": [
+        "Tahimik kang pinagmamasdan ng sinaunang nilalang."
+      ]
+    },
+    "Nadia": {
+      "name": "Nadia",
+      "dialog": [
+        "Pakidalhan mo ako ng mixed item.",
+        "Hayaan mong ipalit ko ang isang hindi pa na-mix na item sa isang random.",
+        "Kung malaman ito ni Lolo Morald, madidismaya siya."
+      ]
+    },
+    "Navisko Guard": {
+      "name": "Navisko Guard",
+      "dialog": [
+        "May bulung-bulungan na may grupo ng mga monster na gumagala sa nayon, pero wala pa akong nakikita. Nakapagtataka..!",
+        "Parang nakakita ako ng grupo ng mga Bargon kagabi. Nakalimutan ko ang sumunod na nangyari. May mali rito.",
+        "Maraming pumapasok at lumalabas para bisitahin ang SOD Amphitheater. Hindi madaling bantayan ang lungsod nang mag-isa.",
+        "Sumasakit ang ulo ko sa mga dumarating sa portal. Hindi ko sila makontrol kung hindi sila dumadaan sa opisyal na pasukan."
+      ]
+    },
+    "Nina": {
+      "name": "Nina",
+      "dialog": [
+        "Sumaiyo nawa ang lakas ng tubig, karunungan at kabutihan...",
+        "Late ka na! Nagsimula na ang laban sa Ardor.",
+        "Aling team ang mananalo?",
+        "Mukhang malakas ka rin.",
+        "Pasensya na, hindi ka pa pwedeng pumasok sa Ardor ngayon.",
+        "Sa oras na ito araw-araw, ibinibigay ang mga reward at nililinis at minimaintain ang stadium.",
+        "Pakibalik na lang mamaya.",
+        "Mukhang masyado ka pang maaga para pumasok sa Ardor. Kailangan mo ng mas maraming EXP."
+      ]
+    },
+    "Noas": {
+      "name": "Noas",
+      "dialog": [
+        "Sumaiyo nawa ang yaman ng lupa at pag-ibig sa iyong buhay...",
+        "Ang Tore ng Pagsubok, ang Bellatra, ay pinamamahalaan ng clan na 'XXX'",
+        "Late ka na! Nagsimula na ang Bellatra.",
+        "Aling team ang mananalo?",
+        "Mukhang malakas ka rin.",
+        "Pasensya na, hindi ka pa pwedeng pumasok sa Bellatra ngayon.",
+        "Sa oras na ito ng araw, ibinibigay ang mga reward at nililinis at minimaintain ang stadium.",
+        "Pakibalik na lang mamaya.",
+        "Mukhang masyado ka pang maaga para pumasok sa Bellatra. Kailangan mo ng mas maraming EXP."
+      ]
+    },
+    "Novic": {
+      "name": "Novic",
+      "dialog": [
+        "Anong lugar ito?",
+        "Sa tingin ko ay kaya kong pagsamahin ang mga gem na hawak mo.",
+        "Nararamdaman ko ang mahiwagang espiritu sa paligid ng mga gem na ito.",
+        "Hmm.. Sa ilang kadahilanan, hindi ako sigurado kung kaya ko itong gawin..."
+      ]
+    },
+    "Peddler Yampi": {
+      "name": "Peddler Yampi",
+      "dialog": [
+        "Oh, ang galing na natagpuan mo ako sa kontinente ng Priston.",
+        "Madalas akong magbenta ng mga item na mahirap hanapin. Lagi mo akong hanapin, dahil minsan ay may ibinebenta akong napakagandang item.",
+        "Ako si Yampi, na nagbebenta ng item sa loob lang ng 5 minuto. Pumili ka na.",
+        "Ito ang item na gusto mo. Ibinebenta ko na ngayon. Kailangan ko nang umalis agad, kaya bilisan mo"
+      ]
+    },
+    "Pillai Guard": {
+      "name": "Pillai Guard",
+      "dialog": [
+        "Lumulutang sa hangin ang lungsod ng Pillai, pero hindi mo kailangang matakot na mahulog.",
+        "Ligtas ang Pillai sa mga banta mula sa labas dahil lumulutang ito sa hangin.",
+        "Tumahimik ka sa lungsod, dahil karamihan ng mga mandirigma rito ay nagme-meditate.",
+        "Lahat ng lumulutang sa lungsod ay kontrolado ng mahiwagang kapangyarihan, na ipinagmamalaki ng mga Morion."
+      ]
+    },
+    "Pillai Guard 2": {
+      "name": "Pillai Guard",
+      "dialog": [
+        "Hindi ako karapat-dapat sa karangalan ng pagiging guard ng Pillai...",
+        "Makasalanan lang ako; hindi ko naipagtanggol ang Pillai, ang lungsod ng Morion.",
+        "Ginawang abo ni Midranda at ng mga tauhan niya ang lungsod na ito.",
+        "Naaalala ko pa ang magandang tanawin ng Pillai."
+      ]
+    },
+    "Pillai Guard 3": {
+      "name": "Pillai Guard",
+      "dialog": [
+        "Dito na nagtatapos ang daan. Kung gusto mong pumunta sa kagubatan, gamitin ang portal sa timog ng lungsod.",
+        "Nasa likod ko ang portal na nagte-teleport sa iyo kahit saan. Kailangan mo ng wing para magamit ang portal.",
+        "Kung kailangan mong gumawa ng wing o i-upgrade ang wing mo, gamitin mo na ang portal para bisitahin ang imbentor ng warpgate sa Ricarten.",
+        "Libre ang teleport papuntang Ricarten at Pillai. Kailangan mo ng wing para makarating sa ibang lugar."
+      ]
+    },
+    "Pillai Guard 4": {
+      "name": "Pillai Guard",
+      "dialog": [
+        "Paminsan-minsan ay nakakapasok nang palihim ang mga monster sa portal.",
+        "Ang lungsod ng Pillai ay tahimik at simpleng lugar. Huwag kang mag-eskandalo o makipag-away.",
+        "Hindi mo dapat istorbohin ang ibang mandirigma para lang sa sariling pakinabang.",
+        "Mukhang umiidlip ang guard doon. Gisingin mo siya! Hindi ko pa siya nakitang gising... tsk tsk..."
+      ]
+    },
+    "Pitchman Dela": {
+      "name": "Pitchman Dela",
+      "dialog": [
+        "Ginawa ang potion na ito mula sa natural na tubig-bukal. Paminsan-minsan ay naliligo ang mga priestess sa bukal. Napakaepektibo nito!!",
+        "Ibinebenta ang vital water ng bukal na ito. Kung kailangan mo ng vital water o may ibebenta kang item, sabihan mo ako.",
+        "Hindi lahat ay pwedeng pumasok sa Beehive Cave, sa kanluran ng Twilight Land.",
+        "Ang mga Beedog at ang Evil Tree ng Spirit Forest, sa timog nito, ay gumagawa ng pulot at isang mahiwagang langis. Para saan kaya iyon?"
+      ]
+    },
+    "Praya": {
+      "name": "Praya",
+      "dialog": [
+        "Malayo ang pinanggalingan ko para maghanap ng pares ng amulet.",
+        "Monster siya, pero mahal na mahal namin ang isa't isa.",
+        "Ang pares ng amulet ang tatak ng pag-ibig namin, at hindi ko kailanman patatawarin ang nagnakaw nito."
+      ]
+    },
+    "Priest of the temple": {
+      "name": "Priest ng Templo",
+      "dialog": [
+        "Binuksan na ang unang palapag ng templo. Huwag na huwag kang papasok doon. Napakadelikado.",
+        "Ingat sa likod mo! Mas nakamamatay na monster ang lumilitaw sa ikalawang palapag.",
+        "Level 70 pataas na mandirigma lang ang pwedeng pumasok. Iyan ang batas!",
+        "Level 75 pataas lang ang pwedeng pumasok sa ikalawang palapag ng templo."
+      ]
+    },
+    "Princess Dzari": {
+      "name": "Princess Dzari",
+      "dialog": []
+    },
+    "Quest Manager": {
+      "name": "Quest Manager",
+      "dialog": [
+        "Bigyan mo ako ng kahit anong quest..."
+      ]
+    },
+    "Reporter of Bless Castle": {
+      "name": "Reporter ng Bless Castle",
+      "dialog": [
+        "Sino ang mananalo ngayong weekend?",
+        "Isang beses sa isang linggo nagsisimula ang Bless Castle, at ang clan na magpapabagsak sa Valhalla Tower ang magkakaroon ng pagmamay-ari.",
+        "Kung mananalo ka sa laban, makakakuha ka ng napakagandang reward. Gusto mong sumubok?",
+        "Madali mong masusundan ang laban nang live online.",
+        "Mas mabuting kausapin mo si Uncle Damon sa Bamboo Forest kung gusto mong pumunta sa Bless Castle."
+      ]
+    },
+    "Research Buma": {
+      "name": "Researcher Buma",
+      "dialog": [
+        "Hinihintay ang opinyon mo.",
+        "Ang mensahe ay ipapadala sa huli"
+      ]
+    },
+    "Ribbon Hopy": {
+      "name": "Ribbon Hopy",
+      "dialog": [
+        "Ipinagdiriwang ng Priston Tale ang anibersaryo nito.",
+        "Bumati ka at magbibigay ako ng espesyal na regalo araw-araw.",
+        "Happy anniversary, Priston Tale ^^"
+      ]
+    },
+    "Ricarten Guard": {
+      "name": "Ricarten Guard",
+      "dialog": [
+        "Huwag mo silang pakainin o asarin mula sa labas. Hindi namin alam ang gagawin nila kapag nagalit sila.",
+        "Nawawala ang mga nilalang na iyan kapag gabi at bumabalik kapag umaga. Kakaibang mga nilalang sila, alam mo.",
+        "Ang rank quest ng Tempskron ay manghuli ng 3 sa mga nilalang na iyan at magdala ng 3 patunay.",
+        "Huwag kang lumapit nang masyado sa hawla! Natatakot akong isipin ang maaaring mangyari!"
+      ]
+    },
+    "Ricarten Guard 2": {
+      "name": "Ricarten Guard",
+      "dialog": [
+        "Ito ang lungsod ng Ricarten, sa timog ng lupain ng Tempskron.",
+        "Maraming taong dumadaan sa lungsod, kaya ito ang sentro ng negosyo at kalakalan sa buong kontinente.",
+        "Ano ang pangalan ng lungsod na ito? Ricarten, ang kabisera ng Tempskron. Tandaan mo iyan!",
+        "Maraming taong nakatira sa lungsod na ito, at tahimik pa rin ito.",
+        "Kung unang hunt mo ito, baka gusto mong habulin ang mga Hoppie. Kung mas kumpiyansa ka, pumunta ka sa kanluran para manghuli ng mga Hobgoblin sa Acacia Forest."
+      ]
+    },
+    "Ricarten Guard 3": {
+      "name": "Ricarten Guard",
+      "dialog": [
+        "Tandaan mong nakakahiya ang istorbohin ang pagsasanay ng ibang mandirigma o linlangin sila.",
+        "Gisingin mo ang guard sa tabi mo kung umiidlip siya.",
+        "Nasa dulong timog ng lupain ng Priston ang Ricarten.",
+        "Mag-ingat! Aatakihin ka ng mga monster pagkatapos ng tulay."
+      ]
+    },
+    "Ricarten Guard 4": {
+      "name": "Ricarten Guard",
+      "dialog": [
+        "Tandaan mong nakakahiya ang istorbohin ang pagsasanay ng ibang mandirigma o linlangin sila.",
+        "Gisingin mo ang guard sa tabi mo kung umiidlip siya.",
+        "Nasa dulong timog ng lupain ng Priston ang Ricarten.",
+        "Mag-ingat! Aatakihin ka ng mga monster pagkatapos ng tulay."
+      ]
+    },
+    "Ricio": {
+      "name": "Ricio",
+      "dialog": [
+        "Ang mga rune stone ay pwedeng ikabit sa mga butas na magkapareho ang kulay.",
+        "May mga rune stone sa buong mundo ng Priston, pero ang pinakamaganda ay nasa Secret Laboratory at Ancient Weapon!",
+        "Ang mga rune stone ay nagdaragdag ng iba't ibang skill sa gamit mo."
+      ]
+    },
+    "Royalmage Ray": {
+      "name": "Royal Mage Ray",
+      "dialog": [
+        "Ang Kaharian ng mga Knight at ang Royal Court. Iilan lang ang mga napili.",
+        "Masyadong maingay dito para sa mental training ko. Pakitahimik!",
+        "Nasa mahirap na laban ang mga royal mage sa ilang lugar. Kailangan nating pag-isipan kung paano sila tutulungan.",
+        "Sa tingin ko ay mga royal mage lang ang makakalaban kay Egolanos."
+      ]
+    },
+    "Rudolph": {
+      "name": "Rudolph",
+      "dialog": [
+        ".........",
+        ".........",
+        "........."
+      ]
+    },
+    "Sage Celina": {
+      "name": "Sage Celina",
+      "dialog": [
+        "Gagamitin ko ang kaalaman ko para sa kontinente ng Priston at sa walang hanggang kapayapaan nito.",
+        "Kaya mo bang ialay ang buhay mo sa kontinente ng Priston?",
+        "May ganap kaya na kabutihan at kasamaan?"
+      ]
+    },
+    "Salon, the Specialist": {
+      "name": "Salon, ang Specialist",
+      "dialog": []
+    },
+    "Sanctuary Guard": {
+      "name": "Sanctuary Guard",
+      "dialog": [
+        "Nakikita mo ba ang lugar sa likod mo? Iyan ang Lair ni Kelvezu! Duda akong makakaligtas ka roon!",
+        "Si Kelvezu ay nakakatakot na monster, na may hindi kapani-paniwalang lakas ng pag-atake. Sa kasalukuyan mong depensa, hindi ka makakaligtas sa pinakagalit na monster sa lahat!!",
+        "Makinig ka! Sa ngayon, hindi labis na sabihing si Kelvezu ang hindi matatalong nakatira sa lungga!!"
+      ]
+    },
+    "Santa Goblin": {
+      "name": "Santa Goblin",
+      "dialog": [
+        "Bakit mag-isa kang naglalakad sa napakagandang panahon tulad ng Pasko!",
+        "Ako ang magdedesisyon kung magbibigay ako ng regalo o hindi!",
+        "Tingnan mo ang ilong ni Rudolph... hindi na ito kumikinang."
+      ]
+    },
+    "Secretary Karina": {
+      "name": "Secretary Karina",
+      "dialog": [
+        "Hello, paano kita matutulungan? Ako si Karina. Ako ang namamahala sa Bellatra!",
+        "Napakaganda ng Bellatra noong nakaraang buwan. Lumahok ang malalakas na mandirigma mula sa buong kontinente.",
+        "Ang komite ng Bellatra ay itatakda ng senado pagkatapos ng desisyon.",
+        "Ang leader lang ng clan na namamahala sa Bellatra ang pwedeng tumanggap ng kita.",
+        "Kailangan ko ng malakas na clan para pamahalaan ang mga silid ng Bellatra!"
+      ]
+    },
+    "Sheltom Peddler": {
+      "name": "Sheltom Peddler",
+      "dialog": [
+        "MANDARAYA!",
+        "Nakakatipid ng milyun-milyon para sa iyo",
+        "Tamad ka!"
+      ]
+    },
+    "Silver Wolverine": {
+      "name": "Silver Wolverine",
+      "dialog": [
+        "Grrrrrrrrrrrrrr.. Khhhhhhhhhhhhhhooooooooo....!",
+        "Grrrr.. grrrr..."
+      ]
+    },
+    "Sir Rudolf": {
+      "name": "Sir Rudolf",
+      "dialog": []
+    },
+    "Skill Master, Verkan": {
+      "name": "Skill Master, Verkan",
+      "dialog": [
+        "Matibay na katawan at marangal na isip ang nagpapalakas ng mga skill.",
+        "Ang lakas ng Tempskron ay nagmumula sa matibay na katawan. Ngayon, disiplinahin mo ang sarili mo para sa mas magandang kondisyon.",
+        "Kapag mas maraming skill point ang naipon mo, mas lumalakas ang mga skill mo.",
+        "Kailangan mo pang sanayin ang mga skill mo para magamit mo ang mga ito nang madali kapag gusto mo."
+      ]
+    },
+    "Smelting Master Arad": {
+      "name": "Smelting Master Arad",
+      "dialog": [
+        "Kahit anong walang silbing bato ay pwedeng maging crystal sa pamamagitan ng smelting.",
+        "Ang crystal ay nagiging napakagamit na rune sa paggawa ng item kapag nakatanggap ng lakas ng sheltom.",
+        "Lahat ng rune na ginagamit sa paggawa ng item ay ako lang ang makakagawa, sa kontinente ng Priston."
+      ]
+    },
+    "Snake Hunter": {
+      "name": "Snake Hunter",
+      "dialog": [
+        "Nakatakas lahat ng ahas na nahuli ko",
+        "May lakas ang mga itim na ahas na hindi pa natin nakikilala."
+      ]
+    },
+    "Son of Battle": {
+      "name": "Anak ng Labanan",
+      "dialog": []
+    },
+    "Stella": {
+      "name": "Stella",
+      "dialog": [
+        "Ang Ghost Castle ay naging larangan ng 'Crossways Scroll'.",
+        "Pakiusap, iligtas mo ang kontinente ng Priston mula sa kasamaan!"
+      ]
+    },
+    "Stella 2": {
+      "name": "Stella",
+      "dialog": [
+        "Dinala mo ang kayamanan ni Kahn na hinahanap ko",
+        "Pwede itong pagsamahin sa isang mahiwagang susi para mabuksan ang kahon."
+      ]
+    },
+    "Stella's Store": {
+      "name": "Tindahan ni Stella",
+      "dialog": []
+    },
+    "Steward Anders": {
+      "name": "Steward Anders",
+      "dialog": [
+        "May tatlong magkakaibang attribute ang mga Crystal Tower: apoy, yelo at kidlat. Gamitin mo ang mga ito nang mabuti.",
+        "Nagbabayad na ng buwis ang lahat ng lungsod ngayon.",
+        "Buong buhay ko, pinayuhan kita tungkol sa pananalapi at depensa ng tore.",
+        "Opo, master, paano ko po kayo mapaglilingkuran?"
+      ]
+    },
+    "Supporter Longbo": {
+      "name": "Supporter Longbo",
+      "dialog": [
+        "Go, Brazilian national team!!",
+        "Dalhan mo ako ng 7 bola ng soccer at magbibigay ako ng regalo."
+      ]
+    },
+    "Sylpi": {
+      "name": "Sylpi",
+      "dialog": [
+        "Ipinagdarasal kong samahan ng kalayaan ng hangin ang iyong paningin...",
+        "Ang Tore ng Pagsubok, ang Bellatra, ay pinamamahalaan ng clan na 'XXX'",
+        "Late ka na! Nagsimula na ang Bellatra.",
+        "Aling team ang mananalo?",
+        "Mukhang malakas ka rin.",
+        "Pasensya na, hindi ka pa pwedeng pumasok sa Bellatra ngayon.",
+        "Sa oras na ito ng araw, ibinibigay ang mga reward at nililinis at minimaintain ang stadium.",
+        "Pakibalik na lang mamaya.",
+        "Mukhang masyado ka pang maaga para pumasok sa Bellatra. Kailangan mo ng mas maraming EXP."
+      ]
+    },
+    "Ticket Seller": {
+      "name": "Ticket Seller",
+      "dialog": [
+        "Welcome sa lungga ng mga monster!! Ohhhhhhhhhoooo.."
+      ]
+    },
+    "Traveler Dela": {
+      "name": "Traveler Dela",
+      "dialog": []
+    },
+    "Vendor Rossa": {
+      "name": "Vendor Rossa",
+      "dialog": [
+        "Ako ang bunso sa Vendor Sisters.",
+        "Umaasa kaming magkakapatid na makapagbukas ng street stall sa malaking lungsod!",
+        "Marami akong ibinebenta. Heto, tingnan mo.",
+        "Bumalik ka ulit para bumili!"
+      ]
+    },
+    "Vendor Rozalin": {
+      "name": "Vendor Rozalin",
+      "dialog": [
+        "Ako ang pangalawa sa Vendor Sisters.",
+        "Gusto naming magbukas nina Shellbi at Rossa at ako ng malaking street stall sa Ricarten.",
+        "Kung na-teleport ka rito, kakailanganin mo ng core para makaalis.",
+        "Minsan ay nakikita mo rito ang liwanag ng Valhalla Tower."
+      ]
+    },
+    "Vendor Shellbi": {
+      "name": "Vendor Shellbi",
+      "dialog": [
+        "Ako ang panganay sa Vendor Sisters.",
+        "Gusto naming magbukas nina Rozalin at Rossa at ako ng malaking street stall sa Ricarten.",
+        "May nagsabing dapat kang gumamit ng core kung gusto mong bumalik sa lungsod."
+      ]
+    },
+    "Wanderer, Lost": {
+      "name": "Naliligaw na Wanderer",
+      "dialog": [
+        "Hindi ko maintindihan kung bakit tanging Ruinen lang ang walang pagbabago...",
+        "Mga nomad kami sa pinagmulan, pero ngayon ay may tindahan kami sa hangganan ng Tempskron at Morion.",
+        "Balang araw ay magtatayo ako ng maayos na nayon dito. Gagawin ko talaga!",
+        "Madalas na pumapasok ang mga monster sa nayon. Walang pumipigil sa kanila, dahil nasa gitna ng ilang ang nayong ito."
+      ]
+    },
+    "Wandering Soul": {
+      "name": "Wandering Soul",
+      "dialog": [
+        "Kamahalan. Pakinggan mo po ako.",
+        "Kailangang matupad ang misyon namin, anuman ang kapalit.",
+        "Pakiusap, ibahagi mo sa amin ang lakas mo."
+      ]
+    },
+    "Warehouse Dunkun": {
+      "name": "Warehouse ni Dunkun",
+      "dialog": [
+        "Gusto kong maging disipulo ni Verkan balang araw at lumaban bilang isa sa mga mercenary.",
+        "Pinagsasaluhan ng lahat ng warehouse mo sa bawat lungsod ang mga item.",
+        "Minsan gusto ko lang magpahinga, pero nawawala ang pagod kapag nakikita kitang masaya sa pagkuha ng mga item mo sa akin.",
+        "May matataas at matitibay na pader ang Bless Castle para maprotektahan nang mabuti."
+      ]
+    },
+    "Warehouse Keeper, Lavendar": {
+      "name": "Warehouse Keeper, Lavendar",
+      "dialog": [
+        "Kung masyadong marami ang bitbit mo, ipaubaya mo sa akin. Iingatan ko ang mga ito nang ligtas.",
+        "Kailangan mong ayusin ulit ang mga item paminsan-minsan, dahil sa limitasyon ng espasyo ng warehouse.",
+        "Pagod na pagod ako pagkatapos ng mahabang araw ng trabaho. Pwede ka bang bumalik mamaya?",
+        "Walang dapat ipag-alala, dahil konektado ang warehouse na ito sa warehouse ng Tempskron."
+      ]
+    },
+    "Warehouse keeper, Arent": {
+      "name": "Warehouse Keeper, Arent",
+      "dialog": [
+        "Heto ang susi. Pwede mong kunin, pero huwag mong galawin ang mga gamit ko!",
+        "Mas komplikado ang pagiging warehouse keeper kaysa sa inaakala mo. Subukan mong huwag akong bisitahin nang madalas.",
+        "Pwede kang mag-imbak ng kahit ano rito sa Ricarten at kunin ulit sa warehouse ng Pillai, dahil magkakonekta ang dalawang warehouse!",
+        "Ano ang ginagawa ng mga taong ito sa harap ko? Kailangan ko ng espasyo para huminga!"
+      ]
+    },
+    "Watchman Aljet": {
+      "name": "Watchman Aljet",
+      "dialog": []
+    },
+    "Witchcraft Academy, Raymon": {
+      "name": "Witchcraft Academy, Raymon",
+      "dialog": [
+        "Ang enerhiyang nagbabago ng MP tungo sa pisikal na lakas ay tinatawag na magic!",
+        "Mga Morion lang ang pwedeng mag-aral sa Witchcraft Academy.",
+        "Mag-ingat sa pamamahagi ng skill points, dahil isang pagkakataon lang ang meron ka!",
+        "Pwede mo lang matutunan ang mga skill ng 2nd rank pagkatapos mong mag-rank up."
+      ]
+    },
+    "Zinjya": {
+      "name": "Zinjya",
+      "dialog": []
+    }
+  },
+  "items": {
+    "BI101": "Blue Stone",
+    "BI102": "Red Stone",
+    "BI103": "Green Stone",
+    "BI104": "Rebirth Scroll",
+    "BI105": "Eternal Life",
+    "BI108": "Teleport Core",
+    "BI110": "Enhancement Stone",
+    "BI123": "Firecracker",
+    "BI126": "Bronze Pack (1 araw)",
+    "BI127": "Bronze Pack (7 araw)",
+    "BI130": "Silver Pack (1 araw)",
+    "BI131": "Silver Pack (7 araw)",
+    "BI201": "Bronze Pack (3 oras)",
+    "BI202": "Bronze Pack (1 araw)",
+    "BI203": "Bronze Pack (7 araw)",
+    "BI204": "Bronze Pack (30 araw)",
+    "BI205": "Silver Pack (3 oras)",
+    "BI206": "Silver Pack (1 araw)",
+    "BI207": "Silver Pack (7 araw)",
+    "BI208": "Silver Pack (30 araw)",
+    "BI209": "Gold Pack (3 oras)",
+    "BI210": "Gold Pack (1 araw)",
+    "BI211": "Gold Pack (7 araw)",
+    "BI212": "Gold Pack (30 araw)",
+    "BI223": "Superior Pack (3 oras)",
+    "BI224": "Superior Pack (1 araw)",
+    "BI225": "Superior Pack (7 araw)",
+    "BI518": "Silver Ore",
+    "DA102": "Battle Suit",
+    "DA103": "Leather Armor",
+    "DA105": "Steel Armor",
+    "DA107": "Breastplate",
+    "DA109": "Scale Armor",
+    "DA110": "Synthetic Armor",
+    "DA111": "Full Plate Armor",
+    "DA112": "Full Metal Armor",
+    "DA113": "Supreme Armor",
+    "DA114": "Spiked Armor",
+    "DA115": "Titan Armor",
+    "DA116": "Extreme Armor",
+    "DA117": "Ancient Armor",
+    "DA118": "Minotaur Armor",
+    "DA119": "Doom Armor",
+    "DA122": "Dragon Armor",
+    "DA126": "Magic Armor",
+    "DA130": "Imperial Armor",
+    "DA204": "Battle Robe",
+    "DA214": "Mystic Robe",
+    "DA220": "Astral Robe",
+    "DA222": "Angel Robe",
+    "DA226": "Magic Robe",
+    "DA229": "Deadly Robe",
+    "DA230": "Imperial Robe",
+    "DA401": "Flame Robe",
+    "DS111": "Great Shield",
+    "DS114": "Extreme Shield",
+    "DS116": "Synthetic Shield",
+    "DS117": "Titan Shield",
+    "DS118": "Mystic Shield",
+    "DS120": "Dragon Shield",
+    "DS126": "Deadly Shield",
+    "DS127": "Flame Shield",
+    "DS129": "Angel Shield",
+    "DS130": "Stygian Shield",
+    "GP109": "Mystic Crystal",
+    "GP112": "Dark Crystal",
+    "GP113": "Iron Crystal",
+    "GP116": "Imperial Guard",
+    "GP118": "Chaos Crystal",
+    "GP120": "Extreme Crystal",
+    "GP123": "Enigma Crystal",
+    "GP141": "Dragon Crystal",
+    "OA101": "Round Amulet",
+    "OA102": "Round Amulet +1",
+    "OA103": "Round Amulet +2",
+    "OA104": "Round Amulet +3",
+    "OA109": "Magic Amulet",
+    "OA110": "Magic Amulet +1",
+    "OA111": "Magic Amulet +2",
+    "OA112": "Magic Amulet +3",
+    "OA113": "Runic Amulet",
+    "OA114": "Runic Amulet +1",
+    "OA115": "Runic Amulet +2",
+    "OA116": "Runic Amulet +3",
+    "OA117": "Sealed Amulet",
+    "OA118": "Sealed Amulet +1",
+    "OA119": "Sealed Amulet",
+    "OA120": "Sealed Amulet +3",
+    "OA121": "Mystic Amulet",
+    "OA122": "Mystic Amulet +1",
+    "OA123": "Mystic Amulet +2",
+    "OA124": "Mystic Amulet +3",
+    "OA127": "Phantom Amulet",
+    "OA128": "Phantom Amulet +1",
+    "OA131": "Throne Amulet",
+    "OA132": "Enigma Amulet",
+    "OA134": "Enigma Amulet +2",
+    "OA135": "Enigma Amulet +3",
+    "OA136": "Voracious Amulet",
+    "OR101": "Round Ring",
+    "OR102": "Round Ring +1",
+    "OR103": "Round Ring +2",
+    "OR104": "Round Ring +3",
+    "OR105": "Gem Ring",
+    "OR106": "Gem Ring +1",
+    "OR107": "Gem Ring +2",
+    "OR108": "Gem Ring +3",
+    "OR109": "Magic Ring",
+    "OR110": "Magic Ring +1",
+    "OR111": "Magic Ring +2",
+    "OR112": "Magic Ring +3",
+    "OR113": "Runic Ring",
+    "OR114": "Runic Ring +1",
+    "OR115": "Runic Ring +2",
+    "OR116": "Runic Ring +3",
+    "OR117": "Sealed Ring",
+    "OR118": "Sealed Ring +1",
+    "OR119": "Sealed Ring +2",
+    "OR120": "Sealed Ring +3",
+    "OR121": "Mystic Ring",
+    "OR122": "Mystic Ring +1",
+    "OR123": "Mystic Ring +2",
+    "OR124": "Mystic Ring +3",
+    "OR127": "Phantom Ring",
+    "OR128": "Phantom Ring +1",
+    "OR130": "Phantom Ring +3",
+    "OR131": "Throne Ring",
+    "OR132": "Enigma Ring",
+    "OR133": "Enigma Ring +1",
+    "OR134": "Enigma Ring +1",
+    "OR135": "Enigma Ring +3",
+    "OR136": "Voracious Ring",
+    "PL101": "Small Life Potion",
+    "PL102": "Medium Life Potion",
+    "PL103": "Large Life Potion",
+    "PL104": "Mystic Life Potion",
+    "PL105": "Special Life Potion",
+    "PM101": "Small Mana Potion",
+    "PM102": "Medium Mana Potion",
+    "PM103": "Large Mana Potion",
+    "PM104": "Mystic Mana Potion",
+    "PM105": "Special Mana Potion",
+    "PR102": "Silver Ore",
+    "PR103": "Gold Ore",
+    "PR107": "Red Ore",
+    "PR108": "Green Ore",
+    "PR202": "Silver Crystal",
+    "PR203": "Gold Crystal",
+    "PR207": "Red Crystal",
+    "PR208": "Green Crystal",
+    "PS101": "Small Stamina Potion",
+    "PS102": "Medium Stamina Potion",
+    "PS103": "Large Stamina Potion",
+    "PS104": "Mystic Stamina Potion",
+    "PS105": "Special Stamina Potion",
+    "QT105": "Mysterious Oil",
+    "QT127": "Cursed Ring",
+    "QT135": "Gold Crystal",
+    "QW102": "Silver Wing",
+    "QW103": "Gold Wing",
+    "QW104": "Diamond Wing",
+    "QW105": "Chaos Wing",
+    "SP142": "Watermelon",
+    "SP230": "Halloween Box",
+    "WA101": "Stone Axe",
+    "WA102": "Steel Axe",
+    "WA103": "Battle Axe",
+    "WA104": "War Axe",
+    "WA105": "Double-Edged War Axe",
+    "WA108": "Double-Blade Axe",
+    "WA109": "Great Axe",
+    "WA110": "Diamond Axe",
+    "WA111": "Serrated Axe",
+    "WA113": "Giant Axe",
+    "WA115": "Titan Axe",
+    "WA116": "Chaos Axe",
+    "WA117": "Ancient Axe",
+    "WA119": "Extreme Axe",
+    "WA120": "Minotaur Axe",
+    "WA123": "Dragon Axe",
+    "WA126": "Dragon Axe",
+    "WA128": "Deadly Axe",
+    "WA129": "Flame Axe",
+    "WA131": "Deadly Axe",
+    "WA151": "Extreme Axe (5 oras)",
+    "WC115": "Doom Claw",
+    "WC116": "Titan Claw",
+    "WC120": "Dragon Claw",
+    "WC125": "Furious Claw",
+    "WC127": "Deadly Claw",
+    "WC128": "Flame Claw",
+    "WC130": "Devilish Claw",
+    "WD102": "Iron Dagger",
+    "WD106": "Steel Dagger",
+    "WD109": "Platinum Dagger",
+    "WD119": "Chaos Dagger",
+    "WD121": "Shadow Dagger",
+    "WD127": "Deadly Dagger",
+    "WD128": "Flame Dagger",
+    "WD157": "Dark Dagger",
+    "WH105": "War Hammer",
+    "WH112": "Runic Hammer",
+    "WH121": "Extreme Hammer",
+    "WH122": "Guardian Hammer",
+    "WH124": "Dragon Hammer",
+    "WH127": "Dragon Hammer",
+    "WH129": "Deadly Hammer",
+    "WH130": "Flame Hammer",
+    "WH132": "Ruby Hammer",
+    "WH152": "Guardian Hammer (5 oras)",
+    "WM109": "Phantom",
+    "WM114": "Chaos Staff",
+    "WM115": "Runic Wand",
+    "WM116": "Runic Staff",
+    "WM119": "Dragon Staff",
+    "WM121": "Astral Staff",
+    "WM124": "Astral Staff",
+    "WM127": "Astral Staff",
+    "WM129": "Deadly Staff",
+    "WM130": "Flame Staff",
+    "WM132": "Deadly Staff",
+    "WP109": "Evil Scythe",
+    "WP111": "Chaos Spear",
+    "WP112": "Titan Spear",
+    "WP114": "Dragon Wing",
+    "WP116": "Mystic Spear",
+    "WP120": "Extreme Spear",
+    "WP124": "Dragon Scythe",
+    "WP128": "Deadly Spear",
+    "WP129": "Flame Scythe",
+    "WP151": "Extreme Spear (5 oras)",
+    "WS105": "Battle Bow",
+    "WS106": "Great Bow",
+    "WS107": "War Bow",
+    "WS111": "Bone Bow",
+    "WS114": "Titan Bow",
+    "WS115": "Chaos Bow",
+    "WS121": "Mirage Bow",
+    "WS122": "Dragon Bow",
+    "WS129": "Deadly Bow",
+    "WS130": "Flame Bow",
+    "WS132": "Deadly Bow",
+    "WS133": "Sinister Bow",
+    "WS151": "Mirage Bow (5 oras)",
+    "WS210": "Platinum Sword",
+    "WS213": "Giant Sword",
+    "WS217": "Ancient Sword",
+    "WS221": "Titan Sword",
+    "WS225": "Extreme Sword",
+    "WS226": "Mirage Sword",
+    "WS229": "Mirage Sword",
+    "WS231": "Deadly Sword",
+    "WS232": "Flame Sword",
+    "WS234": "Deadly Sword",
+    "WS254": "Extreme Sword (5 oras)",
+    "WT102": "War Dart",
+    "WT104": "Steel Dart",
+    "WT116": "Mirage Dart",
+    "WT117": "Mystic Dart",
+    "WT118": "Extreme Dart",
+    "WT119": "Dragon Dart",
+    "WT126": "Blessed Dart",
+    "WT128": "Deadly Dart",
+    "WT129": "Flame Dart",
+    "WT131": "Chaos Dart"
+  },
+  "monsters": {
+    "Ancient Golem": "Ancient Golem",
+    "Armored Bettle": "Armored Beetle",
+    "Bee Dog": "Bee Dog",
+    "Big Ghost": "Ghost",
+    "Bloody Knight": "Bloody Knight",
+    "Bloody Knight 2": "Bloody Knight",
+    "Bone Hound": "Bone Hound",
+    "Bronze Wolverine": "Bronze Wolverine",
+    "C-Doom Guard": "C-Doom Guard",
+    "C-Fox Hound": "C-Fox Hound",
+    "C-Marionette": "C-Marionette",
+    "C-Undead Chaser": "C-Undead Chaser",
+    "C-Undead Stalker": "C-Undead Stalker",
+    "Chimera": "Chimera",
+    "Chimera 2": "Chimera",
+    "Corrupt": "Corrupt",
+    "Crypt": "Crypt",
+    "Crypt 2": "Crypt",
+    "Cursed Archer": "Cursed Archer",
+    "Cursed Guard": "Cursed Guard",
+    "Cursed Knight": "Cursed Knight",
+    "CurseWeb": "Cursed Web",
+    "Cyclone": "Cyclops",
+    "Cyclone 2": "Cyclops",
+    "Cyclops": "Cyclops",
+    "Cyclops 2": "Cyclops",
+    "Dark Guard": "Dark Guard",
+    "Dark Knight": "Dark Knight",
+    "Dark Mage": "Dark Mage",
+    "Dark Specter": "Dark Specter",
+    "Dark Specter 2": "Dark Specter",
+    "Dark Stalker": "Dark Stalker",
+    "Deadly Machine": "Deadly Machine",
+    "Decoy": "Decoy",
+    "Decoy 2": "Decoy",
+    "Decoy 3": "Decoy",
+    "Devilish Tree": "Devilish Tree",
+    "Doom Guard": "Doom Guard",
+    "Doom Lord": "Doom Lord",
+    "Evil Plant": "Evil Plant",
+    "Fire Crystal": "Fire Crystal",
+    "Fury": "Fury",
+    "Fury 5": "Fury",
+    "Ghost": "Ghost",
+    "Ghoul": "Ghoul",
+    "Gorgon": "Gorgon",
+    "Guardian Staff": "Guardian Staff",
+    "Hammber Goblin": "Hammer Goblin",
+    "Hammer Decoy": "Hammer Decoy",
+    "Hammer Plant": "Hammer Plant",
+    "Haunting Maple": "Haunting Maple",
+    "Haunting Plant": "Haunting Plant",
+    "Head Cutter": "Head Cutter",
+    "Head Cutter 2": "Head Cutter",
+    "Head Cutter 3": "Head Cutter",
+    "Heavy Goblin": "Heavy Goblin",
+    "Heavy Goblin 2": "Heavy Goblin",
+    "Hell Hound": "Hell Hound",
+    "Hell Hound 2": "Hell Hound",
+    "Hell Hound 3": "Hell Hound",
+    "Hell Plant": "Hell Plant",
+    "HOPY KID": "Hopy Kid",
+    "Hopy King": "King Hopy",
+    "Hopy King 2": "King Hopy",
+    "I-Dark Mage": "I-Dark Mage",
+    "I-Fox Hound": "I-Fox Hound",
+    "I-icegoblin": "I-Ice Goblin",
+    "I-Marionette": "I-Marionette",
+    "I-Revived Archer": "I-Revived Archer",
+    "I-Temple Guard": "I-Temple Guard",
+    "I-Undead Chaser": "I-Undead Chaser",
+    "I-Undead Stalker": "I-Undead Stalker",
+    "Ice Crystal": "Ice Crystal",
+    "Icegoblin": "Ice Goblin",
+    "Icegoblin 2": "Ice Goblin",
+    "Incubus": "Incubus",
+    "Iron Guard": "Iron Guard",
+    "Iron Guard 2": "Iron Guard",
+    "L-Corrupt": "L-Corrupt",
+    "L-Crypt": "L-Crypt",
+    "L-Decoy": "L-Decoy",
+    "L-Fox Hound": "L-Fox Hound",
+    "L-Ghost": "L-Ghost",
+    "L-Ghoul": "L-Ghoul",
+    "L-Marionette": "L-Marionette",
+    "L-Skeleton": "L-Skeleton",
+    "L-Skeleton Archer": "L-Skeleton Archer",
+    "L-Undead Chaser": "L-Undead Chaser",
+    "L-Undead Stalker": "L-Undead Stalker",
+    "L-Zombi": "L-Zombie",
+    "Lava Archer": "Lava Archer",
+    "Lava Armor": "Lava Armor",
+    "Lava Golem": "Lava Golem",
+    "Lava Golem 2": "Lava Golem",
+    "Leech": "Leech",
+    "Lightning Crystal": "Lightning Crystal",
+    "MapleFairy": "Maple Fairy",
+    "MapleTree": "Maple Tree",
+    "Maximum Decoy": "Maximum Decoy",
+    "Mummy": "Mummy",
+    "Mummy 2": "Mummy",
+    "Mushroom Ghost": "Mushroom Ghost",
+    "Mutant Plant": "Mutant Plant",
+    "Mutant Rabie": "Mutant Rabie",
+    "Mutant Tree": "Mutant Tree",
+    "N-Dark Knight": "N-Dark Knight",
+    "N-Decoy": "N-Decoy",
+    "N-Doom Guard": "N-Doom Guard",
+    "N-Fox Hound": "N-Fox Hound",
+    "N-Head Cutter": "N-Head Cutter",
+    "N-Marionette": "N-Marionette",
+    "N-Undead Chaser": "N-Undead Chaser",
+    "N-Undead Stalker": "N-Undead Stalker",
+    "NorthGoblin": "North Goblin",
+    "Plant": "Plant",
+    "PlantLord": "Plant Lord",
+    "Revived Archer": "Revived Archer",
+    "Revived Knight": "Revived Knight",
+    "Runic Guardian": "Runic Guardian",
+    "Sadness": "Sadness",
+    "SantaGoblin": "Santa Goblin",
+    "Scorpion": "Scorpion",
+    "Silver Wolverine": "Silver Wolverine",
+    "Skeleton": "Skeleton",
+    "Skeleton 2": "Skeleton",
+    "Skeleton Archer": "Skeleton Archer",
+    "Skeleton Archer 2": "Skeleton Archer",
+    "Skeleton Archer 3": "Skeleton Archer",
+    "Skeleton Knight": "Skeleton Knight",
+    "Skeleton Knight 2": "Skeleton Knight",
+    "Skeleton Warrior": "Skeleton Warrior",
+    "Skeleton Warrior 2": "Skeleton Warrior",
+    "Snowman": "Snowman",
+    "SOD_Armored Beetle": "SOD_Armored Beetle",
+    "SOD_Crypt": "SOD_Crypt",
+    "SOD_Cursed Web": "SOD_Cursed Web",
+    "SOD_Dark Knight": "SOD_Dark Knight",
+    "SOD_Doom Guard": "SOD_Doom Guard",
+    "SOD_Doom Lord": "SOD_Doom Lord",
+    "SOD_Heavy Goblin": "SOD_Heavy Goblin",
+    "SOD_Mummy": "SOD_Mummy",
+    "SOD_Sadness": "SOD_Sadness",
+    "SOD_Skeleton Knight": "SOD_Skeleton Knight",
+    "SOD_Stone Golem": "SOD_Stone Golem",
+    "Stone Golem": "Stone Golem",
+    "Stygian Staff": "Stygian Staff",
+    "Temple Guard": "Temple Guard",
+    "Temple Guard 3": "Temple Guard",
+    "Temple Guard 4": "Temple Guard",
+    "Temple Guard 5": "Temple Guard",
+    "V-Chimera": "V-Chimera",
+    "V-Dark Guard": "V-Dark Guard",
+    "V-Dark Mage": "V-Dark Mage",
+    "V-Fox Hound": "V-Fox Hound",
+    "V-Gorgon": "V-Gorgon",
+    "V-Incubus": "V-Incubus",
+    "V-Marionette": "V-Marionette",
+    "V-Revived Archer": "V-Revived Archer",
+    "V-Undead Chaser": "V-Undead Chaser",
+    "V-Undead Stalker": "V-Undead Stalker",
+    "Wanted Morif": "Wanted Morif",
+    "Watermelon": "Watermelon",
+    "Web": "Web",
+    "Web 2": "Web",
+    "Web 3": "Web",
+    "Wevyn, the Hunter": "Wevyn, ang Hunter",
+    "Wild Goblin": "Wild Goblin",
+    "Zombi": "Zombie",
+    "Zombi 2": "Zombie",
+    "Zombie": "Zombie"
+  }
+}

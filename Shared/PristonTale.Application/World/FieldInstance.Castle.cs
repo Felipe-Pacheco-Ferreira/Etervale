@@ -1,4 +1,5 @@
 using System.Numerics;
+using PristonTale.Simulation.Combat;
 using PristonTale.Simulation.Social.Castle;
 using PristonTale.Simulation.World;
 using PristonTale.Simulation.World.Monsters;
@@ -15,20 +16,12 @@ public sealed partial class FieldInstance
     // The castle's tax in force, added to the fees the field's players pay (CastleRules.WithTax).
     internal int CastleTax { get; set; }
 
-    // The castle field, outside the league: its battle zone lets players fight (WorldServerOptions.CastleLeague).
+    // The castle field, outside the league: its battle zone lets players fight (WorldServerOptions.CastleLeague;
+    // FieldInstance.Pvp has who fights whom).
     internal bool PlayersFight { get; set; }
 
-    internal bool MayFight(WorldPlayer attacker, WorldPlayer target) =>
-        PlayersFight && attacker.EntityId != target.EntityId && !attacker.IsDead && !target.IsDead && !attacker.Hidden && !target.Hidden
-        && CastleSiegeRules.MayFight(attacker.Position, attacker.Clan?.ClanId ?? 0, target.Position, target.Clan?.ClanId ?? 0);
-
-    bool IFieldCombatHost.MayFight(WorldPlayer attacker, WorldPlayer target) => MayFight(attacker, target);
-
-    bool IFieldSkillHost.MayFight(WorldPlayer attacker, WorldPlayer target) => MayFight(attacker, target);
-
-    bool IFieldSkillHost.PlayersFight => PlayersFight;
-
-    void IFieldSkillHost.HurtPlayer(WorldPlayer attacker, WorldPlayer target, int damage, bool crit) => _combat.HurtPlayer(attacker, target, damage, crit, skill: true);
+    void IFieldSkillHost.HurtPlayer(WorldPlayer attacker, WorldPlayer target, int damage, bool crit, Element element) =>
+        _combat.HurtPlayer(attacker, target, damage, crit, skill: true, element);
 
     internal void OpenSiege(CastleSiege siege)
     {

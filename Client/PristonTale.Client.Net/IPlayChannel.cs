@@ -18,6 +18,9 @@ public interface IPlayChannel : IAsyncDisposable
     // The player's game master level (0 for players), for client-side game master controls.
     int GameMasterLevel { get; }
 
+    // Whether the server translates the chat for players who ask (SendChatTranslateToAsync).
+    bool ChatTranslation { get; }
+
     // The server's game clock in game milliseconds; null before the world is joined or without a server.
     long? GameClockMs { get; }
 
@@ -67,12 +70,26 @@ public interface IPlayChannel : IAsyncDisposable
     // Space inside the minute a yahoo word opened; the cheer arrives on the presence timeline.
     Task SendYahooKeyAsync(CancellationToken ct = default);
 
+    // The language other players' lines are translated to, "" for none.
+    Task SendChatTranslateToAsync(string language, CancellationToken ct = default);
+
     // Space with nothing ahead in an action field: the server swings at nothing; the swing arrives on the presence timeline.
     Task SendSwingAsync(CancellationToken ct = default);
 
     // Ride the travel mount (mount true) or leave it; the server's answer is the Mounted flag of the player's own
     // description (PlayerAppearanceInfo.Mounted).
     Task SendMountAsync(bool mount, CancellationToken ct = default);
+
+    // Turn the PvP mode on or off; the server answers in a system line and with the Pvp flag of the player's own
+    // description (PlayerAppearanceInfo.Pvp).
+    Task SendPvpSwitchAsync(bool on, CancellationToken ct = default);
+
+    // Answer a challenge to a duel (PresenceUpdate.DuelRequest); the duel itself comes as PresenceUpdate.Duel. A challenge
+    // is the chat line "/duelo name".
+    Task AnswerDuelAsync(ulong fromId, bool accept, CancellationToken ct = default);
+
+    // Show a title the player owns over its name, or none (0); the titles come back as PresenceUpdate.Titles.
+    Task ChooseTitleAsync(int title, CancellationToken ct = default);
 
     // The owner confirmed dismissing the pet of one status (the code its icon shows); the icon goes with the status's
     // removal.

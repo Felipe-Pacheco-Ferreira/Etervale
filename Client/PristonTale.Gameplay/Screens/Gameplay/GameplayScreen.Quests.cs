@@ -49,13 +49,13 @@ public sealed partial class GameplayScreen
         {
             var catalog = new WorldCatalog();
             var name = catalog.TryGetFieldByCode(destination.FieldCode, out var field) ? field.Name : destination.FieldCode.ToString();
-            QuestRouteRefused(ClientText.Language == "pt-BR" ? $"Vá até {name} para iniciar esta rota." : $"Enter {name} to start this route.");
+            QuestRouteRefused(ClientText.Format("QuestRoute.EnterField", name));
             return;
         }
 
         if (_questRouteTask is { IsCompleted: false })
         {
-            _hud.QuestNavigationNotice(ClientText.Language == "pt-BR" ? "Aguarde o cálculo da rota atual." : "Wait for the current route calculation.");
+            _hud.QuestNavigationNotice(ClientText.Get("QuestRoute.WaitCalculation"));
             return;
         }
 
@@ -78,14 +78,14 @@ public sealed partial class GameplayScreen
 
         if (++_questPlannedStretches > 16)
         {
-            QuestRouteRefused(ClientText.Language == "pt-BR" ? "O destino não está acessível nesta rota." : "The destination is not accessible along this route.");
+            QuestRouteRefused(ClientText.Get("QuestRoute.Unreachable"));
             return;
         }
 
         _questRouteTask = _scene.PlanRouteAsync(WorldSpace.Planar(destination.X, destination.Z), mostCells: GroundRoute.Stretch);
         _questRoutePoints = [];
         _questRouteIndex = 0;
-        _hud.QuestNavigationNotice(ClientText.Language == "pt-BR" ? "Calculando rota..." : "Calculating route...");
+        _hud.QuestNavigationNotice(ClientText.Get("QuestRoute.Calculating"));
     }
 
     private void UpdateQuestNavigation(GameTime gameTime)
@@ -130,19 +130,19 @@ public sealed partial class GameplayScreen
                     return;
                 }
 
-                QuestRouteRefused(ClientText.Language == "pt-BR" ? "Não foi encontrada uma rota segura." : "No safe route was found.");
+                QuestRouteRefused(ClientText.Get("QuestRoute.NoSafeRoute"));
                 return;
             }
 
             if (!route.ReachesGoal && Vector2.DistanceSquared(_scene.PlayerPlanar, new Vector2(route.End.X, route.End.Z)) < 64f)
             {
-                QuestRouteRefused(ClientText.Language == "pt-BR" ? "O destino não está acessível nesta rota." : "The destination is not accessible along this route.");
+                QuestRouteRefused(ClientText.Get("QuestRoute.Unreachable"));
                 return;
             }
 
             _questRoutePoints = route.Points;
             _questRouteIndex = 0;
-            _hud.QuestNavigationNotice(ClientText.Language == "pt-BR" ? "Seguindo a rota da missão..." : "Following the quest route...");
+            _hud.QuestNavigationNotice(ClientText.Get("QuestRoute.Following"));
         }
 
         while (_questRouteIndex < _questRoutePoints.Count && Vector2.DistanceSquared(_scene.PlayerPlanar, _questRoutePoints[_questRouteIndex]) <= 64f)
@@ -161,7 +161,7 @@ public sealed partial class GameplayScreen
             if (Vector2.DistanceSquared(_scene.PlayerPlanar, WorldSpace.Planar(destination.X, destination.Z)) <= 55f * 55f)
             {
                 CancelQuestNavigation();
-                _hud.QuestNavigationNotice(ClientText.Language == "pt-BR" ? "Você chegou ao objetivo da missão." : "You reached the quest objective.");
+                _hud.QuestNavigationNotice(ClientText.Get("QuestRoute.Arrived"));
                 return;
             }
 
@@ -171,7 +171,7 @@ public sealed partial class GameplayScreen
 
         if (!_scene.WalkTo(_questRoutePoints[_questRouteIndex], arriveWithin: 6f))
         {
-            QuestRouteRefused(ClientText.Language == "pt-BR" ? "O personagem não pode caminhar agora." : "The character cannot walk now.");
+            QuestRouteRefused(ClientText.Get("QuestRoute.CannotWalk"));
             return;
         }
 
@@ -183,7 +183,7 @@ public sealed partial class GameplayScreen
             _questLastProgress = _scene.PlayerPlanar;
             if (_questStalledChecks >= 3)
             {
-                QuestRouteRefused(ClientText.Language == "pt-BR" ? "A rota foi interrompida por um obstáculo." : "An obstacle interrupted the route.");
+                QuestRouteRefused(ClientText.Get("QuestRoute.Obstacle"));
             }
         }
     }
@@ -211,7 +211,7 @@ public sealed partial class GameplayScreen
                 }
 
                 CancelQuestNavigation(stopMovement: false);
-                _hud.QuestNavigationNotice(ClientText.Language == "pt-BR" ? "Aproximando-se do guia..." : "Approaching the guide...");
+                _hud.QuestNavigationNotice(ClientText.Get("QuestRoute.ApproachingGuide"));
                 return true;
             }
         }

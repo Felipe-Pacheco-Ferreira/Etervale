@@ -102,6 +102,10 @@ public static class HostingExtensions
             localizedData: services.GetRequiredService<WorldDataLanguagesHolder>()));
         builder.Services.AddHostedService<WorldTickService>();
         builder.Services.AddHostedService<PublicActivityService>();
+        builder.Services.AddHostedService<ArenaScoreService>();
+        builder.Services.AddHostedService<RoyalePrizeService>();
+        builder.Services.AddHostedService<TitleService>();
+        builder.Services.AddHostedService<BossRouletteService>();
         builder.Services.AddHostedService<AccountBlockService>();
         builder.Services.AddSingleton<WhisperActivity>();
         AddChat(builder);
@@ -197,6 +201,7 @@ public static class HostingExtensions
             builder.Services.AddSingleton(new PristonTale.Application.Support.SupportTickets(DataPath.Resolve(supportPath)));
         }
 
+        var translation = PristonTale.Server.Chat.ChatTranslationSettings.Read(builder.Configuration);
         builder.Services.AddSingleton<GameMailReader>();
         builder.Services.AddSingleton<PristonTale.Persistence.Repositories.GameMailClaims>();
         builder.Services.AddSingleton<GameMailRewardService>();
@@ -205,6 +210,9 @@ public static class HostingExtensions
             clans: services.GetRequiredService<PristonTale.Application.Clans.ClanAppService>())
         {
             Tickets = services.GetService<PristonTale.Application.Support.SupportTickets>(),
+            Translation = translation.CreateTranslator(services.GetRequiredService<ILoggerFactory>().CreateLogger("ChatTranslation")) is { } translator
+                ? new ChatTranslation(translator, translation.CharactersPerMinute, static () => Environment.TickCount64)
+                : null,
             ReadDistributorAsync = services.GetRequiredService<GameMailReader>().PendingItemsAsync,
             ReadMailAsync = services.GetRequiredService<GameMailReader>().ListAsync,
             OpenMailAsync = services.GetRequiredService<GameMailReader>().ReadPageAsync,

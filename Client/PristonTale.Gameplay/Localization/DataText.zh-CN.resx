@@ -1,0 +1,617 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Castle.BC101.Effect" xml:space="preserve"><value>短时间内无敌；攻击力减半</value></data>
+  <data name="Castle.BC102.Effect" xml:space="preserve"><value>暴击几率 +5%</value></data>
+  <data name="Castle.BC103.Effect" xml:space="preserve"><value>闪避几率 +5%</value></data>
+  <data name="Castle.BC106.Effect" xml:space="preserve"><value>抵消50%的火焰水晶塔攻击</value></data>
+  <data name="Castle.BC107.Effect" xml:space="preserve"><value>抵消50%的冰霜水晶塔攻击</value></data>
+  <data name="Castle.BC108.Effect" xml:space="preserve"><value>抵消50%的闪电水晶塔攻击</value></data>
+  <data name="Castle.BC109.Effect" xml:space="preserve"><value>攻击战士时伤害 +20%</value></data>
+  <data name="Castle.BC110.Effect" xml:space="preserve"><value>攻击机械师时伤害 +20%</value></data>
+  <data name="Castle.BC111.Effect" xml:space="preserve"><value>攻击枪兵时伤害 +20%</value></data>
+  <data name="Castle.BC112.Effect" xml:space="preserve"><value>攻击弓箭手时伤害 +20%</value></data>
+  <data name="Castle.BC113.Effect" xml:space="preserve"><value>攻击骑士时伤害 +20%</value></data>
+  <data name="Castle.BC114.Effect" xml:space="preserve"><value>攻击阿塔兰忒时伤害 +20%</value></data>
+  <data name="Castle.BC115.Effect" xml:space="preserve"><value>攻击法师时伤害 +20%</value></data>
+  <data name="Castle.BC116.Effect" xml:space="preserve"><value>攻击祭司时伤害 +20%</value></data>
+  <data name="Class.Archer.0" xml:space="preserve"><value>弓箭手</value></data>
+  <data name="Class.Archer.1" xml:space="preserve"><value>猎姬大师</value></data>
+  <data name="Class.Archer.2" xml:space="preserve"><value>迪昂门徒</value></data>
+  <data name="Class.Archer.3" xml:space="preserve"><value>射手座</value></data>
+  <data name="Class.Archer.4" xml:space="preserve"><value>伊斯卡尔</value></data>
+  <data name="Class.Assassin.0" xml:space="preserve"><value>刺客</value></data>
+  <data name="Class.Assassin.1" xml:space="preserve"><value>盗贼</value></data>
+  <data name="Class.Assassin.2" xml:space="preserve"><value>暗影</value></data>
+  <data name="Class.Assassin.3" xml:space="preserve"><value>暗影行者</value></data>
+  <data name="Class.Assassin.4" xml:space="preserve"><value>暗影大师</value></data>
+  <data name="Class.Atalanta.0" xml:space="preserve"><value>阿塔兰忒</value></data>
+  <data name="Class.Atalanta.1" xml:space="preserve"><value>女武神</value></data>
+  <data name="Class.Atalanta.2" xml:space="preserve"><value>布伦希尔德</value></data>
+  <data name="Class.Atalanta.3" xml:space="preserve"><value>瓦尔哈拉</value></data>
+  <data name="Class.Atalanta.4" xml:space="preserve"><value>瓦尔哈拉女王</value></data>
+  <data name="Class.Fighter.0" xml:space="preserve"><value>战士</value></data>
+  <data name="Class.Fighter.1" xml:space="preserve"><value>勇士</value></data>
+  <data name="Class.Fighter.2" xml:space="preserve"><value>冠军</value></data>
+  <data name="Class.Fighter.3" xml:space="preserve"><value>不灭战士</value></data>
+  <data name="Class.Fighter.4" xml:space="preserve"><value>战争领主</value></data>
+  <data name="Class.Knight.0" xml:space="preserve"><value>骑士</value></data>
+  <data name="Class.Knight.1" xml:space="preserve"><value>圣骑士</value></data>
+  <data name="Class.Knight.2" xml:space="preserve"><value>神圣骑士</value></data>
+  <data name="Class.Knight.3" xml:space="preserve"><value>圣徒骑士</value></data>
+  <data name="Class.Knight.4" xml:space="preserve"><value>英勇骑士</value></data>
+  <data name="Class.Magician.0" xml:space="preserve"><value>法师</value></data>
+  <data name="Class.Magician.1" xml:space="preserve"><value>巫师</value></data>
+  <data name="Class.Magician.2" xml:space="preserve"><value>皇家巫师</value></data>
+  <data name="Class.Magician.3" xml:space="preserve"><value>大法师</value></data>
+  <data name="Class.Magician.4" xml:space="preserve"><value>元素大师</value></data>
+  <data name="Class.MartialArtist.0" xml:space="preserve"><value>武术家</value></data>
+  <data name="Class.MartialArtist.1" xml:space="preserve"><value>重拳手</value></data>
+  <data name="Class.MartialArtist.2" xml:space="preserve"><value>诡术师</value></data>
+  <data name="Class.MartialArtist.3" xml:space="preserve"><value>宗师</value></data>
+  <data name="Class.MartialArtist.4" xml:space="preserve"><value>大宗师</value></data>
+  <data name="Class.Mechanician.0" xml:space="preserve"><value>机械师</value></data>
+  <data name="Class.Mechanician.1" xml:space="preserve"><value>机械大师</value></data>
+  <data name="Class.Mechanician.2" xml:space="preserve"><value>金属领袖</value></data>
+  <data name="Class.Mechanician.3" xml:space="preserve"><value>金属战神</value></data>
+  <data name="Class.Mechanician.4" xml:space="preserve"><value>金属狂怒</value></data>
+  <data name="Class.Pikeman.0" xml:space="preserve"><value>枪兵</value></data>
+  <data name="Class.Pikeman.1" xml:space="preserve"><value>战斗兵</value></data>
+  <data name="Class.Pikeman.2" xml:space="preserve"><value>长枪手</value></data>
+  <data name="Class.Pikeman.3" xml:space="preserve"><value>兰斯洛特</value></data>
+  <data name="Class.Pikeman.4" xml:space="preserve"><value>拜约伦特</value></data>
+  <data name="Class.Priestess.0" xml:space="preserve"><value>祭司</value></data>
+  <data name="Class.Priestess.1" xml:space="preserve"><value>圣女</value></data>
+  <data name="Class.Priestess.2" xml:space="preserve"><value>主教</value></data>
+  <data name="Class.Priestess.3" xml:space="preserve"><value>天界使者</value></data>
+  <data name="Class.Priestess.4" xml:space="preserve"><value>大天使</value></data>
+  <data name="Class.Shaman.0" xml:space="preserve"><value>萨满</value></data>
+  <data name="Class.Shaman.1" xml:space="preserve"><value>召唤师</value></data>
+  <data name="Class.Shaman.2" xml:space="preserve"><value>高阶召唤师</value></data>
+  <data name="Class.Shaman.3" xml:space="preserve"><value>灵魂捕手</value></data>
+  <data name="Class.Shaman.4" xml:space="preserve"><value>灵魂大师</value></data>
+  <data name="Quest.4th Rank-Up Test(Finished)" xml:space="preserve"><value>四阶晋升试炼(已完成)</value></data>
+  <data name="Quest.4th Rank-Up Test[1]" xml:space="preserve"><value>四阶晋升试炼[1]</value></data>
+  <data name="Quest.4th Rank-Up Test[2]" xml:space="preserve"><value>四阶晋升试炼[2]</value></data>
+  <data name="Quest.4th Rank-Up Test[3]" xml:space="preserve"><value>四阶晋升试炼[3]</value></data>
+  <data name="Quest.4th Rank-Up Test[4]" xml:space="preserve"><value>四阶晋升试炼[4]</value></data>
+  <data name="Quest.4th Rank-Up Test[5]" xml:space="preserve"><value>四阶晋升试炼[5]</value></data>
+  <data name="Quest.4th Rank-Up Test[6]" xml:space="preserve"><value>四阶晋升试炼[6]</value></data>
+  <data name="Quest.A lost Hammer" xml:space="preserve"><value>遗失的锤子</value></data>
+  <data name="Quest.A lost Hammer(Complete)" xml:space="preserve"><value>遗失的锤子(已完成)</value></data>
+  <data name="Quest.A tired warehouse keeper" xml:space="preserve"><value>疲惫的仓库管理员</value></data>
+  <data name="Quest.A tired warehouse keeper(Complete)" xml:space="preserve"><value>疲惫的仓库管理员(已完成)</value></data>
+  <data name="Quest.Bitter ordeal" xml:space="preserve"><value>苦涩的考验</value></data>
+  <data name="Quest.Bitter ordeal(Complete)" xml:space="preserve"><value>苦涩的考验(已完成)</value></data>
+  <data name="Quest.Candy Delivery" xml:space="preserve"><value>送糖果</value></data>
+  <data name="Quest.Candy Delivery(Complete)" xml:space="preserve"><value>送糖果(已完成)</value></data>
+  <data name="Quest.Capturing the devil" xml:space="preserve"><value>捕获恶魔</value></data>
+  <data name="Quest.Capturing the devil(Complete)" xml:space="preserve"><value>捕获恶魔(已完成)</value></data>
+  <data name="Quest.Clever Newter" xml:space="preserve"><value>聪明的 Newter</value></data>
+  <data name="Quest.Clever Newter(Complete)" xml:space="preserve"><value>聪明的 Newter(已完成)</value></data>
+  <data name="Quest.Delivery bomb" xml:space="preserve"><value>运送炸弹</value></data>
+  <data name="Quest.Delivery bomb(Complete)" xml:space="preserve"><value>运送炸弹(已完成)</value></data>
+  <data name="Quest.Destroyed destruction weapon" xml:space="preserve"><value>被摧毁的毁灭武器</value></data>
+  <data name="Quest.Destroyed destruction weapon(Complete)" xml:space="preserve"><value>被摧毁的毁灭武器(已完成)</value></data>
+  <data name="Quest.Devious Necromancer" xml:space="preserve"><value>狡诈的死灵法师</value></data>
+  <data name="Quest.Devious Necromancer(Complete)" xml:space="preserve"><value>狡诈的死灵法师(已完成)</value></data>
+  <data name="Quest.Enclosed Fury" xml:space="preserve"><value>被囚禁的 Fury</value></data>
+  <data name="Quest.Enclosed Fury(completed)" xml:space="preserve"><value>被囚禁的 Fury(已完成)</value></data>
+  <data name="Quest.Eternal Love1" xml:space="preserve"><value>永恒之爱 1</value></data>
+  <data name="Quest.Eternal Love1(Complete)" xml:space="preserve"><value>永恒之爱 1(已完成)</value></data>
+  <data name="Quest.Eternal Love2" xml:space="preserve"><value>永恒之爱 2</value></data>
+  <data name="Quest.Eternal Love2(Complete)" xml:space="preserve"><value>永恒之爱 2(已完成)</value></data>
+  <data name="Quest.For her" xml:space="preserve"><value>为了她</value></data>
+  <data name="Quest.For her(completed)" xml:space="preserve"><value>为了她(已完成)</value></data>
+  <data name="Quest.Fury's phantasma(Complete)" xml:space="preserve"><value>Fury 的幻影(已完成)</value></data>
+  <data name="Quest.Fury's phantasma[1]" xml:space="preserve"><value>Fury 的幻影[1]</value></data>
+  <data name="Quest.Fury's phantasma[2]" xml:space="preserve"><value>Fury 的幻影[2]</value></data>
+  <data name="Quest.Fury's phantasma[3]" xml:space="preserve"><value>Fury 的幻影[3]</value></data>
+  <data name="Quest.Fury's phantasma[4]" xml:space="preserve"><value>Fury 的幻影[4]</value></data>
+  <data name="Quest.Fury's phantasma[5]" xml:space="preserve"><value>Fury 的幻影[5]</value></data>
+  <data name="Quest.Goblin Hill" xml:space="preserve"><value>哥布林山丘</value></data>
+  <data name="Quest.Goblin Hill(Complete)" xml:space="preserve"><value>哥布林山丘(已完成)</value></data>
+  <data name="Quest.Helping Michelle" xml:space="preserve"><value>帮助 Michelle</value></data>
+  <data name="Quest.Helping Michelle(completed)" xml:space="preserve"><value>帮助 Michelle(已完成)</value></data>
+  <data name="Quest.Invaders chopped up" xml:space="preserve"><value>斩杀入侵者</value></data>
+  <data name="Quest.Invaders chopped up(Complete)" xml:space="preserve"><value>斩杀入侵者(已完成)</value></data>
+  <data name="Quest.Job Quest 3th(Complete)" xml:space="preserve"><value>三阶晋升任务(已完成)</value></data>
+  <data name="Quest.Job Quest 3th[1]" xml:space="preserve"><value>三阶晋升任务[1]</value></data>
+  <data name="Quest.Job Quest 3th[2]" xml:space="preserve"><value>三阶晋升任务[2]</value></data>
+  <data name="Quest.Job Quest 3th[3]" xml:space="preserve"><value>三阶晋升任务[3]</value></data>
+  <data name="Quest.Job Quest 3th[4]" xml:space="preserve"><value>三阶晋升任务[4]</value></data>
+  <data name="Quest.Lovers of history1" xml:space="preserve"><value>历史爱好者 1</value></data>
+  <data name="Quest.Lovers of history1(Complete)" xml:space="preserve"><value>历史爱好者 1(已完成)</value></data>
+  <data name="Quest.Lovers of history2" xml:space="preserve"><value>历史爱好者 2</value></data>
+  <data name="Quest.Lovers of history2(Complete)" xml:space="preserve"><value>历史爱好者 2(已完成)</value></data>
+  <data name="Quest.Manufacturing bomb" xml:space="preserve"><value>制造炸弹</value></data>
+  <data name="Quest.Manufacturing bomb(Complete)" xml:space="preserve"><value>制造炸弹(已完成)</value></data>
+  <data name="Quest.Miranda's location" xml:space="preserve"><value>Miranda 的下落</value></data>
+  <data name="Quest.Miranda's location(Complete)" xml:space="preserve"><value>Miranda 的下落(已完成)</value></data>
+  <data name="Quest.Mission from the ancestor" xml:space="preserve"><value>先祖的使命</value></data>
+  <data name="Quest.Mission from the ancestor(Complete)" xml:space="preserve"><value>先祖的使命(已完成)</value></data>
+  <data name="Quest.One-eyed Monsters" xml:space="preserve"><value>独眼怪物</value></data>
+  <data name="Quest.One-eyed Monsters(Complete)" xml:space="preserve"><value>独眼怪物(已完成)</value></data>
+  <data name="Quest.Patron's request" xml:space="preserve"><value>守护者的请求</value></data>
+  <data name="Quest.Patron's request(Complete)" xml:space="preserve"><value>守护者的请求(已完成)</value></data>
+  <data name="Quest.Questionable document" xml:space="preserve"><value>可疑的文件</value></data>
+  <data name="Quest.Questionable document(Complete)" xml:space="preserve"><value>可疑的文件(已完成)</value></data>
+  <data name="Quest.Rank up quest" xml:space="preserve"><value>晋升任务</value></data>
+  <data name="Quest.Rank up quest (Completed)" xml:space="preserve"><value>晋升任务 (已完成)</value></data>
+  <data name="Quest.Rank up quest [Second]" xml:space="preserve"><value>晋升任务 [第二次]</value></data>
+  <data name="Quest.Rank up quest second[1]" xml:space="preserve"><value>二次晋升任务[1]</value></data>
+  <data name="Quest.Rank up quest second[2]" xml:space="preserve"><value>二次晋升任务[2]</value></data>
+  <data name="Quest.Rank up quest second[3]" xml:space="preserve"><value>二次晋升任务[3]</value></data>
+  <data name="Quest.Rank up quest second[4]" xml:space="preserve"><value>二次晋升任务[4]</value></data>
+  <data name="Quest.Rank up quest second[5]" xml:space="preserve"><value>二次晋升任务[5]</value></data>
+  <data name="Quest.Rank up quest second[Completed]" xml:space="preserve"><value>二次晋升任务[已完成]</value></data>
+  <data name="Quest.Rank up quest(Completed)" xml:space="preserve"><value>晋升任务(已完成)</value></data>
+  <data name="Quest.Rank-up Exam (Done)" xml:space="preserve"><value>晋升考试 (已完成)</value></data>
+  <data name="Quest.Report delivery" xml:space="preserve"><value>递交报告</value></data>
+  <data name="Quest.Report delivery(Complete)" xml:space="preserve"><value>递交报告(已完成)</value></data>
+  <data name="Quest.Ring purification1" xml:space="preserve"><value>戒指净化 1</value></data>
+  <data name="Quest.Ring purification1(Complete)" xml:space="preserve"><value>戒指净化 1(已完成)</value></data>
+  <data name="Quest.Ring purification2" xml:space="preserve"><value>戒指净化 2</value></data>
+  <data name="Quest.Ring purification2(Complete)" xml:space="preserve"><value>戒指净化 2(已完成)</value></data>
+  <data name="Quest.Shattering Ancient weapon" xml:space="preserve"><value>粉碎远古武器</value></data>
+  <data name="Quest.Shattering Ancient weapon(Complete)" xml:space="preserve"><value>粉碎远古武器(已完成)</value></data>
+  <data name="Quest.Signs of fear" xml:space="preserve"><value>恐惧的征兆</value></data>
+  <data name="Quest.Signs of fear(Complete)" xml:space="preserve"><value>恐惧的征兆(已完成)</value></data>
+  <data name="Quest.Soul of Devil" xml:space="preserve"><value>恶魔之魂</value></data>
+  <data name="Quest.Soul of Devil(Complete)" xml:space="preserve"><value>恶魔之魂(已完成)</value></data>
+  <data name="Quest.Tears of Khalia" xml:space="preserve"><value>Khalia 的眼泪</value></data>
+  <data name="Quest.Tears of Khalia(completed)" xml:space="preserve"><value>Khalia 的眼泪(已完成)</value></data>
+  <data name="Quest.Test of Kingdom" xml:space="preserve"><value>王国的试炼</value></data>
+  <data name="Quest.Test of Kingdom(Complete)" xml:space="preserve"><value>王国的试炼(已完成)</value></data>
+  <data name="Quest.The Cave" xml:space="preserve"><value>洞窟</value></data>
+  <data name="Quest.The Cave(completed)" xml:space="preserve"><value>洞窟(已完成)</value></data>
+  <data name="Quest.Threats of the Undead" xml:space="preserve"><value>亡灵的威胁</value></data>
+  <data name="Quest.Threats of the Undead(Complete)" xml:space="preserve"><value>亡灵的威胁(已完成)</value></data>
+  <data name="Quest.Village of Eura(completed)" xml:space="preserve"><value>Eura 村(已完成)</value></data>
+  <data name="Quest.Village of eura" xml:space="preserve"><value>Eura 村</value></data>
+  <data name="Quest.War of the Ancient" xml:space="preserve"><value>远古战争</value></data>
+  <data name="Quest.War of the Ancient(Complete)" xml:space="preserve"><value>远古战争(已完成)</value></data>
+  <data name="Skill.01010001.Description" xml:space="preserve"><value>暂时提高当前装备盾牌的格挡率</value></data>
+  <data name="Skill.01010001.Name" xml:space="preserve"><value>极限之盾</value></data>
+  <data name="Skill.01010002.Description" xml:space="preserve"><value>向爆炸范围内的敌人投掷炸弹</value></data>
+  <data name="Skill.01010002.Name" xml:space="preserve"><value>机械炸弹</value></data>
+  <data name="Skill.01010003.Description" xml:space="preserve"><value>暂时提高身体吸收伤害的能力</value></data>
+  <data name="Skill.01010003.Name" xml:space="preserve"><value>物理吸收</value></data>
+  <data name="Skill.01010004.Description" xml:space="preserve"><value>永久提高毒抗性</value></data>
+  <data name="Skill.01010004.Name" xml:space="preserve"><value>毒属性</value></data>
+  <data name="Skill.01020001.Description" xml:space="preserve"><value>将力量集中于一次强力打击</value></data>
+  <data name="Skill.01020001.Name" xml:space="preserve"><value>强力猛击</value></data>
+  <data name="Skill.01020002.Description" xml:space="preserve"><value>优化武器，永久提高攻击力</value></data>
+  <data name="Skill.01020002.Name" xml:space="preserve"><value>极限强化</value></data>
+  <data name="Skill.01020003.Description" xml:space="preserve"><value>使投射类武器自动化，暂时提高攻击速度和攻击力</value></data>
+  <data name="Skill.01020003.Name" xml:space="preserve"><value>自动化</value></data>
+  <data name="Skill.01020004.Description" xml:space="preserve"><value>以强力闪电攻击附近的敌人</value></data>
+  <data name="Skill.01020004.Name" xml:space="preserve"><value>电火花</value></data>
+  <data name="Skill.01040001.Description" xml:space="preserve"><value>在限定时间内提高机械师护甲的防御力。</value></data>
+  <data name="Skill.01040001.Name" xml:space="preserve"><value>金属护甲</value></data>
+  <data name="Skill.01040002.Description" xml:space="preserve"><value>对对手进行精准的连续攻击。提高攻击速度</value></data>
+  <data name="Skill.01040002.Name" xml:space="preserve"><value>终极猛击</value></data>
+  <data name="Skill.01040003.Description" xml:space="preserve"><value>以机械师的专长优化物品。</value></data>
+  <data name="Skill.01040003.Name" xml:space="preserve"><value>机械武器精通</value></data>
+  <data name="Skill.01040004.Description" xml:space="preserve"><value>形成一道无形的电力防护。</value></data>
+  <data name="Skill.01040004.Name" xml:space="preserve"><value>电光之盾</value></data>
+  <data name="Skill.01080001.Description" xml:space="preserve"><value>以强力一击的电流攻击附近的怪物。</value></data>
+  <data name="Skill.01080001.Name" xml:space="preserve"><value>冲动</value></data>
+  <data name="Skill.01080002.Description" xml:space="preserve"><value>以强力的呐喊聚集附近的怪物。</value></data>
+  <data name="Skill.01080002.Name" xml:space="preserve"><value>强制</value></data>
+  <data name="Skill.01080003.Description" xml:space="preserve"><value>在所选对象身上创造一个强大的磁力球。</value></data>
+  <data name="Skill.01080003.Name" xml:space="preserve"><value>磁力球</value></data>
+  <data name="Skill.01080004.Description" xml:space="preserve"><value>借助魔像战衣的坚固钢铁提高防御力和攻击速度。</value></data>
+  <data name="Skill.01080004.Name" xml:space="preserve"><value>金属魔像</value></data>
+  <data name="Skill.01100001.Description" xml:space="preserve"><value>迅速在附近布设地雷，攻击范围内的敌人。</value></data>
+  <data name="Skill.01100001.Name" xml:space="preserve"><value>地雷阵</value></data>
+  <data name="Skill.01100002.Description" xml:space="preserve"><value>暂时提高攻击速度。</value></data>
+  <data name="Skill.01100002.Name" xml:space="preserve"><value>超音速</value></data>
+  <data name="Skill.01100003.Description" xml:space="preserve"><value>4次强力攻击，造成致命伤害。</value></data>
+  <data name="Skill.01100003.Name" xml:space="preserve"><value>旋转猛击</value></data>
+  <data name="Skill.01100004.Description" xml:space="preserve"><value>提高自身的最小和最大攻击力，并提高队伍的最大攻击力。</value></data>
+  <data name="Skill.01100004.Name" xml:space="preserve"><value>力量增强</value></data>
+  <data name="Skill.02010001.Description" xml:space="preserve"><value>提高近战武器的使用效率，永久提高攻击力</value></data>
+  <data name="Skill.02010001.Name" xml:space="preserve"><value>近战精通</value></data>
+  <data name="Skill.02010002.Description" xml:space="preserve"><value>永久提高火抗性</value></data>
+  <data name="Skill.02010002.Name" xml:space="preserve"><value>火属性</value></data>
+  <data name="Skill.02010003.Description" xml:space="preserve"><value>短时间内进入狂暴状态，但每次攻击都会损失HP</value></data>
+  <data name="Skill.02010003.Name" xml:space="preserve"><value>狂暴</value></data>
+  <data name="Skill.02010004.Description" xml:space="preserve"><value>提高攻击速度，精准打击敌人</value></data>
+  <data name="Skill.02010004.Name" xml:space="preserve"><value>冲击</value></data>
+  <data name="Skill.02020001.Description" xml:space="preserve"><value>更强力的冲击版本</value></data>
+  <data name="Skill.02020001.Name" xml:space="preserve"><value>三重冲击</value></data>
+  <data name="Skill.02020002.Description" xml:space="preserve"><value>对敌人发出强力的致命一击</value></data>
+  <data name="Skill.02020002.Name" xml:space="preserve"><value>残暴挥击</value></data>
+  <data name="Skill.02020003.Description" xml:space="preserve"><value>发出震耳欲聋的咆哮，使敌人短暂昏迷并陷入混乱</value></data>
+  <data name="Skill.02020003.Name" xml:space="preserve"><value>咆哮</value></data>
+  <data name="Skill.02020004.Description" xml:space="preserve"><value>借用传说英雄泽克拉姆的能力</value></data>
+  <data name="Skill.02020004.Name" xml:space="preserve"><value>泽克拉姆之怒</value></data>
+  <data name="Skill.02040001.Description" xml:space="preserve"><value>暂时提高攻击速度。</value></data>
+  <data name="Skill.02040001.Name" xml:space="preserve"><value>集中</value></data>
+  <data name="Skill.02040002.Description" xml:space="preserve"><value>对对手进行粉碎性的强力攻击。</value></data>
+  <data name="Skill.02040002.Name" xml:space="preserve"><value>复仇重击</value></data>
+  <data name="Skill.02040003.Description" xml:space="preserve"><value>在限定时间内提高斧类武器的攻击速度。</value></data>
+  <data name="Skill.02040003.Name" xml:space="preserve"><value>迅捷之斧</value></data>
+  <data name="Skill.02040004.Description" xml:space="preserve"><value>先祖用来击败恶魔的招式。强力攻击，对对手连击两次。</value></data>
+  <data name="Skill.02040004.Name" xml:space="preserve"><value>碎骨击</value></data>
+  <data name="Skill.02080001.Description" xml:space="preserve"><value>对怪物最强的双重打击。</value></data>
+  <data name="Skill.02080001.Name" xml:space="preserve"><value>毁灭者</value></data>
+  <data name="Skill.02080002.Description" xml:space="preserve"><value>进入失控状态，但吸收力大幅下降</value></data>
+  <data name="Skill.02080002.Name" xml:space="preserve"><value>狂战士</value></data>
+  <data name="Skill.02080003.Description" xml:space="preserve"><value>以强力旋转攻击怪物。</value></data>
+  <data name="Skill.02080003.Name" xml:space="preserve"><value>旋风打击</value></data>
+  <data name="Skill.02080004.Description" xml:space="preserve"><value>永久提高HP。</value></data>
+  <data name="Skill.02080004.Name" xml:space="preserve"><value>强健体魄</value></data>
+  <data name="Skill.02100001.Description" xml:space="preserve"><value>将敌人击飞到空中，攻击3次。</value></data>
+  <data name="Skill.02100001.Name" xml:space="preserve"><value>下击</value></data>
+  <data name="Skill.02100002.Description" xml:space="preserve"><value>冲向对手并使其昏迷。</value></data>
+  <data name="Skill.02100002.Name" xml:space="preserve"><value>强力冲锋</value></data>
+  <data name="Skill.02100003.Description" xml:space="preserve"><value>以缓慢而有力的动作挥舞武器。</value></data>
+  <data name="Skill.02100003.Name" xml:space="preserve"><value>致命一击</value></data>
+  <data name="Skill.02100004.Description" xml:space="preserve"><value>降低吸收力以提高攻击伤害。</value></data>
+  <data name="Skill.02100004.Name" xml:space="preserve"><value>嗜血狂战士</value></data>
+  <data name="Skill.03010001.Description" xml:space="preserve"><value>制造一道旋风，击退并伤害敌人</value></data>
+  <data name="Skill.03010001.Name" xml:space="preserve"><value>长枪旋风</value></data>
+  <data name="Skill.03010002.Description" xml:space="preserve"><value>永久提高冰抗性</value></data>
+  <data name="Skill.03010002.Name" xml:space="preserve"><value>冰属性</value></data>
+  <data name="Skill.03010003.Description" xml:space="preserve"><value>瞄准敌人的弱点，提高暴击几率</value></data>
+  <data name="Skill.03010003.Name" xml:space="preserve"><value>致命一击</value></data>
+  <data name="Skill.03010004.Description" xml:space="preserve"><value>跃入空中，以强力一击落下</value></data>
+  <data name="Skill.03010004.Name" xml:space="preserve"><value>跳跃重击</value></data>
+  <data name="Skill.03020001.Description" xml:space="preserve"><value>赋予武器冰属性，发动强力攻击</value></data>
+  <data name="Skill.03020001.Name" xml:space="preserve"><value>刺地枪</value></data>
+  <data name="Skill.03020002.Description" xml:space="preserve"><value>召唤龙卷风攻击附近的敌人</value></data>
+  <data name="Skill.03020002.Name" xml:space="preserve"><value>龙卷风</value></data>
+  <data name="Skill.03020003.Description" xml:space="preserve"><value>永久提高使用长柄武器时的防御力</value></data>
+  <data name="Skill.03020003.Name" xml:space="preserve"><value>武器防御精通</value></data>
+  <data name="Skill.03020004.Description" xml:space="preserve"><value>赋予武器活力，发动毁灭性攻击</value></data>
+  <data name="Skill.03020004.Name" xml:space="preserve"><value>扩张</value></data>
+  <data name="Skill.03040001.Description" xml:space="preserve"><value>将长枪刺入地面，攻击对手。</value></data>
+  <data name="Skill.03040001.Name" xml:space="preserve"><value>毒液之矛</value></data>
+  <data name="Skill.03040002.Description" xml:space="preserve"><value>在限定时间内使自己隐身。</value></data>
+  <data name="Skill.03040002.Name" xml:space="preserve"><value>消失</value></data>
+  <data name="Skill.03040003.Description" xml:space="preserve"><value>永久提高暴击几率 (%)</value></data>
+  <data name="Skill.03040003.Name" xml:space="preserve"><value>暴击精通</value></data>
+  <data name="Skill.03040004.Description" xml:space="preserve"><value>3段旋转暴击攻击</value></data>
+  <data name="Skill.03040004.Name" xml:space="preserve"><value>连锁长枪</value></data>
+  <data name="Skill.03080001.Description" xml:space="preserve"><value>找出怪物的弱点并提高专注力。</value></data>
+  <data name="Skill.03080001.Name" xml:space="preserve"><value>刺客之眼</value></data>
+  <data name="Skill.03080002.Description" xml:space="preserve"><value>积蓄力量发动连续攻击。</value></data>
+  <data name="Skill.03080002.Name" xml:space="preserve"><value>蓄力打击</value></data>
+  <data name="Skill.03080003.Description" xml:space="preserve"><value>使身体变得模糊不清。</value></data>
+  <data name="Skill.03080003.Name" xml:space="preserve"><value>朦胧</value></data>
+  <data name="Skill.03080004.Description" xml:space="preserve"><value>残影接连对怪物造成强力伤害。</value></data>
+  <data name="Skill.03080004.Name" xml:space="preserve"><value>暗影大师</value></data>
+  <data name="Skill.03100001.Description" xml:space="preserve"><value>在空中垂直旋转，以强力一击落地。</value></data>
+  <data name="Skill.03100001.Name" xml:space="preserve"><value>舞动死神</value></data>
+  <data name="Skill.03100002.Description" xml:space="preserve"><value>巨大的长枪从地面刺出，攻击敌人。</value></data>
+  <data name="Skill.03100002.Name" xml:space="preserve"><value>终极之矛</value></data>
+  <data name="Skill.03100003.Description" xml:space="preserve"><value>降低吸收力以提高伤害和命中。</value></data>
+  <data name="Skill.03100003.Name" xml:space="preserve"><value>增幅</value></data>
+  <data name="Skill.03100004.Description" xml:space="preserve"><value>绕身旋转攻击，夺取敌人的生命。</value></data>
+  <data name="Skill.03100004.Name" xml:space="preserve"><value>侧旋攻击</value></data>
+  <data name="Skill.04010001.Description" xml:space="preserve"><value>召唤一只猎鹰警戒周围区域，提高攻击速度</value></data>
+  <data name="Skill.04010001.Name" xml:space="preserve"><value>侦察之鹰</value></data>
+  <data name="Skill.04010002.Description" xml:space="preserve"><value>永久提高使用弓和弩时的攻击力</value></data>
+  <data name="Skill.04010002.Name" xml:space="preserve"><value>射击精通</value></data>
+  <data name="Skill.04010003.Description" xml:space="preserve"><value>赋予箭矢风属性，提高攻击力</value></data>
+  <data name="Skill.04010003.Name" xml:space="preserve"><value>疾风之箭</value></data>
+  <data name="Skill.04010004.Description" xml:space="preserve"><value>进行提高攻击速度和攻击力的瞄准射击</value></data>
+  <data name="Skill.04010004.Name" xml:space="preserve"><value>完美瞄准</value></data>
+  <data name="Skill.04020001.Description" xml:space="preserve"><value>像传说中的弓箭手迪昂一样锻炼视力，永久提高攻击速度</value></data>
+  <data name="Skill.04020001.Name" xml:space="preserve"><value>迪昂之眼</value></data>
+  <data name="Skill.04020002.Description" xml:space="preserve"><value>召唤凶猛的猎鹰攻击附近的敌人</value></data>
+  <data name="Skill.04020002.Name" xml:space="preserve"><value>猎鹰</value></data>
+  <data name="Skill.04020003.Description" xml:space="preserve"><value>向所选区域射出一支箭，箭矢爆炸，火雨倾泻在敌人身上</value></data>
+  <data name="Skill.04020003.Name" xml:space="preserve"><value>愤怒之箭</value></data>
+  <data name="Skill.04020004.Description" xml:space="preserve"><value>向单一目标射出一连串穿刺箭矢</value></data>
+  <data name="Skill.04020004.Name" xml:space="preserve"><value>雪崩</value></data>
+  <data name="Skill.04040001.Description" xml:space="preserve"><value>对对手进行连续的元素攻击</value></data>
+  <data name="Skill.04040001.Name" xml:space="preserve"><value>元素射击</value></data>
+  <data name="Skill.04040002.Description" xml:space="preserve"><value>召唤一只猎鹰攻击对手</value></data>
+  <data name="Skill.04040002.Name" xml:space="preserve"><value>黄金猎鹰</value></data>
+  <data name="Skill.04040003.Description" xml:space="preserve"><value>发射两次爆炸箭矢。对对手造成范围伤害。</value></data>
+  <data name="Skill.04040003.Name" xml:space="preserve"><value>爆弹射击</value></data>
+  <data name="Skill.04040004.Description" xml:space="preserve"><value>精准的连续攻击，贯穿对手。</value></data>
+  <data name="Skill.04040004.Name" xml:space="preserve"><value>穿刺</value></data>
+  <data name="Skill.04080001.Description" xml:space="preserve"><value>召唤狼獾。</value></data>
+  <data name="Skill.04080001.Name" xml:space="preserve"><value>召唤狼獾</value></data>
+  <data name="Skill.04080002.Description" xml:space="preserve"><value>有效躲避敌人的攻击。</value></data>
+  <data name="Skill.04080002.Name" xml:space="preserve"><value>闪避精通</value></data>
+  <data name="Skill.04080003.Description" xml:space="preserve"><value>借助凤凰的能量发动大范围攻击。</value></data>
+  <data name="Skill.04080003.Name" xml:space="preserve"><value>凤凰射击</value></data>
+  <data name="Skill.04080004.Description" xml:space="preserve"><value>完美融入自然，提升自身能力。</value></data>
+  <data name="Skill.04080004.Name" xml:space="preserve"><value>自然之力</value></data>
+  <data name="Skill.04100001.Description" xml:space="preserve"><value>跃起并踢击敌人，使其昏迷。</value></data>
+  <data name="Skill.04100001.Name" xml:space="preserve"><value>闪避射击</value></data>
+  <data name="Skill.04100002.Description" xml:space="preserve"><value>射出两支电击箭矢，发动强力攻击。</value></data>
+  <data name="Skill.04100002.Name" xml:space="preserve"><value>雷霆之箭</value></data>
+  <data name="Skill.04100003.Description" xml:space="preserve"><value>为箭矢注入自然能量，形成漩涡。</value></data>
+  <data name="Skill.04100003.Name" xml:space="preserve"><value>自然飞溅</value></data>
+  <data name="Skill.04100004.Description" xml:space="preserve"><value>瞄准敌人的弱点，使其减速。</value></data>
+  <data name="Skill.04100004.Name" xml:space="preserve"><value>环形陷阱</value></data>
+  <data name="Skill.05010001.Description" xml:space="preserve"><value>投掷毁灭之剑攻击敌人</value></data>
+  <data name="Skill.05010001.Name" xml:space="preserve"><value>剑气爆破</value></data>
+  <data name="Skill.05010002.Description" xml:space="preserve"><value>变得神圣，提高对亡灵的吸收力。</value></data>
+  <data name="Skill.05010002.Name" xml:space="preserve"><value>神圣之体</value></data>
+  <data name="Skill.05010003.Description" xml:space="preserve"><value>通过体能训练永久提高耐力</value></data>
+  <data name="Skill.05010003.Name" xml:space="preserve"><value>体能训练</value></data>
+  <data name="Skill.05010004.Description" xml:space="preserve"><value>对敌人连续攻击2次。</value></data>
+  <data name="Skill.05010004.Name" xml:space="preserve"><value>双重重击</value></data>
+  <data name="Skill.05020001.Description" xml:space="preserve"><value>以勇敢的力量提高对亡灵的攻击力。</value></data>
+  <data name="Skill.05020001.Name" xml:space="preserve"><value>神圣勇气</value></data>
+  <data name="Skill.05020002.Description" xml:space="preserve"><value>攻击范围内的所有敌人。</value></data>
+  <data name="Skill.05020002.Name" xml:space="preserve"><value>挥舞</value></data>
+  <data name="Skill.05020003.Description" xml:space="preserve"><value>以强大的力量和精神斩杀众多敌人。</value></data>
+  <data name="Skill.05020003.Name" xml:space="preserve"><value>穿刺斩</value></data>
+  <data name="Skill.05020004.Description" xml:space="preserve"><value>在一段时间内提高防御力。</value></data>
+  <data name="Skill.05020004.Name" xml:space="preserve"><value>激昂斗志</value></data>
+  <data name="Skill.05040001.Description" xml:space="preserve"><value>永久提高使用剑类武器时的攻击力。</value></data>
+  <data name="Skill.05040001.Name" xml:space="preserve"><value>剑术精通</value></data>
+  <data name="Skill.05040002.Description" xml:space="preserve"><value>吸收亡灵怪物的攻击力并恢复HP。</value></data>
+  <data name="Skill.05040002.Name" xml:space="preserve"><value>神圣吸取</value></data>
+  <data name="Skill.05040003.Description" xml:space="preserve"><value>吸引怪物的神圣咒语。</value></data>
+  <data name="Skill.05040003.Name" xml:space="preserve"><value>神圣咒语</value></data>
+  <data name="Skill.05040004.Description" xml:space="preserve"><value>以致命的十字斩攻击对手。</value></data>
+  <data name="Skill.05040004.Name" xml:space="preserve"><value>大十字斩</value></data>
+  <data name="Skill.05080001.Description" xml:space="preserve"><value>身体后仰，以强大的力量向下挥击。</value></data>
+  <data name="Skill.05080001.Name" xml:space="preserve"><value>正义之剑</value></data>
+  <data name="Skill.05080002.Description" xml:space="preserve"><value>创造一面受神祝福的神圣之盾</value></data>
+  <data name="Skill.05080002.Name" xml:space="preserve"><value>神圣之盾</value></data>
+  <data name="Skill.05080003.Description" xml:space="preserve"><value>奉神之名，赋予圣骑士的强大力量。</value></data>
+  <data name="Skill.05080003.Name" xml:space="preserve"><value>神之祝福</value></data>
+  <data name="Skill.05080004.Description" xml:space="preserve"><value>以神的力量攻击怪物，以无敌的剑舞。</value></data>
+  <data name="Skill.05080004.Name" xml:space="preserve"><value>神圣穿刺</value></data>
+  <data name="Skill.05100001.Description" xml:space="preserve"><value>对敌人的灵魂发动强力攻击。</value></data>
+  <data name="Skill.05100001.Name" xml:space="preserve"><value>灵魂粉碎</value></data>
+  <data name="Skill.05100002.Description" xml:space="preserve"><value>冲向附近的敌人，划出半月形斩击。</value></data>
+  <data name="Skill.05100002.Name" xml:space="preserve"><value>新月斩</value></data>
+  <data name="Skill.05100003.Description" xml:space="preserve"><value>将神圣之力注入剑中攻击对手。</value></data>
+  <data name="Skill.05100003.Name" xml:space="preserve"><value>圣剑</value></data>
+  <data name="Skill.05100004.Description" xml:space="preserve"><value>获得对亡灵怪物造成额外伤害的能力。</value></data>
+  <data name="Skill.05100004.Name" xml:space="preserve"><value>神圣祝福</value></data>
+  <data name="Skill.06010001.Description" xml:space="preserve"><value>投掷盾牌攻击敌人。</value></data>
+  <data name="Skill.06010001.Name" xml:space="preserve"><value>盾击</value></data>
+  <data name="Skill.06010002.Description" xml:space="preserve"><value>投掷能制造幻象的长矛</value></data>
+  <data name="Skill.06010002.Name" xml:space="preserve"><value>法里纳</value></data>
+  <data name="Skill.06010003.Description" xml:space="preserve"><value>锻炼投矛攻击，永久提高伤害。</value></data>
+  <data name="Skill.06010003.Name" xml:space="preserve"><value>投掷精通</value></data>
+  <data name="Skill.06010004.Description" xml:space="preserve"><value>以神圣标枪攻击敌人。</value></data>
+  <data name="Skill.06010004.Name" xml:space="preserve"><value>巨矛</value></data>
+  <data name="Skill.06020001.Description" xml:space="preserve"><value>提高标枪的射程和攻击速度。</value></data>
+  <data name="Skill.06020001.Name" xml:space="preserve"><value>疾风</value></data>
+  <data name="Skill.06020002.Description" xml:space="preserve"><value>通过扭转提高攻击速度和攻击力。</value></data>
+  <data name="Skill.06020002.Name" xml:space="preserve"><value>扭转标枪</value></data>
+  <data name="Skill.06020003.Description" xml:space="preserve"><value>吸取敌人的生命。</value></data>
+  <data name="Skill.06020003.Name" xml:space="preserve"><value>灵魂吸取</value></data>
+  <data name="Skill.06020004.Description" xml:space="preserve"><value>以火焰之力攻击敌人。</value></data>
+  <data name="Skill.06020004.Name" xml:space="preserve"><value>火焰标枪</value></data>
+  <data name="Skill.06040001.Description" xml:space="preserve"><value>以极高的速度对对手进行连续攻击。</value></data>
+  <data name="Skill.06040001.Name" xml:space="preserve"><value>分裂标枪</value></data>
+  <data name="Skill.06040002.Description" xml:space="preserve"><value>提高队伍成员的攻击伤害。</value></data>
+  <data name="Skill.06040002.Name" xml:space="preserve"><value>瓦尔哈拉的凯旋</value></data>
+  <data name="Skill.06040003.Description" xml:space="preserve"><value>提高标枪的雷元素伤害。</value></data>
+  <data name="Skill.06040003.Name" xml:space="preserve"><value>闪电标枪</value></data>
+  <data name="Skill.06040004.Description" xml:space="preserve"><value>对敌人发动强力的龙卷风攻击。</value></data>
+  <data name="Skill.06040004.Name" xml:space="preserve"><value>风暴标枪</value></data>
+  <data name="Skill.06080001.Description" xml:space="preserve"><value>以瓦尔哈拉之力创造一片空间。</value></data>
+  <data name="Skill.06080001.Name" xml:space="preserve"><value>瓦尔哈拉大厅</value></data>
+  <data name="Skill.06080002.Description" xml:space="preserve"><value>以愤怒之力高高跃起攻击敌人。</value></data>
+  <data name="Skill.06080002.Name" xml:space="preserve"><value>X怒击</value></data>
+  <data name="Skill.06080003.Description" xml:space="preserve"><value>激活期间，在一段时间内提高自身的冰系能力。</value></data>
+  <data name="Skill.06080003.Name" xml:space="preserve"><value>冰霜标枪</value></data>
+  <data name="Skill.06080004.Description" xml:space="preserve"><value>快速连续的攻击。</value></data>
+  <data name="Skill.06080004.Name" xml:space="preserve"><value>复仇</value></data>
+  <data name="Skill.06100001.Description" xml:space="preserve"><value>使身体变得轻盈迅捷。</value></data>
+  <data name="Skill.06100001.Name" xml:space="preserve"><value>塔拉里亚</value></data>
+  <data name="Skill.06100002.Description" xml:space="preserve"><value>借瓦尔哈拉的能量召唤直指敌人心脏的标枪，并将其刺入地面。</value></data>
+  <data name="Skill.06100002.Name" xml:space="preserve"><value>银河政变</value></data>
+  <data name="Skill.06100003.Description" xml:space="preserve"><value>召唤阿尔库达。</value></data>
+  <data name="Skill.06100003.Name" xml:space="preserve"><value>召唤阿尔库达</value></data>
+  <data name="Skill.06100004.Description" xml:space="preserve"><value>连续投掷2支标枪，造成暴击。</value></data>
+  <data name="Skill.06100004.Name" xml:space="preserve"><value>凶险恐惧</value></data>
+  <data name="Skill.07010001.Description" xml:space="preserve"><value>以神圣魔法恢复生命。</value></data>
+  <data name="Skill.07010001.Name" xml:space="preserve"><value>治疗</value></data>
+  <data name="Skill.07010002.Description" xml:space="preserve"><value>向敌人投掷神圣闪电。</value></data>
+  <data name="Skill.07010002.Name" xml:space="preserve"><value>神圣闪电</value></data>
+  <data name="Skill.07010003.Description" xml:space="preserve"><value>释放魔法火花攻击敌人。</value></data>
+  <data name="Skill.07010003.Name" xml:space="preserve"><value>多重火花</value></data>
+  <data name="Skill.07010004.Description" xml:space="preserve"><value>在一段时间内削弱敌人的攻击。</value></data>
+  <data name="Skill.07010004.Name" xml:space="preserve"><value>神圣心灵</value></data>
+  <data name="Skill.07020001.Description" xml:space="preserve"><value>永久提高魔力恢复。</value></data>
+  <data name="Skill.07020001.Name" xml:space="preserve"><value>冥想</value></data>
+  <data name="Skill.07020002.Description" xml:space="preserve"><value>以神圣闪电攻击敌人。</value></data>
+  <data name="Skill.07020002.Name" xml:space="preserve"><value>神圣雷电</value></data>
+  <data name="Skill.07020003.Description" xml:space="preserve"><value>制造神圣魔法护盾，反射亡灵的攻击。</value></data>
+  <data name="Skill.07020003.Name" xml:space="preserve"><value>神圣反射</value></data>
+  <data name="Skill.07020004.Description" xml:space="preserve"><value>恢复一名队伍成员的生命。</value></data>
+  <data name="Skill.07020004.Name" xml:space="preserve"><value>强效治疗</value></data>
+  <data name="Skill.07040001.Description" xml:space="preserve"><value>向对手连续发射两枚活力球。</value></data>
+  <data name="Skill.07040001.Name" xml:space="preserve"><value>活力球</value></data>
+  <data name="Skill.07040002.Description" xml:space="preserve"><value>复活一名死亡的队伍成员。</value></data>
+  <data name="Skill.07040002.Name" xml:space="preserve"><value>复活</value></data>
+  <data name="Skill.07040003.Description" xml:space="preserve"><value>针对亡灵怪物的致命咒语。对亡灵造成永久伤害。</value></data>
+  <data name="Skill.07040003.Name" xml:space="preserve"><value>灭绝</value></data>
+  <data name="Skill.07040004.Description" xml:space="preserve"><value>在一段时间内提高队伍成员的生命。</value></data>
+  <data name="Skill.07040004.Name" xml:space="preserve"><value>虚拟生命</value></data>
+  <data name="Skill.07080001.Description" xml:space="preserve"><value>投出巨大的冰块攻击敌人。</value></data>
+  <data name="Skill.07080001.Name" xml:space="preserve"><value>冰川尖刺</value></data>
+  <data name="Skill.07080002.Description" xml:space="preserve"><value>牺牲自己后，持续恢复你的同伴。</value></data>
+  <data name="Skill.07080002.Name" xml:space="preserve"><value>再生领域</value></data>
+  <data name="Skill.07080003.Description" xml:space="preserve"><value>以强力雷电攻击怪物。</value></data>
+  <data name="Skill.07080003.Name" xml:space="preserve"><value>连锁闪电</value></data>
+  <data name="Skill.07080004.Description" xml:space="preserve"><value>吸收亡灵怪物的攻击，恢复HP，并拥有召唤师的能力。</value></data>
+  <data name="Skill.07080004.Name" xml:space="preserve"><value>召唤穆斯佩尔</value></data>
+  <data name="Skill.07100001.Description" xml:space="preserve"><value>向附近的敌人释放强大的冲击波。</value></data>
+  <data name="Skill.07100001.Name" xml:space="preserve"><value>灵魂冲击</value></data>
+  <data name="Skill.07100002.Description" xml:space="preserve"><value>召唤锋利的冰枪攻击敌人。</value></data>
+  <data name="Skill.07100002.Name" xml:space="preserve"><value>穿刺冰锥</value></data>
+  <data name="Skill.07100003.Description" xml:space="preserve"><value>召唤一位擅长雷电攻击的天使。</value></data>
+  <data name="Skill.07100003.Name" xml:space="preserve"><value>召唤拉米尔</value></data>
+  <data name="Skill.07100004.Description" xml:space="preserve"><value>借助神的恩典提高自身的防御力和吸收力。</value></data>
+  <data name="Skill.07100004.Name" xml:space="preserve"><value>克里希纳的祝福</value></data>
+  <data name="Skill.08010001.Description" xml:space="preserve"><value>牺牲自己以提升精神。</value></data>
+  <data name="Skill.08010001.Name" xml:space="preserve"><value>痛苦</value></data>
+  <data name="Skill.08010002.Description" xml:space="preserve"><value>降下小型火球攻击敌人</value></data>
+  <data name="Skill.08010002.Name" xml:space="preserve"><value>火焰箭</value></data>
+  <data name="Skill.08010003.Description" xml:space="preserve"><value>以强大的精神在一段时间内增强元素属性。</value></data>
+  <data name="Skill.08010003.Name" xml:space="preserve"><value>天顶</value></data>
+  <data name="Skill.08010004.Description" xml:space="preserve"><value>降下巨大的火球攻击敌人</value></data>
+  <data name="Skill.08010004.Name" xml:space="preserve"><value>火球术</value></data>
+  <data name="Skill.08020001.Description" xml:space="preserve"><value>提高最大魔力</value></data>
+  <data name="Skill.08020001.Name" xml:space="preserve"><value>精神精通</value></data>
+  <data name="Skill.08020002.Description" xml:space="preserve"><value>水柱冲击敌人</value></data>
+  <data name="Skill.08020002.Name" xml:space="preserve"><value>水龙卷</value></data>
+  <data name="Skill.08020003.Description" xml:space="preserve"><value>强化一名队伍成员武器上的攻击属性</value></data>
+  <data name="Skill.08020003.Name" xml:space="preserve"><value>附魔武器</value></data>
+  <data name="Skill.08020004.Description" xml:space="preserve"><value>从手掌发射强力光线</value></data>
+  <data name="Skill.08020004.Name" xml:space="preserve"><value>死亡射线</value></data>
+  <data name="Skill.08040001.Description" xml:space="preserve"><value>在身体周围形成魔法护盾</value></data>
+  <data name="Skill.08040001.Name" xml:space="preserve"><value>能量护盾</value></data>
+  <data name="Skill.08040002.Description" xml:space="preserve"><value>对范围内的对手发动强力的大地攻击。</value></data>
+  <data name="Skill.08040002.Name" xml:space="preserve"><value>地壳变动</value></data>
+  <data name="Skill.08040003.Description" xml:space="preserve"><value>召唤幽灵以提高魔法伤害</value></data>
+  <data name="Skill.08040003.Name" xml:space="preserve"><value>精灵元素</value></data>
+  <data name="Skill.08040004.Description" xml:space="preserve"><value>幽灵之剑现身，借助元素之力攻击敌人。</value></data>
+  <data name="Skill.08040004.Name" xml:space="preserve"><value>舞动之剑</value></data>
+  <data name="Skill.08080001.Description" xml:space="preserve"><value>召唤由火焰构成的强大元素生物。</value></data>
+  <data name="Skill.08080001.Name" xml:space="preserve"><value>火元素</value></data>
+  <data name="Skill.08080002.Description" xml:space="preserve"><value>以强力火焰攻击前方的怪物。</value></data>
+  <data name="Skill.08080002.Name" xml:space="preserve"><value>烈焰波</value></data>
+  <data name="Skill.08080003.Description" xml:space="preserve"><value>以空间扭曲削弱怪物的能力。</value></data>
+  <data name="Skill.08080003.Name" xml:space="preserve"><value>扭曲</value></data>
+  <data name="Skill.08080004.Description" xml:space="preserve"><value>以召唤的陨石攻击附近的怪物。</value></data>
+  <data name="Skill.08080004.Name" xml:space="preserve"><value>陨石</value></data>
+  <data name="Skill.08100001.Description" xml:space="preserve"><value>借助希尔拉芬之力攻击附近的敌人。</value></data>
+  <data name="Skill.08100001.Name" xml:space="preserve"><value>希尔拉芬</value></data>
+  <data name="Skill.08100002.Description" xml:space="preserve"><value>使敌人缩小，降低其HP和伤害。</value></data>
+  <data name="Skill.08100002.Name" xml:space="preserve"><value>缩小术</value></data>
+  <data name="Skill.08100003.Description" xml:space="preserve"><value>召唤原初火球，发动强力攻击。</value></data>
+  <data name="Skill.08100003.Name" xml:space="preserve"><value>始源之火</value></data>
+  <data name="Skill.08100004.Description" xml:space="preserve"><value>降低自身最大MP以提高魔法攻击力。</value></data>
+  <data name="Skill.08100004.Name" xml:space="preserve"><value>第三灵魂</value></data>
+  <data name="Skill.10010001.Description" xml:space="preserve"><value>直冲敌人并造成伤害。</value></data>
+  <data name="Skill.10010001.Name" xml:space="preserve"><value>毒刺</value></data>
+  <data name="Skill.10010002.Description" xml:space="preserve"><value>旋转时对敌人持续造成伤害</value></data>
+  <data name="Skill.10010002.Name" xml:space="preserve"><value>疾走打击</value></data>
+  <data name="Skill.10010003.Description" xml:space="preserve"><value>永久提高匕首类武器的基础攻击力</value></data>
+  <data name="Skill.10010003.Name" xml:space="preserve"><value>双持精通</value></data>
+  <data name="Skill.10010004.Description" xml:space="preserve"><value>在一段时间内降低目标敌人的伤害</value></data>
+  <data name="Skill.10010004.Name" xml:space="preserve"><value>鬼火</value></data>
+  <data name="Skill.10020001.Description" xml:space="preserve"><value>以淬毒武器快速攻击敌人两次。</value></data>
+  <data name="Skill.10020001.Name" xml:space="preserve"><value>毒荆棘</value></data>
+  <data name="Skill.10020002.Description" xml:space="preserve"><value>分享刺客的敏捷，提高队伍的闪避。</value></data>
+  <data name="Skill.10020002.Name" xml:space="preserve"><value>翼</value></data>
+  <data name="Skill.10020003.Description" xml:space="preserve"><value>将匕首刺入地面，使附近的敌人昏迷。</value></data>
+  <data name="Skill.10020003.Name" xml:space="preserve"><value>灵魂震击</value></data>
+  <data name="Skill.10020004.Description" xml:space="preserve"><value>永久提高命中和闪避。</value></data>
+  <data name="Skill.10020004.Name" xml:space="preserve"><value>攻击精通</value></data>
+  <data name="Skill.10040001.Description" xml:space="preserve"><value>进退突击，对敌人造成沉重伤害。</value></data>
+  <data name="Skill.10040001.Name" xml:space="preserve"><value>痛刃</value></data>
+  <data name="Skill.10040002.Description" xml:space="preserve"><value>跃向敌人，向附近的敌人释放能量波。</value></data>
+  <data name="Skill.10040002.Name" xml:space="preserve"><value>疾风斩</value></data>
+  <data name="Skill.10040003.Description" xml:space="preserve"><value>将气凝聚于体内，提高攻击速度。</value></data>
+  <data name="Skill.10040003.Name" xml:space="preserve"><value>凝气</value></data>
+  <data name="Skill.10040004.Description" xml:space="preserve"><value>隐身于暗影之中，对命中的下一个敌人造成沉重伤害。</value></data>
+  <data name="Skill.10040004.Name" xml:space="preserve"><value>致盲</value></data>
+  <data name="Skill.10080001.Description" xml:space="preserve"><value>将风注入刀刃，对敌人斩击两次。</value></data>
+  <data name="Skill.10080001.Name" xml:space="preserve"><value>致残</value></data>
+  <data name="Skill.10080002.Description" xml:space="preserve"><value>装备匕首时提高暴击几率。</value></data>
+  <data name="Skill.10080002.Name" xml:space="preserve"><value>刺客精通</value></data>
+  <data name="Skill.10080003.Description" xml:space="preserve"><value>向四周释放毒波，使附近的敌人中毒。</value></data>
+  <data name="Skill.10080003.Name" xml:space="preserve"><value>污染</value></data>
+  <data name="Skill.10080004.Description" xml:space="preserve"><value>快速移动，以自身的影子击打敌人。</value></data>
+  <data name="Skill.10080004.Name" xml:space="preserve"><value>忍者之影</value></data>
+  <data name="Skill.10100001.Description" xml:space="preserve"><value>隐入阴影，以巨大的火焰造成范围伤害。</value></data>
+  <data name="Skill.10100001.Name" xml:space="preserve"><value>暗影炸弹</value></data>
+  <data name="Skill.10100002.Description" xml:space="preserve"><value>原地跃起，借助重力的能量斩击敌人。</value></data>
+  <data name="Skill.10100002.Name" xml:space="preserve"><value>上升斩</value></data>
+  <data name="Skill.10100003.Description" xml:space="preserve"><value>反复踢击敌人造成伤害。</value></data>
+  <data name="Skill.10100003.Name" xml:space="preserve"><value>猛烈刺击</value></data>
+  <data name="Skill.10100004.Description" xml:space="preserve"><value>飞向空中造成大量伤害。</value></data>
+  <data name="Skill.10100004.Name" xml:space="preserve"><value>风暴</value></data>
+  <data name="Skill.20010001.Description" xml:space="preserve"><value>以右脚快速踢击。</value></data>
+  <data name="Skill.20010001.Name" xml:space="preserve"><value>低踢</value></data>
+  <data name="Skill.20010002.Description" xml:space="preserve"><value>通过严格训练永久提高攻击力。</value></data>
+  <data name="Skill.20010002.Name" xml:space="preserve"><value>力量精通</value></data>
+  <data name="Skill.20010003.Description" xml:space="preserve"><value>借助离心力连续出拳，对敌人造成致命伤害。</value></data>
+  <data name="Skill.20010003.Name" xml:space="preserve"><value>双重回旋击</value></data>
+  <data name="Skill.20010004.Description" xml:space="preserve"><value>将力量集中于右臂，发动强力一击。</value></data>
+  <data name="Skill.20010004.Name" xml:space="preserve"><value>超级重拳</value></data>
+  <data name="Skill.20020001.Description" xml:space="preserve"><value>在愤怒的驱使下，暂时提高攻击速度。</value></data>
+  <data name="Skill.20020001.Name" xml:space="preserve"><value>愤怒</value></data>
+  <data name="Skill.20020002.Description" xml:space="preserve"><value>跃入空中，旋转并以双脚猛力打击。</value></data>
+  <data name="Skill.20020002.Name" xml:space="preserve"><value>旋风踢</value></data>
+  <data name="Skill.20020003.Description" xml:space="preserve"><value>以手肘冲锋，向附近的敌人释放力量波。</value></data>
+  <data name="Skill.20020003.Name" xml:space="preserve"><value>肘击冲刺</value></data>
+  <data name="Skill.20020004.Description" xml:space="preserve"><value>通过持续训练永久提高耐力和命中。</value></data>
+  <data name="Skill.20020004.Name" xml:space="preserve"><value>耐力精通</value></data>
+  <data name="Skill.20040001.Description" xml:space="preserve"><value>暂时提高HP以避免死亡。</value></data>
+  <data name="Skill.20040001.Name" xml:space="preserve"><value>深呼吸</value></data>
+  <data name="Skill.20040002.Description" xml:space="preserve"><value>释放能量流，对一名敌人造成致命伤害。</value></data>
+  <data name="Skill.20040002.Name" xml:space="preserve"><value>猛虎炮</value></data>
+  <data name="Skill.20040003.Description" xml:space="preserve"><value>聚集能量发出强力呐喊，削弱附近敌人的能力。</value></data>
+  <data name="Skill.20040003.Name" xml:space="preserve"><value>战吼</value></data>
+  <data name="Skill.20040004.Description" xml:space="preserve"><value>在空中快速跃起并飞身落下，对敌人造成两次持续的大量伤害。</value></data>
+  <data name="Skill.20040004.Name" xml:space="preserve"><value>飞跃猛击</value></data>
+  <data name="Skill.20080001.Description" xml:space="preserve"><value>用拳头对目标连续攻击4次。</value></data>
+  <data name="Skill.20080001.Name" xml:space="preserve"><value>连环拳</value></data>
+  <data name="Skill.20080002.Description" xml:space="preserve"><value>暂时提高防御力。</value></data>
+  <data name="Skill.20080002.Name" xml:space="preserve"><value>钢铁意志</value></data>
+  <data name="Skill.20080003.Description" xml:space="preserve"><value>向前冲刺，用肩膀撞击敌人两次。</value></data>
+  <data name="Skill.20080003.Name" xml:space="preserve"><value>肩撞冲锋</value></data>
+  <data name="Skill.20080004.Description" xml:space="preserve"><value>连续3脚踢击，对敌人造成致命伤害。</value></data>
+  <data name="Skill.20080004.Name" xml:space="preserve"><value>台风踢</value></data>
+  <data name="Skill.20100001.Description" xml:space="preserve"><value>永久提高防御力。</value></data>
+  <data name="Skill.20100001.Name" xml:space="preserve"><value>防御精通</value></data>
+  <data name="Skill.20100002.Description" xml:space="preserve"><value>跃入空中，踢击敌人三次。</value></data>
+  <data name="Skill.20100002.Name" xml:space="preserve"><value>猎鹰击</value></data>
+  <data name="Skill.20100003.Description" xml:space="preserve"><value>跃入空中并两次猛击地面，对附近的敌人造成伤害。</value></data>
+  <data name="Skill.20100003.Name" xml:space="preserve"><value>断线击</value></data>
+  <data name="Skill.20100004.Description" xml:space="preserve"><value>鼓舞队伍成员，使他们更加强大。</value></data>
+  <data name="Skill.20100004.Name" xml:space="preserve"><value>严格训练</value></data>
+  <data name="Skill.50010001.Description" xml:space="preserve"><value>以巫术创造的强力暗黑魔法光束击中敌人</value></data>
+  <data name="Skill.50010001.Name" xml:space="preserve"><value>暗黑之箭</value></data>
+  <data name="Skill.50010002.Description" xml:space="preserve"><value>以强力暗黑魔法光束连续发动范围攻击</value></data>
+  <data name="Skill.50010002.Name" xml:space="preserve"><value>暗黑之波</value></data>
+  <data name="Skill.50010003.Description" xml:space="preserve"><value>对敌人施加诅咒，使其暂时减速</value></data>
+  <data name="Skill.50010003.Name" xml:space="preserve"><value>迟缓</value></data>
+  <data name="Skill.50010004.Description" xml:space="preserve"><value>通过精神训练，永久提高MP药水的恢复量和魔力容量</value></data>
+  <data name="Skill.50010004.Name" xml:space="preserve"><value>内心平静</value></data>
+  <data name="Skill.50020001.Description" xml:space="preserve"><value>使用强大的巫术对敌人及附近目标造成伤害。</value></data>
+  <data name="Skill.50020001.Name" xml:space="preserve"><value>灵魂烈焰</value></data>
+  <data name="Skill.50020002.Description" xml:space="preserve"><value>以巫术束缚目标的灵魂。</value></data>
+  <data name="Skill.50020002.Name" xml:space="preserve"><value>灵魂枷锁</value></data>
+  <data name="Skill.50020003.Description" xml:space="preserve"><value>将附近的敌人聚集到一处。</value></data>
+  <data name="Skill.50020003.Name" xml:space="preserve"><value>猎捕</value></data>
+  <data name="Skill.50020004.Description" xml:space="preserve"><value>召唤米加尔，提高自身和队伍成员的攻击伤害。</value></data>
+  <data name="Skill.50020004.Name" xml:space="preserve"><value>米加尔降临</value></data>
+  <data name="Skill.50040001.Description" xml:space="preserve"><value>以最大魔力为代价提高吸收力。</value></data>
+  <data name="Skill.50040001.Name" xml:space="preserve"><value>造雨者</value></data>
+  <data name="Skill.50040002.Description" xml:space="preserve"><value>降下受诅咒的幽灵，对附近的敌人造成大量伤害。</value></data>
+  <data name="Skill.50040002.Name" xml:space="preserve"><value>幻影召唤</value></data>
+  <data name="Skill.50040003.Description" xml:space="preserve"><value>借助幽灵之力伤害敌人并吸取其生命。</value></data>
+  <data name="Skill.50040003.Name" xml:space="preserve"><value>作祟</value></data>
+  <data name="Skill.50040004.Description" xml:space="preserve"><value>以召唤出的幽灵之爪造成伤害。</value></data>
+  <data name="Skill.50040004.Name" xml:space="preserve"><value>抓挠</value></data>
+  <data name="Skill.50080001.Description" xml:space="preserve"><value>召唤一名被巫术诅咒的血腥骑士。</value></data>
+  <data name="Skill.50080001.Name" xml:space="preserve"><value>召唤赫斯提安</value></data>
+  <data name="Skill.50080002.Description" xml:space="preserve"><value>向敌人射出一道黑暗洪流造成伤害。</value></data>
+  <data name="Skill.50080002.Name" xml:space="preserve"><value>审判</value></data>
+  <data name="Skill.50080003.Description" xml:space="preserve"><value>召唤米兰达，提高自身和队伍成员的攻击速度。</value></data>
+  <data name="Skill.50080003.Name" xml:space="preserve"><value>米兰达降临</value></data>
+  <data name="Skill.50080004.Description" xml:space="preserve"><value>借助米兰达和米加尔之力，对附近的敌人造成伤害。</value></data>
+  <data name="Skill.50080004.Name" xml:space="preserve"><value>哀悼祈祷</value></data>
+  <data name="Skill.50100001.Description" xml:space="preserve"><value>以强大的巫术赋予使用者额外魔力。</value></data>
+  <data name="Skill.50100001.Name" xml:space="preserve"><value>信条</value></data>
+  <data name="Skill.50100002.Description" xml:space="preserve"><value>对附近的敌人造成诅咒伤害。</value></data>
+  <data name="Skill.50100002.Name" xml:space="preserve"><value>神威之压</value></data>
+  <data name="Skill.50100003.Description" xml:space="preserve"><value>召唤大地之灵攻击敌人。</value></data>
+  <data name="Skill.50100003.Name" xml:space="preserve"><value>幽灵之爪</value></data>
+  <data name="Skill.50100004.Description" xml:space="preserve"><value>借助巫术之力永久提高生命。</value></data>
+  <data name="Skill.50100004.Name" xml:space="preserve"><value>强效再生</value></data>
+</root>

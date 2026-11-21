@@ -1,0 +1,617 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Castle.BC101.Effect" xml:space="preserve"><value>一定時間無敵になるが、攻撃力が半減する</value></data>
+  <data name="Castle.BC102.Effect" xml:space="preserve"><value>クリティカル率 +5%</value></data>
+  <data name="Castle.BC103.Effect" xml:space="preserve"><value>回避率 +5%</value></data>
+  <data name="Castle.BC106.Effect" xml:space="preserve"><value>ファイアクリスタルタワーの攻撃を50%無効化</value></data>
+  <data name="Castle.BC107.Effect" xml:space="preserve"><value>アイスクリスタルタワーの攻撃を50%無効化</value></data>
+  <data name="Castle.BC108.Effect" xml:space="preserve"><value>ライトニングクリスタルタワーの攻撃を50%無効化</value></data>
+  <data name="Castle.BC109.Effect" xml:space="preserve"><value>ファイターへの攻撃時ダメージ +20%</value></data>
+  <data name="Castle.BC110.Effect" xml:space="preserve"><value>メカニシャンへの攻撃時ダメージ +20%</value></data>
+  <data name="Castle.BC111.Effect" xml:space="preserve"><value>パイクマンへの攻撃時ダメージ +20%</value></data>
+  <data name="Castle.BC112.Effect" xml:space="preserve"><value>アーチャーへの攻撃時ダメージ +20%</value></data>
+  <data name="Castle.BC113.Effect" xml:space="preserve"><value>ナイトへの攻撃時ダメージ +20%</value></data>
+  <data name="Castle.BC114.Effect" xml:space="preserve"><value>アタランタへの攻撃時ダメージ +20%</value></data>
+  <data name="Castle.BC115.Effect" xml:space="preserve"><value>マジシャンへの攻撃時ダメージ +20%</value></data>
+  <data name="Castle.BC116.Effect" xml:space="preserve"><value>プリーステスへの攻撃時ダメージ +20%</value></data>
+  <data name="Class.Archer.0" xml:space="preserve"><value>アーチャー</value></data>
+  <data name="Class.Archer.1" xml:space="preserve"><value>ハントレスマスター</value></data>
+  <data name="Class.Archer.2" xml:space="preserve"><value>ディオンの弟子</value></data>
+  <data name="Class.Archer.3" xml:space="preserve"><value>サジタリオン</value></data>
+  <data name="Class.Archer.4" xml:space="preserve"><value>イスカー</value></data>
+  <data name="Class.Assassin.0" xml:space="preserve"><value>アサシン</value></data>
+  <data name="Class.Assassin.1" xml:space="preserve"><value>ローグ</value></data>
+  <data name="Class.Assassin.2" xml:space="preserve"><value>シャドウ</value></data>
+  <data name="Class.Assassin.3" xml:space="preserve"><value>シャドウウォーカー</value></data>
+  <data name="Class.Assassin.4" xml:space="preserve"><value>シャドウマスター</value></data>
+  <data name="Class.Atalanta.0" xml:space="preserve"><value>アタランタ</value></data>
+  <data name="Class.Atalanta.1" xml:space="preserve"><value>ヴァルキリー</value></data>
+  <data name="Class.Atalanta.2" xml:space="preserve"><value>ブリュンヒルド</value></data>
+  <data name="Class.Atalanta.3" xml:space="preserve"><value>ヴァルハラ</value></data>
+  <data name="Class.Atalanta.4" xml:space="preserve"><value>ヴァルハラの女王</value></data>
+  <data name="Class.Fighter.0" xml:space="preserve"><value>ファイター</value></data>
+  <data name="Class.Fighter.1" xml:space="preserve"><value>ウォリアー</value></data>
+  <data name="Class.Fighter.2" xml:space="preserve"><value>チャンピオン</value></data>
+  <data name="Class.Fighter.3" xml:space="preserve"><value>イモータルウォリアー</value></data>
+  <data name="Class.Fighter.4" xml:space="preserve"><value>ウォーロード</value></data>
+  <data name="Class.Knight.0" xml:space="preserve"><value>ナイト</value></data>
+  <data name="Class.Knight.1" xml:space="preserve"><value>パラディン</value></data>
+  <data name="Class.Knight.2" xml:space="preserve"><value>ホーリーナイト</value></data>
+  <data name="Class.Knight.3" xml:space="preserve"><value>セイントナイト</value></data>
+  <data name="Class.Knight.4" xml:space="preserve"><value>ヴァリアント</value></data>
+  <data name="Class.Magician.0" xml:space="preserve"><value>マジシャン</value></data>
+  <data name="Class.Magician.1" xml:space="preserve"><value>ウィザード</value></data>
+  <data name="Class.Magician.2" xml:space="preserve"><value>ロイヤルウィザード</value></data>
+  <data name="Class.Magician.3" xml:space="preserve"><value>アークメイジ</value></data>
+  <data name="Class.Magician.4" xml:space="preserve"><value>エレメンタルマスター</value></data>
+  <data name="Class.MartialArtist.0" xml:space="preserve"><value>マーシャルアーティスト</value></data>
+  <data name="Class.MartialArtist.1" xml:space="preserve"><value>ストライカー</value></data>
+  <data name="Class.MartialArtist.2" xml:space="preserve"><value>トリックアーティスト</value></data>
+  <data name="Class.MartialArtist.3" xml:space="preserve"><value>マスター</value></data>
+  <data name="Class.MartialArtist.4" xml:space="preserve"><value>グランドマスター</value></data>
+  <data name="Class.Mechanician.0" xml:space="preserve"><value>メカニシャン</value></data>
+  <data name="Class.Mechanician.1" xml:space="preserve"><value>メカニックマスター</value></data>
+  <data name="Class.Mechanician.2" xml:space="preserve"><value>メタルリーダー</value></data>
+  <data name="Class.Mechanician.3" xml:space="preserve"><value>メタリオン</value></data>
+  <data name="Class.Mechanician.4" xml:space="preserve"><value>メタルレイジ</value></data>
+  <data name="Class.Pikeman.0" xml:space="preserve"><value>パイクマン</value></data>
+  <data name="Class.Pikeman.1" xml:space="preserve"><value>コンバタント</value></data>
+  <data name="Class.Pikeman.2" xml:space="preserve"><value>ランサー</value></data>
+  <data name="Class.Pikeman.3" xml:space="preserve"><value>ランスロット</value></data>
+  <data name="Class.Pikeman.4" xml:space="preserve"><value>バイオルント</value></data>
+  <data name="Class.Priestess.0" xml:space="preserve"><value>プリーステス</value></data>
+  <data name="Class.Priestess.1" xml:space="preserve"><value>セインテス</value></data>
+  <data name="Class.Priestess.2" xml:space="preserve"><value>ビショップ</value></data>
+  <data name="Class.Priestess.3" xml:space="preserve"><value>セレスティアル</value></data>
+  <data name="Class.Priestess.4" xml:space="preserve"><value>アークエンジェル</value></data>
+  <data name="Class.Shaman.0" xml:space="preserve"><value>シャーマン</value></data>
+  <data name="Class.Shaman.1" xml:space="preserve"><value>サモナー</value></data>
+  <data name="Class.Shaman.2" xml:space="preserve"><value>ハイサモナー</value></data>
+  <data name="Class.Shaman.3" xml:space="preserve"><value>ソウルキャッチャー</value></data>
+  <data name="Class.Shaman.4" xml:space="preserve"><value>ソウルマスター</value></data>
+  <data name="Quest.4th Rank-Up Test(Finished)" xml:space="preserve"><value>4次ランクアップ試験(完了)</value></data>
+  <data name="Quest.4th Rank-Up Test[1]" xml:space="preserve"><value>4次ランクアップ試験[1]</value></data>
+  <data name="Quest.4th Rank-Up Test[2]" xml:space="preserve"><value>4次ランクアップ試験[2]</value></data>
+  <data name="Quest.4th Rank-Up Test[3]" xml:space="preserve"><value>4次ランクアップ試験[3]</value></data>
+  <data name="Quest.4th Rank-Up Test[4]" xml:space="preserve"><value>4次ランクアップ試験[4]</value></data>
+  <data name="Quest.4th Rank-Up Test[5]" xml:space="preserve"><value>4次ランクアップ試験[5]</value></data>
+  <data name="Quest.4th Rank-Up Test[6]" xml:space="preserve"><value>4次ランクアップ試験[6]</value></data>
+  <data name="Quest.A lost Hammer" xml:space="preserve"><value>なくしたハンマー</value></data>
+  <data name="Quest.A lost Hammer(Complete)" xml:space="preserve"><value>なくしたハンマー(完了)</value></data>
+  <data name="Quest.A tired warehouse keeper" xml:space="preserve"><value>疲れた倉庫番</value></data>
+  <data name="Quest.A tired warehouse keeper(Complete)" xml:space="preserve"><value>疲れた倉庫番(完了)</value></data>
+  <data name="Quest.Bitter ordeal" xml:space="preserve"><value>苦い試練</value></data>
+  <data name="Quest.Bitter ordeal(Complete)" xml:space="preserve"><value>苦い試練(完了)</value></data>
+  <data name="Quest.Candy Delivery" xml:space="preserve"><value>キャンディの配達</value></data>
+  <data name="Quest.Candy Delivery(Complete)" xml:space="preserve"><value>キャンディの配達(完了)</value></data>
+  <data name="Quest.Capturing the devil" xml:space="preserve"><value>悪魔の捕獲</value></data>
+  <data name="Quest.Capturing the devil(Complete)" xml:space="preserve"><value>悪魔の捕獲(完了)</value></data>
+  <data name="Quest.Clever Newter" xml:space="preserve"><value>賢いNewter</value></data>
+  <data name="Quest.Clever Newter(Complete)" xml:space="preserve"><value>賢いNewter(完了)</value></data>
+  <data name="Quest.Delivery bomb" xml:space="preserve"><value>爆弾の配達</value></data>
+  <data name="Quest.Delivery bomb(Complete)" xml:space="preserve"><value>爆弾の配達(完了)</value></data>
+  <data name="Quest.Destroyed destruction weapon" xml:space="preserve"><value>破壊された破壊兵器</value></data>
+  <data name="Quest.Destroyed destruction weapon(Complete)" xml:space="preserve"><value>破壊された破壊兵器(完了)</value></data>
+  <data name="Quest.Devious Necromancer" xml:space="preserve"><value>狡猾なネクロマンサー</value></data>
+  <data name="Quest.Devious Necromancer(Complete)" xml:space="preserve"><value>狡猾なネクロマンサー(完了)</value></data>
+  <data name="Quest.Enclosed Fury" xml:space="preserve"><value>囚われの Fury</value></data>
+  <data name="Quest.Enclosed Fury(completed)" xml:space="preserve"><value>囚われの Fury(完了)</value></data>
+  <data name="Quest.Eternal Love1" xml:space="preserve"><value>永遠の愛 1</value></data>
+  <data name="Quest.Eternal Love1(Complete)" xml:space="preserve"><value>永遠の愛 1(完了)</value></data>
+  <data name="Quest.Eternal Love2" xml:space="preserve"><value>永遠の愛 2</value></data>
+  <data name="Quest.Eternal Love2(Complete)" xml:space="preserve"><value>永遠の愛 2(完了)</value></data>
+  <data name="Quest.For her" xml:space="preserve"><value>彼女のために</value></data>
+  <data name="Quest.For her(completed)" xml:space="preserve"><value>彼女のために(完了)</value></data>
+  <data name="Quest.Fury's phantasma(Complete)" xml:space="preserve"><value>Fury の幻影(完了)</value></data>
+  <data name="Quest.Fury's phantasma[1]" xml:space="preserve"><value>Fury の幻影[1]</value></data>
+  <data name="Quest.Fury's phantasma[2]" xml:space="preserve"><value>Fury の幻影[2]</value></data>
+  <data name="Quest.Fury's phantasma[3]" xml:space="preserve"><value>Fury の幻影[3]</value></data>
+  <data name="Quest.Fury's phantasma[4]" xml:space="preserve"><value>Fury の幻影[4]</value></data>
+  <data name="Quest.Fury's phantasma[5]" xml:space="preserve"><value>Fury の幻影[5]</value></data>
+  <data name="Quest.Goblin Hill" xml:space="preserve"><value>ゴブリンの丘</value></data>
+  <data name="Quest.Goblin Hill(Complete)" xml:space="preserve"><value>ゴブリンの丘(完了)</value></data>
+  <data name="Quest.Helping Michelle" xml:space="preserve"><value>Michelle を助けて</value></data>
+  <data name="Quest.Helping Michelle(completed)" xml:space="preserve"><value>Michelle を助けて(完了)</value></data>
+  <data name="Quest.Invaders chopped up" xml:space="preserve"><value>切り刻まれた侵入者</value></data>
+  <data name="Quest.Invaders chopped up(Complete)" xml:space="preserve"><value>切り刻まれた侵入者(完了)</value></data>
+  <data name="Quest.Job Quest 3th(Complete)" xml:space="preserve"><value>3次ランクアップクエスト(完了)</value></data>
+  <data name="Quest.Job Quest 3th[1]" xml:space="preserve"><value>3次ランクアップクエスト[1]</value></data>
+  <data name="Quest.Job Quest 3th[2]" xml:space="preserve"><value>3次ランクアップクエスト[2]</value></data>
+  <data name="Quest.Job Quest 3th[3]" xml:space="preserve"><value>3次ランクアップクエスト[3]</value></data>
+  <data name="Quest.Job Quest 3th[4]" xml:space="preserve"><value>3次ランクアップクエスト[4]</value></data>
+  <data name="Quest.Lovers of history1" xml:space="preserve"><value>歴史を愛する者たち 1</value></data>
+  <data name="Quest.Lovers of history1(Complete)" xml:space="preserve"><value>歴史を愛する者たち 1(完了)</value></data>
+  <data name="Quest.Lovers of history2" xml:space="preserve"><value>歴史を愛する者たち 2</value></data>
+  <data name="Quest.Lovers of history2(Complete)" xml:space="preserve"><value>歴史を愛する者たち 2(完了)</value></data>
+  <data name="Quest.Manufacturing bomb" xml:space="preserve"><value>爆弾の製造</value></data>
+  <data name="Quest.Manufacturing bomb(Complete)" xml:space="preserve"><value>爆弾の製造(完了)</value></data>
+  <data name="Quest.Miranda's location" xml:space="preserve"><value>Miranda の居場所</value></data>
+  <data name="Quest.Miranda's location(Complete)" xml:space="preserve"><value>Miranda の居場所(完了)</value></data>
+  <data name="Quest.Mission from the ancestor" xml:space="preserve"><value>祖先からの使命</value></data>
+  <data name="Quest.Mission from the ancestor(Complete)" xml:space="preserve"><value>祖先からの使命(完了)</value></data>
+  <data name="Quest.One-eyed Monsters" xml:space="preserve"><value>一つ目のモンスター</value></data>
+  <data name="Quest.One-eyed Monsters(Complete)" xml:space="preserve"><value>一つ目のモンスター(完了)</value></data>
+  <data name="Quest.Patron's request" xml:space="preserve"><value>守護者の依頼</value></data>
+  <data name="Quest.Patron's request(Complete)" xml:space="preserve"><value>守護者の依頼(完了)</value></data>
+  <data name="Quest.Questionable document" xml:space="preserve"><value>怪しい書類</value></data>
+  <data name="Quest.Questionable document(Complete)" xml:space="preserve"><value>怪しい書類(完了)</value></data>
+  <data name="Quest.Rank up quest" xml:space="preserve"><value>ランクアップクエスト</value></data>
+  <data name="Quest.Rank up quest (Completed)" xml:space="preserve"><value>ランクアップクエスト (完了)</value></data>
+  <data name="Quest.Rank up quest [Second]" xml:space="preserve"><value>ランクアップクエスト [2回目]</value></data>
+  <data name="Quest.Rank up quest second[1]" xml:space="preserve"><value>2次ランクアップクエスト[1]</value></data>
+  <data name="Quest.Rank up quest second[2]" xml:space="preserve"><value>2次ランクアップクエスト[2]</value></data>
+  <data name="Quest.Rank up quest second[3]" xml:space="preserve"><value>2次ランクアップクエスト[3]</value></data>
+  <data name="Quest.Rank up quest second[4]" xml:space="preserve"><value>2次ランクアップクエスト[4]</value></data>
+  <data name="Quest.Rank up quest second[5]" xml:space="preserve"><value>2次ランクアップクエスト[5]</value></data>
+  <data name="Quest.Rank up quest second[Completed]" xml:space="preserve"><value>2次ランクアップクエスト[完了]</value></data>
+  <data name="Quest.Rank up quest(Completed)" xml:space="preserve"><value>ランクアップクエスト(完了)</value></data>
+  <data name="Quest.Rank-up Exam (Done)" xml:space="preserve"><value>ランクアップ試験 (完了)</value></data>
+  <data name="Quest.Report delivery" xml:space="preserve"><value>報告書の配達</value></data>
+  <data name="Quest.Report delivery(Complete)" xml:space="preserve"><value>報告書の配達(完了)</value></data>
+  <data name="Quest.Ring purification1" xml:space="preserve"><value>指輪の浄化 1</value></data>
+  <data name="Quest.Ring purification1(Complete)" xml:space="preserve"><value>指輪の浄化 1(完了)</value></data>
+  <data name="Quest.Ring purification2" xml:space="preserve"><value>指輪の浄化 2</value></data>
+  <data name="Quest.Ring purification2(Complete)" xml:space="preserve"><value>指輪の浄化 2(完了)</value></data>
+  <data name="Quest.Shattering Ancient weapon" xml:space="preserve"><value>古代兵器の粉砕</value></data>
+  <data name="Quest.Shattering Ancient weapon(Complete)" xml:space="preserve"><value>古代兵器の粉砕(完了)</value></data>
+  <data name="Quest.Signs of fear" xml:space="preserve"><value>恐怖の兆し</value></data>
+  <data name="Quest.Signs of fear(Complete)" xml:space="preserve"><value>恐怖の兆し(完了)</value></data>
+  <data name="Quest.Soul of Devil" xml:space="preserve"><value>悪魔の魂</value></data>
+  <data name="Quest.Soul of Devil(Complete)" xml:space="preserve"><value>悪魔の魂(完了)</value></data>
+  <data name="Quest.Tears of Khalia" xml:space="preserve"><value>Khalia の涙</value></data>
+  <data name="Quest.Tears of Khalia(completed)" xml:space="preserve"><value>Khalia の涙(完了)</value></data>
+  <data name="Quest.Test of Kingdom" xml:space="preserve"><value>王国の試練</value></data>
+  <data name="Quest.Test of Kingdom(Complete)" xml:space="preserve"><value>王国の試練(完了)</value></data>
+  <data name="Quest.The Cave" xml:space="preserve"><value>洞窟</value></data>
+  <data name="Quest.The Cave(completed)" xml:space="preserve"><value>洞窟(完了)</value></data>
+  <data name="Quest.Threats of the Undead" xml:space="preserve"><value>アンデッドの脅威</value></data>
+  <data name="Quest.Threats of the Undead(Complete)" xml:space="preserve"><value>アンデッドの脅威(完了)</value></data>
+  <data name="Quest.Village of Eura(completed)" xml:space="preserve"><value>Eura 村(完了)</value></data>
+  <data name="Quest.Village of eura" xml:space="preserve"><value>Eura 村</value></data>
+  <data name="Quest.War of the Ancient" xml:space="preserve"><value>古代の戦い</value></data>
+  <data name="Quest.War of the Ancient(Complete)" xml:space="preserve"><value>古代の戦い(完了)</value></data>
+  <data name="Skill.01010001.Description" xml:space="preserve"><value>装備中の盾のブロック率を一定時間上昇させる。</value></data>
+  <data name="Skill.01010001.Name" xml:space="preserve"><value>エクストリームシールド</value></data>
+  <data name="Skill.01010002.Description" xml:space="preserve"><value>爆発範囲内の敵に爆弾を投げつける。</value></data>
+  <data name="Skill.01010002.Name" xml:space="preserve"><value>メカニックボム</value></data>
+  <data name="Skill.01010003.Description" xml:space="preserve"><value>ダメージを吸収する身体能力を一定時間高める。</value></data>
+  <data name="Skill.01010003.Name" xml:space="preserve"><value>フィジカルアブソーブ</value></data>
+  <data name="Skill.01010004.Description" xml:space="preserve"><value>毒に対する抵抗力を永続的に高める。</value></data>
+  <data name="Skill.01010004.Name" xml:space="preserve"><value>ポイズンアトリビュート</value></data>
+  <data name="Skill.01020001.Description" xml:space="preserve"><value>力を一点に集中させ、強力な一撃を放つ。</value></data>
+  <data name="Skill.01020001.Name" xml:space="preserve"><value>グレートスマッシュ</value></data>
+  <data name="Skill.01020002.Description" xml:space="preserve"><value>武器を最適化し、攻撃力を永続的に高める。</value></data>
+  <data name="Skill.01020002.Name" xml:space="preserve"><value>マキシマイズ</value></data>
+  <data name="Skill.01020003.Description" xml:space="preserve"><value>飛び道具の武器を自動化し、攻撃速度と攻撃力を一定時間高める。</value></data>
+  <data name="Skill.01020003.Name" xml:space="preserve"><value>オートメーション</value></data>
+  <data name="Skill.01020004.Description" xml:space="preserve"><value>周囲の敵に強力な稲妻で攻撃する。</value></data>
+  <data name="Skill.01020004.Name" xml:space="preserve"><value>スパーク</value></data>
+  <data name="Skill.01040001.Description" xml:space="preserve"><value>メカニシャンの鎧の防御力を一定時間高める。</value></data>
+  <data name="Skill.01040001.Name" xml:space="preserve"><value>メタルアーマー</value></data>
+  <data name="Skill.01040002.Description" xml:space="preserve"><value>敵を正確かつ連続で攻撃する。攻撃速度が上昇する。</value></data>
+  <data name="Skill.01040002.Name" xml:space="preserve"><value>グランドスマッシュ</value></data>
+  <data name="Skill.01040003.Description" xml:space="preserve"><value>メカニシャンの専門知識でアイテムを最適化する。</value></data>
+  <data name="Skill.01040003.Name" xml:space="preserve"><value>メカニックウェポンマスタリー</value></data>
+  <data name="Skill.01040004.Description" xml:space="preserve"><value>目に見えない電気の防壁を張る。</value></data>
+  <data name="Skill.01040004.Name" xml:space="preserve"><value>スパークシールド</value></data>
+  <data name="Skill.01080001.Description" xml:space="preserve"><value>強力な一撃の電撃で周囲のモンスターを攻撃する。</value></data>
+  <data name="Skill.01080001.Name" xml:space="preserve"><value>インパルシオン</value></data>
+  <data name="Skill.01080002.Description" xml:space="preserve"><value>力強い雄叫びで周囲のモンスターを引き寄せる。</value></data>
+  <data name="Skill.01080002.Name" xml:space="preserve"><value>コンパルシオン</value></data>
+  <data name="Skill.01080003.Description" xml:space="preserve"><value>選んだ対象に強力な磁気の球体を作り出す。</value></data>
+  <data name="Skill.01080003.Name" xml:space="preserve"><value>マグネティックスフィア</value></data>
+  <data name="Skill.01080004.Description" xml:space="preserve"><value>ゴーレムの装甲の強靭な鉄で防御力と攻撃速度を高める。</value></data>
+  <data name="Skill.01080004.Name" xml:space="preserve"><value>メタルゴーレム</value></data>
+  <data name="Skill.01100001.Description" xml:space="preserve"><value>周囲にすばやく地雷を埋め、範囲内の敵にダメージを与える。</value></data>
+  <data name="Skill.01100001.Name" xml:space="preserve"><value>ランドマイニング</value></data>
+  <data name="Skill.01100002.Description" xml:space="preserve"><value>攻撃速度を一定時間高める。</value></data>
+  <data name="Skill.01100002.Name" xml:space="preserve"><value>ハイパーソニック</value></data>
+  <data name="Skill.01100003.Description" xml:space="preserve"><value>致命的なダメージを与える4回の強力な攻撃。</value></data>
+  <data name="Skill.01100003.Name" xml:space="preserve"><value>ローリングスマッシュ</value></data>
+  <data name="Skill.01100004.Description" xml:space="preserve"><value>自身の最小・最大攻撃力と、パーティーの最大攻撃力を高める。</value></data>
+  <data name="Skill.01100004.Name" xml:space="preserve"><value>パワーエンハンスメント</value></data>
+  <data name="Skill.02010001.Description" xml:space="preserve"><value>近接武器の扱いが上達し、攻撃力を永続的に高める。</value></data>
+  <data name="Skill.02010001.Name" xml:space="preserve"><value>メレーマスタリー</value></data>
+  <data name="Skill.02010002.Description" xml:space="preserve"><value>火に対する抵抗力を永続的に高める。</value></data>
+  <data name="Skill.02010002.Name" xml:space="preserve"><value>ファイアアトリビュート</value></data>
+  <data name="Skill.02010003.Description" xml:space="preserve"><value>短時間だけ激しい怒りに身を任せるが、攻撃のたびにHPを失う。</value></data>
+  <data name="Skill.02010003.Name" xml:space="preserve"><value>レイビング</value></data>
+  <data name="Skill.02010004.Description" xml:space="preserve"><value>攻撃速度を高め、敵を正確に打つ。</value></data>
+  <data name="Skill.02010004.Name" xml:space="preserve"><value>インパクト</value></data>
+  <data name="Skill.02020001.Description" xml:space="preserve"><value>インパクトの強化版。</value></data>
+  <data name="Skill.02020001.Name" xml:space="preserve"><value>トリプルインパクト</value></data>
+  <data name="Skill.02020002.Description" xml:space="preserve"><value>敵に強力で致命的な一撃を叩き込む。</value></data>
+  <data name="Skill.02020002.Name" xml:space="preserve"><value>ブルータルスイング</value></data>
+  <data name="Skill.02020003.Description" xml:space="preserve"><value>耳をつんざく咆哮で、敵を一時的に気絶させ混乱させる。</value></data>
+  <data name="Skill.02020003.Name" xml:space="preserve"><value>ロアー</value></data>
+  <data name="Skill.02020004.Description" xml:space="preserve"><value>伝説の英雄ゼクラムの力を借りる。</value></data>
+  <data name="Skill.02020004.Name" xml:space="preserve"><value>ゼクラムの怒り</value></data>
+  <data name="Skill.02040001.Description" xml:space="preserve"><value>攻撃速度を一定時間高める。</value></data>
+  <data name="Skill.02040001.Name" xml:space="preserve"><value>コンセントレーション</value></data>
+  <data name="Skill.02040002.Description" xml:space="preserve"><value>敵に強烈で破壊的な攻撃を加える。</value></data>
+  <data name="Skill.02040002.Name" xml:space="preserve"><value>アベンジングクラッシュ</value></data>
+  <data name="Skill.02040003.Description" xml:space="preserve"><value>斧の攻撃速度を一定時間高める。</value></data>
+  <data name="Skill.02040003.Name" xml:space="preserve"><value>スイフトアックス</value></data>
+  <data name="Skill.02040004.Description" xml:space="preserve"><value>祖先が悪魔を倒すために用いた技。敵に2回当たる強力な攻撃。</value></data>
+  <data name="Skill.02040004.Name" xml:space="preserve"><value>ボーンクラッシュ</value></data>
+  <data name="Skill.02080001.Description" xml:space="preserve"><value>モンスターに対する最強の二連撃。</value></data>
+  <data name="Skill.02080001.Name" xml:space="preserve"><value>デストロイヤー</value></data>
+  <data name="Skill.02080002.Description" xml:space="preserve"><value>暴走状態になるが、吸収力が大きく低下する。</value></data>
+  <data name="Skill.02080002.Name" xml:space="preserve"><value>バーサーカー</value></data>
+  <data name="Skill.02080003.Description" xml:space="preserve"><value>激しい回転でモンスターを攻撃する。</value></data>
+  <data name="Skill.02080003.Name" xml:space="preserve"><value>サイクロンストライク</value></data>
+  <data name="Skill.02080004.Description" xml:space="preserve"><value>HPを永続的に高める。</value></data>
+  <data name="Skill.02080004.Name" xml:space="preserve"><value>ブーストヘルス</value></data>
+  <data name="Skill.02100001.Description" xml:space="preserve"><value>敵を空中に打ち上げ、3回攻撃する。</value></data>
+  <data name="Skill.02100001.Name" xml:space="preserve"><value>ダウンヒット</value></data>
+  <data name="Skill.02100002.Description" xml:space="preserve"><value>敵に向かって突進し、気絶させる。</value></data>
+  <data name="Skill.02100002.Name" xml:space="preserve"><value>パワーラッシュ</value></data>
+  <data name="Skill.02100003.Description" xml:space="preserve"><value>武器をゆっくりと力強く振り回す。</value></data>
+  <data name="Skill.02100003.Name" xml:space="preserve"><value>モータルブロー</value></data>
+  <data name="Skill.02100004.Description" xml:space="preserve"><value>吸収力を下げて攻撃ダメージを高める。</value></data>
+  <data name="Skill.02100004.Name" xml:space="preserve"><value>ブラッディバーサーカー</value></data>
+  <data name="Skill.03010001.Description" xml:space="preserve"><value>敵を押し返して傷つける旋風を起こす。</value></data>
+  <data name="Skill.03010001.Name" xml:space="preserve"><value>パイクウィンド</value></data>
+  <data name="Skill.03010002.Description" xml:space="preserve"><value>氷に対する抵抗力を永続的に高める。</value></data>
+  <data name="Skill.03010002.Name" xml:space="preserve"><value>アイスアトリビュート</value></data>
+  <data name="Skill.03010003.Description" xml:space="preserve"><value>敵の弱点を狙い、クリティカルヒットの確率を高める。</value></data>
+  <data name="Skill.03010003.Name" xml:space="preserve"><value>クリティカルヒット</value></data>
+  <data name="Skill.03010004.Description" xml:space="preserve"><value>空高く跳び上がり、強力な一撃とともに降下する。</value></data>
+  <data name="Skill.03010004.Name" xml:space="preserve"><value>ジャンピングクラッシュ</value></data>
+  <data name="Skill.03020001.Description" xml:space="preserve"><value>武器に氷の属性を宿し、強力な攻撃を放つ。</value></data>
+  <data name="Skill.03020001.Name" xml:space="preserve"><value>グラウンドパイク</value></data>
+  <data name="Skill.03020002.Description" xml:space="preserve"><value>竜巻を呼び出して周囲の敵を攻撃する。</value></data>
+  <data name="Skill.03020002.Name" xml:space="preserve"><value>トルネード</value></data>
+  <data name="Skill.03020003.Description" xml:space="preserve"><value>長柄武器を持った時の防御力を永続的に高める。</value></data>
+  <data name="Skill.03020003.Name" xml:space="preserve"><value>ウェポンディフェンスマスタリー</value></data>
+  <data name="Skill.03020004.Description" xml:space="preserve"><value>武器に活力を宿し、破壊的な攻撃を放つ。</value></data>
+  <data name="Skill.03020004.Name" xml:space="preserve"><value>エクスパンション</value></data>
+  <data name="Skill.03040001.Description" xml:space="preserve"><value>槍を地面に突き立てて敵を攻撃する。</value></data>
+  <data name="Skill.03040001.Name" xml:space="preserve"><value>ヴェノムスピア</value></data>
+  <data name="Skill.03040002.Description" xml:space="preserve"><value>一定時間、姿を消す。</value></data>
+  <data name="Skill.03040002.Name" xml:space="preserve"><value>バニッシュ</value></data>
+  <data name="Skill.03040003.Description" xml:space="preserve"><value>クリティカル攻撃の確率(%)を永続的に高める。</value></data>
+  <data name="Skill.03040003.Name" xml:space="preserve"><value>クリティカルマスタリー</value></data>
+  <data name="Skill.03040004.Description" xml:space="preserve"><value>3連続のクリティカル回転攻撃。</value></data>
+  <data name="Skill.03040004.Name" xml:space="preserve"><value>チェーンランス</value></data>
+  <data name="Skill.03080001.Description" xml:space="preserve"><value>モンスターの弱点を見抜き、集中力を高める。</value></data>
+  <data name="Skill.03080001.Name" xml:space="preserve"><value>アサシンアイ</value></data>
+  <data name="Skill.03080002.Description" xml:space="preserve"><value>力を溜めて連続攻撃を行う。</value></data>
+  <data name="Skill.03080002.Name" xml:space="preserve"><value>チャージングストライク</value></data>
+  <data name="Skill.03080003.Description" xml:space="preserve"><value>自分の姿をぼやけさせる。</value></data>
+  <data name="Skill.03080003.Name" xml:space="preserve"><value>ヴェイグ</value></data>
+  <data name="Skill.03080004.Description" xml:space="preserve"><value>残像がモンスターに次々と強力なダメージを与える。</value></data>
+  <data name="Skill.03080004.Name" xml:space="preserve"><value>シャドウマスター</value></data>
+  <data name="Skill.03100001.Description" xml:space="preserve"><value>空中で縦に回転し、強力な攻撃とともに着地する。</value></data>
+  <data name="Skill.03100001.Name" xml:space="preserve"><value>ダンシングリーパー</value></data>
+  <data name="Skill.03100002.Description" xml:space="preserve"><value>地面から巨大な槍が突き出して敵を攻撃する。</value></data>
+  <data name="Skill.03100002.Name" xml:space="preserve"><value>ファイナルスピア</value></data>
+  <data name="Skill.03100003.Description" xml:space="preserve"><value>吸収力を下げて、ダメージと命中率を高める。</value></data>
+  <data name="Skill.03100003.Name" xml:space="preserve"><value>アンプリファイド</value></data>
+  <data name="Skill.03100004.Description" xml:space="preserve"><value>自分の周りを回転して攻撃し、敵の生命力を奪う。</value></data>
+  <data name="Skill.03100004.Name" xml:space="preserve"><value>サイドスピンアタック</value></data>
+  <data name="Skill.04010001.Description" xml:space="preserve"><value>ホークを召喚して周囲を警戒させ、攻撃速度を高める。</value></data>
+  <data name="Skill.04010001.Name" xml:space="preserve"><value>スカウトホーク</value></data>
+  <data name="Skill.04010002.Description" xml:space="preserve"><value>弓とクロスボウの攻撃力を永続的に高める。</value></data>
+  <data name="Skill.04010002.Name" xml:space="preserve"><value>シューティングマスタリー</value></data>
+  <data name="Skill.04010003.Description" xml:space="preserve"><value>矢に風の属性を宿し、攻撃力を高める。</value></data>
+  <data name="Skill.04010003.Name" xml:space="preserve"><value>ウィンドアロー</value></data>
+  <data name="Skill.04010004.Description" xml:space="preserve"><value>攻撃速度と攻撃力を高めた狙い撃ちを放つ。</value></data>
+  <data name="Skill.04010004.Name" xml:space="preserve"><value>パーフェクトエイム</value></data>
+  <data name="Skill.04020001.Description" xml:space="preserve"><value>伝説の弓使いディオンのように視力を鍛え、攻撃速度を永続的に高める。</value></data>
+  <data name="Skill.04020001.Name" xml:space="preserve"><value>ディオンズアイ</value></data>
+  <data name="Skill.04020002.Description" xml:space="preserve"><value>獰猛なファルコンを召喚し、周囲の敵を攻撃させる。</value></data>
+  <data name="Skill.04020002.Name" xml:space="preserve"><value>ファルコン</value></data>
+  <data name="Skill.04020003.Description" xml:space="preserve"><value>選んだ地点に矢を放ち、爆発して敵に火の雨を降らせる。</value></data>
+  <data name="Skill.04020003.Name" xml:space="preserve"><value>アローオブレイジ</value></data>
+  <data name="Skill.04020004.Description" xml:space="preserve"><value>単一の標的に貫通する矢の連射を浴びせる。</value></data>
+  <data name="Skill.04020004.Name" xml:space="preserve"><value>アバランチ</value></data>
+  <data name="Skill.04040001.Description" xml:space="preserve"><value>敵に属性の連続攻撃を行う。</value></data>
+  <data name="Skill.04040001.Name" xml:space="preserve"><value>エレメンタルショット</value></data>
+  <data name="Skill.04040002.Description" xml:space="preserve"><value>ファルコンを召喚して敵を攻撃させる。</value></data>
+  <data name="Skill.04040002.Name" xml:space="preserve"><value>ゴールデンファルコン</value></data>
+  <data name="Skill.04040003.Description" xml:space="preserve"><value>爆発する矢を2回放つ。敵に範囲ダメージを与える。</value></data>
+  <data name="Skill.04040003.Name" xml:space="preserve"><value>ボムショット</value></data>
+  <data name="Skill.04040004.Description" xml:space="preserve"><value>敵を貫く正確な連続攻撃。</value></data>
+  <data name="Skill.04040004.Name" xml:space="preserve"><value>パーフォレーション</value></data>
+  <data name="Skill.04080001.Description" xml:space="preserve"><value>ウルヴァリンを召喚する。</value></data>
+  <data name="Skill.04080001.Name" xml:space="preserve"><value>リコールウルヴァリン</value></data>
+  <data name="Skill.04080002.Description" xml:space="preserve"><value>敵の攻撃を効率よく回避する。</value></data>
+  <data name="Skill.04080002.Name" xml:space="preserve"><value>イベイジョンマスタリー</value></data>
+  <data name="Skill.04080003.Description" xml:space="preserve"><value>フェニックスの力で広範囲を攻撃する。</value></data>
+  <data name="Skill.04080003.Name" xml:space="preserve"><value>フェニックスショット</value></data>
+  <data name="Skill.04080004.Description" xml:space="preserve"><value>自然と完全に一体となり、能力を高める。</value></data>
+  <data name="Skill.04080004.Name" xml:space="preserve"><value>フォースオブネイチャー</value></data>
+  <data name="Skill.04100001.Description" xml:space="preserve"><value>跳び上がって敵を蹴り、気絶させる。</value></data>
+  <data name="Skill.04100001.Name" xml:space="preserve"><value>イベイジョンショット</value></data>
+  <data name="Skill.04100002.Description" xml:space="preserve"><value>電撃の矢を2本放つ強力な攻撃。</value></data>
+  <data name="Skill.04100002.Name" xml:space="preserve"><value>サンダーループ</value></data>
+  <data name="Skill.04100003.Description" xml:space="preserve"><value>矢に自然の力を宿し、渦を作り出す。</value></data>
+  <data name="Skill.04100003.Name" xml:space="preserve"><value>ネイチャースプラッシュ</value></data>
+  <data name="Skill.04100004.Description" xml:space="preserve"><value>敵の弱点を狙い、動きを鈍らせる。</value></data>
+  <data name="Skill.04100004.Name" xml:space="preserve"><value>サークルトラップ</value></data>
+  <data name="Skill.05010001.Description" xml:space="preserve"><value>破壊的な剣を投げつけて敵を攻撃する。</value></data>
+  <data name="Skill.05010001.Name" xml:space="preserve"><value>ソードブラスト</value></data>
+  <data name="Skill.05010002.Description" xml:space="preserve"><value>神聖な身となり、アンデッドに対する吸収力を高める。</value></data>
+  <data name="Skill.05010002.Name" xml:space="preserve"><value>ホーリーボディ</value></data>
+  <data name="Skill.05010003.Description" xml:space="preserve"><value>身体を鍛えてスタミナを永続的に高める。</value></data>
+  <data name="Skill.05010003.Name" xml:space="preserve"><value>フィジカルトレーニング</value></data>
+  <data name="Skill.05010004.Description" xml:space="preserve"><value>敵に2回連続で攻撃する。</value></data>
+  <data name="Skill.05010004.Name" xml:space="preserve"><value>ダブルクラッシュ</value></data>
+  <data name="Skill.05020001.Description" xml:space="preserve"><value>勇ましい力でアンデッドへの攻撃力を高める。</value></data>
+  <data name="Skill.05020001.Name" xml:space="preserve"><value>ホーリーヴァラー</value></data>
+  <data name="Skill.05020002.Description" xml:space="preserve"><value>範囲内のすべての敵を攻撃する。</value></data>
+  <data name="Skill.05020002.Name" xml:space="preserve"><value>ブランディッシュ</value></data>
+  <data name="Skill.05020003.Description" xml:space="preserve"><value>大いなる力と気迫で多数の敵を斬り倒す。</value></data>
+  <data name="Skill.05020003.Name" xml:space="preserve"><value>ピアシング</value></data>
+  <data name="Skill.05020004.Description" xml:space="preserve"><value>防御力を一定時間高める。</value></data>
+  <data name="Skill.05020004.Name" xml:space="preserve"><value>ドラスティックスピリット</value></data>
+  <data name="Skill.05040001.Description" xml:space="preserve"><value>剣の扱いが上達し、攻撃力を永続的に高める。</value></data>
+  <data name="Skill.05040001.Name" xml:space="preserve"><value>ソードマスタリー</value></data>
+  <data name="Skill.05040002.Description" xml:space="preserve"><value>アンデッドモンスターの攻撃力を吸収し、HPを回復する。</value></data>
+  <data name="Skill.05040002.Name" xml:space="preserve"><value>ディバインインヘイレーション</value></data>
+  <data name="Skill.05040003.Description" xml:space="preserve"><value>モンスターを引き寄せる神聖な呪文。</value></data>
+  <data name="Skill.05040003.Name" xml:space="preserve"><value>ホーリーインカンテーション</value></data>
+  <data name="Skill.05040004.Description" xml:space="preserve"><value>敵に十字の致命的な攻撃を加える。</value></data>
+  <data name="Skill.05040004.Name" xml:space="preserve"><value>グランドクロス</value></data>
+  <data name="Skill.05080001.Description" xml:space="preserve"><value>体を反らせ、全力で剣を振り下ろす。</value></data>
+  <data name="Skill.05080001.Name" xml:space="preserve"><value>ソードオブジャスティス</value></data>
+  <data name="Skill.05080002.Description" xml:space="preserve"><value>神の祝福を受けた聖なる盾を作り出す。</value></data>
+  <data name="Skill.05080002.Name" xml:space="preserve"><value>ゴッドリーシールド</value></data>
+  <data name="Skill.05080003.Description" xml:space="preserve"><value>神の名のもとに、聖騎士の偉大な力を授ける。</value></data>
+  <data name="Skill.05080003.Name" xml:space="preserve"><value>ゴッドブレス</value></data>
+  <data name="Skill.05080004.Description" xml:space="preserve"><value>神の力でモンスターを攻撃する、無敵の剣舞。</value></data>
+  <data name="Skill.05080004.Name" xml:space="preserve"><value>ディバインピアシング</value></data>
+  <data name="Skill.05100001.Description" xml:space="preserve"><value>敵の魂に強力な一撃を与える。</value></data>
+  <data name="Skill.05100001.Name" xml:space="preserve"><value>ソウルブレイカー</value></data>
+  <data name="Skill.05100002.Description" xml:space="preserve"><value>周囲の敵に突進し、半月状に斬りつける。</value></data>
+  <data name="Skill.05100002.Name" xml:space="preserve"><value>クレセントムーン</value></data>
+  <data name="Skill.05100003.Description" xml:space="preserve"><value>剣に神の力を宿して敵を攻撃する。</value></data>
+  <data name="Skill.05100003.Name" xml:space="preserve"><value>セイントブレード</value></data>
+  <data name="Skill.05100004.Description" xml:space="preserve"><value>アンデッドモンスターに追加ダメージを与える能力を授ける。</value></data>
+  <data name="Skill.05100004.Name" xml:space="preserve"><value>ホーリーベネディクト</value></data>
+  <data name="Skill.06010001.Description" xml:space="preserve"><value>盾を投げつけて敵を攻撃する。</value></data>
+  <data name="Skill.06010001.Name" xml:space="preserve"><value>シールドストライク</value></data>
+  <data name="Skill.06010002.Description" xml:space="preserve"><value>幻影を生み出す槍を投げつける。</value></data>
+  <data name="Skill.06010002.Name" xml:space="preserve"><value>ファリーナ</value></data>
+  <data name="Skill.06010003.Description" xml:space="preserve"><value>投擲攻撃を鍛え、ダメージを永続的に高める。</value></data>
+  <data name="Skill.06010003.Name" xml:space="preserve"><value>スローイングマスタリー</value></data>
+  <data name="Skill.06010004.Description" xml:space="preserve"><value>聖なるジャベリンで敵を攻撃する。</value></data>
+  <data name="Skill.06010004.Name" xml:space="preserve"><value>ビガースピア</value></data>
+  <data name="Skill.06020001.Description" xml:space="preserve"><value>ジャベリンの射程と攻撃速度を高める。</value></data>
+  <data name="Skill.06020001.Name" xml:space="preserve"><value>ウィンディ</value></data>
+  <data name="Skill.06020002.Description" xml:space="preserve"><value>ひねりを加えて攻撃速度と攻撃力を高める。</value></data>
+  <data name="Skill.06020002.Name" xml:space="preserve"><value>ツイストジャベリン</value></data>
+  <data name="Skill.06020003.Description" xml:space="preserve"><value>敵の生命力を吸収する。</value></data>
+  <data name="Skill.06020003.Name" xml:space="preserve"><value>ソウルサッカー</value></data>
+  <data name="Skill.06020004.Description" xml:space="preserve"><value>火の力で敵を攻撃する。</value></data>
+  <data name="Skill.06020004.Name" xml:space="preserve"><value>ファイアジャベリン</value></data>
+  <data name="Skill.06040001.Description" xml:space="preserve"><value>超高速で敵に連続攻撃を行う。</value></data>
+  <data name="Skill.06040001.Name" xml:space="preserve"><value>スプリットジャベリン</value></data>
+  <data name="Skill.06040002.Description" xml:space="preserve"><value>パーティーメンバーの攻撃ダメージを高める。</value></data>
+  <data name="Skill.06040002.Name" xml:space="preserve"><value>トライアンフオブヴァルハラ</value></data>
+  <data name="Skill.06040003.Description" xml:space="preserve"><value>ジャベリンの雷属性ダメージを高める。</value></data>
+  <data name="Skill.06040003.Name" xml:space="preserve"><value>ライトニングジャベリン</value></data>
+  <data name="Skill.06040004.Description" xml:space="preserve"><value>敵に強力な竜巻攻撃を放つ。</value></data>
+  <data name="Skill.06040004.Name" xml:space="preserve"><value>ストームジャベリン</value></data>
+  <data name="Skill.06080001.Description" xml:space="preserve"><value>ヴァルハラの力で特別な空間を作り出す。</value></data>
+  <data name="Skill.06080001.Name" xml:space="preserve"><value>ホールオブヴァルハラ</value></data>
+  <data name="Skill.06080002.Description" xml:space="preserve"><value>怒りの力で高く跳び上がり、敵を攻撃する。</value></data>
+  <data name="Skill.06080002.Name" xml:space="preserve"><value>Xレイジ</value></data>
+  <data name="Skill.06080003.Description" xml:space="preserve"><value>発動中、氷の能力を一定時間高める。</value></data>
+  <data name="Skill.06080003.Name" xml:space="preserve"><value>フロストジャベリン</value></data>
+  <data name="Skill.06080004.Description" xml:space="preserve"><value>素早い連続攻撃。</value></data>
+  <data name="Skill.06080004.Name" xml:space="preserve"><value>ヴェンジェンス</value></data>
+  <data name="Skill.06100001.Description" xml:space="preserve"><value>体を軽く、素早くする。</value></data>
+  <data name="Skill.06100001.Name" xml:space="preserve"><value>タラリア</value></data>
+  <data name="Skill.06100002.Description" xml:space="preserve"><value>ヴァルハラの力を宿した、敵の心臓を狙うジャベリンを召喚し、地面に突き立てる。</value></data>
+  <data name="Skill.06100002.Name" xml:space="preserve"><value>ギャラクシークー</value></data>
+  <data name="Skill.06100003.Description" xml:space="preserve"><value>アルクーダを召喚する。</value></data>
+  <data name="Skill.06100003.Name" xml:space="preserve"><value>サモンアルクーダ</value></data>
+  <data name="Skill.06100004.Description" xml:space="preserve"><value>2本のジャベリンを続けて投げ、クリティカルヒットを与える。</value></data>
+  <data name="Skill.06100004.Name" xml:space="preserve"><value>スニッピーフィアー</value></data>
+  <data name="Skill.07010001.Description" xml:space="preserve"><value>神聖な魔法で生命力を回復する。</value></data>
+  <data name="Skill.07010001.Name" xml:space="preserve"><value>ヒーリング</value></data>
+  <data name="Skill.07010002.Description" xml:space="preserve"><value>敵に聖なる光線を放つ。</value></data>
+  <data name="Skill.07010002.Name" xml:space="preserve"><value>ホーリーボルト</value></data>
+  <data name="Skill.07010003.Description" xml:space="preserve"><value>魔法の火花を放って敵を攻撃する。</value></data>
+  <data name="Skill.07010003.Name" xml:space="preserve"><value>マルチスパーク</value></data>
+  <data name="Skill.07010004.Description" xml:space="preserve"><value>敵の攻撃力を一定時間弱める。</value></data>
+  <data name="Skill.07010004.Name" xml:space="preserve"><value>ホーリーマインド</value></data>
+  <data name="Skill.07020001.Description" xml:space="preserve"><value>マナの回復力を永続的に高める。</value></data>
+  <data name="Skill.07020001.Name" xml:space="preserve"><value>メディテーション</value></data>
+  <data name="Skill.07020002.Description" xml:space="preserve"><value>聖なる稲妻で敵を攻撃する。</value></data>
+  <data name="Skill.07020002.Name" xml:space="preserve"><value>ディバインライトニング</value></data>
+  <data name="Skill.07020003.Description" xml:space="preserve"><value>聖なる魔法の盾を作り、アンデッドの攻撃を反射する。</value></data>
+  <data name="Skill.07020003.Name" xml:space="preserve"><value>ホーリーリフレクション</value></data>
+  <data name="Skill.07020004.Description" xml:space="preserve"><value>パーティーメンバー1人の生命力を回復する。</value></data>
+  <data name="Skill.07020004.Name" xml:space="preserve"><value>グランドヒーリング</value></data>
+  <data name="Skill.07040001.Description" xml:space="preserve"><value>敵に活力の球を2回放つ。</value></data>
+  <data name="Skill.07040001.Name" xml:space="preserve"><value>ヴィゴーボール</value></data>
+  <data name="Skill.07040002.Description" xml:space="preserve"><value>倒れたパーティーメンバーを蘇生させる。</value></data>
+  <data name="Skill.07040002.Name" xml:space="preserve"><value>リザレクション</value></data>
+  <data name="Skill.07040003.Description" xml:space="preserve"><value>アンデッドモンスターに対する致死の呪文。アンデッドに永続的にダメージを与える。</value></data>
+  <data name="Skill.07040003.Name" xml:space="preserve"><value>エクスティンクション</value></data>
+  <data name="Skill.07040004.Description" xml:space="preserve"><value>パーティーメンバーの生命力を一定時間高める。</value></data>
+  <data name="Skill.07040004.Name" xml:space="preserve"><value>バーチャルライフ</value></data>
+  <data name="Skill.07080001.Description" xml:space="preserve"><value>巨大な氷塊を放って敵を攻撃する。</value></data>
+  <data name="Skill.07080001.Name" xml:space="preserve"><value>グレイシャルスパイク</value></data>
+  <data name="Skill.07080002.Description" xml:space="preserve"><value>自らを犠牲にして、仲間を継続的に回復する。</value></data>
+  <data name="Skill.07080002.Name" xml:space="preserve"><value>リジェネレーションフィールド</value></data>
+  <data name="Skill.07080003.Description" xml:space="preserve"><value>強力な雷でモンスターを攻撃する。</value></data>
+  <data name="Skill.07080003.Name" xml:space="preserve"><value>チェーンライトニング</value></data>
+  <data name="Skill.07080004.Description" xml:space="preserve"><value>アンデッドモンスターの攻撃を吸収してHPを回復し、召喚士の能力を得る。</value></data>
+  <data name="Skill.07080004.Name" xml:space="preserve"><value>サモンムスペル</value></data>
+  <data name="Skill.07100001.Description" xml:space="preserve"><value>周囲の敵に強力な衝撃波を放つ。</value></data>
+  <data name="Skill.07100001.Name" xml:space="preserve"><value>スピリットインパクト</value></data>
+  <data name="Skill.07100002.Description" xml:space="preserve"><value>鋭い氷の槍を召喚して敵を攻撃する。</value></data>
+  <data name="Skill.07100002.Name" xml:space="preserve"><value>ピアシングアイス</value></data>
+  <data name="Skill.07100003.Description" xml:space="preserve"><value>雷の攻撃を得意とする天使を召喚する。</value></data>
+  <data name="Skill.07100003.Name" xml:space="preserve"><value>サモンラミエル</value></data>
+  <data name="Skill.07100004.Description" xml:space="preserve"><value>神の恵みにより、防御力と吸収力を高める。</value></data>
+  <data name="Skill.07100004.Name" xml:space="preserve"><value>ブレッシングクリシュナ</value></data>
+  <data name="Skill.08010001.Description" xml:space="preserve"><value>自らを犠牲にして精神力を高める。</value></data>
+  <data name="Skill.08010001.Name" xml:space="preserve"><value>アゴニー</value></data>
+  <data name="Skill.08010002.Description" xml:space="preserve"><value>小さな火球を降らせて敵を攻撃する。</value></data>
+  <data name="Skill.08010002.Name" xml:space="preserve"><value>ファイアボルト</value></data>
+  <data name="Skill.08010003.Description" xml:space="preserve"><value>強い精神力で属性の特性を一定時間高める。</value></data>
+  <data name="Skill.08010003.Name" xml:space="preserve"><value>ゼニス</value></data>
+  <data name="Skill.08010004.Description" xml:space="preserve"><value>巨大な火球を降らせて敵を攻撃する。</value></data>
+  <data name="Skill.08010004.Name" xml:space="preserve"><value>ファイアボール</value></data>
+  <data name="Skill.08020001.Description" xml:space="preserve"><value>最大マナを増加させる。</value></data>
+  <data name="Skill.08020001.Name" xml:space="preserve"><value>メンタルマスタリー</value></data>
+  <data name="Skill.08020002.Description" xml:space="preserve"><value>水の柱が敵を襲う。</value></data>
+  <data name="Skill.08020002.Name" xml:space="preserve"><value>ウォートルネード</value></data>
+  <data name="Skill.08020003.Description" xml:space="preserve"><value>パーティーメンバーの武器の攻撃属性を強化する。</value></data>
+  <data name="Skill.08020003.Name" xml:space="preserve"><value>エンチャントウェポン</value></data>
+  <data name="Skill.08020004.Description" xml:space="preserve"><value>手のひらから強力な光線を放つ。</value></data>
+  <data name="Skill.08020004.Name" xml:space="preserve"><value>デッドレイ</value></data>
+  <data name="Skill.08040001.Description" xml:space="preserve"><value>体の周りに魔法の盾を作り出す。</value></data>
+  <data name="Skill.08040001.Name" xml:space="preserve"><value>エナジーシールド</value></data>
+  <data name="Skill.08040002.Description" xml:space="preserve"><value>範囲内の敵に大地の強力な攻撃を加える。</value></data>
+  <data name="Skill.08040002.Name" xml:space="preserve"><value>ダイアストロフィズム</value></data>
+  <data name="Skill.08040003.Description" xml:space="preserve"><value>幻影を召喚して魔法ダメージを高める。</value></data>
+  <data name="Skill.08040003.Name" xml:space="preserve"><value>スピリットエレメンタル</value></data>
+  <data name="Skill.08040004.Description" xml:space="preserve"><value>剣の幻影が現れ、属性の力で敵を攻撃する。</value></data>
+  <data name="Skill.08040004.Name" xml:space="preserve"><value>ダンシングソード</value></data>
+  <data name="Skill.08080001.Description" xml:space="preserve"><value>炎でできた強力なエレメンタルを召喚する。</value></data>
+  <data name="Skill.08080001.Name" xml:space="preserve"><value>ファイアエレメンタル</value></data>
+  <data name="Skill.08080002.Description" xml:space="preserve"><value>強力な炎で前方のモンスターを攻撃する。</value></data>
+  <data name="Skill.08080002.Name" xml:space="preserve"><value>フレイムウェーブ</value></data>
+  <data name="Skill.08080003.Description" xml:space="preserve"><value>空間を歪めてモンスターの能力を低下させる。</value></data>
+  <data name="Skill.08080003.Name" xml:space="preserve"><value>ディストーション</value></data>
+  <data name="Skill.08080004.Description" xml:space="preserve"><value>召喚した隕石で周囲のモンスターを攻撃する。</value></data>
+  <data name="Skill.08080004.Name" xml:space="preserve"><value>メテオ</value></data>
+  <data name="Skill.08100001.Description" xml:space="preserve"><value>シルラフィムの力で周囲の敵を攻撃する。</value></data>
+  <data name="Skill.08100001.Name" xml:space="preserve"><value>シルラフィム</value></data>
+  <data name="Skill.08100002.Description" xml:space="preserve"><value>敵を縮小させ、HPと与ダメージを減らす。</value></data>
+  <data name="Skill.08100002.Name" xml:space="preserve"><value>ヴィステヌス</value></data>
+  <data name="Skill.08100003.Description" xml:space="preserve"><value>原初の火球を作り出し、強力な攻撃を放つ。</value></data>
+  <data name="Skill.08100003.Name" xml:space="preserve"><value>プリマイグニス</value></data>
+  <data name="Skill.08100004.Description" xml:space="preserve"><value>最大MPを減らして魔法攻撃力を高める。</value></data>
+  <data name="Skill.08100004.Name" xml:space="preserve"><value>サードアニマ</value></data>
+  <data name="Skill.10010001.Description" xml:space="preserve"><value>敵に真っ直ぐ突進してダメージを与える。</value></data>
+  <data name="Skill.10010001.Name" xml:space="preserve"><value>スティンガー</value></data>
+  <data name="Skill.10010002.Description" xml:space="preserve"><value>回転しながら敵に継続的にダメージを与える。</value></data>
+  <data name="Skill.10010002.Name" xml:space="preserve"><value>ランニングヒット</value></data>
+  <data name="Skill.10010003.Description" xml:space="preserve"><value>ダガー系武器の基本攻撃力を永続的に高める。</value></data>
+  <data name="Skill.10010003.Name" xml:space="preserve"><value>デュアルウィールドマスタリー</value></data>
+  <data name="Skill.10010004.Description" xml:space="preserve"><value>対象の敵の与ダメージを一定時間減らす。</value></data>
+  <data name="Skill.10010004.Name" xml:space="preserve"><value>ウィスプ</value></data>
+  <data name="Skill.10020001.Description" xml:space="preserve"><value>毒を塗った武器で敵に素早く2回攻撃する。</value></data>
+  <data name="Skill.10020001.Name" xml:space="preserve"><value>ヴェノムソーン</value></data>
+  <data name="Skill.10020002.Description" xml:space="preserve"><value>アサシンの身のこなしを分け与え、パーティーの回避率を高める。</value></data>
+  <data name="Skill.10020002.Name" xml:space="preserve"><value>アラス</value></data>
+  <data name="Skill.10020003.Description" xml:space="preserve"><value>ダガーを地面に突き立て、周囲の敵を気絶させる。</value></data>
+  <data name="Skill.10020003.Name" xml:space="preserve"><value>ソウルショック</value></data>
+  <data name="Skill.10020004.Description" xml:space="preserve"><value>命中率と回避率を永続的に高める。</value></data>
+  <data name="Skill.10020004.Name" xml:space="preserve"><value>アタックマスタリー</value></data>
+  <data name="Skill.10040001.Description" xml:space="preserve"><value>前進と後退を繰り返し、敵に大ダメージを与える。</value></data>
+  <data name="Skill.10040001.Name" xml:space="preserve"><value>ソアブレード</value></data>
+  <data name="Skill.10040002.Description" xml:space="preserve"><value>敵に向かって跳び、周囲の敵に気の波動を放つ。</value></data>
+  <data name="Skill.10040002.Name" xml:space="preserve"><value>ガストスラッシュ</value></data>
+  <data name="Skill.10040003.Description" xml:space="preserve"><value>体に気を集め、攻撃速度を高める。</value></data>
+  <data name="Skill.10040003.Name" xml:space="preserve"><value>インペス</value></data>
+  <data name="Skill.10040004.Description" xml:space="preserve"><value>影に身を潜め、次に攻撃した敵に大ダメージを与える。</value></data>
+  <data name="Skill.10040004.Name" xml:space="preserve"><value>ブラインド</value></data>
+  <data name="Skill.10080001.Description" xml:space="preserve"><value>刃に風を宿し、敵を2回斬りつける。</value></data>
+  <data name="Skill.10080001.Name" xml:space="preserve"><value>クリップル</value></data>
+  <data name="Skill.10080002.Description" xml:space="preserve"><value>ダガー装備時のクリティカル率を高める。</value></data>
+  <data name="Skill.10080002.Name" xml:space="preserve"><value>アサシンマスタリー</value></data>
+  <data name="Skill.10080003.Description" xml:space="preserve"><value>周囲に毒の波動を放ち、近くの敵を毒状態にする。</value></data>
+  <data name="Skill.10080003.Name" xml:space="preserve"><value>ポリューテッド</value></data>
+  <data name="Skill.10080004.Description" xml:space="preserve"><value>素早く動き、自らの影で敵を斬りつける。</value></data>
+  <data name="Skill.10080004.Name" xml:space="preserve"><value>ニンジャシャドウ</value></data>
+  <data name="Skill.10100001.Description" xml:space="preserve"><value>影に身を隠し、巨大な炎で範囲ダメージを与える。</value></data>
+  <data name="Skill.10100001.Name" xml:space="preserve"><value>シャドウボム</value></data>
+  <data name="Skill.10100002.Description" xml:space="preserve"><value>その場で跳び上がり、重力のエネルギーで敵を斬りつける。</value></data>
+  <data name="Skill.10100002.Name" xml:space="preserve"><value>ライジングスラッシュ</value></data>
+  <data name="Skill.10100003.Description" xml:space="preserve"><value>敵を何度も蹴りつけてダメージを与える。</value></data>
+  <data name="Skill.10100003.Name" xml:space="preserve"><value>バイオレントスタブ</value></data>
+  <data name="Skill.10100004.Description" xml:space="preserve"><value>空を舞って大ダメージを与える。</value></data>
+  <data name="Skill.10100004.Name" xml:space="preserve"><value>ストーム</value></data>
+  <data name="Skill.20010001.Description" xml:space="preserve"><value>右足ですばやく蹴りつける。</value></data>
+  <data name="Skill.20010001.Name" xml:space="preserve"><value>ローキック</value></data>
+  <data name="Skill.20010002.Description" xml:space="preserve"><value>厳しい鍛錬により、攻撃力を永続的に高める。</value></data>
+  <data name="Skill.20010002.Name" xml:space="preserve"><value>ストレングスマスタリー</value></data>
+  <data name="Skill.20010003.Description" xml:space="preserve"><value>遠心力を利用して連続で殴りつけ、敵に致命的なダメージを与える。</value></data>
+  <data name="Skill.20010003.Name" xml:space="preserve"><value>ダブルバックスピンブロー</value></data>
+  <data name="Skill.20010004.Description" xml:space="preserve"><value>右腕に力を集中させ、強力な一撃を放つ。</value></data>
+  <data name="Skill.20010004.Name" xml:space="preserve"><value>ハイパーパンチ</value></data>
+  <data name="Skill.20020001.Description" xml:space="preserve"><value>怒りに駆られ、攻撃速度が一時的に上昇する。</value></data>
+  <data name="Skill.20020001.Name" xml:space="preserve"><value>レイジ</value></data>
+  <data name="Skill.20020002.Description" xml:space="preserve"><value>空中に跳び上がり、回転しながら足で強烈に蹴りつける。</value></data>
+  <data name="Skill.20020002.Name" xml:space="preserve"><value>ツイスターキック</value></data>
+  <data name="Skill.20020003.Description" xml:space="preserve"><value>肘で突進し、周囲の敵に力の波動を放つ。</value></data>
+  <data name="Skill.20020003.Name" xml:space="preserve"><value>エルボーラッシュ</value></data>
+  <data name="Skill.20020004.Description" xml:space="preserve"><value>絶え間ない鍛錬により、スタミナと命中率を永続的に高める。</value></data>
+  <data name="Skill.20020004.Name" xml:space="preserve"><value>スタミナマスタリー</value></data>
+  <data name="Skill.20040001.Description" xml:space="preserve"><value>死を避けるため、HPを一時的に高める。</value></data>
+  <data name="Skill.20040001.Name" xml:space="preserve"><value>ディープブレス</value></data>
+  <data name="Skill.20040002.Description" xml:space="preserve"><value>エネルギーの奔流を放ち、敵に致命的なダメージを与える。</value></data>
+  <data name="Skill.20040002.Name" xml:space="preserve"><value>タイガーキャノン</value></data>
+  <data name="Skill.20040003.Description" xml:space="preserve"><value>気を溜めて強力な雄叫びを上げ、周囲の敵の能力を下げる。</value></data>
+  <data name="Skill.20040003.Name" xml:space="preserve"><value>ウォークライ</value></data>
+  <data name="Skill.20040004.Description" xml:space="preserve"><value>素早く空中に跳び、飛ぶように降下して、敵に連続の大ダメージを2回与える。</value></data>
+  <data name="Skill.20040004.Name" xml:space="preserve"><value>リープスマッシュ</value></data>
+  <data name="Skill.20080001.Description" xml:space="preserve"><value>対象を拳で4回連続で殴りつける。</value></data>
+  <data name="Skill.20080001.Name" xml:space="preserve"><value>バラージ</value></data>
+  <data name="Skill.20080002.Description" xml:space="preserve"><value>防御力を一時的に高める。</value></data>
+  <data name="Skill.20080002.Name" xml:space="preserve"><value>ナーブスオブスチール</value></data>
+  <data name="Skill.20080003.Description" xml:space="preserve"><value>前進して、肩で敵に2回体当たりする。</value></data>
+  <data name="Skill.20080003.Name" xml:space="preserve"><value>ショルダーチャージ</value></data>
+  <data name="Skill.20080004.Description" xml:space="preserve"><value>3連続の蹴りで敵に致命的なダメージを与える。</value></data>
+  <data name="Skill.20080004.Name" xml:space="preserve"><value>タイフーンキック</value></data>
+  <data name="Skill.20100001.Description" xml:space="preserve"><value>防御力を永続的に高める。</value></data>
+  <data name="Skill.20100001.Name" xml:space="preserve"><value>ディフェンスマスタリー</value></data>
+  <data name="Skill.20100002.Description" xml:space="preserve"><value>空中に跳び、敵を3回蹴りつける。</value></data>
+  <data name="Skill.20100002.Name" xml:space="preserve"><value>ハンティングホーク</value></data>
+  <data name="Skill.20100003.Description" xml:space="preserve"><value>空中に跳んで地面を2回叩きつけ、周囲の敵にダメージを与える。</value></data>
+  <data name="Skill.20100003.Name" xml:space="preserve"><value>ラインブレイク</value></data>
+  <data name="Skill.20100004.Description" xml:space="preserve"><value>パーティーメンバーを鼓舞し、より強くする。</value></data>
+  <data name="Skill.20100004.Name" xml:space="preserve"><value>ハードトレーニング</value></data>
+  <data name="Skill.50010001.Description" xml:space="preserve"><value>呪術で生み出した強力な闇の魔法の光線を敵に放つ。</value></data>
+  <data name="Skill.50010001.Name" xml:space="preserve"><value>ダークボルト</value></data>
+  <data name="Skill.50010002.Description" xml:space="preserve"><value>強力な闇の魔法の光線で連続の範囲攻撃を行う。</value></data>
+  <data name="Skill.50010002.Name" xml:space="preserve"><value>ダークウェーブ</value></data>
+  <data name="Skill.50010003.Description" xml:space="preserve"><value>敵に呪いをかけ、一時的に動きを鈍らせる。</value></data>
+  <data name="Skill.50010003.Name" xml:space="preserve"><value>イナーシャ</value></data>
+  <data name="Skill.50010004.Description" xml:space="preserve"><value>精神の鍛錬により、MPポーションの回復力とマナ容量を永続的に高める。</value></data>
+  <data name="Skill.50010004.Name" xml:space="preserve"><value>インナーピース</value></data>
+  <data name="Skill.50020001.Description" xml:space="preserve"><value>強力な呪術で敵と周囲の対象にダメージを与える。</value></data>
+  <data name="Skill.50020001.Name" xml:space="preserve"><value>スピリチュアルフレア</value></data>
+  <data name="Skill.50020002.Description" xml:space="preserve"><value>呪術で対象の魂を縛りつける。</value></data>
+  <data name="Skill.50020002.Name" xml:space="preserve"><value>スピリチュアルマナクル</value></data>
+  <data name="Skill.50020003.Description" xml:space="preserve"><value>周囲の敵を一か所に集める。</value></data>
+  <data name="Skill.50020003.Name" xml:space="preserve"><value>ハント</value></data>
+  <data name="Skill.50020004.Description" xml:space="preserve"><value>ミガルを召喚し、自分とパーティーメンバーの攻撃ダメージを高める。</value></data>
+  <data name="Skill.50020004.Name" xml:space="preserve"><value>アドベントミガル</value></data>
+  <data name="Skill.50040001.Description" xml:space="preserve"><value>最大マナと引き換えに吸収力を高める。</value></data>
+  <data name="Skill.50040001.Name" xml:space="preserve"><value>レインメーカー</value></data>
+  <data name="Skill.50040002.Description" xml:space="preserve"><value>呪われた亡霊を降らせ、周囲の敵に大ダメージを与える。</value></data>
+  <data name="Skill.50040002.Name" xml:space="preserve"><value>ファントムコール</value></data>
+  <data name="Skill.50040003.Description" xml:space="preserve"><value>亡霊の力で敵にダメージを与え、その生命力を吸収する。</value></data>
+  <data name="Skill.50040003.Name" xml:space="preserve"><value>ホーント</value></data>
+  <data name="Skill.50040004.Description" xml:space="preserve"><value>召喚した亡霊の爪でダメージを与える。</value></data>
+  <data name="Skill.50040004.Name" xml:space="preserve"><value>スクラッチ</value></data>
+  <data name="Skill.50080001.Description" xml:space="preserve"><value>呪術で呪われた血の騎士を召喚する。</value></data>
+  <data name="Skill.50080001.Name" xml:space="preserve"><value>リコールヘスティアン</value></data>
+  <data name="Skill.50080002.Description" xml:space="preserve"><value>闇の鎖を敵に放ってダメージを与える。</value></data>
+  <data name="Skill.50080002.Name" xml:space="preserve"><value>ジャッジメント</value></data>
+  <data name="Skill.50080003.Description" xml:space="preserve"><value>ミドランダを召喚し、自分とパーティーメンバーの攻撃速度を高める。</value></data>
+  <data name="Skill.50080003.Name" xml:space="preserve"><value>アドベントミドランダ</value></data>
+  <data name="Skill.50080004.Description" xml:space="preserve"><value>ミドランダとミガルの力で周囲の敵にダメージを与える。</value></data>
+  <data name="Skill.50080004.Name" xml:space="preserve"><value>モーニングプレイ</value></data>
+  <data name="Skill.50100001.Description" xml:space="preserve"><value>強力な呪術で、使用者に追加のマナを与える。</value></data>
+  <data name="Skill.50100001.Name" xml:space="preserve"><value>クリード</value></data>
+  <data name="Skill.50100002.Description" xml:space="preserve"><value>周囲の敵に呪いのダメージを与える。</value></data>
+  <data name="Skill.50100002.Name" xml:space="preserve"><value>プレスオブディアティ</value></data>
+  <data name="Skill.50100003.Description" xml:space="preserve"><value>大地の精霊を呼び、敵を攻撃させる。</value></data>
+  <data name="Skill.50100003.Name" xml:space="preserve"><value>ゴーストリーネイル</value></data>
+  <data name="Skill.50100004.Description" xml:space="preserve"><value>呪術の力で生命力を永続的に高める。</value></data>
+  <data name="Skill.50100004.Name" xml:space="preserve"><value>ハイリジェネレーション</value></data>
+</root>

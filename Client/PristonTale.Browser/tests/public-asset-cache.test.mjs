@@ -225,7 +225,7 @@ test('cache metrics distinguish unknown lengths and report per-map deltas withou
     const delta=f.controller.snapshot(before);
     assert.equal(delta.hits,1);assert.equal(delta.hitsWithoutLength,1);assert.equal(delta.hitHeaderBytes,0);
     assert.equal(f.puts.length,0);
-    assert.ok(source.indexOf('publicAssetCache = await cacheReady;')<source.indexOf('await host.PrepareAsync(clientAddress.href)'));
+    assert.ok(source.indexOf('publicAssetCache = await cacheReady;')<source.indexOf('await host.PrepareAsync(clientAddress.href'));
     assert.match(source,/renderBundles: diagnostics\.get\('profile'\) === '1' && diagnostics\.get\('render-bundles'\) === '1'/);
     assert.ok(source.includes("diagnostics.get('profile') !== '1' || diagnostics.get('asset-cache') !== '1'"));
     assert.match(source,/gpuTiming: diagnostics\.get\('profile'\) === '1' && diagnostics\.get\('gpu-timing'\) === '1'/);

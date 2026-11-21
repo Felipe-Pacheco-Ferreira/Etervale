@@ -99,6 +99,15 @@ internal sealed partial class PresenceEncoder : IEventHandleWriter
     private Simulation.Events.RewardBoard? _rewards;
     private TradeView? _trade;
     private TradeRequest? _tradeRequest;
+    private DuelRequest? _duelRequest;
+    private DuelView? _duel;
+    private ArenaView? _arena;
+    // The receiver's arena match (0 none), read from its own view each snapshot.
+    private long _selfArenaMatch;
+    private RoyaleView? _royale;
+    // The receiver's Battle Royale (0 none) and whether it is out, read from its own view each snapshot.
+    private long _selfRoyale;
+    private bool _selfRoyaleOut;
     private PresenceFrame? _heldFrame;
     private EntityView[] _describeViews = [];
     private EntityGrid? _describeGrid;
@@ -203,6 +212,9 @@ internal sealed partial class PresenceEncoder : IEventHandleWriter
         }
 
         var self = snapshot.Entities[selfIndex];
+        _selfArenaMatch = self.ArenaMatch;
+        _selfRoyale = self.Royale;
+        _selfRoyaleOut = self.RoyaleOut;
         var field = snapshot.FieldId ?? 0;
         // A frame is pinned again for the descriptions asked about this snapshot; a hand-built snapshot is kept as is.
         if (snapshot.Frame is not { } described || described.TryPin(snapshot.FrameGeneration, _self))
@@ -359,6 +371,7 @@ internal sealed partial class PresenceEncoder : IEventHandleWriter
         SendTrade(snapshot, connection);
         SendBellatra(snapshot, connection);
         SendRewards(snapshot.Rewards, connection);
+        SendTitles(snapshot.Titles, connection);
         if (snapshot.Quest is not null)
         {
             SendQuest(snapshot.Quest, connection);
@@ -463,6 +476,62 @@ internal sealed partial class PresenceEncoder : IEventHandleWriter
             _tradeRequest = request;
             connection.Send(_scratch.AsSpan(0, new TradeAskedPacket(request.FromId, request.FromName).Write(_scratch)));
         }
+
+        SendDuel(in snapshot, connection);
+        SendArena(in snapshot, connection);
+        SendRoyale(in snapshot, connection);
+    }
+
+    // A new challenge, and the duel whenever a shown second changes or it ends (DuelView is rebuilt only then).
+    private void SendDuel(in WorldSnapshot snapshot, IPacketSink connection)
+    {
+        if (snapshot.DuelRequest is { } challenge && !ReferenceEquals(challenge, _duelRequest))
+        {
+            _duelRequest = challenge;
+            connection.Send(_scratch.AsSpan(0, new DuelAskedPacket(challenge.FromId, challenge.FromName).Write(_scratch)));
+        }
+
+        if (ReferenceEquals(snapshot.Duel, _duel))
+        {
+            return;
+        }
+
+        _duel = snapshot.Duel;
+        var state = _duel is { } duel
+            ? new DuelStatePacket(duel.OpponentId, duel.OpponentName, duel.Center, duel.SecondsLeft, duel.OutsideSecondsLeft)
+            : DuelStatePacket.None;
+        connection.Send(_scratch.AsSpan(0, state.Write(_scratch)));
+    }
+
+    // The arena queue or match whenever what it shows changes (ArenaView is rebuilt only then) or it ended.
+    private void SendArena(in WorldSnapshot snapshot, IPacketSink connection)
+    {
+        if (ReferenceEquals(snapshot.Arena, _arena))
+        {
+            return;
+        }
+
+        _arena = snapshot.Arena;
+        var state = _arena is { } arena
+            ? new ArenaStatePacket((byte)arena.Mode, arena.Queued, arena.Out, arena.OwnStanding, arena.FoeStanding, arena.SecondsLeft)
+            : ArenaStatePacket.None;
+        connection.Send(_scratch.AsSpan(0, state.Write(_scratch)));
+    }
+
+    // The Battle Royale registration or event whenever what it shows changes (RoyaleView is rebuilt only then) or it ended.
+    private void SendRoyale(in WorldSnapshot snapshot, IPacketSink connection)
+    {
+        if (ReferenceEquals(snapshot.Royale, _royale))
+        {
+            return;
+        }
+
+        _royale = snapshot.Royale;
+        var state = _royale is { } royale
+            ? new RoyaleStatePacket(royale.Registered ? RoyaleStatePacket.RegisteredState : royale.Out ? RoyaleStatePacket.OutState : RoyaleStatePacket.FightingState,
+                royale.Standing, royale.Total, royale.Radius, royale.SecondsToShrink, royale.SecondsLeft)
+            : RoyaleStatePacket.None;
+        connection.Send(_scratch.AsSpan(0, state.Write(_scratch)));
     }
 
     // A dead receiver learns what standing up would cost whenever that changes.
@@ -568,9 +637,15 @@ internal sealed partial class PresenceEncoder : IEventHandleWriter
         (view.Kind == EntityKind.Player ? _visiblePlayers : _visible).Add(index, distanceSq, essential);
     }
 
-    // The duel arena is solo: a player sees only the opponent and helper of its own duel.
+    // The duel arena is solo: a player sees only the opponent and helper of its own duel, or the players of its own arena
+    // match (ArenaRules), or the players of its own Battle Royale, those out only once it is out too (RoyaleRules).
     private bool HiddenInArena(int field, in EntityView view) =>
-        field == QuestArena.FieldCode && view.Kind != EntityKind.Npc && (view.Kind == EntityKind.Player || view.DuelPlayerId != _self);
+        field == QuestArena.FieldCode && view.Kind != EntityKind.Npc
+        && (view.Kind == EntityKind.Player ? !SeenInArena(view) : view.DuelPlayerId != _self);
+
+    private bool SeenInArena(in EntityView view) =>
+        view.ArenaMatch != 0 && view.ArenaMatch == _selfArenaMatch
+        || view.Royale != 0 && view.Royale == _selfRoyale && (!view.RoyaleOut || _selfRoyaleOut);
 
     private void SendSized(IPacketSink connection, Func<Span<byte>, int> write, int capacity)
     {
@@ -1097,7 +1172,8 @@ internal sealed partial class PresenceEncoder : IEventHandleWriter
         return HashCode.Combine(view.MaxLife, view.Level, view.TemplateId, view.MoveSpeed, view.AttackRate,
             HashCode.Combine(appearance.WeaponKey, appearance.ArmorKey, appearance.OffHandKey, appearance.InVillage, appearance.Tier, appearance.HairIndex,
                 HashCode.Combine(appearance.HelperPet, appearance.Phoenix, appearance.BigHead, appearance.WeaponGlow, appearance.OffHandGlow, appearance.ShopSign,
-                    appearance.ClanId, HashCode.Combine(appearance.ClanName, appearance.ClanMark, appearance.Mounted))),
+                    appearance.ClanId, HashCode.Combine(appearance.ClanName, appearance.ClanMark, appearance.Mounted, appearance.Pvp, appearance.Murderer, appearance.Duelling, appearance.ArenaSide,
+                        appearance.Title))),
             view.OwnerId,
             view.ModelScale);
     }

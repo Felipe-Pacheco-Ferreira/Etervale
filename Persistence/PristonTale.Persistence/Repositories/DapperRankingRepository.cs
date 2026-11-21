@@ -8,7 +8,7 @@ public sealed class DapperRankingRepository(IDbConnectionFactory connectionFacto
 {
     private const string TopSql =
         """
-        SELECT c.name, c.job_code, c.tier, c.level, c.exp, k.name AS clan_name
+        SELECT c.name, c.job_code, c.tier, c.level, c.exp, k.name AS clan_name, c.id
         FROM characters c
         JOIN accounts a ON a.id = c.account_id
         LEFT JOIN clan_members m ON m.character_id = c.id

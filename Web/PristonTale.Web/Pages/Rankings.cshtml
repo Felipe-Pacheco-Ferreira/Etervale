@@ -52,4 +52,53 @@
             </table>
         </div>
     }
+
+    <section class="arena-week" aria-labelledby="arena-title">
+        <header class="page-head">
+            <h2 id="arena-title">Arena da semana</h2>
+            <p>
+                Pontos da semana que começou em @Model.ArenaWeek.ToString("dd/MM", System.Globalization.CultureInfo.InvariantCulture):
+                +@PristonTale.Simulation.Combat.ArenaRules.WinPoints por vitória, −@PristonTale.Simulation.Combat.ArenaRules.LossPoints por derrota.
+                Toda segunda-feira os @PristonTale.Simulation.Combat.ArenaRules.PrizePlaces primeiros de cada faixa recebem ouro pelo correio.
+            </p>
+        </header>
+        @for (var band = 0; band < Model.Arena.Length; band++)
+        {
+            <h3>Nível @PristonTale.Simulation.Combat.ArenaRules.BandName(band)</h3>
+            @if (Model.Arena[band].Count == 0)
+            {
+                <p class="plate empty">Ninguém pontuou nesta faixa ainda.</p>
+            }
+            else
+            {
+                <div class="plate table-wrap">
+                    <table class="ranking ranking-arena">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Personagem</th>
+                                <th scope="col">Classe</th>
+                                <th scope="col" class="num">Pontos</th>
+                                <th scope="col" class="num">Vitórias</th>
+                                <th scope="col" class="num">Derrotas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var (standing, index) in Model.Arena[band].Select((standing, index) => (standing, index)))
+                            {
+                                <tr>
+                                    <td><span class="rank rank-@(index + 1)">@(index + 1)</span></td>
+                                    <th scope="row">@standing.Name</th>
+                                    <td>@Classes.Of(standing.JobCode, 0)</td>
+                                    <td class="num">@standing.Points</td>
+                                    <td class="num">@standing.Wins</td>
+                                    <td class="num">@standing.Losses</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        }
+    </section>
 </div>

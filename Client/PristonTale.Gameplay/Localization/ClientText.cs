@@ -33,6 +33,10 @@ public static class ClientText
 
     public static string Get(string key) => Resources.GetString(key, _culture) ?? key;
 
+    // A phrase in a language other than the shown one, such as the one a browser page asks for.
+    public static string Get(string key, string language) =>
+        Resources.GetString(key, CultureInfo.GetCultureInfo(ClientSettings.NormalizeLanguage(language))) ?? key;
+
     public static string Format(string key, object arg0) => string.Format(CultureInfo.InvariantCulture, Get(key), arg0);
 
     public static string Format(string key, object arg0, object arg1) => string.Format(CultureInfo.InvariantCulture, Get(key), arg0, arg1);
@@ -47,6 +51,7 @@ public static class ClientText
         : text.Id == GameTextId.ClassTitle ? ClassTitle(text)
         : text.Args.IsEmpty ? Get(GameKey(text.Id))
         : text.Id is GameTextId.QuestName or GameTextId.EliteQuestProgress or GameTextId.EliteQuestDone ? TitledQuest(text)
+        : text.Id is GameTextId.TitleGained or GameTextId.TitleLost or GameTextId.TitleEarned or GameTextId.TitleTaken ? Titled(text)
         : string.Format(CultureInfo.InvariantCulture, Get(GameKey(text.Id)), [.. text.Args]);
 
     // The quest texts whose first argument is a quest window title, worded from the client's data.
@@ -56,6 +61,25 @@ public static class ClientText
         args[0] = DataText.QuestTitle(text.Args[0]);
         return string.Format(CultureInfo.InvariantCulture, Get(GameKey(text.Id)), args);
     }
+
+    // The title texts, whose title argument (the first of TitleEarned and TitleTaken, the second of the others) is a code.
+    private static string Titled(GameText text)
+    {
+        object[] args = [.. text.Args];
+        var index = text.Id is GameTextId.TitleEarned or GameTextId.TitleTaken ? 0 : 1;
+        if (index < args.Length && int.TryParse(text.Args[index], CultureInfo.InvariantCulture, out var code))
+        {
+            args[index] = TitleName(code);
+        }
+
+        return string.Format(CultureInfo.InvariantCulture, Get(GameKey(text.Id)), args);
+    }
+
+    // A title's name by its code (TitleRules), empty for none; the keys are built once, as the name boxes ask every frame.
+    public static string TitleName(int code) => Simulation.Titles.TitleRules.IsTitle(code) ? Get(TitleKeys[code]) : "";
+
+    private static readonly string[] TitleKeys = Enumerable.Range(0, Simulation.Titles.TitleRules.Count)
+        .Select(static code => "Title." + (Simulation.Titles.TitleCode)code).ToArray();
 
     public static string Get(GameTextId id) => Get(GameKey(id));
 

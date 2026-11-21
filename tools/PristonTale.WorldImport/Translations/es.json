@@ -1,0 +1,1770 @@
+{
+  "npcs": {
+    "Adventurer Jin": {
+      "name": "Aventurero Jin",
+      "dialog": [
+        "¡Hola! Soy Jin. Ya viajé por todo el continente de Priston.",
+        "Viajé durante algunos años, pero ahora hago trabajo voluntario desde que aparecieron tantos monstruos.",
+        "Tengo una hermana gemela. Somos viajeros y ahora estamos separados. ¿Dónde estará ella~?"
+      ]
+    },
+    "Adventurer Skadi": {
+      "name": "Aventurera Skadi",
+      "dialog": [
+        "¡Hola! Soy Skadi, ya viajé por todo el continente de Priston.",
+        "Nací en una familia de viajeros, con un hermano gemelo. Hago trabajo voluntario en la aldea en estos tiempos peligrosos.",
+        "¿Podrías darle un 'hola' a mi hermano menor? ^0^"
+      ]
+    },
+    "Agni": {
+      "name": "Agni",
+      "dialog": [
+        "Que la fuerza del fuego y el valor te acompañen en el futuro...",
+        "¡Llegaste tarde! La batalla de Ardor ya comenzó.",
+        "¿Qué equipo ganará?",
+        "Tú también pareces muy fuerte.",
+        "Lo siento, no puedes entrar en Ardor ahora.",
+        "A esta hora, todos los días, se entregan las recompensas y el estadio se limpia y recibe mantenimiento.",
+        "Por favor, vuelve más tarde.",
+        "Parece demasiado pronto para que entres en Ardor. Necesitas más EXP."
+      ]
+    },
+    "Ahin": {
+      "name": "Ahin",
+      "dialog": [
+        "Debes de ser un guerrero valiente para llegar tan lejos.",
+        "Te preparé un regalo",
+        "Como no tengo mucho tiempo, solo puedes comprar un objeto en 3 minutos.",
+        "Hasta la próxima. Adiós."
+      ]
+    },
+    "Allya's Store": {
+      "name": "Tienda de Allya",
+      "dialog": []
+    },
+    "Arad, the Crystal Master": {
+      "name": "Arad, el Maestro de los Cristales",
+      "dialog": []
+    },
+    "Arad, the Crystal Master 2": {
+      "name": "Arad, el Maestro de los Cristales",
+      "dialog": []
+    },
+    "Arcane Moriph": {
+      "name": "Arcano Moriph",
+      "dialog": [
+        "Los objetos pueden perderse durante el refuerzo. Es mejor que la mezcla, que combina las habilidades una sola vez.",
+        "El aging se hizo para sacar el máximo de los objetos, pero al mismo tiempo existe la posibilidad de perderlos.",
+        "Puedes usar el aging en cualquier momento, si tienes los sheltoms y el dinero necesarios.",
+        "¿Estás listo? ¡Ahora empecemos el aging!"
+      ]
+    },
+    "Arcane's pupil Newtor": {
+      "name": "Newtor, discípulo del Arcano",
+      "dialog": [
+        "Moriph no ha vuelto desde que salió a buscar nuevos sheltoms. Yo haré el aging por ahora.",
+        "Por favor, dile a Moriph que vuelva cuando lo veas. Espero que no esté en problemas.",
+        "No tengo la experiencia de Moriph, así que hay riesgo de fallar. Pero haré mi mejor esfuerzo."
+      ]
+    },
+    "Ariel": {
+      "name": "Ariel",
+      "dialog": [
+        "Que la fuerza del agua, la sabiduría y la gracia te acompañen...",
+        "La Torre de la Prueba, Bellatra, es administrada por el clan 'XXX'",
+        "¡Llegaste tarde! Bellatra ya comenzó.",
+        "¿Qué equipo ganará?",
+        "Tú también pareces muy fuerte.",
+        "Lo siento, no puedes entrar en Bellatra ahora.",
+        "A esta hora del día se entregan las recompensas y el estadio se limpia y recibe mantenimiento.",
+        "Por favor, vuelve más tarde.",
+        "Parece demasiado pronto para que entres en Bellatra. Necesitas más EXP."
+      ]
+    },
+    "Ascam, the Vendor": {
+      "name": "Ascam, el Vendedor",
+      "dialog": []
+    },
+    "Atlantis Guard": {
+      "name": "Guardia de Atlantis",
+      "dialog": []
+    },
+    "Atlantis Guard 2": {
+      "name": "Guardia de Atlantis",
+      "dialog": []
+    },
+    "Atlantis Guard 3": {
+      "name": "Guardia de Atlantis",
+      "dialog": []
+    },
+    "Atlantis Guard 4": {
+      "name": "Guardia de Atlantis",
+      "dialog": []
+    },
+    "Atlantis Guard 5": {
+      "name": "Guardia de Atlantis",
+      "dialog": []
+    },
+    "Barba": {
+      "name": "Barba",
+      "dialog": [
+        "Hay una forma de proteger tu equipo en estos tiempos caóticos.",
+        "Grabar una marca en el equipo reduce el riesgo de perderlo.",
+        "Si quieres quitar la marca, vas a necesitar un Pincel del Olvido.",
+        "Los objetos marcados no pueden pasar de tu inventario al de otra persona."
+      ]
+    },
+    "Baurin": {
+      "name": "Baurin",
+      "dialog": [
+        "Feliz Año Nuevo",
+        "Si me traes una cápsula de dragón, te la cambio por un regalo."
+      ]
+    },
+    "Bayoo": {
+      "name": "Bayoo",
+      "dialog": [
+        "Rezo para que la libertad del viento acompañe tu mirada...",
+        "¡Llegaste tarde! La batalla de Ardor ya comenzó.",
+        "¿Qué equipo ganará?",
+        "Tú también pareces muy fuerte.",
+        "Lo siento, no puedes entrar en Ardor ahora.",
+        "A esta hora, todos los días, se entregan las recompensas y el estadio se limpia y recibe mantenimiento.",
+        "Por favor, vuelve más tarde.",
+        "Parece demasiado pronto para que entres en Ardor. Necesitas más EXP."
+      ]
+    },
+    "Bellia": {
+      "name": "Bellia",
+      "dialog": [
+        "Tráeme tres cristales del mismo monstruo y te hago un cristal de monstruo triple."
+      ]
+    },
+    "Blacksmith Bartz": {
+      "name": "Herrero Bartz",
+      "dialog": [
+        "No esperaba que Midranda invadiera Pillai...",
+        "Siempre creí que Pillai era segura, pero esa idea se acabó.",
+        "Mi cuerpo está herido, pero todavía puedo hacer buenas armas.",
+        "No puedo creer que la próspera Pillai se haya convertido en cenizas en tan poco tiempo."
+      ]
+    },
+    "Blacksmith Dfrain": {
+      "name": "Herrero Dfrain",
+      "dialog": [
+        "Este es el Escudo Torre que hice yo. Nadie puede hacer algo así.",
+        "Bueno, puedo hacer armaduras mucho mejores que esta con facilidad. ¿Pero para qué? Nadie las compra de todos modos.",
+        "¿Qué? ¿Que soy un herrero torpe? ¿Y mi gran Escudo Torre, eh?",
+        "No es aquí donde se buscan armas. Ve a hablar con el Sr. Bartz en la tienda de al lado. No me molestes..."
+      ]
+    },
+    "Blacksmith Goden": {
+      "name": "Herrero Goden",
+      "dialog": [
+        "Bienvenido a la tienda de Goden. Trabajamos con equipo para guerreros principiantes.",
+        "Aquí hay varios equipos para guerreros principiantes.",
+        "Hice algunos objetos nuevos hoy. ¡La calidad es de primera!",
+        "¿Buscas otra cosa? Si es así, busca al herrero Gus. Está en el lado oeste de la ciudad."
+      ]
+    },
+    "Blacksmith Gus": {
+      "name": "Herrero Gus",
+      "dialog": [
+        "Tenemos una gran variedad de objetos para guerreros principiantes. ¡Pasa!",
+        "Nuestros productos van desde armas para principiantes hasta armaduras. Echa un vistazo.",
+        "¿No encontraste lo que buscas? Entonces ve con el herrero Goden. Está en el lado este de la ciudad.",
+        "No hago las mismas lanzas que usan los guardias de la ciudad, pero tengo otros objetos que te pueden gustar."
+      ]
+    },
+    "Blacksmith Joao": {
+      "name": "Herrero João",
+      "dialog": []
+    },
+    "Blacksmith Max": {
+      "name": "Herrero Max",
+      "dialog": []
+    },
+    "Blacksmith Pedro": {
+      "name": "Herrero Pedro",
+      "dialog": []
+    },
+    "Blacksmith Ruga": {
+      "name": "Herrero Ruga",
+      "dialog": [
+        "No tengo el mejor equipo, pero puede que te resulte útil aquí y allá.",
+        "Echa un vistazo a mi inventario. Hay equipo que tanto Tempskrons como Morions pueden usar.",
+        "No tengo una forja elegante, pero mi equipo es lo bastante bueno para vender.",
+        "He estado guardando oro para ayudar a construir una gran aldea aquí."
+      ]
+    },
+    "Blacksmith Umph": {
+      "name": "Herrero Umph",
+      "dialog": [
+        "Estas son las especialidades de Navisko. Solo yo puedo hacerlas. Echa un vistazo a mis preciados productos.",
+        "Nadie en este continente fabrica armas y armaduras más fuertes que las mías.",
+        "Los guerreros del SOD nunca aparecen por aquí. ¿Será que no les importan mis armas? ¿Qué tan fuertes son?",
+        "Si tienes algo para vender, muéstramelo. Si necesitas algo, aquí está el equipo más fuerte del continente."
+      ]
+    },
+    "Blacksmith Umph 2": {
+      "name": "Herrero Umph",
+      "dialog": [
+        "Estas son las especialidades de Navisko. Solo yo puedo hacerlas. Echa un vistazo a mis preciados productos.",
+        "Nadie en este continente fabrica armas y armaduras más fuertes que las mías.",
+        "Los guerreros del SOD nunca aparecen por aquí. ¿Será que no les importan mis armas? ¿Qué tan fuertes son?",
+        "Si tienes algo para vender, muéstramelo. Si necesitas algo, aquí está el equipo más fuerte del continente."
+      ]
+    },
+    "Bless Castle Guard": {
+      "name": "Guardia del Bless Castle",
+      "dialog": [
+        "Acabo de entrar en la milicia. ¡Cómo pueden mandarme a hacer guardia! ¡No tiene sentido!",
+        "Cuando el Bless Castle abre, muchos guerreros luchan aquí.",
+        "¡No puedes entrar en este castillo ahora!",
+        "No me molestes, o llamo a la guardia real para que te saque de aquí.",
+        "¡Oye! No me apuntes con el arma de esa manera.",
+        "Si ves a mi Cecillia, por favor dile que estoy bien."
+      ]
+    },
+    "Bridge Guard": {
+      "name": "Guardia del Puente",
+      "dialog": [
+        "Cuidado. Hay monstruos fuertes después de este puente.",
+        "Cuidado. ¡Camina despacio! Este puente puede derrumbarse en cualquier momento.",
+        "Quédate aquí. Algo peligroso te espera después de este puente.",
+        "¿Vas a Navisko? ¡No olvides saludar al guardia del desierto!"
+      ]
+    },
+    "Bronze Wolverine": {
+      "name": "Wolverine de Bronce",
+      "dialog": [
+        "Khaaaaaooooooooo! Grrrrrrrrrrrrrreeeeeeeeeeeeeerrrrrr...",
+        "Uuuuuuuuuuuuuuuu~~"
+      ]
+    },
+    "Buma": {
+      "name": "Buma",
+      "dialog": [
+        "No me pegues. Cof cof",
+        "El SOD comienza cada madrugada. Llega a tiempo.",
+        "En las partidas del SOD ganas puntos que se convierten en oro. Intenta hacer todos los puntos que puedas.",
+        "Hay una restricción de nivel para entrar en el Anfiteatro del SOD. A partir del nivel 10, entras en el SOD a través de BUMA.",
+        "Gracias por participar en el SOD. Horario del SOD: todos los días, de 01:00 a 06:00 (GMT+09:00). ¡Diviértete!"
+      ]
+    },
+    "Captured Midranda": {
+      "name": "Midranda Capturado",
+      "dialog": [
+        "¡Nos derrotaste a mí y a mis sirvientes!",
+        "¡Voy a escapar y buscaré mi venganza!",
+        "¡El poder de los Morions no es lo bastante fuerte para mantenerme aquí para siempre!",
+        "Por favor, señor, no fui yo, fue mi amigo; ¿cuánto tiempo estaré desterrado, señor?"
+      ]
+    },
+    "Casa": {
+      "name": "Casa",
+      "dialog": [
+        "Que la fuerza del fuego y el valor te acompañen en el futuro...",
+        "La Torre de la Prueba, Bellatra, es administrada por el clan 'XXX'",
+        "¡Llegaste tarde! Bellatra ya comenzó.",
+        "¿Qué equipo ganará?",
+        "Tú también pareces muy fuerte.",
+        "Lo siento, no puedes entrar en Bellatra ahora.",
+        "A esta hora del día se entregan las recompensas y el estadio se limpia y recibe mantenimiento.",
+        "Por favor, vuelve más tarde.",
+        "Parece demasiado pronto para que entres en Bellatra. Necesitas más EXP."
+      ]
+    },
+    "Cave Guard": {
+      "name": "Guardia de la Caverna",
+      "dialog": [
+        "Antes se llamaba Caverna de la Colmena, pero se volvió guarida de monstruos cuando se derrumbó la pared que lleva al Santuario de las Tinieblas, por donde se esparció el espíritu maligno.",
+        "Esta es la Caverna de la Colmena. Solo los guerreros entrenados pueden pasar por aquí.",
+        "Puedes ir a la Caverna de los Hongos, en la tierra de Tempskron, que también lleva al Santuario de las Tinieblas.",
+        "En lo más profundo de la caverna hay un pasaje que lleva al Santuario de las Tinieblas. El espíritu maligno domina la caverna. Te aconsejo mantenerte lejos."
+      ]
+    },
+    "Cave Guard 2": {
+      "name": "Guardia de la Caverna",
+      "dialog": [
+        "Esta es la entrada de la Caverna de los Hongos, que lleva al Santuario de las Tinieblas. Las criaturas de la caverna se volvieron monstruos por culpa de un espíritu maligno del Santuario de las Tinieblas.",
+        "Puedes ir a la Caverna de la Colmena, en la tierra de Morion, que también lleva al Santuario de las Tinieblas.",
+        "Solo quienes tienen nivel 55 o más pueden pasar por aquí.",
+        "Concéntrate mientras estés en el Santuario de las Tinieblas, porque el mal puede absorber tu poder."
+      ]
+    },
+    "Chris": {
+      "name": "Chris",
+      "dialog": [
+        "Te doy un regalo si me traes 7 balones de fútbol.",
+        "Amo tanto el fútbol que colecciono muchos balones."
+      ]
+    },
+    "Christmas Longbo": {
+      "name": "Longbo de Navidad",
+      "dialog": []
+    },
+    "Civilian Minuren": {
+      "name": "Ciudadano Minuren",
+      "dialog": [
+        "Navisko es una pequeña ciudad en el centro de Tempskron. Poca gente se atreve a entrar, porque dicen que allí pasan cosas extrañas.",
+        "Te van a doler los músculos cuando despiertes por la mañana. Tal vez sea por una bruja del agua bajo la ciudad. ¡Qué lugar tan desolado!",
+        "Anoche soñé que un mecánico me atacaba. Dolió tanto y pareció tan real. Todavía parece real.",
+        "Desde que abrió el Anfiteatro del SOD, muchos guerreros visitan Navisko. Se volvió una de las atracciones de la tierra de Priston.",
+        "¿Viste el portal en el centro de la aldea? Es un dispositivo increíble que te teletransporta en un instante."
+      ]
+    },
+    "Clan Master": {
+      "name": "Maestro de Clan",
+      "dialog": [
+        "Soy el responsable de todo lo relacionado con los clanes.",
+        "Para crear un clan, necesitas nivel 50 o más y pagar 500.000 de oro.",
+        "Cuanto mayor sea el nivel del jefe del clan, más miembros puede tener el clan.",
+        "Puedes usar la marca del clan y el foro en el sitio web de Priston Tale."
+      ]
+    },
+    "Cleric": {
+      "name": "Clérigo",
+      "dialog": []
+    },
+    "Clever Daemon": {
+      "name": "Daemon, el Astuto",
+      "dialog": [
+        "La única forma de ir a la Isla Bless es por teletransporte.",
+        "Soy la única persona que puede teletransportar a la gente al Bless Castle."
+      ]
+    },
+    "Clever Newter": {
+      "name": "Newter, el Astuto",
+      "dialog": [
+        "Investigué y estudié toda la vida por la prosperidad de Pillai. No puedo dejar esta ciudad ni siquiera después de haber sido herido así.",
+        "No dejo de pensar en qué puedo hacer para recuperar Pillai.",
+        "Usa el Teleport Core cuando vayas a la batalla; es el cristal que yo estudié.",
+        "Valiente guerrero. Por favor, recupera nuestra Pillai."
+      ]
+    },
+    "Convicted Felon, Nadia": {
+      "name": "Nadia, la Condenada",
+      "dialog": [
+        "Me atraparon haciendo travesuras y me desactivaron para siempre. No mezcles tus objetos con el 'Artesano de mezclas Morald' para rehacer los atributos; no podrás deshacer la mezcla conmigo. -->",
+        "Usa solo las Piedras de Respec opcionales con Teiwaz, Jera y Sol para rehacer los atributos de los objetos. Si mezclaste un objeto sin querer, abre un ticket de soporte para cambiarlo. Esto se hará UNA sola vez. Después de eso, mala suerte. -->"
+      ]
+    },
+    "Craftman Salon": {
+      "name": "Artesano Salon",
+      "dialog": [
+        "Necesitas una receta y tres tipos de runa para hacer un objeto.",
+        "Revisa la receta de la mezcla antes de hacer un objeto, porque el objeto producido depende de la runa usada.",
+        "Soy la única persona en el continente de Priston que puede hacer cualquier objeto que quieras."
+      ]
+    },
+    "Craftsman Fizk": {
+      "name": "Artesano Fizk",
+      "dialog": []
+    },
+    "Cuepy Costumes": {
+      "name": "Disfraces Cuepy",
+      "dialog": [
+        "¡Estos disfraces son solo para las chicas!"
+      ]
+    },
+    "Danu": {
+      "name": "Danu",
+      "dialog": [
+        "Que la riqueza de la tierra y el amor acompañen tu vida...",
+        "¡Llegaste tarde! La batalla de Ardor ya comenzó.",
+        "¿Qué equipo ganará?",
+        "Tú también pareces muy fuerte.",
+        "Lo siento, no puedes entrar en Ardor ahora.",
+        "A esta hora, todos los días, se entregan las recompensas y el estadio se limpia y recibe mantenimiento.",
+        "Por favor, vuelve más tarde.",
+        "Parece demasiado pronto para que entres en Ardor. Necesitas más EXP."
+      ]
+    },
+    "Desert Guard": {
+      "name": "Guardia del Desierto",
+      "dialog": [
+        "Apártate. Esta zona es muy peligrosa y solo los guerreros fuertes con certificado nacional pueden pasar.",
+        "Los guerreros de nivel 50 pueden pasar por aquí.",
+        "Esta es una zona restringida, porque muchos monstruos mortales vagan por el desierto.",
+        "Un Templo Maldito está en la parte este del Antiguo Campo de Batalla, detrás de mí."
+      ]
+    },
+    "Dindo, the Alchemist": {
+      "name": "Dindo, el Alquimista",
+      "dialog": []
+    },
+    "Dingo, the Alchemist": {
+      "name": "Dingo, el Alquimista",
+      "dialog": []
+    },
+    "Disabled": {
+      "name": "Desactivado",
+      "dialog": []
+    },
+    "Donation Event Maria": {
+      "name": "María del Evento de Donaciones",
+      "dialog": [
+        "Oí decir que mucha gente de esta ciudad tiene buen corazón. Sería genial que donaras algo de dinero para las personas con discapacidad."
+      ]
+    },
+    "Dos": {
+      "name": "Dos",
+      "dialog": [
+        "Trabajo en un laboratorio secreto.",
+        "Aprendí la técnica de hacer agujeros de colores en tu equipo.",
+        "Mis taladros atraviesan las armaduras más resistentes."
+      ]
+    },
+    "Dungeon Keeper": {
+      "name": "Guardián de la Mazmorra",
+      "dialog": [
+        "El Rey Hopy rompió la pared de la mazmorra y se descubrió una sala escondida. ¿Para qué sirve esa sala?",
+        "Esta es la mazmorra construida por los antiguos para aprisionar algo.",
+        "Los guerreros de nivel 40 pueden pasar por aquí.",
+        "El Rey Hopy, capitán de la tropa de los Hopies, aparece en la Mazmorra Antigua. Me da escalofríos pensar en sus músculos enormes y en su cuerno espantoso."
+      ]
+    },
+    "Elder Hosean": {
+      "name": "Anciano Hosean",
+      "dialog": [
+        "¿Cómo llegaste tan lejos, hasta el interior?",
+        "Hum, hum... Solo soy un viejo que vive muy lejos, en el interior.",
+        "Estoy ayudando temporalmente al reino con las pruebas de rango.",
+        "¡Cuidado! Camina con atención, porque hay monstruos peligrosos cerca."
+      ]
+    },
+    "Eura Guard": {
+      "name": "Guardia de Eura",
+      "dialog": [
+        "Por la fuerte nevada, no puedes seguir. Tengo órdenes de restringir la entrada a la zona.",
+        "Eres un gran guerrero por haber llegado tan lejos, pero por la fuerte nevada no puedes seguir.",
+        "Vuelve a la aldea de Eura; puedes quedar atrapado en la nieve.",
+        "Dicen que los monstruos de los campos de hielo son mucho más fuertes que los de los campos de hierro."
+      ]
+    },
+    "Eura Guard 2": {
+      "name": "Guardia de Eura",
+      "dialog": [
+        "La nieve cae con fuerza en el campo de hielo y puede perjudicar a la aldea de Eura.",
+        "Por la fuerte nevada, los monstruos andan despacio, pero la aldea de Eura todavía restringe la entrada.",
+        "Pareces tan fuerte; me gustaría desafiarte algún día.",
+        "El continente de Priston se está debilitando; algo va a pasar."
+      ]
+    },
+    "Eura Warehouse Keeper": {
+      "name": "Guardián del Almacén de Eura",
+      "dialog": [
+        "Me preocupa guardar los objetos. ¡Este clima puede congelarlos!",
+        "Bueno, aquí están tus cosas.",
+        "Viniste desde tan lejos; ¿eres un guerrero famoso del continente?",
+        "Hace todavía más frío al norte. ¿Vas para allá ahora?"
+      ]
+    },
+    "Event Girl": {
+      "name": "Chica del Evento",
+      "dialog": [
+        "Ofrecemos el servicio de redistribución de los puntos de atributo y de habilidad. Aprovecha nuestro servicio.",
+        "Solo puedes redistribuir una vez por acceso al juego. Pero puedes redistribuir de nuevo después de entrar al juego otra vez."
+      ]
+    },
+    "Event Girl 2": {
+      "name": "Chica del Evento",
+      "dialog": [
+        "Si me dices la frase de aliento, te doy un objeto.",
+        "Consigues una 'Cápsula de la Victoria' con el NPC de distribución.",
+        "Te deseo mucha suerte",
+        "¡Así se hace!"
+      ]
+    },
+    "Event girl, Rosemary": {
+      "name": "Rosemary, la Chica del Evento",
+      "dialog": [
+        "Durante el evento especial, puedes usar puntos estrella para ver una película o cambiarlos por regalos. Mira si tienes la oportunidad de ganar un premio.",
+        "¿Qué son los puntos estrella? Son puntos de bonificación que cambias por varios regalos. Visita la página de Priston Tale para más detalles."
+      ]
+    },
+    "Force Master": {
+      "name": "Maestro de la Force",
+      "dialog": [
+        "Los pedazos de sheltom que heredaron un poder invisible se llaman Force Orbs.",
+        "Esta técnica viene de una cultura diferente, que no es de Tempskron ni de Morion.",
+        "Recuerda que los Force Orbs se consumen al usarlos.",
+        "Usando los Force Orbs, puedes tener un poder de ataque increíble."
+      ]
+    },
+    "Force Master 2": {
+      "name": "Maestro de la Force",
+      "dialog": [
+        "Cuando la tecnología mejore, serán posibles varias alquimias de Force Orb.",
+        "El frío no afecta el rendimiento de los Force Orbs.",
+        "Saluda al Maestro de la Force en Ricarten y Pillai.",
+        "Sugiero usar Force Orbs para luchar contra monstruos más fuertes."
+      ]
+    },
+    "Fraud": {
+      "name": "Impostor",
+      "dialog": [
+        "Hoy en día esos aventureros parecen tener poca fuerza mental.",
+        "Cuando era joven, derroté a 18 monstruos de una vez.",
+        "Cada semana te voy a conseguir el oponente adecuado. ¡Así que prepárate!"
+      ]
+    },
+    "Fury": {
+      "name": "Fury",
+      "dialog": [
+        "Khaaaaaaaaaaaaaooooooooooooo",
+        "Khhhhhhhhhhhhuuuuuuaaaaaaaaa",
+        "Phhhhhuuuuuuuurrrrrrrrrrr.."
+      ]
+    },
+    "Golden Wolverine": {
+      "name": "Wolverine Dorado",
+      "dialog": [
+        "Khhhhhhhaaaaaaaaaaaaaaooooo..!",
+        "Grrrrrrrrrrrrrrr.."
+      ]
+    },
+    "Good boy, Longbo": {
+      "name": "Longbo, el Buen Chico",
+      "dialog": [
+        "Todo cambió en una noche. Mis piernas se volvieron más largas. Mi cara cambió. Y la ciudad entera cambió. Ya, ya... Está bien, ¿pero y la estatua que estaba aquí? Se ve tan vacío sin ella.",
+        "Aquí había una estatua enorme. Yo tomaba siestas recostado en ella... Buenos tiempos.",
+        "¿Has oído hablar del Santuario de las Tinieblas? Está entre la Caverna de la Colmena y la Caverna de los Hongos. ¡Allí aparecen monstruos horribles!",
+        "Oí decir que hay un Templo Maldito en medio del desierto. Yo nunca he ido. Tú tampoco soñarías con ir, porque solo los más fuertes cruzan el templo.",
+        "Hay una ciudad llamada Navisko, donde los habitantes se vuelven monstruos por la noche. La ciudad fue maldecida por un espíritu maligno. Lo extraño es que ellos mismos ni saben que se vuelven monstruos.",
+        "¿Conoces el portal? Un inventor lo creó para teletransportarse. Es un dispositivo increíble que te lleva de un lugar a otro en un instante. Qué mundo tan maravilloso...",
+        "Oí decir que en Navisko se celebra una competencia de guerra llamada SOD. Si superas la ronda indicada, recibes un premio en dinero. Pareces lo bastante fuerte. ¿Por qué no entras al SOD?",
+        "Me volví un buen chico, pero la gente me llamaba Longbo, el insoportable. Todos me tenían miedo. Si me haces enojar demasiado, vuelvo a ser como antes. Así que ni lo pienses, ¿sí?"
+      ]
+    },
+    "Guide Ran": {
+      "name": "Guía Ran",
+      "dialog": [
+        "Estoy aquí para ayudar a los principiantes a vivir en el continente.",
+        "Te doy algunos objetos útiles si me ayudas.",
+        "Al llegar al nivel 40, ya no necesitas hablar conmigo.",
+        "Depende de ti ayudar a traer de vuelta la paz después de la conspiración de Egolanos.",
+        "Si ayudas a la gente de la ciudad, te darán muchos objetos."
+      ]
+    },
+    "Gurf, the Merchant": {
+      "name": "Gurf, el Mercader",
+      "dialog": []
+    },
+    "Gurf, the Merchant 2": {
+      "name": "Gurf, el Mercader",
+      "dialog": []
+    },
+    "Hannah's Store": {
+      "name": "Tienda de Hannah",
+      "dialog": []
+    },
+    "Helper Pria": {
+      "name": "Ayudante Pria",
+      "dialog": [
+        "Bienvenido al mundo de Priston Tale.",
+        "Una vez al día te lanzaremos un hechizo para ayudarte a crecer más rápido."
+      ]
+    },
+    "Helper Stonia": {
+      "name": "Ayudante Stonia",
+      "dialog": [
+        "Bienvenido al mundo de Priston Tale.",
+        "Una vez al día te lanzaremos un hechizo para ayudar en tu desarrollo."
+      ]
+    },
+    "Helper Tairee": {
+      "name": "Ayudante Tairee",
+      "dialog": [
+        "Bienvenido al mundo de Priston Tale.",
+        "Una vez al día te lanzaremos un hechizo mágico para ayudarte a crecer más rápido."
+      ]
+    },
+    "Hermit": {
+      "name": "Ermitaño",
+      "dialog": [
+        "No hay nadie aquí... ¿verdad?",
+        "Será seguro esconderme aquí.."
+      ]
+    },
+    "HobGoblin": {
+      "name": "HobGoblin",
+      "dialog": [
+        "Por favor, respeta la fila.",
+        "¡Oye! No te metas en la fila. Compórtate, por favor.",
+        "El SOD comienza cada madrugada. Llega a tiempo.",
+        "Hay una restricción de nivel para entrar en el Anfiteatro del SOD. A partir del nivel 10, entras en el SOD a través de BUMA.",
+        "Gracias por participar en el SOD. Horario del SOD: todos los días, de 01:00 a 06:00 (GMT+09:00). ¡Diviértete!"
+      ]
+    },
+    "Hopy Costumes": {
+      "name": "Disfraces Hopy",
+      "dialog": [
+        "¡Estos disfraces son solo para los chicos!"
+      ]
+    },
+    "Hunter Owen": {
+      "name": "Cazador Owen",
+      "dialog": [
+        "¡Oh~ Valiente soldado. Qué bueno verte.",
+        "Soy Owen, un cazador. No soy excelente, ¡pero puedo matar a la mayoría de los monstruos!",
+        "Ten cuidado siempre. Los monstruos son muy violentos."
+      ]
+    },
+    "Imprisoned Valento": {
+      "name": "Valento Aprisionado",
+      "dialog": []
+    },
+    "Inventor of Warpgate": {
+      "name": "Inventor de los Portales",
+      "dialog": [
+        "¿Conoces a Newter, de Pillai? Creo que se llevó mi técnica...",
+        "¿De verdad vas a la aldea de Pillai a probar el teletransporte?",
+        "¡El teletransporte solo te lleva a cuatro lugares, pero los portales te llevan mucho más lejos!"
+      ]
+    },
+    "Item Distributor": {
+      "name": "Distribuidor de Objetos",
+      "dialog": [
+        "Veamos si tengo algo a tu nombre para retirar.",
+        "Bien. Déjame ver. Hmmm. Hmmmm. ¿Cuál es tu nombre otra vez?",
+        "Creo que no tengo nada nuevo para ti. Déjame revisar de nuevo.",
+        "¿Encargaste algo? Si no aparece, ¡tal vez necesites entrar al mundo de nuevo!"
+      ]
+    },
+    "Jail Guard": {
+      "name": "Guardia de la Prisión",
+      "dialog": [
+        "Esta es la prisión donde están los criminales. Compórtate si no quieres quedar preso aquí.",
+        "Hay gente que intenta entrar a la prisión para llamar la atención de los demás. ¡Qué vergüenza!",
+        "Oí decir que los Tempskrons encierran lobos en la prisión. ¡Qué desperdicio!",
+        "Es muy aburrido vigilar la prisión solo. Pasa por aquí cuando tengas tiempo. Aaaahhh..."
+      ]
+    },
+    "Jasmine, the Stylist": {
+      "name": "Jasmine, la Estilista",
+      "dialog": []
+    },
+    "Kadomatsu": {
+      "name": "Kadomatsu",
+      "dialog": []
+    },
+    "King Hoppie": {
+      "name": "Rey Hoppie",
+      "dialog": [
+        "Te doy un objeto si juntas las 8 piezas de la imagen.",
+        "Ya encontré casi todas. Pienso encontrar el resto antes del 26 de julio, así que trae el resto para entonces.",
+        "Si me traes la imagen de la Sacerdotisa/del Mecánico, te doy un objeto.",
+        "Creo que se encontraron la mayoría de las piezas. Busco la imagen completa hasta el 26 de julio."
+      ]
+    },
+    "Kiosk, Rune": {
+      "name": "Quiosco de Rune",
+      "dialog": [
+        "Hola, soy Rune. Soy la única por aquí que vende pociones.",
+        "Las ruinas son muy peligrosas. Lleva siempre pociones de vida.",
+        "He estado juntando dinero para construir una aldea decente aquí en Ruinen.",
+        "¡Bienvenido a la tienda de Rune! Trabajamos con varias pociones y Cores."
+      ]
+    },
+    "Knight Commander Derik": {
+      "name": "Comandante de los Caballeros Derik",
+      "dialog": [
+        "Si eres un guerrero hábil, es mejor que entres al Reino de los Caballeros.",
+        "Para entrar en la Corte Real, busca al Mago Real Ray en Pillai.",
+        "Aprendí del mejor... Verkan, el maestro de habilidades de Tempskron."
+      ]
+    },
+    "Lake Guard": {
+      "name": "Guardia del Lago",
+      "dialog": [
+        "Esta zona está abierta a los guerreros aprobados por el reino. Apártate, es muy peligroso.",
+        "Los guerreros de nivel 70 pueden pasar por aquí.",
+        "Prohibimos esta zona porque hay monstruos muy peligrosos."
+      ]
+    },
+    "Lauren store": {
+      "name": "Tienda de Lauren",
+      "dialog": [
+        "Tener suficientes pociones antes de cazar es la preparación básica.",
+        "Estamos un poco lejos de una ciudad grande, pero tenemos todo lo que necesitas.",
+        "Hace tanto frío hoy; descansa aquí un poco antes de partir.",
+        "Las pociones pueden congelarse con el frío, pero siguen siendo igual de eficaces."
+      ]
+    },
+    "MapleTree": {
+      "name": "Arce",
+      "dialog": []
+    },
+    "Marina": {
+      "name": "Marina",
+      "dialog": [
+        "Mi querido príncipe, ¿no es hermoso?",
+        "Si no se luciera tanto frente a los demás, sería perfecto..",
+        "En realidad, creo que esa manera presumida suya también es muy encantadora."
+      ]
+    },
+    "Maron's Witchcraft Store": {
+      "name": "Tienda de Hechicería de Maron",
+      "dialog": [
+        "Aquí vendemos equipo de hechicería. Si eres mago, encontrarás muchas cosas útiles.",
+        "Bienvenido. Trabajamos con equipo para magos y sacerdotisas (¡hechicería!). Echa un vistazo a nuestros productos.",
+        "Tenemos la 2.ª sucursal en Ruinen y la 3.ª sucursal en Navisko. Si buscas equipo más poderoso, visita nuestras sucursales.",
+        "La mayoría del equipo de hechicería del continente lo diseñé y lo hice yo."
+      ]
+    },
+    "Maron's store, 2nd branch": {
+      "name": "Tienda de Maron, 2.ª sucursal",
+      "dialog": [
+        "Esta es la segunda sucursal de la tienda de hechicería del Sr. Maron. Claro que el Sr. Maron nos provee sus productos.",
+        "Vendemos equipo de hechicería hecho por el Sr. Maron. Echa un vistazo.",
+        "¿Ves? Todo el equipo de aquí tiene el autógrafo del Sr. Maron.",
+        "Esta aldea no está muy desarrollada, pero logramos ganar algo de dinero gracias a los viajeros."
+      ]
+    },
+    "Maron's store, 3rd branch": {
+      "name": "Tienda de Maron, 3.ª sucursal",
+      "dialog": [
+        "Esta es la tercera sucursal de la tienda de hechicería del Sr. Maron. Garantizamos la misma calidad que la casa matriz.",
+        "La calidad es la misma. La única diferencia es que estos objetos se hacen en Pillai.",
+        "El Sr. Maron es la única persona en todo el continente que puede hacer este equipo.",
+        "Si necesitas comprar equipo de hechicería, mira bien nuestros productos."
+      ]
+    },
+    "Maron's store, 3rd branch 2": {
+      "name": "Tienda de Maron, 3.ª sucursal",
+      "dialog": [
+        "Esta es la tercera sucursal de la tienda de hechicería del Sr. Maron. Garantizamos la misma calidad que la casa matriz.",
+        "La calidad es la misma. La única diferencia es que estos objetos se hacen en Pillai.",
+        "El Sr. Maron es la única persona en todo el continente que puede hacer este equipo.",
+        "Si necesitas comprar equipo de hechicería, mira bien nuestros productos."
+      ]
+    },
+    "Maron's store, 3rd branch 3": {
+      "name": "Tienda de Maron, 3.ª sucursal",
+      "dialog": [
+        "Esta es la tercera sucursal de la tienda de hechicería del Sr. Maron. Garantizamos la misma calidad que la casa matriz.",
+        "La calidad es la misma. La única diferencia es que estos objetos se hacen en Pillai.",
+        "El Sr. Maron es la única persona en todo el continente que puede hacer este equipo.",
+        "Si necesitas comprar equipo de hechicería, mira bien nuestros productos."
+      ]
+    },
+    "Messenger Ian": {
+      "name": "Mensajero Ian",
+      "dialog": [
+        "¿Cómo estás? Soy Ian, el mensajero de Tempskron.",
+        "Entrego mensajes urgentes por todo el continente.",
+        "En este momento, todos los reinos de Priston están conteniendo a los monstruos.",
+        "Hay muchos monstruos poderosos fuera de la aldea, así que ten cuidado."
+      ]
+    },
+    "Messenger Rucia": {
+      "name": "Mensajera Rucia",
+      "dialog": [
+        "¿Cómo estás? Soy Rucia, la mensajera de Morion.",
+        "Entrego mensajes urgentes por el continente.",
+        "En este momento, todos los reinos de Priston están conteniendo a los monstruos.",
+        "Hay muchos monstruos poderosos fuera de la aldea, así que ten cuidado."
+      ]
+    },
+    "Milter": {
+      "name": "Milter",
+      "dialog": [
+        "La torre está llena de almas torturadas. Por favor, libéranos...",
+        "La maldición de Egolanos es poderosa. Estamos atrapados aquí para siempre..."
+      ]
+    },
+    "Miscellaneous Store Icyris": {
+      "name": "Tienda de Variedades Icyris",
+      "dialog": [
+        "Creo que el próximo asedio será una batalla mortal.",
+        "¿Qué necesitas?"
+      ]
+    },
+    "Miscellaneous Store, Allya": {
+      "name": "Tienda de Variedades, Allya",
+      "dialog": [
+        "Las pociones rojas recuperan HP y las verdes recuperan STM. Tenlas siempre contigo.",
+        "¡Ni el guerrero más fuerte mantiene su fuerza sin mis pociones de curación instantánea!",
+        "Hice yo sola todas las pociones que se venden en esta tienda. ¿Qué poción necesitas?",
+        "Elige la poción que combine con tu HP."
+      ]
+    },
+    "Miscellaneous Store, Allya 2": {
+      "name": "Tienda de Variedades, Allya",
+      "dialog": [
+        "Las pociones rojas recuperan HP y las verdes recuperan STM. Tenlas siempre contigo.",
+        "¡Ni el guerrero más fuerte mantiene su fuerza sin mis pociones de curación instantánea!",
+        "Hice yo sola todas las pociones que se venden en esta tienda. ¿Qué poción necesitas?",
+        "Elige la poción que combine con tu HP."
+      ]
+    },
+    "Miscellaneous Store, Byant": {
+      "name": "Tienda de Variedades, Byant",
+      "dialog": [
+        "Las pociones de emergencia son tan importantes como el agua en el desierto.",
+        "Este es el único lugar por aquí donde puedes comprar pociones.",
+        "La gente quiere comprar muchas pociones, porque los monstruos están cada vez más furiosos.",
+        "Lleva suficientes pociones para cruzar el desierto. Estoy seguro de que no podrás volver aquí a comprar más."
+      ]
+    },
+    "Miscellaneous Store, Lynn": {
+      "name": "Tienda de Variedades, Lynn",
+      "dialog": [
+        "Bienvenido. Esta es una zona de descanso en el Bosque de las Acacias.",
+        "En la entrada del Bosque de las Acacias hay un lugar llamado Colina de los Goblins, por donde vagan muchos Hobgoblins.",
+        "La Caverna de los Hongos está al oeste del Bosque de las Acacias, pero solo los guerreros fuertes pueden pasar.",
+        "Cuidado con los cíclopes por aquí. Son más fuertes que los otros monstruos."
+      ]
+    },
+    "Miscellaneous Store, Pillia": {
+      "name": "Tienda de Variedades, Pillia",
+      "dialog": [
+        "Fuerte o débil, tienes que llevar estas pociones.",
+        "Hasta el guerrero más fuerte recibe una paliza de los monstruos sin estas pociones.",
+        "No podemos fabricar pociones de maná con la tecnología actual.",
+        "Llevar pociones personalmente es la regla de oro de los guerreros."
+      ]
+    },
+    "Mixing Craftsman, Morald": {
+      "name": "Artesano de Mezclas, Morald",
+      "dialog": [
+        "¿Para qué sirve la mezcla? Bueno, maximizas la capacidad del equipo con un refuerzo único. Es mucho mejor que el aging, ya que los objetos pueden romperse en un refuerzo imperfecto.",
+        "La mezcla no es solo una tecnología muy avanzada, sino también la forma más segura de mejorar el equipo.",
+        "La mezcla es básicamente diferente del aging, con el cual puedes perder los objetos durante el refuerzo.",
+        "La mezcla se descubrió hace algunos milenios, y aun así solo se ha desvelado la mitad."
+      ]
+    },
+    "Molly's Disguises": {
+      "name": "Disfraces de Molly",
+      "dialog": [
+        "¡Oculta tu identidad con estos disfraces divertidos!"
+      ]
+    },
+    "Molly, the granny": {
+      "name": "Abuela Molly",
+      "dialog": [
+        "Por fin Midranda llegó a este lugar",
+        "Por favor, recupera nuestra Pillai, valiente guerrero.",
+        "Esta vieja quedó destrozada por culpa de Midranda.",
+        "¿Llegaré a ver Pillai entera de nuevo antes de morir?"
+      ]
+    },
+    "Moriph, the Mysterious": {
+      "name": "Moriph, el Misterioso",
+      "dialog": []
+    },
+    "Mr. Buma": {
+      "name": "Sr. Buma",
+      "dialog": [
+        "Puedes llamarme el genio del clan, 'Sr. Buma'. cof.. cof.."
+      ]
+    },
+    "Mr. HobGoblin": {
+      "name": "Sr. HobGoblin",
+      "dialog": [
+        "Oye, tú.. Te doy un objeto excelente si me traes el Cuerno de Babel",
+        "Quiero el cuerno de Babel.. Tiene algo especial...",
+        "Estoy cansado de la ropa de Goblin y creo que el Cuerno de Babel le queda bien a alguien como yo",
+        "No puedo dormir por culpa del Cuerno de Babel. ¿Puedes traerme el Cuerno de Babel? Te doy un objeto excelente a cambio."
+      ]
+    },
+    "Mythcreature": {
+      "name": "Criatura Mítica",
+      "dialog": [
+        "La criatura antigua te observa en silencio."
+      ]
+    },
+    "Nadia": {
+      "name": "Nadia",
+      "dialog": [
+        "Por favor, tráeme un objeto mezclado.",
+        "Déjame cambiar un objeto no mezclado por uno aleatorio.",
+        "Si el abuelo Morald se entera, se va a decepcionar."
+      ]
+    },
+    "Navisko Guard": {
+      "name": "Guardia de Navisko",
+      "dialog": [
+        "Hay rumores de una banda de monstruos vagando por la aldea, pero nunca he visto ninguno. ¡Qué extraño..!",
+        "Creo que vi una banda de Bargons anoche. Olvidé lo que pasó después. Algo anda mal aquí.",
+        "Mucha gente entra y sale para visitar el Anfiteatro del SOD. No es fácil vigilar la ciudad solo.",
+        "La gente que llega por el portal me da dolor de cabeza. No puedo controlarla si no pasa por la entrada oficial."
+      ]
+    },
+    "Nina": {
+      "name": "Nina",
+      "dialog": [
+        "Que la fuerza del agua, la sabiduría y la gracia te acompañen...",
+        "¡Llegaste tarde! La batalla de Ardor ya comenzó.",
+        "¿Qué equipo ganará?",
+        "Tú también pareces muy fuerte.",
+        "Lo siento, no puedes entrar en Ardor ahora.",
+        "A esta hora, todos los días, se entregan las recompensas y el estadio se limpia y recibe mantenimiento.",
+        "Por favor, vuelve más tarde.",
+        "Parece demasiado pronto para que entres en Ardor. Necesitas más EXP."
+      ]
+    },
+    "Noas": {
+      "name": "Noas",
+      "dialog": [
+        "Que la riqueza de la tierra y el amor acompañen tu vida...",
+        "La Torre de la Prueba, Bellatra, es administrada por el clan 'XXX'",
+        "¡Llegaste tarde! Bellatra ya comenzó.",
+        "¿Qué equipo ganará?",
+        "Tú también pareces muy fuerte.",
+        "Lo siento, no puedes entrar en Bellatra ahora.",
+        "A esta hora del día se entregan las recompensas y el estadio se limpia y recibe mantenimiento.",
+        "Por favor, vuelve más tarde.",
+        "Parece demasiado pronto para que entres en Bellatra. Necesitas más EXP."
+      ]
+    },
+    "Novic": {
+      "name": "Novic",
+      "dialog": [
+        "¿Qué lugar es este?",
+        "Creo que puedo combinar esas gemas que tienes.",
+        "Siento un espíritu misterioso alrededor de esas gemas.",
+        "Hum.. Por alguna razón no estoy seguro de poder crearlo..."
+      ]
+    },
+    "Peddler Yampi": {
+      "name": "Buhonero Yampi",
+      "dialog": [
+        "Oh, qué increíble que me encuentres en el continente de Priston.",
+        "Suelo vender objetos difíciles de encontrar. Búscame siempre, porque a veces vendo objetos muy buenos.",
+        "Soy Yampi, el que vende objetos solo por 5 minutos. Por favor, elige uno.",
+        "Este es el objeto que quieres. Lo estoy vendiendo ahora. Tengo que irme pronto, así que apúrate"
+      ]
+    },
+    "Pillai Guard": {
+      "name": "Guardia de Pillai",
+      "dialog": [
+        "La ciudad de Pillai flota en el aire, pero no tienes que temer caerte.",
+        "Pillai está a salvo de las amenazas de afuera porque flota en el aire.",
+        "Guarda silencio en la ciudad, porque la mayoría de los guerreros de aquí está en meditación.",
+        "Todo lo que flota en la ciudad está controlado por el poder mágico, del cual los Morions se enorgullecen."
+      ]
+    },
+    "Pillai Guard 2": {
+      "name": "Guardia de Pillai",
+      "dialog": [
+        "No merezco el honor de ser un guardia de Pillai...",
+        "Solo soy un pecador; no pude defender Pillai, la ciudad de Morion.",
+        "Midranda y sus subordinados redujeron esta ciudad a cenizas.",
+        "Todavía recuerdo el hermoso paisaje de Pillai."
+      ]
+    },
+    "Pillai Guard 3": {
+      "name": "Guardia de Pillai",
+      "dialog": [
+        "El camino termina aquí. Si quieres ir al bosque, usa el portal al sur de la ciudad.",
+        "Detrás de mí está el portal que te teletransporta a todas partes. Necesitas un ala para usar el portal.",
+        "Si necesitas hacer un ala o mejorar la tuya, usa el portal ahora para visitar al inventor de los portales en Ricarten.",
+        "El teletransporte es gratis a Ricarten y Pillai. Necesitas un ala para llegar a las otras zonas."
+      ]
+    },
+    "Pillai Guard 4": {
+      "name": "Guardia de Pillai",
+      "dialog": [
+        "De vez en cuando entran monstruos a escondidas por el portal.",
+        "La ciudad de Pillai es un lugar sereno y sencillo. No hagas escándalo ni te metas en líos.",
+        "No debes molestar a otros guerreros solo para tu propio beneficio.",
+        "Parece que el guardia de allá está dormitando. ¡Despiértalo! Nunca lo he visto despierto... tsk tsk..."
+      ]
+    },
+    "Pitchman Dela": {
+      "name": "Vendedora Dela",
+      "dialog": [
+        "Esta poción está hecha con agua de manantial natural. Las sacerdotisas se bañan en el manantial de vez en cuando. ¡¡Es muy eficaz!!",
+        "El agua vital de este manantial está a la venta. Si necesitas agua vital o tienes objetos para vender, avísame.",
+        "No todo el mundo puede entrar en la Caverna de la Colmena, al oeste de la Tierra del Crepúsculo.",
+        "Los Beedogs y el Árbol Diabólico del Bosque de los Espíritus, al sur de aquí, producen miel y un aceite misterioso. ¿Para qué sirven?"
+      ]
+    },
+    "Praya": {
+      "name": "Praya",
+      "dialog": [
+        "Vine de lejos a buscar un par de amuletos.",
+        "Él era un monstruo, pero nos amábamos tanto.",
+        "El par de amuletos era el sello de nuestro amor, y nunca perdonaré a quien los robó."
+      ]
+    },
+    "Priest of the temple": {
+      "name": "Sacerdote del Templo",
+      "dialog": [
+        "El primer piso del templo fue abierto. Nunca entres allí. Es muy peligroso.",
+        "¡Cuida tu espalda! En el segundo piso aparecen monstruos todavía más mortales.",
+        "Solo los guerreros de nivel 70 o más pueden entrar. ¡Es la ley!",
+        "Solo quienes tienen nivel 75 o más pueden entrar al segundo piso del templo."
+      ]
+    },
+    "Princess Dzari": {
+      "name": "Princesa Dzari",
+      "dialog": []
+    },
+    "Quest Manager": {
+      "name": "Gerente de Misiones",
+      "dialog": [
+        "Dame cualquier misión..."
+      ]
+    },
+    "Reporter of Bless Castle": {
+      "name": "Reportero del Bless Castle",
+      "dialog": [
+        "¿Quién ganará este fin de semana?",
+        "El Bless Castle comienza una vez por semana, y el clan que derribe la Torre de Valhalla se queda con la posesión.",
+        "Si ganas la batalla, obtienes una gran recompensa. ¿Quieres intentarlo?",
+        "Sigue la batalla en vivo en línea con facilidad.",
+        "Es mejor que hables con el tío Damon en el Bosque de Bambú si quieres ir al Bless Castle."
+      ]
+    },
+    "Research Buma": {
+      "name": "Investigador Buma",
+      "dialog": [
+        "Esperando tu opinión.",
+        "El mensaje se enviará al final"
+      ]
+    },
+    "Ribbon Hopy": {
+      "name": "Hopy de Moño",
+      "dialog": [
+        "Priston Tale está celebrando su aniversario.",
+        "Felicítalo y te daré un regalo especial todos los días.",
+        "Feliz aniversario, Priston Tale ^^"
+      ]
+    },
+    "Ricarten Guard": {
+      "name": "Guardia de Ricarten",
+      "dialog": [
+        "No los alimentes ni los provoques desde afuera. No sabemos qué harían si se enojaran.",
+        "Esos bichos desaparecen por la noche y vuelven por la mañana. Son criaturas extrañas, ¿sabes?",
+        "La misión de rango de Tempskron es atrapar 3 de esos bichos y traer 3 pruebas.",
+        "¡No te acerques demasiado a la jaula! ¡Me da miedo pensar en lo que puede pasar!"
+      ]
+    },
+    "Ricarten Guard 2": {
+      "name": "Guardia de Ricarten",
+      "dialog": [
+        "Esta es la ciudad de Ricarten, al sur de la tierra de Tempskron.",
+        "Mucha gente pasa por la ciudad, lo que la convierte en la meca de los negocios y del comercio de todo el continente.",
+        "¿Cuál es el nombre de esta ciudad? Es Ricarten, la capital de Tempskron. ¡Recuérdalo!",
+        "Mucha gente vive en esta ciudad, y aun así es un lugar tranquilo.",
+        "Si es tu primera cacería, tal vez quieras ir tras los Hoppies. Si tienes más confianza, ve al oeste a cazar Hobgoblins en el Bosque de las Acacias."
+      ]
+    },
+    "Ricarten Guard 3": {
+      "name": "Guardia de Ricarten",
+      "dialog": [
+        "Recuerda que molestar el entrenamiento de otros guerreros o engañarlos es vergonzoso.",
+        "Despierta al guardia a tu lado si se queda dormido.",
+        "Ricarten está en el extremo sur de la tierra de Priston.",
+        "¡Cuidado! Los monstruos te atacarán después del puente."
+      ]
+    },
+    "Ricarten Guard 4": {
+      "name": "Guardia de Ricarten",
+      "dialog": [
+        "Recuerda que molestar el entrenamiento de otros guerreros o engañarlos es vergonzoso.",
+        "Despierta al guardia a tu lado si se queda dormido.",
+        "Ricarten está en el extremo sur de la tierra de Priston.",
+        "¡Cuidado! Los monstruos te atacarán después del puente."
+      ]
+    },
+    "Ricio": {
+      "name": "Ricio",
+      "dialog": [
+        "Las piedras rúnicas pueden encajarse en agujeros del mismo color.",
+        "Hay piedras rúnicas por todo el mundo de Priston, ¡pero las mejores están en el Laboratorio Secreto y en el Arma Antigua!",
+        "Las piedras rúnicas agregan habilidades diferentes a tu equipo."
+      ]
+    },
+    "Royalmage Ray": {
+      "name": "Mago Real Ray",
+      "dialog": [
+        "El Reino de los Caballeros y la Corte Real. Son los pocos elegidos.",
+        "Demasiado ruido aquí para mi entrenamiento mental. ¡Silencio, por favor!",
+        "Los magos reales están en una batalla difícil en algunos lugares. Tenemos que pensar cómo ayudarlos.",
+        "Creo que los magos reales son los únicos que pueden luchar contra Egolanos."
+      ]
+    },
+    "Rudolph": {
+      "name": "Rudolph",
+      "dialog": [
+        ".........",
+        ".........",
+        "........."
+      ]
+    },
+    "Sage Celina": {
+      "name": "Sabia Celina",
+      "dialog": [
+        "Usaré mi conocimiento por el continente de Priston y por su paz eterna.",
+        "¿Eres capaz de dedicar tu vida al continente de Priston?",
+        "¿Existirán el bien y el mal absolutos?"
+      ]
+    },
+    "Salon, the Specialist": {
+      "name": "Salon, el Especialista",
+      "dialog": []
+    },
+    "Sanctuary Guard": {
+      "name": "Guardia del Santuario",
+      "dialog": [
+        "¿Ves el lugar detrás de ti? ¡Es la Guarida de Kelvezu! ¡Dudo que sobrevivas allí!",
+        "Kelvezu es un monstruo temible, con un poder de ataque increíble. ¡¡Con tu defensa actual, no sobrevivirás al monstruo más furioso de todos!!",
+        "¡Escucha! ¡¡Por ahora, no es exagerado decir que Kelvezu es el invencible que vive en la guarida!!"
+      ]
+    },
+    "Santa Goblin": {
+      "name": "Goblin Noel",
+      "dialog": [
+        "¡Por qué andas solo en un momento tan bueno como la Navidad!",
+        "¡Soy yo quien decide si doy regalos o no!",
+        "Mira la nariz de Rudolph... ya no brilla."
+      ]
+    },
+    "Secretary Karina": {
+      "name": "Secretaria Karina",
+      "dialog": [
+        "Hola, ¿en qué puedo ayudarte? Mi nombre es Karina. ¡Yo administro Bellatra!",
+        "Bellatra fue increíble el mes pasado. Participaron guerreros poderosos de todo el continente.",
+        "El comité de Bellatra lo definirá el senado después de la decisión.",
+        "Solo el jefe del clan que administra Bellatra puede recibir los ingresos.",
+        "¡Necesito un clan fuerte para administrar las salas de Bellatra!"
+      ]
+    },
+    "Sheltom Peddler": {
+      "name": "Buhonero de Sheltoms",
+      "dialog": [
+        "¡TRAMPOSO!",
+        "Ahorrándote millones",
+        "¡Perezoso!"
+      ]
+    },
+    "Silver Wolverine": {
+      "name": "Wolverine Plateado",
+      "dialog": [
+        "Grrrrrrrrrrrrrr.. Khhhhhhhhhhhhhhooooooooo....!",
+        "Grrrr.. grrrr..."
+      ]
+    },
+    "Sir Rudolf": {
+      "name": "Sir Rudolf",
+      "dialog": []
+    },
+    "Skill Master, Verkan": {
+      "name": "Maestro de Habilidades, Verkan",
+      "dialog": [
+        "Un cuerpo robusto y una mente noble son lo que refuerza las habilidades.",
+        "La fuerza de Tempskron viene del cuerpo robusto. Ahora, disciplínate para una mejor condición física.",
+        "Cuantos más puntos de habilidad acumules, más fuertes serán tus habilidades.",
+        "Necesitas entrenar más tus habilidades para usarlas con facilidad cuando quieras."
+      ]
+    },
+    "Smelting Master Arad": {
+      "name": "Maestro de la Fundición Arad",
+      "dialog": [
+        "Cualquier piedra inútil puede convertirse en cristal con la fundición.",
+        "Un cristal se convierte en una runa muy útil para la creación de objetos al recibir el poder de los sheltoms.",
+        "Todas las runas usadas en la creación de objetos solo puedo hacerlas yo, en el continente de Priston."
+      ]
+    },
+    "Snake Hunter": {
+      "name": "Cazador de Serpientes",
+      "dialog": [
+        "Todas las serpientes que capturé escaparon",
+        "Las serpientes negras tienen una fuerza que nunca conocimos."
+      ]
+    },
+    "Son of Battle": {
+      "name": "Hijo de la Batalla",
+      "dialog": []
+    },
+    "Stella": {
+      "name": "Stella",
+      "dialog": [
+        "El Castillo Fantasma se convirtió en el campo del 'Crossways Scroll'.",
+        "¡Por favor, salva el continente de Priston del mal!"
+      ]
+    },
+    "Stella 2": {
+      "name": "Stella",
+      "dialog": [
+        "Trajiste el tesoro de Kahn que yo buscaba",
+        "Puede combinarse con una llave misteriosa para abrir la caja."
+      ]
+    },
+    "Stella's Store": {
+      "name": "Tienda de Stella",
+      "dialog": []
+    },
+    "Steward Anders": {
+      "name": "Mayordomo Anders",
+      "dialog": [
+        "Las Torres de Cristal tienen tres atributos diferentes: fuego, hielo y rayo. Úsalas bien.",
+        "Todas las ciudades están pagando los impuestos ahora.",
+        "Pasé la vida entera aconsejándote sobre las finanzas y la defensa de la torre.",
+        "Sí, maestro, ¿en qué puedo servirle?"
+      ]
+    },
+    "Supporter Longbo": {
+      "name": "Hincha Longbo",
+      "dialog": [
+        "¡¡Vamos, selección brasileña!!",
+        "Tráeme 7 balones de fútbol y te daré un regalo."
+      ]
+    },
+    "Sylpi": {
+      "name": "Sylpi",
+      "dialog": [
+        "Rezo para que la libertad del viento acompañe tu mirada...",
+        "La Torre de la Prueba, Bellatra, es administrada por el clan 'XXX'",
+        "¡Llegaste tarde! Bellatra ya comenzó.",
+        "¿Qué equipo ganará?",
+        "Tú también pareces muy fuerte.",
+        "Lo siento, no puedes entrar en Bellatra ahora.",
+        "A esta hora del día se entregan las recompensas y el estadio se limpia y recibe mantenimiento.",
+        "Por favor, vuelve más tarde.",
+        "Parece demasiado pronto para que entres en Bellatra. Necesitas más EXP."
+      ]
+    },
+    "Ticket Seller": {
+      "name": "Vendedor de Boletos",
+      "dialog": [
+        "¡¡Bienvenido a la guarida de los monstruos!! Ohhhhhhhhhoooo.."
+      ]
+    },
+    "Traveler Dela": {
+      "name": "Viajera Dela",
+      "dialog": []
+    },
+    "Vendor Rossa": {
+      "name": "Vendedora Rossa",
+      "dialog": [
+        "Soy la menor de las Hermanas Vendedoras.",
+        "¡Mis hermanas y yo esperamos abrir un puesto callejero en una ciudad grande!",
+        "Tengo muchas cosas a la venta. Aquí, echa un vistazo.",
+        "¡Vuelve a comprar otra vez!"
+      ]
+    },
+    "Vendor Rozalin": {
+      "name": "Vendedora Rozalin",
+      "dialog": [
+        "Soy la segunda de las Hermanas Vendedoras.",
+        "Shellbi, Rossa y yo queremos abrir un gran puesto callejero en Ricarten.",
+        "Si te teletransportaron aquí, necesitarás un core para salir.",
+        "A veces se puede ver la luz de la Torre de Valhalla desde aquí."
+      ]
+    },
+    "Vendor Shellbi": {
+      "name": "Vendedora Shellbi",
+      "dialog": [
+        "Soy la mayor de las Hermanas Vendedoras.",
+        "Rozalin, Rossa y yo queremos abrir un gran puesto callejero en Ricarten.",
+        "Alguien dijo que debes usar un core si quieres volver a la ciudad."
+      ]
+    },
+    "Wanderer, Lost": {
+      "name": "Vagabundo Perdido",
+      "dialog": [
+        "No entiendo por qué solo Ruinen no cambió nada...",
+        "Somos nómadas de origen, pero ahora tenemos una tienda en la frontera entre Tempskron y Morion.",
+        "Algún día construiré una aldea decente aquí. ¡Claro que sí!",
+        "Los monstruos entran a la aldea con frecuencia. No hay nada que los detenga, porque esta aldea está en medio de la nada."
+      ]
+    },
+    "Wandering Soul": {
+      "name": "Alma Errante",
+      "dialog": [
+        "Majestad. Por favor, escúcheme.",
+        "Nuestra misión debe cumplirse, cueste lo que cueste.",
+        "Por favor, comparte tu fuerza con nosotros."
+      ]
+    },
+    "Warehouse Dunkun": {
+      "name": "Almacén de Dunkun",
+      "dialog": [
+        "Quiero ser discípulo de Verkan algún día y luchar como uno de los mercenarios.",
+        "Tus almacenes de todas las ciudades están compartidos entre sí.",
+        "A veces solo quiero descansar, pero el cansancio se me pasa cuando te veo feliz al recuperar tus objetos conmigo.",
+        "El Bless Castle tiene murallas altas y sólidas para protegerse bien."
+      ]
+    },
+    "Warehouse Keeper, Lavendar": {
+      "name": "Guardián del Almacén, Lavendar",
+      "dialog": [
+        "Si tienes demasiadas cosas para cargar, déjamelas. Las guardaré en un lugar seguro.",
+        "Necesitas reorganizar los objetos de vez en cuando, por el límite de espacio del almacén.",
+        "Estoy agotado después de un largo día de trabajo. ¿Puedes volver más tarde?",
+        "No hay de qué preocuparse, porque este almacén está conectado al almacén de Tempskron."
+      ]
+    },
+    "Warehouse keeper, Arent": {
+      "name": "Guardián del Almacén, Arent",
+      "dialog": [
+        "Aquí está la llave. Puedes tomarla, ¡pero no toques mis cosas!",
+        "Ser guardián del almacén es mucho más complicado de lo que crees. Intenta no visitarme con tanta frecuencia.",
+        "Puedes guardar algo aquí en Ricarten y recuperarlo en el almacén de Pillai, ¡porque los dos almacenes están conectados!",
+        "¿Qué hace esta gente frente a mí? ¡Necesito espacio para respirar!"
+      ]
+    },
+    "Watchman Aljet": {
+      "name": "Vigía Aljet",
+      "dialog": []
+    },
+    "Witchcraft Academy, Raymon": {
+      "name": "Academia de Hechicería, Raymon",
+      "dialog": [
+        "¡La energía que transforma el MP en fuerza física se llama magia!",
+        "Solo los Morions pueden estudiar en la Academia de Hechicería.",
+        "Ten cuidado al distribuir los puntos de habilidad, ¡porque solo tienes una oportunidad!",
+        "Solo puedes aprender las habilidades del 2.º rango después de subir de rango."
+      ]
+    },
+    "Zinjya": {
+      "name": "Zinjya",
+      "dialog": []
+    }
+  },
+  "items": {
+    "BI101": "Piedra Azul",
+    "BI102": "Piedra Roja",
+    "BI103": "Piedra Verde",
+    "BI104": "Pergamino de Renacimiento",
+    "BI105": "Vida Eterna",
+    "BI108": "Núcleo de Teletransporte",
+    "BI110": "Piedra de Mejora",
+    "BI123": "Petardo",
+    "BI126": "Paquete de Bronce (1 día)",
+    "BI127": "Paquete de Bronce (7 días)",
+    "BI130": "Paquete de Plata (1 día)",
+    "BI131": "Paquete de Plata (7 días)",
+    "BI201": "Paquete de Bronce (3 h)",
+    "BI202": "Paquete de Bronce (1 día)",
+    "BI203": "Paquete de Bronce (7 días)",
+    "BI204": "Paquete de Bronce (30 días)",
+    "BI205": "Paquete de Plata (3 h)",
+    "BI206": "Paquete de Plata (1 día)",
+    "BI207": "Paquete de Plata (7 días)",
+    "BI208": "Paquete de Plata (30 días)",
+    "BI209": "Paquete de Oro (3 h)",
+    "BI210": "Paquete de Oro (1 día)",
+    "BI211": "Paquete de Oro (7 días)",
+    "BI212": "Paquete de Oro (30 días)",
+    "BI223": "Paquete Superior (3 h)",
+    "BI224": "Paquete Superior (1 día)",
+    "BI225": "Paquete Superior (7 días)",
+    "BI518": "Mineral de Plata",
+    "DA102": "Traje de Batalla",
+    "DA103": "Armadura de Cuero",
+    "DA105": "Armadura de Acero",
+    "DA107": "Peto",
+    "DA109": "Armadura de Escamas",
+    "DA110": "Armadura Sintética",
+    "DA111": "Armadura Completa de Placas",
+    "DA112": "Armadura Completa de Metal",
+    "DA113": "Armadura Suprema",
+    "DA114": "Armadura Espinosa",
+    "DA115": "Armadura del Titán",
+    "DA116": "Armadura Extrema",
+    "DA117": "Armadura Ancestral",
+    "DA118": "Armadura del Minotauro",
+    "DA119": "Armadura de la Ruina",
+    "DA122": "Armadura del Dragón",
+    "DA126": "Armadura Mágica",
+    "DA130": "Armadura Imperial",
+    "DA204": "Túnica de Batalla",
+    "DA214": "Túnica Mística",
+    "DA220": "Túnica Astral",
+    "DA222": "Túnica del Ángel",
+    "DA226": "Túnica Mágica",
+    "DA229": "Túnica Mortal",
+    "DA230": "Túnica Imperial",
+    "DA401": "Túnica de Llamas",
+    "DS111": "Escudo Grande",
+    "DS114": "Escudo Extremo",
+    "DS116": "Escudo Sintético",
+    "DS117": "Escudo del Titán",
+    "DS118": "Escudo Místico",
+    "DS120": "Escudo del Dragón",
+    "DS126": "Escudo Mortal",
+    "DS127": "Escudo de Llamas",
+    "DS129": "Escudo del Ángel",
+    "DS130": "Escudo de la Estigia",
+    "GP109": "Cristal Místico",
+    "GP112": "Cristal Oscuro",
+    "GP113": "Cristal de Hierro",
+    "GP116": "Guardia Imperial",
+    "GP118": "Cristal del Caos",
+    "GP120": "Cristal Extremo",
+    "GP123": "Cristal del Enigma",
+    "GP141": "Cristal del Dragón",
+    "OA101": "Amuleto Redondo",
+    "OA102": "Amuleto Redondo +1",
+    "OA103": "Amuleto Redondo +2",
+    "OA104": "Amuleto Redondo +3",
+    "OA109": "Amuleto Mágico",
+    "OA110": "Amuleto Mágico +1",
+    "OA111": "Amuleto Mágico +2",
+    "OA112": "Amuleto Mágico +3",
+    "OA113": "Amuleto Rúnico",
+    "OA114": "Amuleto Rúnico +1",
+    "OA115": "Amuleto Rúnico +2",
+    "OA116": "Amuleto Rúnico +3",
+    "OA117": "Amuleto Sellado",
+    "OA118": "Amuleto Sellado +1",
+    "OA119": "Amuleto Sellado",
+    "OA120": "Amuleto Sellado +3",
+    "OA121": "Amuleto Místico",
+    "OA122": "Amuleto Místico +1",
+    "OA123": "Amuleto Místico +2",
+    "OA124": "Amuleto Místico +3",
+    "OA127": "Amuleto Fantasma",
+    "OA128": "Amuleto Fantasma +1",
+    "OA131": "Amuleto del Trono",
+    "OA132": "Amuleto del Enigma",
+    "OA134": "Amuleto del Enigma +2",
+    "OA135": "Amuleto del Enigma +3",
+    "OA136": "Amuleto Voraz",
+    "OR101": "Anillo Redondo",
+    "OR102": "Anillo Redondo +1",
+    "OR103": "Anillo Redondo +2",
+    "OR104": "Anillo Redondo +3",
+    "OR105": "Anillo con Gema",
+    "OR106": "Anillo con Gema +1",
+    "OR107": "Anillo con Gema +2",
+    "OR108": "Anillo con Gema +3",
+    "OR109": "Anillo Mágico",
+    "OR110": "Anillo Mágico +1",
+    "OR111": "Anillo Mágico +2",
+    "OR112": "Anillo Mágico +3",
+    "OR113": "Anillo Rúnico",
+    "OR114": "Anillo Rúnico +1",
+    "OR115": "Anillo Rúnico +2",
+    "OR116": "Anillo Rúnico +3",
+    "OR117": "Anillo Sellado",
+    "OR118": "Anillo Sellado +1",
+    "OR119": "Anillo Sellado +2",
+    "OR120": "Anillo Sellado +3",
+    "OR121": "Anillo Místico",
+    "OR122": "Anillo Místico +1",
+    "OR123": "Anillo Místico +2",
+    "OR124": "Anillo Místico +3",
+    "OR127": "Anillo Fantasma",
+    "OR128": "Anillo Fantasma +1",
+    "OR130": "Anillo Fantasma +3",
+    "OR131": "Anillo del Trono",
+    "OR132": "Anillo del Enigma",
+    "OR133": "Anillo del Enigma +1",
+    "OR134": "Anillo del Enigma +1",
+    "OR135": "Anillo del Enigma +3",
+    "OR136": "Anillo Voraz",
+    "PL101": "Poción Pequeña de Vida",
+    "PL102": "Poción Mediana de Vida",
+    "PL103": "Poción Grande de Vida",
+    "PL104": "Poción Mística de Vida",
+    "PL105": "Poción Especial de Vida",
+    "PM101": "Poción Pequeña de Maná",
+    "PM102": "Poción Mediana de Maná",
+    "PM103": "Poción Grande de Maná",
+    "PM104": "Poción Mística de Maná",
+    "PM105": "Poción Especial de Maná",
+    "PR102": "Mineral de Plata",
+    "PR103": "Mineral de Oro",
+    "PR107": "Mineral Rojo",
+    "PR108": "Mineral Verde",
+    "PR202": "Cristal de Plata",
+    "PR203": "Cristal de Oro",
+    "PR207": "Cristal Rojo",
+    "PR208": "Cristal Verde",
+    "PS101": "Poción Pequeña de Vigor",
+    "PS102": "Poción Mediana de Vigor",
+    "PS103": "Poción Grande de Vigor",
+    "PS104": "Poción Mística de Vigor",
+    "PS105": "Poción Especial de Vigor",
+    "QT105": "Aceite Misterioso",
+    "QT127": "Anillo Maldito",
+    "QT135": "Cristal de Oro",
+    "QW102": "Ala de Plata",
+    "QW103": "Ala de Oro",
+    "QW104": "Ala de Diamante",
+    "QW105": "Ala del Caos",
+    "SP142": "Sandía",
+    "SP230": "Caja de Halloween",
+    "WA101": "Hacha de Piedra",
+    "WA102": "Hacha de Acero",
+    "WA103": "Hacha de Batalla",
+    "WA104": "Hacha de Guerra",
+    "WA105": "Hacha de Guerra de Doble Filo",
+    "WA108": "Hacha de Doble Hoja",
+    "WA109": "Hacha Grande",
+    "WA110": "Hacha de Diamante",
+    "WA111": "Hacha Dentada",
+    "WA113": "Hacha Gigantesca",
+    "WA115": "Hacha del Titán",
+    "WA116": "Hacha del Caos",
+    "WA117": "Hacha Ancestral",
+    "WA119": "Hacha Extrema",
+    "WA120": "Hacha del Minotauro",
+    "WA123": "Hacha del Dragón",
+    "WA126": "Hacha del Dragón",
+    "WA128": "Hacha Mortal",
+    "WA129": "Hacha de Llamas",
+    "WA131": "Hacha Mortal",
+    "WA151": "Hacha Extrema (5 h)",
+    "WC115": "Garra de la Ruina",
+    "WC116": "Garra del Titán",
+    "WC120": "Garra del Dragón",
+    "WC125": "Garra Furiosa",
+    "WC127": "Garra Mortal",
+    "WC128": "Garra de Llamas",
+    "WC130": "Garra Diabólica",
+    "WD102": "Daga de Hierro",
+    "WD106": "Daga de Acero",
+    "WD109": "Daga de Platino",
+    "WD119": "Daga Caótica",
+    "WD121": "Daga de las Sombras",
+    "WD127": "Daga Mortal",
+    "WD128": "Daga de Llamas",
+    "WD157": "Daga Oscura",
+    "WH105": "Martillo de Guerra",
+    "WH112": "Martillo Rúnico",
+    "WH121": "Martillo Extremo",
+    "WH122": "Martillo del Guardián",
+    "WH124": "Martillo del Dragón",
+    "WH127": "Martillo del Dragón",
+    "WH129": "Martillo Mortal",
+    "WH130": "Martillo de Llamas",
+    "WH132": "Martillo de Rubí",
+    "WH152": "Martillo del Guardián (5 h)",
+    "WM109": "Fantasma",
+    "WM114": "Báculo del Caos",
+    "WM115": "Varita Rúnica",
+    "WM116": "Báculo Rúnico",
+    "WM119": "Báculo del Dragón",
+    "WM121": "Báculo Astral",
+    "WM124": "Báculo Astral",
+    "WM127": "Báculo Astral",
+    "WM129": "Báculo Mortal",
+    "WM130": "Báculo de Llamas",
+    "WM132": "Báculo Mortal",
+    "WP109": "Guadaña Maligna",
+    "WP111": "Lanza del Caos",
+    "WP112": "Lanza del Titán",
+    "WP114": "Ala del Dragón",
+    "WP116": "Lanza Mística",
+    "WP120": "Lanza Extrema",
+    "WP124": "Guadaña del Dragón",
+    "WP128": "Lanza Mortal",
+    "WP129": "Guadaña de Llamas",
+    "WP151": "Lanza Extrema (5 h)",
+    "WS105": "Arco de Batalla",
+    "WS106": "Arco Grande",
+    "WS107": "Arco de Guerra",
+    "WS111": "Arco de Hueso",
+    "WS114": "Arco del Titán",
+    "WS115": "Arco del Caos",
+    "WS121": "Arco del Espejismo",
+    "WS122": "Arco del Dragón",
+    "WS129": "Arco Mortal",
+    "WS130": "Arco de Llamas",
+    "WS132": "Arco Mortal",
+    "WS133": "Arco Siniestro",
+    "WS151": "Arco del Espejismo (5 h)",
+    "WS210": "Espada de Platino",
+    "WS213": "Espada Gigantesca",
+    "WS217": "Espada Ancestral",
+    "WS221": "Espada del Titán",
+    "WS225": "Espada Extrema",
+    "WS226": "Espada del Espejismo",
+    "WS229": "Espada del Espejismo",
+    "WS231": "Espada Mortal",
+    "WS232": "Espada de Llamas",
+    "WS234": "Espada Mortal",
+    "WS254": "Espada Extrema (5 h)",
+    "WT102": "Jabalina de Guerra",
+    "WT104": "Jabalina de Acero",
+    "WT116": "Jabalina del Espejismo",
+    "WT117": "Jabalina Mística",
+    "WT118": "Jabalina Extrema",
+    "WT119": "Jabalina del Dragón",
+    "WT126": "Jabalina Bendita",
+    "WT128": "Jabalina Mortal",
+    "WT129": "Jabalina de Llamas",
+    "WT131": "Jabalina Caótica"
+  },
+  "monsters": {
+    "Ancient Golem": "Gólem Ancestral",
+    "Armored Bettle": "Escarabajo Acorazado",
+    "Bee Dog": "Perro Abeja",
+    "Big Ghost": "Fantasma",
+    "Bloody Knight": "Caballero Sangriento",
+    "Bloody Knight 2": "Caballero Sangriento",
+    "Bone Hound": "Sabueso de Hueso",
+    "Bronze Wolverine": "Glotón de Bronce",
+    "C-Doom Guard": "C-Guardia de la Ruina",
+    "C-Fox Hound": "C-Sabueso Zorrero",
+    "C-Marionette": "C-Marioneta",
+    "C-Undead Chaser": "C-Perseguidor No Muerto",
+    "C-Undead Stalker": "C-Acechador No Muerto",
+    "Chimera": "Quimera",
+    "Chimera 2": "Quimera",
+    "Corrupt": "Corrupto",
+    "Crypt": "Cripta",
+    "Crypt 2": "Cripta",
+    "Cursed Archer": "Arquero Maldito",
+    "Cursed Guard": "Guardia Maldito",
+    "Cursed Knight": "Caballero Maldito",
+    "CurseWeb": "Telaraña Maldita",
+    "Cyclone": "Cíclope",
+    "Cyclone 2": "Cíclope",
+    "Cyclops": "Cíclope",
+    "Cyclops 2": "Cíclope",
+    "Dark Guard": "Guardia Oscuro",
+    "Dark Knight": "Caballero Oscuro",
+    "Dark Mage": "Mago Oscuro",
+    "Dark Specter": "Espectro Oscuro",
+    "Dark Specter 2": "Espectro Oscuro",
+    "Dark Stalker": "Acechador Oscuro",
+    "Deadly Machine": "Máquina Mortal",
+    "Decoy": "Señuelo",
+    "Decoy 2": "Señuelo",
+    "Decoy 3": "Señuelo",
+    "Devilish Tree": "Árbol Demoníaco",
+    "Doom Guard": "Guardia de la Ruina",
+    "Doom Lord": "Señor de la Ruina",
+    "Evil Plant": "Planta Maligna",
+    "Fire Crystal": "Cristal de Fuego",
+    "Fury": "Furia",
+    "Fury 5": "Furia",
+    "Ghost": "Fantasma",
+    "Ghoul": "Necrófago",
+    "Gorgon": "Gorgona",
+    "Guardian Staff": "Báculo del Guardián",
+    "Hammber Goblin": "Goblin del Martillo",
+    "Hammer Decoy": "Señuelo del Martillo",
+    "Hammer Plant": "Planta del Martillo",
+    "Haunting Maple": "Arce Embrujado",
+    "Haunting Plant": "Planta Embrujada",
+    "Head Cutter": "Cortacabezas",
+    "Head Cutter 2": "Cortacabezas",
+    "Head Cutter 3": "Cortacabezas",
+    "Heavy Goblin": "Goblin Pesado",
+    "Heavy Goblin 2": "Goblin Pesado",
+    "Hell Hound": "Sabueso Infernal",
+    "Hell Hound 2": "Sabueso Infernal",
+    "Hell Hound 3": "Sabueso Infernal",
+    "Hell Plant": "Planta Infernal",
+    "HOPY KID": "Cría de Hopy",
+    "Hopy King": "Rey Hopy",
+    "Hopy King 2": "Rey Hopy",
+    "I-Dark Mage": "I-Mago Oscuro",
+    "I-Fox Hound": "I-Sabueso Zorrero",
+    "I-icegoblin": "I-Goblin de Hielo",
+    "I-Marionette": "I-Marioneta",
+    "I-Revived Archer": "I-Arquero Revivido",
+    "I-Temple Guard": "I-Guardia del Templo",
+    "I-Undead Chaser": "I-Perseguidor No Muerto",
+    "I-Undead Stalker": "I-Acechador No Muerto",
+    "Ice Crystal": "Cristal de Hielo",
+    "Icegoblin": "Goblin de Hielo",
+    "Icegoblin 2": "Goblin de Hielo",
+    "Incubus": "Íncubo",
+    "Iron Guard": "Guardia de Hierro",
+    "Iron Guard 2": "Guardia de Hierro",
+    "L-Corrupt": "L-Corrupto",
+    "L-Crypt": "L-Cripta",
+    "L-Decoy": "L-Señuelo",
+    "L-Fox Hound": "L-Sabueso Zorrero",
+    "L-Ghost": "L-Fantasma",
+    "L-Ghoul": "L-Necrófago",
+    "L-Marionette": "L-Marioneta",
+    "L-Skeleton": "L-Esqueleto",
+    "L-Skeleton Archer": "L-Esqueleto Arquero",
+    "L-Undead Chaser": "L-Perseguidor No Muerto",
+    "L-Undead Stalker": "L-Acechador No Muerto",
+    "L-Zombi": "L-Zombi",
+    "Lava Archer": "Arquero de Lava",
+    "Lava Armor": "Armadura de Lava",
+    "Lava Golem": "Gólem de Lava",
+    "Lava Golem 2": "Gólem de Lava",
+    "Leech": "Sanguijuela",
+    "Lightning Crystal": "Cristal del Relámpago",
+    "MapleFairy": "Hada del Arce",
+    "MapleTree": "Arce",
+    "Maximum Decoy": "Señuelo Supremo",
+    "Mummy": "Momia",
+    "Mummy 2": "Momia",
+    "Mushroom Ghost": "Hongo Fantasma",
+    "Mutant Plant": "Planta Mutante",
+    "Mutant Rabie": "Rabie Mutante",
+    "Mutant Tree": "Árbol Mutante",
+    "N-Dark Knight": "N-Caballero Oscuro",
+    "N-Decoy": "N-Señuelo",
+    "N-Doom Guard": "N-Guardia de la Ruina",
+    "N-Fox Hound": "N-Sabueso Zorrero",
+    "N-Head Cutter": "N-Cortacabezas",
+    "N-Marionette": "N-Marioneta",
+    "N-Undead Chaser": "N-Perseguidor No Muerto",
+    "N-Undead Stalker": "N-Acechador No Muerto",
+    "NorthGoblin": "Goblin del Norte",
+    "Plant": "Planta",
+    "PlantLord": "Señor de las Plantas",
+    "Revived Archer": "Arquero Revivido",
+    "Revived Knight": "Caballero Revivido",
+    "Runic Guardian": "Guardián Rúnico",
+    "Sadness": "Tristeza",
+    "SantaGoblin": "Goblin Navideño",
+    "Scorpion": "Escorpión",
+    "Silver Wolverine": "Glotón de Plata",
+    "Skeleton": "Esqueleto",
+    "Skeleton 2": "Esqueleto",
+    "Skeleton Archer": "Esqueleto Arquero",
+    "Skeleton Archer 2": "Esqueleto Arquero",
+    "Skeleton Archer 3": "Esqueleto Arquero",
+    "Skeleton Knight": "Caballero Esqueleto",
+    "Skeleton Knight 2": "Caballero Esqueleto",
+    "Skeleton Warrior": "Guerrero Esqueleto",
+    "Skeleton Warrior 2": "Guerrero Esqueleto",
+    "Snowman": "Muñeco de Nieve",
+    "SOD_Armored Beetle": "SOD_Escarabajo Acorazado",
+    "SOD_Crypt": "SOD_Cripta",
+    "SOD_Cursed Web": "SOD_Telaraña Maldita",
+    "SOD_Dark Knight": "SOD_Caballero Oscuro",
+    "SOD_Doom Guard": "SOD_Guardia de la Ruina",
+    "SOD_Doom Lord": "SOD_Señor de la Ruina",
+    "SOD_Heavy Goblin": "SOD_Goblin Pesado",
+    "SOD_Mummy": "SOD_Momia",
+    "SOD_Sadness": "SOD_Tristeza",
+    "SOD_Skeleton Knight": "SOD_Caballero Esqueleto",
+    "SOD_Stone Golem": "SOD_Gólem de Piedra",
+    "Stone Golem": "Gólem de Piedra",
+    "Stygian Staff": "Báculo de la Estigia",
+    "Temple Guard": "Guardia del Templo",
+    "Temple Guard 3": "Guardia del Templo",
+    "Temple Guard 4": "Guardia del Templo",
+    "Temple Guard 5": "Guardia del Templo",
+    "V-Chimera": "V-Quimera",
+    "V-Dark Guard": "V-Guardia Oscuro",
+    "V-Dark Mage": "V-Mago Oscuro",
+    "V-Fox Hound": "V-Sabueso Zorrero",
+    "V-Gorgon": "V-Gorgona",
+    "V-Incubus": "V-Íncubo",
+    "V-Marionette": "V-Marioneta",
+    "V-Revived Archer": "V-Arquero Revivido",
+    "V-Undead Chaser": "V-Perseguidor No Muerto",
+    "V-Undead Stalker": "V-Acechador No Muerto",
+    "Wanted Morif": "Morif, el Buscado",
+    "Watermelon": "Sandía",
+    "Web": "Telaraña",
+    "Web 2": "Telaraña",
+    "Web 3": "Telaraña",
+    "Wevyn, the Hunter": "Wevyn, el Cazador",
+    "Wild Goblin": "Goblin Salvaje",
+    "Zombi": "Zombi",
+    "Zombi 2": "Zombi",
+    "Zombie": "Zombi"
+  }
+}

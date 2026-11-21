@@ -31,6 +31,13 @@ public sealed class HudIconCache : IDisposable
     }
 
     public Texture2D Find(string key) => _textures.GetValueOrDefault(key);
+
+    // The sprite file of a catalog key, once the index is built.
+    public bool TryPath(string key, out string path)
+    {
+        path = null;
+        return _index.IsCompletedSuccessfully && _index.Result.TryGetValue(key, out path);
+    }
     public bool IsIdle => _pending.Count == 0 && _decoding.Count == 0;
     public bool Failed => _failed || _index.IsFaulted;
 

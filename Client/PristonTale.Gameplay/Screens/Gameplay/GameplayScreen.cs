@@ -77,7 +77,12 @@ public sealed partial class GameplayScreen : GameScreen
         _hud.BellatraStage = _scene;
         _hud.SendClanMark = _scene.SendClanMark;
         _scene.PresenceObserved += _hud.ObserveTrade;
+        _scene.PresenceObserved += _hud.ObserveDuel;
+        _scene.PresenceObserved += _hud.ObserveArena;
+        _scene.PresenceObserved += _hud.ObserveRoyale;
+        _scene.PresenceObserved += _hud.ObserveTitles;
         _hud.Trades = _scene;
+        _hud.Duels = _scene;
         _scene.PresenceObserved += _hud.ObserveContacts;
         _hud.Contacts = _scene;
         _hud.PlayerButtonsUsed += _scene.DismissPlayerButtons;
@@ -85,6 +90,8 @@ public sealed partial class GameplayScreen : GameScreen
         _hud.SummonModeRequested += _scene.ToggleSummonMode;
         _hud.CrystalPetDismissRequested += _scene.DismissCrystalPets;
         _hud.RunToggleRequested += _scene.ToggleRun;
+        _hud.PvpToggleRequested += _scene.TogglePvp;
+        _hud.TitleChosen += _scene.ChooseTitle;
         _hud.YahooKeyPressed += _scene.PressYahooKey;
         _hud.ItemSound += _scene.PlayItemSound;
         _hud.SummonAutomatic = _scene.SummonAutomatic;
@@ -225,6 +232,8 @@ public sealed partial class GameplayScreen : GameScreen
         _hud.InCastleField = field?.State == Simulation.World.FieldState.Castle;
         _scene.OwnClanId = _hud.Combat.OwnClan;
         _scene.CastleLeague = _hud.Castle.League;
+        _scene.DuelArena = _hud.Duel?.Center;
+        _scene.DuelOpponent = _hud.Duel?.OpponentId ?? 0;
         _scene.CastleOwnerClanId = _hud.Castle.OwnerClanId;
         _hud.InTown = field?.State == Simulation.World.FieldState.Village;
         _hud.ShopSigns = _scene.ShopSigns;
@@ -232,6 +241,8 @@ public sealed partial class GameplayScreen : GameScreen
         _hud.PlayerActing = _scene.PlayerActing;
         _hud.PlayerActionStarts = _scene.PlayerActionStarts;
         _hud.RestartOffer = _scene.RestartOffer;
+        _hud.ChatTranslationAvailable = _scene.ChatTranslationAvailable;
+        _scene.UpdateChatTranslation(Context.Presentation.Requested.ChatTranslationTarget);
         _hud.Update(_scene.Owner);
         _scene.PointerCaptured = _hud.PointerCaptured;
         UpdateTouch();
@@ -273,12 +284,13 @@ public sealed partial class GameplayScreen : GameScreen
     public override void Draw()
     {
         _hud.RenderPortrait();
+        RenderTouchPortrait();
         Context.GraphicsDevice.Clear(_scene.SkyColor);
         _scene.Draw();
         _scene.CollectGroundLabels(_groundLabels);
         if (!Context.Presentation.Requested.HideDamageNumbers)
         {
-            _scene.DrawCombatText(Context.SpriteBatch, Context.Font);
+            _scene.DrawCombatText(Context.SpriteBatch, Context.Font, _hud.ElementArt);
         }
         _hud.Draw();
         DrawTouch();
@@ -398,12 +410,18 @@ public sealed partial class GameplayScreen : GameScreen
             _scene.PresenceObserved -= _hud.ObserveCastle;
             _scene.PresenceObserved -= _hud.ObserveBellatra;
             _scene.PresenceObserved -= _hud.ObserveTrade;
+            _scene.PresenceObserved -= _hud.ObserveDuel;
+            _scene.PresenceObserved -= _hud.ObserveArena;
+            _scene.PresenceObserved -= _hud.ObserveRoyale;
+            _scene.PresenceObserved -= _hud.ObserveTitles;
             _scene.PresenceObserved -= _hud.ObserveContacts;
             _hud.PlayerButtonsUsed -= _scene.DismissPlayerButtons;
             _scene.SkillNotice -= _hud.Chat.System;
             _hud.SummonModeRequested -= _scene.ToggleSummonMode;
             _hud.CrystalPetDismissRequested -= _scene.DismissCrystalPets;
             _hud.RunToggleRequested -= _scene.ToggleRun;
+            _hud.PvpToggleRequested -= _scene.TogglePvp;
+            _hud.TitleChosen -= _scene.ChooseTitle;
             _hud.YahooKeyPressed -= _scene.PressYahooKey;
             _hud.ItemSound -= _scene.PlayItemSound;
             _hud.TouchAttackRequested -= TouchAttack;
@@ -411,6 +429,7 @@ public sealed partial class GameplayScreen : GameScreen
         }
 
         _joystick?.Dispose();
+        _touchPortrait?.Dispose();
         _hud?.Dispose();
         _scene?.Dispose();
     }

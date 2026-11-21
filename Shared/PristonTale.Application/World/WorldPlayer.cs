@@ -39,14 +39,14 @@ public enum PlayerActionState
     Yahoo = 5,
 }
 
-public sealed class WorldPlayer
+public sealed partial class WorldPlayer
 {
     public float AttackRange => PlayerAttackReach.For(_character);
 
     // A game master may dash (Shift held while running); its movement budget allows that speed.
     public int GameMasterLevel { get; init; }
 
-    private readonly PlayerCharacter _character;
+    private PlayerCharacter _character;
     private bool _inVillage;
 
     // The client owns locomotion and reports it with MovementReport. Reports spend a distance budget that refills at
@@ -286,10 +286,11 @@ public sealed class WorldPlayer
     private long _cueSkillRevision;
     private int _cueRanks;
 
-    // Whether the player gained a level or trained a skill rank since the last call, for the effects everyone near sees.
-    public void TakeProgressCues(out bool leveledUp, out bool learned)
+    // The level at the last call (lower than the level now when the player gained one) and whether the player trained a
+    // skill rank since, for the effects everyone near sees.
+    public void TakeProgressCues(out int previousLevel, out bool learned)
     {
-        leveledUp = _character.Level > _cueLevel;
+        previousLevel = _cueLevel;
         _cueLevel = _character.Level;
         learned = false;
         if (_character.Skills.Revision != _cueSkillRevision)
@@ -347,7 +348,8 @@ public sealed class WorldPlayer
     public PartyRequest? PartyRequest { get; internal set; }
     public Contracts.Social.PartyDirectoryEntry[]? PartyDirectory { get; internal set; }
 
-    public bool SharesPartyWith(WorldPlayer other) => Party is { } party && ReferenceEquals(party, other.Party);
+    // Party members fight side by side, but nobody does in the Battle Royale (RoyaleRules).
+    public bool SharesPartyWith(WorldPlayer other) => Party is { } party && ReferenceEquals(party, other.Party) && Royale is null && other.Royale is null;
 
     // The trade the player is in and the request to trade it has not answered (WorldServer.Trades).
     public Trade? Trade { get; internal set; }
@@ -395,8 +397,16 @@ public sealed class WorldPlayer
         ShopSign = Shop?.Sign ?? "",
         ClanId = Clan?.ClanId ?? 0,
         ClanName = Clan?.Name ?? "",
-        ClanMark = Clan?.MarkVersion ?? 0
+        ClanMark = Clan?.MarkVersion ?? 0,
+        Pvp = Pvp,
+        Murderer = Murderer,
+        Duelling = Duel is not null,
+        ArenaSide = Arena is { Out: false } seat ? seat.Side + 1 : 0,
+        Title = (int)Title
     };
+
+    // The title the player shows over its name (WorldServer.StepTitles keeps it).
+    public Simulation.Titles.TitleCode Title { get; set; }
 
     // The clan the player shows over its head (ClanAppService keeps it), null for none.
     public Simulation.Social.Clans.ClanTag? Clan { get; set; }
@@ -826,6 +836,7 @@ public sealed class WorldPlayer
 
         _character.Life = Math.Clamp(life, 1, MaxLife);
         IsDead = false;
+        SlainByPlayer = false;
         _attackTargetId = 0;
         MoveState = MotionState.Stand;
         Action = PlayerActionState.Idle;
@@ -840,7 +851,10 @@ public sealed class WorldPlayer
         attackRate: _character.AttackRate,
         attackTargetId: AttackTargetId, attackSequence: AttackSequence)
     {
-        Hidden = Hidden
+        Hidden = Hidden,
+        ArenaMatch = Arena?.Match.Id ?? 0,
+        Royale = Royale?.Event.Id ?? 0,
+        RoyaleOut = Royale?.Out ?? false
     };
 
     // A game master who hid is left out of every other player's view and out of monsters' sight.

@@ -207,7 +207,7 @@ internal sealed class RenderBenchmarkProbe : Game
             GraphicsDevice,
             _assetRoot,
             PristonTale.Engine3D.Diagnostics.ConsoleClientLog.Instance);
-        var font = Content.Load<SpriteFont>("Fonts/UI");
+        var font = new Gameplay.UI.Rendering.UiFonts(Content);
         var context = new ScreenContext(
             GraphicsDevice,
             Content,

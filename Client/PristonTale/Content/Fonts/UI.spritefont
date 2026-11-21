@@ -18,12 +18,28 @@
         <End>&#383;</End>
       </CharacterRegion>
       <CharacterRegion>
+        <Start>&#416;</Start>
+        <End>&#417;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#431;</Start>
+        <End>&#432;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#7840;</Start>
+        <End>&#7929;</End>
+      </CharacterRegion>
+      <CharacterRegion>
         <Start>&#8192;</Start>
         <End>&#8292;</End>
       </CharacterRegion>
       <CharacterRegion>
         <Start>&#8298;</Start>
         <End>&#8303;</End>
+      </CharacterRegion>
+      <CharacterRegion>
+        <Start>&#8592;</Start>
+        <End>&#8595;</End>
       </CharacterRegion>
     </CharacterRegions>
   </Asset>

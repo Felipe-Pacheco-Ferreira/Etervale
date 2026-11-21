@@ -73,6 +73,31 @@ public readonly record struct ChatLinePacket(ChatKind Kind, ulong Speaker, strin
     }
 }
 
+// C->S {header, uint16 Version = 1, uint16 0, text Language (at most 16 bytes)}: the language the player wants other
+// players' lines translated to, "" for none; sent on entering the world and when the choice changes.
+public readonly record struct ChatTranslateToPacket(string Language) : IFramePacket
+{
+    public const int MaxLanguageBytes = 16;
+    public const int MaxSize = ChatWire.HeaderSize + 2 + MaxLanguageBytes;
+
+    public int Write(Span<byte> destination)
+    {
+        var writer = new PacketWriter(destination, EtervaleOpcodes.ChatTranslateTo);
+        writer.UInt16(ChatWire.CurrentVersion);
+        writer.UInt16(0);
+        Utf8Text.Write(ref writer, Language, MaxLanguageBytes);
+        return writer.Finish();
+    }
+
+    public static ChatTranslateToPacket Read(ReadOnlySpan<byte> packet)
+    {
+        var reader = new PacketReader(packet, ChatWire.HeaderSize + 2);
+        WireHeader.ReadVersion(ref reader, "Chat translation");
+        reader.Skip(2);
+        return new ChatTranslateToPacket(Utf8Text.Read(ref reader, MaxLanguageBytes, "Chat translation"));
+    }
+}
+
 // S->C {header, uint16 Version = 1, uint16 0}: the end of a game master's shutdown countdown; the client quits.
 public static class CloseRequestPacket
 {

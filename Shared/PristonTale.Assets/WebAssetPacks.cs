@@ -23,6 +23,12 @@ public static partial class WebAssetPacks
     public const long MaximumBytes = 64L * 1024 * 1024;
     public const int MaximumIndexBytes = 8 * 1024 * 1024;
 
+    // A language's own interface font (the client's UiFonts, Fonts/UI-<code>): only that language's players fetch it, so it
+    // never shares a chunk.
+    public const string LanguageFontPrefix = "Content/Fonts/UI-";
+
+    public static bool IsLanguageFont(string path) => path.StartsWith(LanguageFontPrefix, StringComparison.OrdinalIgnoreCase);
+
     // ZIP stores DOS times, which start in 1980: a fixed stamp keeps the chunks' bytes, and so their names, reproducible.
     public static readonly DateTimeOffset EntryTimestamp = new(1980, 1, 1, 0, 0, 0, TimeSpan.Zero);
 

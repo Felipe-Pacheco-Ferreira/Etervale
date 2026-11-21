@@ -210,6 +210,13 @@ public sealed partial record SkillDamageRule
     public int LifeToCasterCapPercent { get; init; }
     // The drain after a hit takes from bosses too (it spares them otherwise).
     public bool DrainsBosses { get; init; }
+
+    // The element of the share a target takes: the main target's own element when the rule names one.
+    public Element ElementFor(bool main) => main ? MainElement ?? Element : Element;
+
+    // The element a hit of this rule reports to the clients (Bionic: a physical hit, no element shown).
+    public static Element HitElement(SkillDamageRule damage, bool main = false) =>
+        damage is null || damage.Unresisted ? Element.Bionic : damage.FlatElement ?? damage.ElementFor(main);
 }
 
 public sealed partial record SkillRule

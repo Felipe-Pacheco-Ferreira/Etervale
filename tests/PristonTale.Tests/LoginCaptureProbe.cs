@@ -27,7 +27,7 @@ internal sealed class LoginCaptureProbe : Game
     private readonly string _output;
     private readonly string _backgroundPath;
     private SpriteBatch _batch = null!;
-    private SpriteFont _font = null!;
+    private Gameplay.UI.Rendering.UiFonts _font = null!;
     private HudAtlas _atlas = null!;
     private Texture2D _background = null!;
     private int _index;
@@ -46,7 +46,7 @@ internal sealed class LoginCaptureProbe : Game
     {
         Directory.CreateDirectory(_output);
         _batch = new SpriteBatch(GraphicsDevice);
-        _font = Content.Load<SpriteFont>("Fonts/UI");
+        _font = new Gameplay.UI.Rendering.UiFonts(Content);
         _atlas = HudAtlas.LoadBootstrap(GraphicsDevice, _assetRoot, ConsoleClientLog.Instance);
         var decoded = PristonImageDecoder.Decode(File.ReadAllBytes(_backgroundPath), ".png");
         _background = new Texture2D(GraphicsDevice, decoded.Width, decoded.Height);

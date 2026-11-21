@@ -67,7 +67,7 @@ public static class WebAssetPackBuilder
     }
 
     // Files in path order, so one folder's files share chunks; a chunk closes once it reaches the budget, and a file
-    // larger than the budget gets a chunk of its own.
+    // larger than the budget, or a language's own font (WebAssetPacks.IsLanguageFont), gets a chunk of its own.
     private static List<List<(string Path, long Bytes)>> Group(string root, IEnumerable<string> paths)
     {
         var groups = new List<List<(string Path, long Bytes)>>();
@@ -79,6 +79,12 @@ public static class WebAssetPackBuilder
             if (bytes > MaximumBytes)
             {
                 throw new InvalidDataException($"A listed file exceeds {MaximumBytes} bytes: {path}");
+            }
+
+            if (IsLanguageFont(path))
+            {
+                groups.Add([(path, bytes)]);
+                continue;
             }
 
             if (group.Count > 0 && groupBytes + bytes > ChunkBudgetBytes)

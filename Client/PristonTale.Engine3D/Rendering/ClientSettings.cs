@@ -9,6 +9,15 @@ public enum CameraMouseAction
     Default, Disabled, RotateLeft, RotateRight, ZoomIn, ZoomOut, TiltUp, TiltDown
 }
 
+// Inside a dungeon (an underground field) only: the free follow camera, or a view from nearly straight above that follows
+// the player without turning (PristonCamera.TopDown).
+[JsonConverter(typeof(JsonStringEnumConverter<DungeonCameraMode>))]
+public enum DungeonCameraMode
+{
+    Free,
+    TopDown
+}
+
 [JsonConverter(typeof(JsonStringEnumConverter<WindowMode>))]
 public enum WindowMode
 {
@@ -37,7 +46,12 @@ public sealed record ClientSettings
     public const int CurrentVersion = 1;
     public const string EnglishLanguage = "en";
     public const string BrazilianPortugueseLanguage = "pt-BR";
-    public static IReadOnlyList<string> SupportedLanguages { get; } = [EnglishLanguage, BrazilianPortugueseLanguage];
+    public const string SpanishLanguage = "es";
+    public const string FilipinoLanguage = "fil";
+    public const string VietnameseLanguage = "vi";
+    public const string SimplifiedChineseLanguage = "zh-CN";
+    public const string JapaneseLanguage = "ja";
+    public static IReadOnlyList<string> SupportedLanguages { get; } = [EnglishLanguage, BrazilianPortugueseLanguage, SpanishLanguage, FilipinoLanguage, VietnameseLanguage, SimplifiedChineseLanguage, JapaneseLanguage];
 
     public static string NormalizeLanguage(string language)
     {
@@ -56,6 +70,10 @@ public sealed record ClientSettings
     // The game server: host, host:port or tcp://host:port, optionally with ?cert=<sha-256 hex> (TlsTransport.ParseAddress).
     public string ServerAddress { get; init; } = "localhost";
     public string Language { get; init; } = EnglishLanguage;
+    // The language other players' lines are translated to by the server: "" none, GameLanguageTranslation the game's
+    // language, or a supported language (ChatTranslationTarget); shown only while the server translates.
+    public string ChatTranslateTo { get; init; } = "";
+    public const string GameLanguageTranslation = "game";
     public int Monitor { get; init; } = -1;
     public int WindowWidth { get; init; } = 1280;
     public int WindowHeight { get; init; } = 720;
@@ -125,11 +143,34 @@ public sealed record ClientSettings
     public bool HideBellatraBossNotices { get; init; }
     public bool HideBellatraTeamNotices { get; init; }
     public bool HideCastleNotices { get; init; }
+    public bool HideAgingNotices { get; init; }
+    public bool HideLevelUpNotices { get; init; }
+
+    // Hides other players' duel results in the chat (GameTextId.DuelNotice, DuelDrawNotice); the duellists' own lines stay.
+    public bool HideDuelNotices { get; init; }
+
+    // Hides the arena's opening and other players' match results in the chat (GameTextId.ArenaOpen, ArenaNotice,
+    // ArenaDrawNotice); a player's own lines stay.
+    public bool HideArenaNotices { get; init; }
+
+    // Hides the Battle Royale's registration, start, cancellation and winner in the chat (GameTextId.RoyaleOpen,
+    // RoyaleCancelled, RoyaleStarted, RoyaleWinner); a player's own lines stay.
+    public bool HideRoyaleNotices { get; init; }
+
+    // Hides the titles other players earned or lost in the chat (GameTextId.TitleGained, TitleLost); a title the player
+    // gets or loses is still told to it (TitleEarned, TitleTaken).
+    public bool HideTitleNotices { get; init; }
+
+    // Hides the boss roulette's winners in the chat (GameTextId.BossRouletteWinner); the player's own prize line stays.
+    public bool HideBossRouletteNotices { get; init; }
+    public PartyLootAlerts PartyLootAlerts { get; init; } = PartyLootAlerts.Rare;
+    public BellatraOpeningNotice BellatraOpeningNotice { get; init; }
     public CameraMouseAction CameraMouse4 { get; init; }
     public CameraMouseAction CameraMouse5 { get; init; }
     public bool InvertCameraOrbit { get; init; }
     public bool InvertCameraScroll { get; init; }
     public int CameraMouseButtons { get; init; }
+    public DungeonCameraMode DungeonCamera { get; init; }
     public bool HideQuestTracker { get; init; }
     public bool HideOnlineCount { get; init; }
     public bool ShowMinimap { get; init; } = true;
@@ -156,9 +197,22 @@ public sealed record ClientSettings
     public bool RunByDefault { get; init; } = true;
     // Browser only: the bottom bar centred under a wide screen instead of at the left.
     public bool CenteredInterface { get; init; } = true;
+    // Browser only: the HUD drawn as on the desktop, with the original art, instead of the browser's own look.
+    public bool ClassicInterface { get; init; }
+    // MoveChat lets the chat window be dragged; ChatOffsetX/Y is where it was left, in HUD design pixels from its place.
+    public bool MoveChat { get; init; }
+    public int ChatOffsetX { get; init; }
+    public int ChatOffsetY { get; init; }
+    public const int MostChatOffset = 16384;
+    // The tutorial's tips, and the ones each character closed ("character/tip").
+    public bool TutorialTips { get; init; } = true;
+    public string[] TutorialTipsClosed { get; init; } = [];
     // Browser only: the scenery casts no sun shadow, characters still do (the panel's "Simples" shadows).
     public bool ActorShadowsOnly { get; init; }
     public bool SpreadDamageNumbers { get; init; }
+    // A hit with an element floats its element's icon beside the number, and the number in the element's colour.
+    public bool ShowElementIcon { get; init; } = true;
+    public bool ColorDamageByElement { get; init; }
     public bool HidePotionHeals { get; init; }
     public bool HideSkillEffects { get; init; }
     public bool HideStealthEffect { get; init; }
@@ -267,19 +321,26 @@ public sealed record ClientSettings
         {
             ServerAddress = string.IsNullOrWhiteSpace(ServerAddress) ? defaults.ServerAddress : ServerAddress,
             Language = NormalizeLanguage(Language),
+            ChatTranslateTo = IsChatTranslation(ChatTranslateTo) ? ChatTranslateTo : defaults.ChatTranslateTo,
             Monitor = Monitor >= -1 ? Monitor : defaults.Monitor,
             WindowWidth = WindowWidth is >= 800 and <= 16384 ? WindowWidth : defaults.WindowWidth,
             WindowHeight = WindowHeight is >= 600 and <= 16384 ? WindowHeight : defaults.WindowHeight,
             WindowMode = Enum.IsDefined(WindowMode) ? WindowMode : defaults.WindowMode,
             InterfaceMode = Enum.IsDefined(InterfaceMode) ? InterfaceMode : defaults.InterfaceMode,
+            DungeonCamera = Enum.IsDefined(DungeonCamera) ? DungeonCamera : defaults.DungeonCamera,
             TextureQuality = Enum.IsDefined(TextureQuality) ? TextureQuality : defaults.TextureQuality,
             OwnNameColor = Enum.IsDefined(OwnNameColor) ? OwnNameColor : defaults.OwnNameColor,
             DamageNumberSize = Enum.IsDefined(DamageNumberSize) ? DamageNumberSize : defaults.DamageNumberSize,
+            PartyLootAlerts = Enum.IsDefined(PartyLootAlerts) ? PartyLootAlerts : defaults.PartyLootAlerts,
+            BellatraOpeningNotice = Enum.IsDefined(BellatraOpeningNotice) ? BellatraOpeningNotice : defaults.BellatraOpeningNotice,
             FogDistance = FogDistance is >= NearestFogDistance and <= FarthestFogDistance ? FogDistance : defaults.FogDistance,
             RefreshRate = RefreshRate is >= 0 and <= 1000 ? RefreshRate : defaults.RefreshRate,
             MaxFps = IsValidFps(MaxFps) ? MaxFps : defaults.MaxFps,
             BackgroundMaxFps = IsValidFps(BackgroundMaxFps) ? BackgroundMaxFps : defaults.BackgroundMaxFps,
             UiScale = float.IsFinite(UiScale) && UiScale is >= 0.75f and <= 1.5f ? UiScale : defaults.UiScale,
+            ChatOffsetX = Math.Clamp(ChatOffsetX, -MostChatOffset, MostChatOffset),
+            ChatOffsetY = Math.Clamp(ChatOffsetY, -MostChatOffset, MostChatOffset),
+            TutorialTipsClosed = TutorialTipsClosed ?? defaults.TutorialTipsClosed,
             RenderScale = float.IsFinite(RenderScale) && RenderScale is >= 0.5f and <= 1f ? RenderScale : defaults.RenderScale,
             MaxPixelRatio = MaxPixelRatio is 1f or 1.5f or MostPixelRatio ? MaxPixelRatio : defaults.MaxPixelRatio,
             MusicVolumePercent = Math.Clamp(MusicVolumePercent, 0, 100),
@@ -315,6 +376,28 @@ public sealed record ClientSettings
         }
 
         return valid;
+    }
+
+    // "Reset interface" on both panels: the HUD scale, the chat's place and the interface options back to their defaults.
+    // The tips a character closed stay closed.
+    // The language sent to the server for the chat's translation, "" for none.
+    public string ChatTranslationTarget => ChatTranslateTo == GameLanguageTranslation ? Language : ChatTranslateTo;
+
+    private static bool IsChatTranslation(string value) =>
+        value is "" or GameLanguageTranslation || SupportedLanguages.Contains(value);
+
+    public ClientSettings WithInterfaceReset()
+    {
+        var defaults = new ClientSettings();
+        return this with
+        {
+            UiScale = defaults.UiScale,
+            ClassicInterface = defaults.ClassicInterface,
+            MoveChat = defaults.MoveChat,
+            ChatOffsetX = defaults.ChatOffsetX,
+            ChatOffsetY = defaults.ChatOffsetY,
+            TutorialTips = defaults.TutorialTips
+        };
     }
 
     // The rendering options of a preset; display, audio and gameplay options are kept. Measured GPU frame times per

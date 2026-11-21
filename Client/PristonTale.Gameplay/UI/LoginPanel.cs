@@ -25,7 +25,7 @@ public sealed class LoginPanel
     private MouseState _previousMouse;
     private FocusTarget _focus;
 
-    public LoginPanel(SpriteBatch batch, SpriteFont font, HudAtlas atlas)
+    public LoginPanel(SpriteBatch batch, UiFonts fonts, HudAtlas atlas)
     {
         ArgumentNullException.ThrowIfNull(atlas);
         if (!atlas.IsReady)
@@ -33,7 +33,7 @@ public sealed class LoginPanel
             throw new InvalidOperationException("Login requires interface resources initialized before the first screen.");
         }
 
-        _canvas = new HudCanvas(batch, font, atlas);
+        _canvas = new HudCanvas(batch, fonts, atlas);
     }
 
     public TextInputField Account { get; } = new() { MaxLength = 20, Focused = true };

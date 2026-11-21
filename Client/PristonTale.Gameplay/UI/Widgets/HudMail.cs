@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using PristonTale.Gameplay.Localization;
 using PristonTale.Gameplay.UI.Chat;
 using PristonTale.Gameplay.UI.Inventory;
 using PristonTale.Gameplay.UI.Rendering;
@@ -42,7 +43,7 @@ internal sealed class HudMail
         if (_claiming && now - _claimAt >= 6000)
         {
             _claiming = false;
-            _claimStatus = "Sem resposta. Tente novamente.";
+            _claimStatus = ClientText.Get("Mail.NoAnswer");
         }
         if (IsOpen && _id == 0 && now >= _nextInboxRefresh && !_dragAnchor.HasValue)
         {
@@ -103,10 +104,10 @@ internal sealed class HudMail
                 _claimStatus = parts[1] switch
                 {
                     "ok" => "Recompensa recebida.",
-                    "already" => "Esta recompensa já foi resgatada.",
-                    "space" => "A recompensa não cabe no inventário.",
-                    "unavailable" => "Recompensa indisponível.",
-                    _ => "Tente novamente em instantes."
+                    "already" => ClientText.Get("Mail.Claim.Already"),
+                    "space" => ClientText.Get("Mail.Claim.Space"),
+                    "unavailable" => ClientText.Get("Mail.Claim.Unavailable"),
+                    _ => ClientText.Get("Mail.Claim.Retry")
                 };
             }
 
@@ -268,7 +269,7 @@ internal sealed class HudMail
         inside.Inflate(-1, -1);
         RoundBox(inside, 11, 25, 27, 32);
         Box(new Rectangle(198, 146, 404, 1), 165, 125, 60, 255);
-        Text(_distributor ? "Distribuidor de Itens" : _id == 0 ? "Correios · Caixa de entrada" : "Correios · Mensagem", 198, 121);
+        Text(ClientText.Get(_distributor ? "Mail.Title.Distributor" : _id == 0 ? "Mail.Title.Inbox" : "Mail.Title.Message"), 198, 121);
         RoundBox(Close, 11, 158, 116, 56);
         var closeFace = Close;
         closeFace.Inflate(-1, -1);
@@ -276,7 +277,7 @@ internal sealed class HudMail
         Text("X", 584, 121);
         if (_lines.Count == 0)
         {
-            Text(Environment.TickCount64 - _requestedAt < 6000 ? "Carregando…" : "Sem resposta do servidor.", 199, 160);
+            Text(ClientText.Get(Environment.TickCount64 - _requestedAt < 6000 ? "Mail.Loading" : "Mail.ServerSilent"), 199, 160);
         }
 
         var y = 157;
@@ -307,15 +308,15 @@ internal sealed class HudMail
 
         if (_id == 0)
         {
-            Text("Atualização automática", 198, 417);
+            Text(ClientText.Get("Mail.AutoRefresh"), 198, 417);
             Text($"{_lines.Count(line => line.StartsWith("Correio #", StringComparison.Ordinal))} mensagens", 490, 417);
         }
         else
         {
             if (_items.Count > 0 || _gold > 0)
             {
-                Text(_gold > 0 ? $"Anexos · {_gold} ouro" : "Anexos", 198, 344);
-                var status = _claimStatus.Length > 0 ? _claimStatus : _claimed ? "Recompensa resgatada" : "";
+                Text(_gold > 0 ? ClientText.Format("Mail.AttachmentsGold", _gold) : ClientText.Get("Mail.Attachments"), 198, 344);
+                var status = _claimStatus.Length > 0 ? _claimStatus : _claimed ? ClientText.Get("Mail.Claimed") : "";
                 Text(painter.Fit(status, 255), 345, 344);
                 icons.Request(_items.Select(item => item.Key));
                 for (var index = 0; index < _items.Count; index++)
@@ -331,19 +332,19 @@ internal sealed class HudMail
                 }
             }
 
-            Button(Back, "Caixa de entrada");
+            Button(Back, ClientText.Get("Mail.Inbox"));
             if (CanClaim)
             {
-                Button(Claim, _claiming ? "Aguarde…" : "Resgatar");
+                Button(Claim, ClientText.Get(_claiming ? "Mail.Wait" : "Mail.Claim"));
             }
             if (_page > 1)
             {
-                Button(Previous, "Anterior");
+                Button(Previous, ClientText.Get("Mail.Previous"));
             }
 
             if (_page < _pages)
             {
-                Button(Next, "Próxima");
+                Button(Next, ClientText.Get("Mail.Next"));
             }
         }
 

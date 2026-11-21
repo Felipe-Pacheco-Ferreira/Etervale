@@ -44,6 +44,11 @@
                 <select data-role="language" aria-label="Idioma do jogo">
                     <option value="pt-BR">Português</option>
                     <option value="en">English</option>
+                    <option value="es">Español</option>
+                    <option value="fil">Filipino</option>
+                    <option value="vi">Tiếng Việt</option>
+                    <option value="zh-CN">简体中文</option>
+                    <option value="ja">日本語</option>
                 </select>
             </label>
             @if (Client.IsAvailable)
@@ -436,6 +441,14 @@
                                     <span class="world-hud-emoji" aria-hidden="true">🎉</span>
                                     <span data-world-label="events">Eventos</span>
                                 </button>
+                                <button type="button" data-world-action="arena-solo">
+                                    <span class="world-hud-emoji" aria-hidden="true">⚔️</span>
+                                    <span data-world-label="arena-solo">Arena 1x1</span>
+                                </button>
+                                <button type="button" data-world-action="arena-trio">
+                                    <span class="world-hud-emoji" aria-hidden="true">🛡️</span>
+                                    <span data-world-label="arena-trio">Arena 3x3</span>
+                                </button>
                                 <button type="button" data-world-action="tower-defender" data-world-optional hidden>
                                     <span class="world-hud-emoji" aria-hidden="true">🗼</span>
                                     <span data-world-label="tower-defender">Tower Defender</span>
@@ -481,32 +494,123 @@
                     </div>
                 </dialog>
                 <div class="touch-hud" data-role="touch-hud" hidden>
+                    <button type="button" class="touch-player" data-touch-action="character" aria-label="Personagem">
+                        <canvas data-role="touch-player" aria-hidden="true"></canvas>
+                    </button>
+                    <canvas class="touch-target" data-role="touch-target" aria-hidden="true" hidden></canvas>
+                    <button type="button" class="touch-orb touch-chat" data-touch-chat aria-label="Chat"></button>
+                    <div class="touch-chat-feed" data-role="touch-chat-feed" aria-live="polite"></div>
+                    <dialog class="touch-chat-window" data-role="touch-chat-window" aria-labelledby="touch-chat-title">
+                        <header class="touch-chat-head">
+                            <h2 id="touch-chat-title" data-touch-label="chat">Chat</h2>
+                            <button type="button" class="touch-chat-close" data-touch-chat-close aria-label="Fechar">×</button>
+                        </header>
+                        <div class="touch-chat-options">
+                            <span data-touch-label="chat-feed">Mensagens na tela</span>
+                            <button type="button" data-touch-chat-feed aria-pressed="true">Mostrando</button>
+                        </div>
+                        <div class="touch-chat-log" data-role="touch-chat-log"></div>
+                        <form class="touch-chat-send" data-role="touch-chat-form">
+                            <input type="text" data-role="touch-chat-input" autocomplete="off" enterkeyhint="send"
+                                   placeholder="Escreva uma mensagem…" aria-label="Mensagem">
+                            <button type="submit" data-touch-label="send">Enviar</button>
+                        </form>
+                    </dialog>
                     <nav class="touch-dock" aria-label="Janelas do jogo">
-                        <button type="button" class="touch-orb touch-dock-orb" data-touch-action="character" aria-label="Personagem">
-                            <span aria-hidden="true">👤</span>
-                        </button>
-                        <button type="button" class="touch-orb touch-dock-orb" data-touch-action="inventory" aria-label="Bolsa">
-                            <span aria-hidden="true">🎒</span>
-                        </button>
-                        <button type="button" class="touch-orb touch-dock-orb" data-touch-action="skills" aria-label="Habilidades">
-                            <span aria-hidden="true">📖</span>
-                        </button>
-                        <button type="button" class="touch-orb touch-dock-orb" data-touch-action="quests" aria-label="Missões">
-                            <span aria-hidden="true">📜</span>
-                        </button>
+                        <button type="button" class="touch-orb touch-dock-orb" data-touch-menu-open aria-label="Menu"></button>
+                        <button type="button" class="touch-orb touch-dock-orb" data-touch-action="inventory" aria-label="Bolsa"></button>
+                        <button type="button" class="touch-orb touch-dock-orb" data-touch-hunt aria-label="Auto-caça"></button>
                     </nav>
-                    <div class="touch-wheel" aria-label="Combate" role="group">
-                        <button type="button" class="touch-orb touch-attack" data-touch-action="touch-attack" aria-label="Atacar">
-                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3l9 9-2 2-9-9V3h2zm16 0v2l-9 9-2-2 9-9h2zM6 15l3 3-3 3-3-3 3-3zm12 0l3 3-3 3-3-3 3-3z"/></svg>
-                        </button>
-                        <button type="button" class="touch-orb touch-skill" data-touch-action="touch-skill:0" data-touch-slot="0"><span></span></button>
-                        <button type="button" class="touch-orb touch-skill" data-touch-action="touch-skill:1" data-touch-slot="1"><span></span></button>
-                        <button type="button" class="touch-orb touch-skill" data-touch-action="touch-skill:2" data-touch-slot="2"><span></span></button>
-                        <button type="button" class="touch-orb touch-skill" data-touch-action="touch-skill:3" data-touch-slot="3"><span></span></button>
-                        <button type="button" class="touch-orb touch-potion" data-touch-action="touch-belt:0" data-touch-box="0"><span>1</span></button>
-                        <button type="button" class="touch-orb touch-potion" data-touch-action="touch-belt:1" data-touch-box="1"><span>2</span></button>
-                        <button type="button" class="touch-orb touch-potion" data-touch-action="touch-belt:2" data-touch-box="2"><span>3</span></button>
+                    <p class="touch-hunt-chip" data-role="touch-hunt-chip" data-touch-label="hunt-on" role="status" hidden>Auto-caça · Ligado</p>
+                    <div class="touch-menu" data-role="touch-menu" hidden>
+                        <header class="touch-menu-head">
+                            <strong data-role="touch-menu-name"></strong>
+                            <button type="button" class="touch-menu-close" data-touch-menu-close aria-label="Fechar menu">×</button>
+                        </header>
+                        <div class="touch-menu-row">
+                            <button type="button" class="touch-menu-entry" data-touch-action="inventory" data-touch-glyph="bag"><span data-touch-label="bag">Inventário</span></button>
+                            <button type="button" class="touch-menu-entry" data-touch-action="quests" data-touch-glyph="journal"><span data-touch-label="quests">Missões</span></button>
+                            <button type="button" class="touch-menu-entry" data-world-action="events" data-touch-glyph="gift"><span data-world-label="events">Eventos</span></button>
+                        </div>
+                        <div class="touch-menu-row">
+                            <button type="button" class="touch-menu-entry" data-touch-action="skills" data-touch-glyph="skill"><span data-touch-label="skills">Habilidades</span></button>
+                            <button type="button" class="touch-menu-entry" data-touch-action="touch-run" data-touch-glyph="run"><span data-touch-label="run">Corrida</span></button>
+                            <button type="button" class="touch-menu-entry" data-world-action="mail" data-touch-glyph="chat"><span data-touch-label="mail">Correios</span></button>
+                        </div>
+                        <div class="touch-menu-row">
+                            <button type="button" class="touch-menu-entry" data-touch-action="character" data-touch-glyph="shield"><span data-touch-label="character">Personagem</span></button>
+                            <button type="button" class="touch-menu-entry" data-world-action="calendar" data-touch-glyph="calendar"><span data-world-label="calendar">Calendário</span></button>
+                            <button type="button" class="touch-menu-entry" data-touch-menu="settings" data-touch-glyph="menu"><span data-touch-label="settings">Configurações</span></button>
+                        </div>
+                        <div class="touch-menu-grid">
+                            <button type="button" data-world-action="auction" data-world-optional hidden>
+                                <span class="world-hud-emoji" aria-hidden="true">⚖️</span>
+                                <span data-world-label="auction">Leilão</span>
+                            </button>
+                            <button type="button" data-world-action="security">
+                                <span class="world-hud-emoji" aria-hidden="true">🛡️</span>
+                                <span data-world-label="security">Segurança</span>
+                            </button>
+                            <button type="button" data-world-action="drops">
+                                <span class="world-hud-emoji" aria-hidden="true">💎</span>
+                                <span data-world-label="drops">Últimos drops</span>
+                            </button>
+                            <button type="button" data-world-action="coin-history" data-world-optional hidden>
+                                <span class="world-hud-emoji" aria-hidden="true">🪙</span>
+                                <span data-world-label="coin-history">Histórico de Coins</span>
+                            </button>
+                            <button type="button" data-world-action="arena-solo">
+                                <span class="world-hud-emoji" aria-hidden="true">⚔️</span>
+                                <span data-world-label="arena-solo">Arena 1x1</span>
+                            </button>
+                            <button type="button" data-world-action="arena-trio">
+                                <span class="world-hud-emoji" aria-hidden="true">🛡️</span>
+                                <span data-world-label="arena-trio">Arena 3x3</span>
+                            </button>
+                            <button type="button" data-world-action="royale">
+                                <span class="world-hud-emoji" aria-hidden="true">👑</span>
+                                <span data-world-label="royale">Battle Royale</span>
+                            </button>
+                            <button type="button" data-world-action="tower-defender" data-world-optional hidden>
+                                <span class="world-hud-emoji" aria-hidden="true">🗼</span>
+                                <span data-world-label="tower-defender">Tower Defender</span>
+                            </button>
+                            <button type="button" data-world-action="eragon" data-world-optional hidden>
+                                <span class="world-hud-emoji" aria-hidden="true">🏰</span>
+                                <span data-world-label="eragon">Lar do Eragon</span>
+                            </button>
+                            <button type="button" data-world-action="ranking">
+                                <span class="world-hud-emoji" aria-hidden="true">🏆</span>
+                                <span data-world-label="ranking">Ranking</span>
+                            </button>
+                            <button type="button" data-world-action="rewards">
+                                <span class="world-hud-emoji" aria-hidden="true">📦</span>
+                                <span data-world-label="rewards">Distribuidor</span>
+                            </button>
+                            <button type="button" data-world-action="item-shop" data-world-optional hidden>
+                                <span class="world-hud-emoji" aria-hidden="true">🛒</span>
+                                <span data-world-label="item-shop">Loja de Itens</span>
+                            </button>
+                            <button type="button" data-world-action="community-buffs">
+                                <span class="world-hud-emoji" aria-hidden="true">✨</span>
+                                <span data-world-label="community-buffs">Buffs da Comunidade</span>
+                            </button>
+                        </div>
+                        <div class="touch-menu-row">
+                            <button type="button" class="touch-menu-entry touch-menu-wide" data-world-action="lobby" data-touch-glyph="journal"><span data-touch-label="lobby">Trocar personagem</span></button>
+                        </div>
                     </div>
+                    <div class="touch-wheel" aria-label="Combate" role="group">
+                        <button type="button" class="touch-orb touch-attack" data-touch-action="touch-attack" aria-label="Atacar"></button>
+                        <button type="button" class="touch-orb touch-skill" data-touch-action="touch-skill:0" data-touch-slot="0"></button>
+                        <button type="button" class="touch-orb touch-skill" data-touch-action="touch-skill:1" data-touch-slot="1"></button>
+                        <button type="button" class="touch-orb touch-skill" data-touch-action="touch-skill:2" data-touch-slot="2"></button>
+                        <button type="button" class="touch-orb touch-skill" data-touch-action="touch-skill:3" data-touch-slot="3"></button>
+                        <button type="button" class="touch-orb touch-potion" data-touch-action="touch-belt:0" data-touch-box="0"></button>
+                        <button type="button" class="touch-orb touch-potion" data-touch-action="touch-belt:1" data-touch-box="1"></button>
+                        <button type="button" class="touch-orb touch-potion" data-touch-action="touch-belt:2" data-touch-box="2"></button>
+                    </div>
+                    <canvas class="touch-experience" data-role="touch-experience" aria-hidden="true"></canvas>
                 </div>
                 <dialog class="world-hunt-panel" id="world-hunt-panel" data-role="world-hunt-panel" aria-labelledby="world-hunt-title">
                     <header class="world-hunt-head">
@@ -515,6 +619,7 @@
                     </header>
                     <div class="world-hunt-body">
                         <div class="world-hunt-controls">
+                            <span class="world-hunt-chip" aria-hidden="true">AUTO-CAÇA</span>
                             <strong data-role="world-hunt-status" role="status">Desligada</strong>
                             <button type="button" class="world-hunt-toggle" data-role="world-hunt-toggle" data-world-action="auto-hunt" aria-pressed="false">
                                 <svg viewBox="0 0 16 16" aria-hidden="true"><path class="world-hud-run" d="m6 4 6 4-6 4z"/><path class="world-hud-stop" d="M5 5h6v6H5z"/></svg>

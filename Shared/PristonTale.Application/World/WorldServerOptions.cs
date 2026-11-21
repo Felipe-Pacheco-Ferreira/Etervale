@@ -40,6 +40,15 @@ public sealed record WorldServerOptions
     // Bless Castle's league runs: players do not fight each other in the castle field.
     public bool CastleLeague { get; init; }
 
+    // The arena's opening hours and the week's prizes (ArenaRules).
+    public ArenaOptions Arena { get; init; } = ArenaOptions.Default;
+
+    // The Battle Royale's hours and its prizes (RoyaleRules).
+    public RoyaleOptions Royale { get; init; } = RoyaleOptions.Default;
+
+    // The percent of a blow's damage players with the PvP mode on take from each other in a hunting field (PvpRules).
+    public int PvpDamagePercent { get; init; } = Simulation.Combat.PvpRules.DefaultDamagePercent;
+
     public int WeatherCycleMinutes { get; init; } = WeatherSchedule.DefaultCycleMinutes;
 
     public int MaxPendingCommandsPerPlayer { get; init; } = DefaultMaxPendingCommandsPerPlayer;
@@ -56,6 +65,8 @@ public sealed record WorldServerOptions
     public ItemEventRates ItemEvents { get; init; } = ItemEventRates.None;
 
     public BellatraOptions Bellatra { get; init; } = BellatraOptions.Default;
+
+    public ServerNoticeOptions Notices { get; init; } = ServerNoticeOptions.Default;
 
     // NPCs, by their definition name, that no field places.
     public IReadOnlyList<string> RemovedNpcs { get; init; } = DefaultRemovedNpcs;
@@ -97,8 +108,82 @@ public sealed record WorldServerOptions
             throw new InvalidOperationException("Bellatra's mode must be 0, 1 or 2, its tax 0 to 100 and its score divisor at least 1.");
         }
 
+        if (Notices is null || Notices.AgingFrom is < 0 or > AgingRules.MaxLevel || Notices.LevelFrom < 0 || Notices.LevelEvery < 1)
+        {
+            throw new InvalidOperationException($"The aging notice must start at 0 to {AgingRules.MaxLevel}, the level notice at 0 or more, every 1 level or more.");
+        }
+
+        if (Arena is null || Arena.Hours >> 24 != 0 || Arena.FirstPrize < 0 || Arena.SecondPrize < 0 || Arena.ThirdPrize < 0)
+        {
+            throw new InvalidOperationException("The arena's hours must be 0 to 23 and its prizes not negative.");
+        }
+
+        if (Royale is null || Royale.Hours >> 24 != 0 || Royale.FirstPrize < 0 || Royale.SecondPrize < 0 || Royale.ThirdPrize < 0)
+        {
+            throw new InvalidOperationException("The Battle Royale's hours must be 0 to 23 and its prizes not negative.");
+        }
+
+        if ((Royale.Hours & Arena.Hours) != 0)
+        {
+            // Both run in the quest arena's field: the arena's half hour and the event's quarter would share it.
+            throw new InvalidOperationException("The Battle Royale and the arena must not share an hour.");
+        }
+
+        if (PvpDamagePercent is < 1 or > Simulation.Combat.PvpRules.MaxDamagePercent)
+        {
+            throw new InvalidOperationException($"World:PvpDamagePercent must be 1 to {Simulation.Combat.PvpRules.MaxDamagePercent}.");
+        }
+
         return this;
     }
+}
+
+// The server's notices of other players' feats (ServerNoticeRules): agings from AgingFrom, levels that are multiples of
+// LevelEvery from LevelFrom; 0 turns either off.
+public sealed record ServerNoticeOptions(int AgingFrom = Simulation.Social.ServerNoticeRules.DefaultAgingFrom,
+    int LevelFrom = Simulation.Social.ServerNoticeRules.DefaultLevelFrom, int LevelEvery = Simulation.Social.ServerNoticeRules.DefaultLevelEvery)
+{
+    public static readonly ServerNoticeOptions Default = new();
+}
+
+// The arena (ArenaRules): the server-local hours it opens at (EventSchedule.HourMask; 0 never opens) and the gold the
+// week's first, second and third of each level band receive by mail (0 sends nothing).
+public sealed record ArenaOptions(int Hours, long FirstPrize = ArenaOptions.DefaultFirstPrize, long SecondPrize = ArenaOptions.DefaultSecondPrize,
+    long ThirdPrize = ArenaOptions.DefaultThirdPrize)
+{
+    public const long DefaultFirstPrize = 10_000_000;
+    public const long DefaultSecondPrize = 5_000_000;
+    public const long DefaultThirdPrize = 2_000_000;
+
+    public static readonly ArenaOptions Default = new(Simulation.World.Calendar.EventSchedule.ParseHours(Simulation.Combat.ArenaRules.DefaultHours) ?? 0);
+
+    public long PrizeFor(int place) => place switch
+    {
+        1 => FirstPrize,
+        2 => SecondPrize,
+        3 => ThirdPrize,
+        _ => 0
+    };
+}
+
+// The Battle Royale (RoyaleRules): the server-local hours it starts at (EventSchedule.HourMask; 0 never) and the gold
+// the event's first, second and third receive by mail (0 sends nothing).
+public sealed record RoyaleOptions(int Hours, long FirstPrize = RoyaleOptions.DefaultFirstPrize, long SecondPrize = RoyaleOptions.DefaultSecondPrize,
+    long ThirdPrize = RoyaleOptions.DefaultThirdPrize)
+{
+    public const long DefaultFirstPrize = 5_000_000;
+    public const long DefaultSecondPrize = 2_000_000;
+    public const long DefaultThirdPrize = 1_000_000;
+
+    public static readonly RoyaleOptions Default = new(Simulation.World.Calendar.EventSchedule.ParseHours(Simulation.Combat.RoyaleRules.DefaultHours) ?? 0);
+
+    public long PrizeFor(int place) => place switch
+    {
+        1 => FirstPrize,
+        2 => SecondPrize,
+        3 => ThirdPrize,
+        _ => 0
+    };
 }
 
 // Bellatra: when it opens, the percent of each prize kept for the operating clan, and the divisor from a monster's

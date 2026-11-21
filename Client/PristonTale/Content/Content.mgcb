@@ -133,3 +133,15 @@
 /processor:FontDescriptionProcessor
 /processorParam:TextureFormat=Color
 /build:Fonts/UI.spritefont
+
+#begin Fonts/UI-zh-CN.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:TextureFormat=Color
+/build:Fonts/UI-zh-CN.spritefont
+
+#begin Fonts/UI-ja.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:TextureFormat=Color
+/build:Fonts/UI-ja.spritefont

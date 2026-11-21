@@ -1,7 +1,9 @@
 using PristonTale.Assets;
 using PristonTale.Contracts.Characters;
 using PristonTale.Engine3D.Rendering;
+using PristonTale.Gameplay.Audio;
 using PristonTale.Gameplay.UI;
+using PristonTale.Gameplay.UI.Rendering;
 using PristonTale.Gameplay.World;
 using System.Security.Cryptography;
 
@@ -19,10 +21,11 @@ internal static class BootstrapFiles
     private const string AssetsFolder = "assets";
     private const string CharacterFolder = AssetsFolder + "/char/tmABCD/";
     private const string SkyManifest = AssetsFolder + "/" + PristonSkyManifest.AssetPath;
+    private const string ContentFolder = "Content/";
 
     private static readonly string[] ScenePrefixes =
     [
-        "Content/",
+        ContentFolder,
         "assets/image/Sinimage/Cursor/",
         "assets/image/flame"
     ];
@@ -65,7 +68,7 @@ internal static class BootstrapFiles
 
     public static string AssetRoot => Path.Combine(Root, AssetsFolder);
 
-    public static async Task FetchAsync(Uri clientAddress)
+    public static async Task FetchAsync(Uri clientAddress, string language)
     {
         using var http = new HttpClient { BaseAddress = clientAddress };
         var bytes = await FetchWithRetryAsync(() => http.GetByteArrayAsync(ListFile));
@@ -73,6 +76,7 @@ internal static class BootstrapFiles
         _bootstrapSha256 = Convert.ToHexString(SHA256.HashData(bytes));
         _bootstrapHashes = WebAssetPacks.ReadBootstrap(paths);
         _clientAddress = clientAddress;
+        var sounds = FetchSoundIndexAsync(http);
         var manifestEntry = paths.FirstOrDefault(entry => SkyManifest.Equals(EntryPath(entry), StringComparison.OrdinalIgnoreCase))
             ?? throw new InvalidDataException($"{ListFile} is missing {SkyManifest}.");
         await FetchFileAsync(http, manifestEntry);
@@ -88,6 +92,11 @@ internal static class BootstrapFiles
             }
 
             var path = EntryPath(entry);
+            if (IsOtherLanguageFont(path, language))
+            {
+                continue;
+            }
+
             if (IsScene(path, skyFolders))
             {
                 scenePaths.Add(entry);
@@ -105,6 +114,7 @@ internal static class BootstrapFiles
         _remainingPaths = remainingPaths.ToArray();
         _deferredPaths = deferredPaths.Distinct(StringComparer.Ordinal).ToArray();
         await FetchPathsAsync(http, scenePaths, BrowserHost.ReportLoginProgress);
+        SoundFiles.Use(new BrowserSoundFiles(await sounds));
     }
 
     private static string[] OpeningSkyFolders(string path)
@@ -116,6 +126,30 @@ internal static class BootstrapFiles
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
     }
+
+    // The sound files' list (BrowserSoundFiles). Without it the game runs silent rather than not at all.
+    private static async Task<WebSoundIndex> FetchSoundIndexAsync(HttpClient http)
+    {
+        try
+        {
+            var index = WebSoundIndex.Read(await FetchWithRetryAsync(() => http.GetByteArrayAsync(WebSoundIndex.FileName)));
+            if (index is not null)
+            {
+                return index;
+            }
+
+            Console.Error.WriteLine($"[Audio] {WebSoundIndex.FileName} is malformed; the game plays no sound.");
+        }
+        catch (HttpRequestException error)
+        {
+            Console.Error.WriteLine($"[Audio] {WebSoundIndex.FileName} could not be downloaded; the game plays no sound: {error.Message}");
+        }
+
+        return WebSoundIndex.Empty;
+    }
+
+    // A file listed outside bootstrap.txt (a line of audio.txt), downloaded when the game first reads it.
+    public static Task FetchListedFileAsync(string entry) => FetchFileAsync(CharacterHttp, entry);
 
     // Runs while the opening plays, so it keeps few requests in flight: each finished file is written on the game's own
     // thread, between its frames.
@@ -302,6 +336,12 @@ internal static class BootstrapFiles
         SceneAssets.Contains(path)
         || ScenePrefixes.Any(prefix => path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
         || skyFolders.Any(prefix => path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+
+    // Another language's own interface font (UiFonts): the game draws only the page's language, so the others are never
+    // fetched.
+    private static bool IsOtherLanguageFont(string path, string language) =>
+        WebAssetPacks.IsLanguageFont(path)
+        && !path.Equals(ContentFolder + UiFonts.AssetOf(language) + ".xnb", StringComparison.OrdinalIgnoreCase);
 
     private static bool IsRosterAsset(string path) =>
         path.StartsWith(CharacterFolder, StringComparison.OrdinalIgnoreCase) && !DeferredWorldFiles.IsFullMotionBank(path)

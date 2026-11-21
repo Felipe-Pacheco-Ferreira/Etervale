@@ -181,6 +181,8 @@ internal static class MonsterCombatTests
         public MonsterAiTuning TuningFor(MonsterDefinition definition) => new(definition);
         public (float DurationMs, float HitAtMs) PlayerSwingTiming(WorldPlayer target) => (1000, 400);
         public bool MayFight(WorldPlayer attacker, WorldPlayer target) => false;
+        public bool ScalesPlayerBlows => false;
+        public void Spared(WorldPlayer attacker, WorldPlayer target) { }
         public void EmitCombatEvent(in CombatEventView combatEvent) => EventCount++;
         public bool TryGetPlayer(ulong entityId, [MaybeNullWhen(false)] out WorldPlayer target)
         {

@@ -8,7 +8,8 @@ namespace PristonTale.Gameplay.UI.Rendering;
 // Text is queued and drawn in a linear-filtered pass because the UI font is a scaled vector bake.
 public sealed class HudPainter : IDisposable
 {
-    // UI.spritefont bakes DejaVu Sans at 21 points, rasterized at 96 dpi: a 28-pixel em (tools/ui/build_font.py).
+    // UI.spritefont bakes DejaVu Sans at 21 points, rasterized at 96 dpi: a 28-pixel em (tools/ui/build_font.py); a language's
+    // own font (UiFonts) is baked at the same size.
     public const float BakePixels = 28f;
     // The original's interface text: a 14-pixel font through GDI TextOut (DejaVu Sans, the system's default face, in its
     // portable build), whose y is the top of a cell with ~2 px leading.
@@ -19,8 +20,10 @@ public sealed class HudPainter : IDisposable
     private readonly record struct TextRun(string Value, Vector2 Position, Color Color, bool Shadow, Vector2 ShadowOffset, float Scale);
 
     private readonly SpriteBatch _batch;
-    private readonly SpriteFont _font;
-    internal SpriteFont Font => _font;
+    private readonly UiFonts _fonts;
+    internal SpriteFont Font => _fonts.Current;
+    // The font the metrics below were taken from: a change of language measures the new font.
+    private SpriteFont _font;
     private HashSet<char> _glyphs;
     private readonly HudSprites _sprites;
     private readonly Texture2D _white;
@@ -28,30 +31,54 @@ public sealed class HudPainter : IDisposable
     private readonly Texture2D _nameBoxHighlighted;
     private readonly Texture2D _clanMark;
     private readonly List<TextRun> _text = new(128);
-    private readonly float _textShift;
-    private readonly float _capCropping;
+    private float _textShift;
+    private float _capCropping;
     private (float Capitals, float Descent)? _letterHeights;
     private Matrix _transform = Matrix.Identity;
     private float _scale = 1f;
     private SamplerState _sampler = SamplerState.PointClamp;
     private bool _active;
 
-    public HudPainter(SpriteBatch batch, SpriteFont font, HudSprites sprites)
+    public HudPainter(SpriteBatch batch, UiFonts fonts, HudSprites sprites)
     {
         _batch = batch;
-        _font = font;
+        _fonts = fonts;
         _sprites = sprites;
         _white = new Texture2D(batch.GraphicsDevice, 1, 1);
         _white.SetData([Color.White]);
         _nameBox = NameBoxTexture(batch.GraphicsDevice, new Color(170, 136, 65), new Color(98, 84, 48));
         _nameBoxHighlighted = NameBoxTexture(batch.GraphicsDevice, new Color(236, 200, 110), new Color(150, 120, 60));
         _clanMark = ClanMarks.Default(batch.GraphicsDevice);
+        TakeMetrics(fonts.Current);
+    }
+
+    private void TakeMetrics(SpriteFont font)
+    {
+        _font = font;
+        _glyphs = null;
+        _letterHeights = null;
         _capCropping = font.GetGlyphs().TryGetValue('M', out var glyph) ? glyph.Cropping.Y : CapTop / TextScale;
         _textShift = MathF.Round(CapTop - _capCropping * TextScale);
     }
 
+    // The shown language's font, its metrics taken again when a change of language changed it (a measure may come before
+    // the next Begin, while typing or with the HUD hidden).
+    private SpriteFont Measured
+    {
+        get
+        {
+            if (!ReferenceEquals(_font, _fonts.Current))
+            {
+                TakeMetrics(_fonts.Current);
+            }
+
+            return _font;
+        }
+    }
+
     public void Begin(HudLayout layout)
     {
+        _ = Measured;
         _text.Clear();
         _scale = layout.Scale;
         _sampler = layout.WholeScale ? SamplerState.PointClamp : SamplerState.LinearClamp;
@@ -316,23 +343,28 @@ public sealed class HudPainter : IDisposable
     }
 
     // The height of one line of HUD text.
-    public int TextHeight => (int)MathF.Ceiling(_font.LineSpacing * TextScale);
+    public int TextHeight => (int)MathF.Ceiling(Measured.LineSpacing * TextScale);
 
-    public bool CanDraw(char value) => (_glyphs ??= [.. _font.Characters]).Contains(value);
+    public bool CanDraw(char value)
+    {
+        var font = Measured;
+        return (_glyphs ??= [.. font.Characters]).Contains(value);
+    }
 
     public int Measure(string value) => MeasureAt(value, TextScale);
 
-    public int MeasureAt(string value, float scale) => string.IsNullOrEmpty(value) ? 0 : (int)MathF.Ceiling(_font.MeasureString(value).X * scale);
+    public int MeasureAt(string value, float scale) => string.IsNullOrEmpty(value) ? 0 : (int)MathF.Ceiling(Measured.MeasureString(value).X * scale);
 
     // The capitals' height and the descenders' depth below the baseline at a scale, in pixels: text drawn at y has the top
     // of its capitals at y + CapTop. The line spacing also holds the gap to the next line, so a box sized by it leaves
     // the text high.
     public (float Capitals, float Descent) LetterHeightsAt(float scale)
     {
+        var font = Measured;
         if (_letterHeights is null)
         {
-            var glyphs = _font.GetGlyphs();
-            var baseline = glyphs.TryGetValue('M', out var capital) ? capital.Cropping.Y + capital.BoundsInTexture.Height : _font.LineSpacing;
+            var glyphs = font.GetGlyphs();
+            var baseline = glyphs.TryGetValue('M', out var capital) ? capital.Cropping.Y + capital.BoundsInTexture.Height : font.LineSpacing;
             var descent = 0f;
             foreach (var character in "gjpqy")
             {

@@ -57,8 +57,8 @@ settings table as the server reads it), `IRankingRepository`, `IAccountRepositor
 | `/download` | The APK's version, size, date and SHA-256, the download button and how to install | `Downloads:*` |
 | `/download/android` | The APK itself (`application/vnd.android.package-archive`, range requests) | `Downloads:AndroidApkPath` |
 | `/jogar` | Permanent redirect to `/`, the former address of the play page | |
-| `/play/*` | The browser client's files, including `main.js`, `_framework/`, the assets listed by `bootstrap.txt`, and the opening music served on demand. Hashed files are cached for a year and the loader and entry script are revalidated. | `Play:ClientPath` |
-| `/rankings`, `/rankings?classe=<class>` | The 50 highest characters, of all classes or one (`ClassTitles.Slug`, the `PlayerClass` name in lower case) | `IRankingRepository.TopAsync` |
+| `/play/*` | The browser client's files, including `main.js`, `_framework/`, the assets listed by `bootstrap.txt`, and the sounds listed by `audio.txt` (`.wav`, and the music's `.bgm` as `application/octet-stream`) served on demand. Hashed files are cached for a year and the loader and entry script are revalidated. | `Play:ClientPath` |
+| `/rankings`, `/rankings?classe=<class>` | The 50 highest characters, of all classes or one (`ClassTitles.Slug`, the `PlayerClass` name in lower case), then "Arena da semana": the current week's 10 best of each arena level band with their points, wins and losses (`SiteData.ArenaAsync`, the week in the site's time zone, which is the game server's; [application.md](application.md#arena)) | `IRankingRepository.TopAsync`, `IArenaRepository.TopAsync` |
 | `/eventos` | Events running now, the next 24 hours, the field bosses (next calls and each boss's hours) and the next days | `SiteData.CalendarAsync` |
 | `/cadastro` | Registration; signs the new account in | `AccountAppService.RegisterAsync` |
 | `/entrar` | Sign-in with the game's account and password; `?voltar=` returns to a local address only | `AccountAppService.CheckAsync` |

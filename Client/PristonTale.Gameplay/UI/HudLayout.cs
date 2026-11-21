@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using PristonTale.Engine3D.Rendering;
 
 namespace PristonTale.Gameplay.UI;
 
@@ -34,8 +35,16 @@ public readonly record struct HudLayout(float Scale, int Width, int Height, int 
 
     public int BottomOffset => Height - DesignHeight;
     public int RightOffset => Width - DesignWidth;
+    // The browser's own look of the HUD (the chat, the party and quest windows, the system menu, the action bar's place);
+    // off, the HUD is drawn as on the desktop.
     public bool Browser { get; init; }
+
+    // The browser draws its own look unless the player chose the classic interface (ClientSettings.ClassicInterface).
+    public static bool BrowserLook(bool browser, ClientSettings settings) => browser && !settings.ClassicInterface;
     public bool SidePanelOpen { get; init; }
+
+    // The page's touch HUD is in use (WebWorldHud.TouchActive): its controls hold the corners the canvas HUD would use.
+    public bool Touch { get; init; }
 
     // Browser only: the bottom bar centred under a wide screen (ClientSettings.CenteredInterface), else at the left.
     public bool CenteredBar { get; init; } = true;

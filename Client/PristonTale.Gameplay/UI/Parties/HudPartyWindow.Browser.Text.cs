@@ -10,8 +10,7 @@ public sealed partial class HudPartyWindow
     private readonly record struct DirectoryText(string Count, string Detail);
 
     private const int SocialTextCacheLimit = 512;
-    private static readonly string[] PortuguesePartyCommands = ["Líder", "Dissolver", "Expulsar", "Sair"];
-    private static readonly string[] EnglishPartyCommands = ["Leader", "Disband", "Kick", "Leave"];
+    private static readonly string[] PartyCommands = ["Party.Command.Leader", "Party.Command.Disband", "Party.Command.Kick", "Party.Command.Leave"];
     private readonly Dictionary<int, string> _socialLevelLabels = new();
     private readonly Dictionary<(PlayerClass Class, int Level), string> _socialClanLabels = new();
     private readonly Dictionary<PartyDirectoryEntry, DirectoryText> _directoryLabels = new();
@@ -49,7 +48,7 @@ public sealed partial class HudPartyWindow
         if (_socialPartyCount != count)
         {
             _socialPartyCount = count;
-            _socialPartyTitle = (ClientText.Language == "pt-BR" ? "Grupo   " : "Party   ") + count + "/" + PartyLimits.MaxMembers;
+            _socialPartyTitle = ClientText.Format("Party.Title", count, PartyLimits.MaxMembers);
         }
 
         return _socialPartyTitle;
@@ -93,9 +92,8 @@ public sealed partial class HudPartyWindow
                 _directoryLabels.Clear();
             }
 
-            var prefix = ClientText.Language == "pt-BR" ? "Nível médio " : "Average level ";
             text = new DirectoryText($"{entry.MemberCount}/{PartyLimits.MaxMembers}",
-                prefix + entry.AverageLevel + " · " + FieldName(entry.FieldId));
+                ClientText.Format("Party.DirectoryDetail", entry.AverageLevel, FieldName(entry.FieldId)));
             _directoryLabels.Add(entry, text);
         }
 
@@ -110,10 +108,9 @@ public sealed partial class HudPartyWindow
         }
 
         _profileTextSource = _socialProfile;
-        var portuguese = ClientText.Language == "pt-BR";
-        _profileClassLine = (portuguese ? "Classe   " : "Class   ") + _socialProfile.ClassName;
-        _profileLevelLine = (portuguese ? "Nível   " : "Level   ") + _socialProfile.Level;
-        _profileClanLine = (portuguese ? "Clã   " : "Clan   ") + _socialProfile.ClanName;
+        _profileClassLine = ClientText.Format("Party.Profile.Class", _socialProfile.ClassName);
+        _profileLevelLine = ClientText.Format("Party.Profile.Level", _socialProfile.Level);
+        _profileClanLine = ClientText.Format("Party.Profile.Clan", _socialProfile.ClanName);
     }
 
     private PartyDirectoryEntry SelectedDirectoryEntry()

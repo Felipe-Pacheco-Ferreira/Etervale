@@ -33,6 +33,22 @@ public sealed partial class GameScene
         _monsterSounds.WarpStarted += OnMonsterWarp;
     }
 
+    // The effects switch and volume over the skill and character sounds, as over the field's.
+    private void ApplySoundOptions()
+    {
+        var enabled = _audio?.SoundEnabled ?? true;
+        var gain = _audio?.SoundGain ?? 1f;
+        if (_skillSounds is not null)
+        {
+            (_skillSounds.Enabled, _skillSounds.Gain) = (enabled, gain);
+        }
+
+        if (_combatSounds is not null)
+        {
+            (_combatSounds.Enabled, _combatSounds.Gain) = (enabled, gain);
+        }
+    }
+
     private void UpdateCombatSounds()
     {
         if (_combatSounds is null)
@@ -40,7 +56,6 @@ public sealed partial class GameScene
             return;
         }
 
-        _combatSounds.Enabled = _audio?.SoundEnabled ?? true;
         _combatSounds.Update();
         if (_remote is not null && _playerBody is not null)
         {

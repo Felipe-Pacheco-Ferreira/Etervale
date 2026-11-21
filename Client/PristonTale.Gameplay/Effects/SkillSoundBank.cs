@@ -2,12 +2,13 @@ using System.Collections.Concurrent;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using PristonTale.Engine3D.Diagnostics;
-using PristonTale.Engine3D.IO;
+using PristonTale.Gameplay.Audio;
 
 namespace PristonTale.Gameplay.Effects;
 
-// Skill and effect sounds by asset path. Files are read and decoded on a worker; the sound objects are created on the
-// game thread in Update, so playing a sound never waits for disk. A sound that is not ready yet is skipped.
+// Skill and effect sounds by asset path. Files are read (in the browser, downloaded first) and decoded on a worker; the
+// sound objects are created on the game thread in Update, so playing a sound never waits for disk or network. A sound
+// that is not ready yet is skipped.
 public sealed class SkillSoundBank : IDisposable
 {
     private readonly string _assetRoot;
@@ -24,6 +25,9 @@ public sealed class SkillSoundBank : IDisposable
 
     public bool Enabled { get; set; } = true;
 
+    // The effects volume (0 to 1) every sound of the bank plays under.
+    public float Gain { get; set; } = 1f;
+
     public int ReadyCount => _ready.Count;
     public bool IsReady(string path) => _ready.ContainsKey(path);
 
@@ -32,29 +36,21 @@ public sealed class SkillSoundBank : IDisposable
 
     public void Preload(IEnumerable<string> paths)
     {
-        if (OperatingSystem.IsBrowser())
-        {
-            return;
-        }
-
         var batch = paths.Where(path => !string.IsNullOrWhiteSpace(path) && _requested.Add(path)).ToArray();
         if (batch.Length == 0)
         {
             return;
         }
 
-        _ = Task.Run(() =>
+        _ = Task.Run(async () =>
         {
             foreach (var path in batch)
             {
                 try
                 {
-                    using var stream = PristonWaveDecoder.OpenRead(Path.Combine(_assetRoot, path));
-                    using var copy = new MemoryStream();
-                    stream.CopyTo(copy);
-                    _decoded.Enqueue((path, copy.ToArray()));
+                    _decoded.Enqueue((path, await SoundFiles.ReadAsync(_assetRoot, path)));
                 }
-                catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException)
+                catch (Exception ex) when (ex is IOException or InvalidDataException or UnauthorizedAccessException or HttpRequestException or OperationCanceledException)
                 {
                     _log.Warn($"[Audio] skill sound {path} unavailable: {ex.Message}");
                 }
@@ -81,7 +77,7 @@ public sealed class SkillSoundBank : IDisposable
             return;
         }
 
-        var level = Audio.SoundFalloff.Volume(source, listener) * Math.Clamp(volume, 0f, 1f);
+        var level = Audio.SoundFalloff.Volume(source, listener) * Math.Clamp(volume, 0f, 1f) * Math.Clamp(Gain, 0f, 1f);
         if (level > 0.01f)
         {
             sound.Play(level, Math.Clamp(pitch, -1f, 1f), 0f);

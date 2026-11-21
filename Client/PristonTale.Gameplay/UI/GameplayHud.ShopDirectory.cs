@@ -61,12 +61,11 @@ public sealed partial class GameplayHud
         }
 
         var box = ShopDirectoryBox(layout);
-        var portuguese = ClientText.Language == "pt-BR";
         _painter.ColorBox(box, 155, 114, 52, 255);
         var interior = box;
         interior.Inflate(-1, -1);
         _painter.ColorBox(interior, 30, 23, 15, 250);
-        _painter.Text(portuguese ? "Lojas de jogadores" : "Player shops", box.X + 12, box.Y + 11, Color.Gold);
+        _painter.Text(ClientText.Get("ShopDirectory.Title"), box.X + 12, box.Y + 11, Color.Gold);
         _painter.Text("X", box.Right - 25, box.Y + 11, Color.Wheat);
         var index = 0;
         foreach (var entry in NearbyShops())
@@ -78,7 +77,7 @@ public sealed partial class GameplayHud
 
         if (index == 0)
         {
-            _painter.Text(portuguese ? "Nenhuma loja avistada." : "No shops in view.", box.X + 12, box.Y + 44, Color.Wheat);
+            _painter.Text(ClientText.Get("ShopDirectory.None"), box.X + 12, box.Y + 44, Color.Wheat);
         }
     }
 }

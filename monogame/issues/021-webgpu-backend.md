@@ -35,8 +35,8 @@ The runtime gets a browser build next to the Vulkan one, with the same exports a
   `MGP_Platform_GetGraphicsBackend` the new `MGGraphicsBackend::WebGPU` (`include/api_enums.h`; `GraphicsBackend.WebGPU`
   in the framework).
 - `src/web/MGA_web.cpp` and `src/web/MG_Storage_web.cpp`: silent audio voices (they keep the state the framework reads
-  back and consume every buffer at once) and an XNA storage API without a device, in place of FAudio and the desktop
-  file system.
+  back and consume every buffer at once; issue 025 replaced them with Web Audio) and an XNA storage API without a
+  device, in place of FAudio and the desktop file system.
 - `src/web/mgruntime.cpp`: the browser build as one translation unit (the common sources, the web platform, the WebGPU
   backend). The .NET WebAssembly SDK resolves a `DllImport` by the file name of the native file it links, so the
   framework's `DllImport("mgruntime")` needs a file of that name. `src/web/BrowserRuntime.props` links it into a

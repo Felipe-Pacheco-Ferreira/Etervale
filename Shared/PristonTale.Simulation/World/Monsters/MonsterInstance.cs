@@ -120,6 +120,9 @@ public sealed class MonsterInstance
     // A monster a game master called up drops nothing when it dies.
     public bool DropsDisabled { get; set; }
 
+    // A boss the hourly schedule brought (FieldSpawner.SpawnScheduledBosses): its death draws the boss roulette.
+    public bool Scheduled { get; set; }
+
     // A quest duel opponent fights only the player it was opened for; MinimumLife keeps it from dying before it yields
     // or drinks its last potion.
     public ulong DuelPlayerId { get; set; }

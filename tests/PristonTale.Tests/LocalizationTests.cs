@@ -32,7 +32,7 @@ internal static partial class LocalizationTests
         yield return ("every phrase key the client builds from a value exists", BuiltKeysAsync);
         yield return ("the client shows the chosen language and English for an unknown one", LanguageAsync);
         yield return ("a line of the server is worded by its phrase with its arguments in the shown language", GameTextAsync);
-        yield return ("every skill name and description, class title and quest window title has its Brazilian Portuguese text, and each names game data", DataTextsAsync);
+        yield return ("every skill name and description, class title and quest window title has its text in every language, and each names game data", DataTextsAsync);
         yield return ("data texts show the data in English and its translation in Brazilian Portuguese", DataLanguageAsync);
     }
 
@@ -55,13 +55,20 @@ internal static partial class LocalizationTests
     private static Task CompleteAsync()
     {
         var english = Load("ClientText.resx");
-        var portuguese = Load("ClientText.pt-BR.resx");
-        var missing = english.Keys.Except(portuguese.Keys).Concat(portuguese.Keys.Except(english.Keys)).ToArray();
-        Assert.True(missing.Length == 0, "phrases in one language only: " + string.Join(", ", missing));
-        var placeholders = english.Where(pair => !Placeholders(pair.Value).SequenceEqual(Placeholders(portuguese[pair.Key]))).Select(pair => pair.Key).ToArray();
-        Assert.True(placeholders.Length == 0, "phrases whose placeholders differ: " + string.Join(", ", placeholders));
+        foreach (var language in Translated)
+        {
+            var translated = Load($"ClientText.{language}.resx");
+            var missing = english.Keys.Except(translated.Keys).Concat(translated.Keys.Except(english.Keys)).ToArray();
+            Assert.True(missing.Length == 0, $"phrases missing in English or {language}: " + string.Join(", ", missing.Take(30)));
+            var placeholders = english.Where(pair => !Placeholders(pair.Value).SequenceEqual(Placeholders(translated[pair.Key]))).Select(pair => pair.Key).ToArray();
+            Assert.True(placeholders.Length == 0, $"{language} phrases whose placeholders differ: " + string.Join(", ", placeholders));
+        }
+
         return Task.CompletedTask;
     }
+
+    // The languages with their own resource files: every supported one but English, the neutral resources.
+    private static IEnumerable<string> Translated => ClientSettings.SupportedLanguages.Where(static language => language != ClientSettings.EnglishLanguage);
 
     private static IEnumerable<string> Placeholders(string text) => Placeholder().Matches(text).Select(match => match.Value).Order(StringComparer.Ordinal);
 
@@ -113,18 +120,21 @@ internal static partial class LocalizationTests
 
     private static Task DataTextsAsync()
     {
-        var portuguese = XDocument.Load(Path.Combine(Texts, "DataText.pt-BR.resx")).Root!.Elements("data")
-            .ToDictionary(data => (string)data.Attribute("name")!, data => (string)data.Element("value")!);
         var expected = ClassSkillCatalog.All.SelectMany(static skill => new[] { DataText.SkillKey(skill.Code, "Name"), DataText.SkillKey(skill.Code, "Description") })
             .Concat(Enum.GetValues<PlayerClass>().SelectMany(static playerClass =>
                 Enumerable.Range(0, ClassProfiles.Of(playerClass).Titles.Count).Select(tier => DataText.ClassKey(playerClass, tier))))
             .Concat(QuestBoard.Titles.Select(DataText.QuestKey))
             .Concat(CastleItems.All.Select(static castle => DataText.CastleKey(castle.CatalogKey)))
             .ToHashSet(StringComparer.Ordinal);
-        var missing = expected.Where(key => !portuguese.TryGetValue(key, out var text) || string.IsNullOrWhiteSpace(text)).ToArray();
-        var unknown = portuguese.Keys.Where(key => !expected.Contains(key)).ToArray();
-        Assert.True(missing.Length == 0, "data texts without a translation: " + string.Join(", ", missing));
-        Assert.True(unknown.Length == 0, "translations of no game data: " + string.Join(", ", unknown));
+        foreach (var language in Translated)
+        {
+            var translated = Load($"DataText.{language}.resx");
+            var missing = expected.Where(key => !translated.TryGetValue(key, out var text) || string.IsNullOrWhiteSpace(text)).ToArray();
+            var unknown = translated.Keys.Where(key => !expected.Contains(key)).ToArray();
+            Assert.True(missing.Length == 0, $"{language} data texts without a translation: " + string.Join(", ", missing.Take(30)));
+            Assert.True(unknown.Length == 0, $"{language} translations of no game data: " + string.Join(", ", unknown));
+        }
+
         return Task.CompletedTask;
     }
 
@@ -183,6 +193,12 @@ internal static partial class LocalizationTests
             ClientText.Use(ClientSettings.BrazilianPortugueseLanguage);
             Assert.True(ClientText.Get("Skill.NotEnoughMana") == "Mana insuficiente." && ClientText.Format("Status.Opening", "x") == "Abertura: x",
                 "Brazilian Portuguese is not shown");
+            foreach (var language in Translated)
+            {
+                ClientText.Use(language);
+                Assert.True(ClientText.Language == language && ClientText.Get("Skill.NotEnoughMana") != "Not enough mana.", $"{language} is not shown");
+            }
+
             ClientText.Use("fr");
             Assert.True(ClientText.Language == ClientSettings.EnglishLanguage && ClientText.Get("Skill.NotEnoughMana") == "Not enough mana.",
                 "an unknown language did not fall back to English");

@@ -12,6 +12,10 @@ public sealed class ChatMember
     private int _gmLevel;
     private int _whisperRefused;
     private int _noticeSeen;
+    private string _translateTo = "";
+    private readonly Lock _translationBudget = new();
+    private long _budgetMinute = -1;
+    private int _budgetUsed;
 
     public ChatMember(PlayerSession session, string name, IChatLink link, long joinedMs, long startingMoney)
     {
@@ -57,6 +61,36 @@ public sealed class ChatMember
     {
         get => Volatile.Read(ref _noticeSeen);
         set => Volatile.Write(ref _noticeSeen, value);
+    }
+
+    // The language the player wants other players' lines translated to (a catalog language), or "" for none.
+    public string TranslateTo
+    {
+        get => Volatile.Read(ref _translateTo);
+        set => Volatile.Write(ref _translateTo, value);
+    }
+
+
+    // Takes characters from this minute's translation budget; false when they no longer fit.
+    public bool TakeTranslation(int characters, long nowMs, int perMinute)
+    {
+        lock (_translationBudget)
+        {
+            var minute = nowMs / 60_000;
+            if (minute != _budgetMinute)
+            {
+                _budgetMinute = minute;
+                _budgetUsed = 0;
+            }
+
+            if (_budgetUsed + characters > perMinute)
+            {
+                return false;
+            }
+
+            _budgetUsed += characters;
+            return true;
+        }
     }
 }
 
@@ -201,12 +235,16 @@ public sealed class ChatDirectory
         }
     }
 
-    // The lines a world change answered (a party or a trade), to those of their players still in the chat.
+    // The lines a world change answered (a party or a trade), to those of their players still in the chat, or to all.
     public void Deliver(IReadOnlyList<World.WorldNotice>? notices)
     {
         foreach (var notice in notices ?? [])
         {
-            if (TryGet(notice.To, out var member))
+            if (notice.To == World.WorldNotice.Everyone)
+            {
+                Broadcast(new ChatLine(notice.Kind, 0, "", notice.Text));
+            }
+            else if (TryGet(notice.To, out var member))
             {
                 member.Link.Deliver(new ChatLine(notice.Kind, 0, "", notice.Text));
             }

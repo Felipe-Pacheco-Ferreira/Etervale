@@ -79,6 +79,7 @@ public sealed partial class GameScene
         OnSelfState(new EntityStateInfo(spawn.EntityId, spawn.Position, spawn.Facing, spawn.MoveState,
             spawn.Life, spawn.MoveSpeed, spawn.AttackRate, spawn.AttackTargetId, spawn.AttackSequence));
         ObserveOwnMount(spawn);
+        ObserveOwnPvp(spawn);
         PlayInitialArrival(spawn.EntityId);
     }
 

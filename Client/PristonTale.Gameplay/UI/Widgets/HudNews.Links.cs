@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework;
+using PristonTale.Gameplay.Localization;
 using PristonTale.Gameplay.UI.Rendering;
 
 namespace PristonTale.Gameplay.UI.Widgets;
@@ -11,12 +12,7 @@ internal sealed partial class HudNews
     private static readonly Rectangle LinkBox = new(Box.Center.X - 170, Box.Y + 160, 340, 200);
     private static readonly Rectangle LinkCancel = new(LinkBox.X + 82, LinkBox.Bottom - 54, 120, 38);
     private static readonly Rectangle LinkOpen = new(LinkBox.X + 210, LinkBox.Bottom - 54, 116, 38);
-    private static readonly string[][] LinkQuestions =
-    [
-        ["Abrir o convite do Discord da comunidade em uma nova aba?", "Open the community's Discord invite in a new tab?"],
-        ["Abrir o Instagram da comunidade em uma nova aba?", "Open the community's Instagram in a new tab?"],
-        ["Abrir o X da comunidade em uma nova aba?", "Open the community's X in a new tab?"]
-    ];
+    private static readonly string[] LinkQuestions = ["News.Link.Discord", "News.Link.Instagram", "News.Link.X"];
 
     private int _askedLink = NoLink;
 
@@ -67,7 +63,7 @@ internal sealed partial class HudNews
         return (start >= 0 ? text[(start + 3)..] : text).TrimEnd('/');
     }
 
-    private void DrawLinkPrompt(HudPainter painter, bool portuguese)
+    private void DrawLinkPrompt(HudPainter painter)
     {
         if (!LinkPrompt || _social[_askedLink] is not { } address)
         {
@@ -78,10 +74,10 @@ internal sealed partial class HudNews
         painter.Disc(LinkBox.X + 26, LinkBox.Y + 24, 14, new Color(120, 92, 48));
         painter.Disc(LinkBox.X + 26, LinkBox.Y + 24, 12, new Color(206, 162, 76));
         BoldText(painter, "?", LinkBox.X + 23, LinkBox.Y + 16, new Color(44, 32, 16), HudPainter.TextScale * 1.1f);
-        BoldText(painter, portuguese ? "Abrir link?" : "Open link?", LinkBox.X + 50, LinkBox.Y + 15, TitleCream, HudPainter.TextScale * 1.2f);
+        BoldText(painter, ClientText.Get("News.Link.Title"), LinkBox.X + 50, LinkBox.Y + 15, TitleCream, HudPainter.TextScale * 1.2f);
         painter.Fill(new Rectangle(LinkBox.X + 1, LinkBox.Y + 48, LinkBox.Width - 2, 1), Rule);
         var y = LinkBox.Y + 62;
-        var question = LinkQuestions[_askedLink][portuguese ? 0 : 1];
+        var question = ClientText.Get(LinkQuestions[_askedLink]);
         foreach (var line in HudTextLayout.Wrap(question, LinkBox.Width - 36, value => painter.MeasureAt(value, BodyScale) + 1))
         {
             BoldText(painter, line, LinkBox.X + 18, y, Color.White, BodyScale);
@@ -89,8 +85,8 @@ internal sealed partial class HudNews
         }
 
         BoldText(painter, ShownAddress(address), LinkBox.X + 18, y + 10, new Color(150, 160, 255), BodyScale);
-        DrawPromptButton(painter, LinkCancel, portuguese ? "Cancelar" : "Cancel", "Esc", false);
-        DrawPromptButton(painter, LinkOpen, portuguese ? "ABRIR" : "OPEN", "Enter", true);
+        DrawPromptButton(painter, LinkCancel, ClientText.Get("News.Link.Cancel"), "Esc", false);
+        DrawPromptButton(painter, LinkOpen, ClientText.Get("News.Link.Open"), "Enter", true);
     }
 
     // A button of the question: its label in bold and its key in a small dark cap; ABRIR green.

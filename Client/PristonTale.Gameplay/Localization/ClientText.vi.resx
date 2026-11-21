@@ -1,0 +1,1514 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Aging.CannotAge" xml:space="preserve"><value>Vật phẩm không thể aging</value></data>
+  <data name="Aging.DownOne" xml:space="preserve"><value>Cấp aging đã bị giảm -1</value></data>
+  <data name="Aging.DownTwo" xml:space="preserve"><value>Cấp aging đã bị giảm -2</value></data>
+  <data name="Aging.Failed" xml:space="preserve"><value>Aging vật phẩm thất bại</value></data>
+  <data name="Aging.UpOne" xml:space="preserve"><value>Cấp aging đã tăng +1</value></data>
+  <data name="Aging.UpTwo" xml:space="preserve"><value>Cấp aging đã tăng +2</value></data>
+  <data name="Attribute.Agility" xml:space="preserve"><value>Nhanh nhẹn</value></data>
+  <data name="Attribute.Health" xml:space="preserve"><value>Sức khỏe</value></data>
+  <data name="Attribute.Spirit" xml:space="preserve"><value>Tinh thần</value></data>
+  <data name="Attribute.Strength" xml:space="preserve"><value>Sức mạnh</value></data>
+  <data name="Attribute.Talent" xml:space="preserve"><value>Tài năng</value></data>
+  <data name="Bellatra.AdvanceOne" xml:space="preserve"><value>{0}
+tiến lên tháp cao.</value></data>
+  <data name="Bellatra.AdvanceTwo" xml:space="preserve"><value>{0} và {1}
+tiến lên tháp cao.</value></data>
+  <data name="Bellatra.Back" xml:space="preserve"><value>Quay lại</value></data>
+  <data name="Bellatra.Chief" xml:space="preserve"><value>Bang chủ: {0}</value></data>
+  <data name="Bellatra.ChiefOnly" xml:space="preserve"><value>Chỉ bang chủ mới được nhận thu nhập của bang.</value></data>
+  <data name="Bellatra.ChiefRedeems" xml:space="preserve"><value>Là bang chủ, bạn có thể nhận khoản này.</value></data>
+  <data name="Bellatra.HowMuch" xml:space="preserve"><value>Bao nhiêu?</value></data>
+  <data name="Bellatra.Income" xml:space="preserve"><value>Thu nhập của bang bạn: {0} vàng</value></data>
+  <data name="Bellatra.MyScore" xml:space="preserve"><value>Điểm của bạn</value></data>
+  <data name="Bellatra.NoOperator" xml:space="preserve"><value>Hôm nay không có bang hội nào vận hành Bellatra.</value></data>
+  <data name="Bellatra.NoRanking" xml:space="preserve"><value>Hôm qua không có bang hội nào chơi Bellatra.</value></data>
+  <data name="Bellatra.Operator" xml:space="preserve"><value>Bang vận hành: {0}</value></data>
+  <data name="Bellatra.Outcome.Cleared" xml:space="preserve"><value>Chúc mừng! Bellatra đã kết thúc.</value></data>
+  <data name="Bellatra.Outcome.GoesOn" xml:space="preserve"><value>Hoàn thành chặng! Đội của bạn tiếp tục tiến lên.</value></data>
+  <data name="Bellatra.Outcome.Out" xml:space="preserve"><value>Đội của bạn đã bị loại.</value></data>
+  <data name="Bellatra.Over" xml:space="preserve"><value>Trò chơi đã kết thúc</value></data>
+  <data name="Bellatra.RankLine" xml:space="preserve"><value>{0}. {1} - {2} điểm</value></data>
+  <data name="Bellatra.Ranking" xml:space="preserve"><value>Bảng xếp hạng</value></data>
+  <data name="Bellatra.Redeem" xml:space="preserve"><value>Nhận</value></data>
+  <data name="Bellatra.Round" xml:space="preserve"><value>Vòng {0}</value></data>
+  <data name="Bellatra.Seal.Freeze" xml:space="preserve"><value>Ấn Đóng Băng</value></data>
+  <data name="Bellatra.Seal.Guardian" xml:space="preserve"><value>Ấn Hộ Vệ</value></data>
+  <data name="Bellatra.Seal.Points" xml:space="preserve"><value>Tăng {0} điểm</value></data>
+  <data name="Bellatra.Seal.Quake" xml:space="preserve"><value>Ấn Địa Chấn</value></data>
+  <data name="Bellatra.Seal.Rabbit" xml:space="preserve"><value>Ấn Thỏ</value></data>
+  <data name="Bellatra.Seal.Stun" xml:space="preserve"><value>Ấn Choáng</value></data>
+  <data name="Bellatra.Seal.Stygian" xml:space="preserve"><value>Ấn Stygian</value></data>
+  <data name="Bellatra.Secretary" xml:space="preserve"><value>Thư ký của Bellatra</value></data>
+  <data name="Bellatra.Status.Busy" xml:space="preserve"><value>Bạn đang bận việc khác.</value></data>
+  <data name="Bellatra.Status.NotChief" xml:space="preserve"><value>Chỉ bang chủ mới được nhận thu nhập của bang.</value></data>
+  <data name="Bellatra.Status.NotEnoughBalance" xml:space="preserve"><value>Thu nhập của bang bạn không có nhiều như vậy.</value></data>
+  <data name="Bellatra.Status.OutOfReach" xml:space="preserve"><value>Bạn đang ở quá xa thư ký.</value></data>
+  <data name="Bellatra.Status.TooMuchGold" xml:space="preserve"><value>Bạn không thể mang nhiều vàng như vậy.</value></data>
+  <data name="Bellatra.Status.Unavailable" xml:space="preserve"><value>Thư ký của Bellatra hiện không có mặt.</value></data>
+  <data name="Bellatra.Tax" xml:space="preserve"><value>Thuế giải thưởng: {0}</value></data>
+  <data name="Bellatra.Team" xml:space="preserve"><value>Đội {0}</value></data>
+  <data name="Bellatra.Title" xml:space="preserve"><value>Bellatra</value></data>
+  <data name="Bellatra.ToRedeem" xml:space="preserve"><value>Số vàng muốn nhận</value></data>
+  <data name="Bellatra.Waiting" xml:space="preserve"><value>Đang chờ vòng đấu</value></data>
+  <data name="Brood.Demon" xml:space="preserve"><value>Quỷ</value></data>
+  <data name="Brood.Mechanic" xml:space="preserve"><value>Cơ khí</value></data>
+  <data name="Brood.Mutant" xml:space="preserve"><value>Đột biến</value></data>
+  <data name="Brood.Normal" xml:space="preserve"><value>Thường</value></data>
+  <data name="Brood.Undead" xml:space="preserve"><value>Bất tử</value></data>
+  <data name="Brood.User" xml:space="preserve"><value>Người chơi</value></data>
+  <data name="Browser.Characters" xml:space="preserve"><value>Nhân vật của bạn</value></data>
+  <data name="Browser.NoCharacters" xml:space="preserve"><value>Tài khoản này chưa có nhân vật nào.</value></data>
+  <data name="Castle.AbsorbEffect" xml:space="preserve"><value>hấp thụ +{0}</value></data>
+  <data name="Castle.Back" xml:space="preserve"><value>Quay lại</value></data>
+  <data name="Castle.ChiefOnly" xml:space="preserve"><value>Chỉ bang chủ mới được thay đổi lâu đài.</value></data>
+  <data name="Castle.Cost" xml:space="preserve"><value>Chi phí: {0} vàng</value></data>
+  <data name="Castle.DamageEffect" xml:space="preserve"><value>sát thương +{0}%</value></data>
+  <data name="Castle.EvasionEffect" xml:space="preserve"><value>né {0}% đòn đánh</value></data>
+  <data name="Castle.Fire" xml:space="preserve"><value>Lửa</value></data>
+  <data name="Castle.HowMuch" xml:space="preserve"><value>Bao nhiêu vàng</value></data>
+  <data name="Castle.Ice" xml:space="preserve"><value>Băng</value></data>
+  <data name="Castle.Lightning" xml:space="preserve"><value>Sét</value></data>
+  <data name="Castle.Mercenaries" xml:space="preserve"><value>Lính đánh thuê</value></data>
+  <data name="Castle.MercenariesLine" xml:space="preserve"><value>Lính đánh thuê: {0} (tối đa {1} mỗi loại)</value></data>
+  <data name="Castle.MercenaryA" xml:space="preserve"><value>Dân quân Ricarten</value></data>
+  <data name="Castle.MercenaryB" xml:space="preserve"><value>Lính canh Ricarten</value></data>
+  <data name="Castle.MercenaryC" xml:space="preserve"><value>Cấm vệ quân Bless</value></data>
+  <data name="Castle.MercenaryLine" xml:space="preserve"><value>{0}: {1}/{2} ({3} mỗi người)</value></data>
+  <data name="Castle.NoSkill" xml:space="preserve"><value>không có</value></data>
+  <data name="Castle.NoTower" xml:space="preserve"><value>không có</value></data>
+  <data name="Castle.Reset" xml:space="preserve"><value>Hoàn tác</value></data>
+  <data name="Castle.Save" xml:space="preserve"><value>Lưu</value></data>
+  <data name="Castle.Skill" xml:space="preserve"><value>Kỹ năng bang</value></data>
+  <data name="Castle.SkillLine" xml:space="preserve"><value>{0}: {1}</value></data>
+  <data name="Castle.SkillNow" xml:space="preserve"><value>Kỹ năng bang: {0}</value></data>
+  <data name="Castle.SkillTomorrow" xml:space="preserve"><value>Kỹ năng bang từ ngày mai: {0}</value></data>
+  <data name="Castle.Status.Busy" xml:space="preserve"><value>Hãy hoàn tất việc đang làm trước.</value></data>
+  <data name="Castle.Status.DuringSiege" xml:space="preserve"><value>Không thể trong lúc công thành.</value></data>
+  <data name="Castle.Status.InvalidSetup" xml:space="preserve"><value>Không thể thực hiện thay đổi này.</value></data>
+  <data name="Castle.Status.NotChief" xml:space="preserve"><value>Chỉ bang chủ mới làm được việc đó.</value></data>
+  <data name="Castle.Status.NotEnoughGold" xml:space="preserve"><value>Bạn không đủ vàng.</value></data>
+  <data name="Castle.Status.NotEnoughTreasury" xml:space="preserve"><value>Ngân khố không có nhiều như vậy.</value></data>
+  <data name="Castle.Status.NotOwner" xml:space="preserve"><value>Bang của bạn không nắm giữ Bless Castle.</value></data>
+  <data name="Castle.Status.OutOfReach" xml:space="preserve"><value>Bạn đang ở quá xa quản gia.</value></data>
+  <data name="Castle.Status.TooMuchGold" xml:space="preserve"><value>Bạn không thể mang nhiều vàng như vậy.</value></data>
+  <data name="Castle.Status.Unavailable" xml:space="preserve"><value>Hiện không thể thay đổi lâu đài. Hãy thử lại.</value></data>
+  <data name="Castle.Tax" xml:space="preserve"><value>Thuế</value></data>
+  <data name="Castle.TaxLine" xml:space="preserve"><value>Thuế: {0} (ngày mai {1})</value></data>
+  <data name="Castle.ToWithdraw" xml:space="preserve"><value>muốn rút từ ngân khố?</value></data>
+  <data name="Castle.TowerInnerA" xml:space="preserve"><value>Nội viện A</value></data>
+  <data name="Castle.TowerInnerB" xml:space="preserve"><value>Nội viện B</value></data>
+  <data name="Castle.TowerInnerC" xml:space="preserve"><value>Nội viện C</value></data>
+  <data name="Castle.TowerInnerD" xml:space="preserve"><value>Nội viện D</value></data>
+  <data name="Castle.TowerLine" xml:space="preserve"><value>{0}: {1}  {2}</value></data>
+  <data name="Castle.TowerOuterA" xml:space="preserve"><value>Cổng ngoài A</value></data>
+  <data name="Castle.TowerOuterB" xml:space="preserve"><value>Cổng ngoài B</value></data>
+  <data name="Castle.Towers" xml:space="preserve"><value>Tháp pha lê</value></data>
+  <data name="Castle.TowersLine" xml:space="preserve"><value>Tháp pha lê: {0} trên {1}</value></data>
+  <data name="Castle.Treasury" xml:space="preserve"><value>Ngân khố: {0} vàng</value></data>
+  <data name="Castle.Withdraw" xml:space="preserve"><value>Rút</value></data>
+  <data name="CharSelect.ChooseClass" xml:space="preserve"><value>Hãy chọn một class.</value></data>
+  <data name="CharSelect.ChooseTribe" xml:space="preserve"><value>Hãy chọn một tộc.</value></data>
+  <data name="CharSelect.ClassModelsFailed" xml:space="preserve"><value>Không thể tải mô hình class.</value></data>
+  <data name="CharSelect.CreateFailure.InvalidFace" xml:space="preserve"><value>Khuôn mặt không hợp lệ.</value></data>
+  <data name="CharSelect.CreateFailure.NameLength" xml:space="preserve"><value>Tên phải có từ 3 đến 16 ký tự.</value></data>
+  <data name="CharSelect.CreateFailure.NameTaken" xml:space="preserve"><value>Tên này đã được sử dụng.</value></data>
+  <data name="CharSelect.CreateFailure.NoFreeSlot" xml:space="preserve"><value>Không còn ô nhân vật trống.</value></data>
+  <data name="CharSelect.CreateFailure.None" xml:space="preserve"><value>Không thể tạo nhân vật.</value></data>
+  <data name="CharSelect.CreateFailure.Rejected" xml:space="preserve"><value>Việc tạo nhân vật bị từ chối.</value></data>
+  <data name="CharSelect.CreateFailure.UnknownClass" xml:space="preserve"><value>Class không xác định.</value></data>
+  <data name="CharSelect.DeleteFailed" xml:space="preserve"><value>Không thể xóa nhân vật.</value></data>
+  <data name="CharSelect.EnterFailure.AlreadyActive" xml:space="preserve"><value>Nhân vật đang hoạt động.</value></data>
+  <data name="CharSelect.EnterFailure.AlreadyEntering" xml:space="preserve"><value>Phiên đang vào hoặc đang chơi.</value></data>
+  <data name="CharSelect.EnterFailure.InvalidSavedClassOrField" xml:space="preserve"><value>Nhân vật đã lưu có class hoặc khu vực không hợp lệ.</value></data>
+  <data name="CharSelect.EnterFailure.InvalidSession" xml:space="preserve"><value>Phiên không hợp lệ.</value></data>
+  <data name="CharSelect.EnterFailure.None" xml:space="preserve"><value>Không thể vào thế giới.</value></data>
+  <data name="CharSelect.EnterFailure.NotFound" xml:space="preserve"><value>Không tìm thấy nhân vật.</value></data>
+  <data name="CharSelect.EnterFailure.Rejected" xml:space="preserve"><value>Việc vào thế giới bị từ chối.</value></data>
+  <data name="CharSelect.EnterFailure.SessionClosed" xml:space="preserve"><value>Phiên đã đóng trong lúc vào.</value></data>
+  <data name="CharSelect.EnterFailure.UnsupportedSavedState" xml:space="preserve"><value>Trạng thái nhân vật đã lưu không hợp lệ hoặc không được hỗ trợ; dữ liệu đã lưu vẫn được giữ lại.</value></data>
+  <data name="CharSelect.EnterName" xml:space="preserve"><value>Hãy nhập tên.</value></data>
+  <data name="CharSelect.LoadFailed" xml:space="preserve"><value>Không thể tải danh sách nhân vật.</value></data>
+  <data name="CharSelect.ModelsFailed" xml:space="preserve"><value>Không thể tải mô hình nhân vật.</value></data>
+  <data name="CharSelect.Unreachable" xml:space="preserve"><value>Không thể kết nối đến máy chủ.</value></data>
+  <data name="Chat.Frozen" xml:space="preserve"><value>{0} : Tôi nói nhiều quá, lưỡi đóng băng mất rồi! WOW -_-;</value></data>
+  <data name="Clan.Appoint" xml:space="preserve"><value>Bổ nhiệm phó bang</value></data>
+  <data name="Clan.Back" xml:space="preserve"><value>Quay lại</value></data>
+  <data name="Clan.BelowSix" xml:space="preserve"><value>Chưa đủ 6 thành viên: còn {0} ngày {1} giờ để tuyển thêm trước khi bang hội bị giải tán.</value></data>
+  <data name="Clan.Cancel" xml:space="preserve"><value>Hủy</value></data>
+  <data name="Clan.ChooseEntrust" xml:space="preserve"><value>Chọn bang chủ mới (level bằng hoặc cao hơn bạn). Tốn 300.000 vàng, và bạn sẽ trở thành thành viên.</value></data>
+  <data name="Clan.ChooseExpel" xml:space="preserve"><value>Chọn thành viên cần trục xuất.</value></data>
+  <data name="Clan.ChooseVice" xml:space="preserve"><value>Chọn thành viên để bổ nhiệm làm phó bang.</value></data>
+  <data name="Clan.Confirm" xml:space="preserve"><value>Xác nhận</value></data>
+  <data name="Clan.ConfirmAppoint" xml:space="preserve"><value>Bạn có muốn bổ nhiệm {0} làm phó bang?</value></data>
+  <data name="Clan.ConfirmDisband" xml:space="preserve"><value>Nếu giải tán bang hội, toàn bộ thông tin và thành viên sẽ bị mất. Bạn có muốn tiếp tục?</value></data>
+  <data name="Clan.ConfirmDischarge" xml:space="preserve"><value>Bạn có muốn bãi nhiệm {0} khỏi chức phó bang?</value></data>
+  <data name="Clan.ConfirmEntrust" xml:space="preserve"><value>Giao bang hội cho {0} với giá 300.000 vàng? Bạn sẽ trở thành thành viên.</value></data>
+  <data name="Clan.ConfirmExpel" xml:space="preserve"><value>Bạn có muốn trục xuất {0} khỏi bang hội?</value></data>
+  <data name="Clan.ConfirmLeave" xml:space="preserve"><value>Bạn có muốn rời bang hội {0}?</value></data>
+  <data name="Clan.ConfirmMark" xml:space="preserve"><value>Dùng {0} làm biểu tượng bang hội? Nó sẽ trông như thế này:</value></data>
+  <data name="Clan.Cost" xml:space="preserve"><value>Thành lập bang hội tốn {0} vàng và cần level {1}.</value></data>
+  <data name="Clan.Count" xml:space="preserve"><value>Thành viên: {0}/{1}</value></data>
+  <data name="Clan.Disband" xml:space="preserve"><value>Giải tán</value></data>
+  <data name="Clan.Discharge" xml:space="preserve"><value>Bãi nhiệm phó bang</value></data>
+  <data name="Clan.Entrust" xml:space="preserve"><value>Giao bang hội</value></data>
+  <data name="Clan.Expel" xml:space="preserve"><value>Trục xuất</value></data>
+  <data name="Clan.Found" xml:space="preserve"><value>Thành lập bang hội</value></data>
+  <data name="Clan.Intro" xml:space="preserve"><value>Nhiều chiến binh có cùng mục tiêu tụ họp và lập thành một nhóm khắp thế giới. Nhóm đó được gọi là bang hội. Bang hội canh giữ và bảo vệ người của mình. Để thành lập bang hội, bạn phải trả một khoản phí để đăng ký chính thức. Bạn có muốn thành lập bang hội?</value></data>
+  <data name="Clan.InviteLine" xml:space="preserve"><value>mời bạn vào bang hội {0}.</value></data>
+  <data name="Clan.Leave" xml:space="preserve"><value>Rời bang hội</value></data>
+  <data name="Clan.Mark" xml:space="preserve"><value>Biểu tượng bang</value></data>
+  <data name="Clan.MarkFolder" xml:space="preserve"><value>Đặt một hình ảnh (PNG, JPG hoặc BMP) vào thư mục ClanMarks bên cạnh game rồi chọn ở bên dưới. Phần trung tâm của hình sẽ thành biểu tượng {0}x{0}.</value></data>
+  <data name="Clan.MarkLoading" xml:space="preserve"><value>Đang đọc hình ảnh...</value></data>
+  <data name="Clan.MarkLooking" xml:space="preserve"><value>Đang tìm hình ảnh...</value></data>
+  <data name="Clan.MarkUnreadable" xml:space="preserve"><value>Không thể đọc {0} như một hình ảnh.</value></data>
+  <data name="Clan.No" xml:space="preserve"><value>Không</value></data>
+  <data name="Clan.NoMarkFiles" xml:space="preserve"><value>Không có hình ảnh nào trong thư mục ClanMarks.</value></data>
+  <data name="Clan.RankChief" xml:space="preserve"><value>(bang chủ)</value></data>
+  <data name="Clan.RankVice" xml:space="preserve"><value>(phó bang)</value></data>
+  <data name="Clan.Registered" xml:space="preserve"><value>Bang hội đã được đăng ký chính thức.</value></data>
+  <data name="Clan.Registering" xml:space="preserve"><value>Đang đăng ký: còn {0} ngày {1} giờ để đủ 6 thành viên.</value></data>
+  <data name="Clan.Requirements" xml:space="preserve"><value>Để được đăng ký chính thức, bang hội cần {0} thành viên (tính cả bang chủ) trong vòng {1} ngày, nếu không sẽ bị hủy. Bang hội đã đăng ký mà có dưới {0} thành viên sẽ có {1} ngày để tuyển lại trước khi bị giải tán.</value></data>
+  <data name="Clan.Title" xml:space="preserve"><value>Quản lý bang hội</value></data>
+  <data name="Clan.TypeName" xml:space="preserve"><value>Nhập tên bang hội (2 đến 16 chữ cái, chữ số, dấu cách, '-' hoặc '_') rồi nhấn Enter.</value></data>
+  <data name="Clan.Yes" xml:space="preserve"><value>Có</value></data>
+  <data name="Combat.Evade" xml:space="preserve"><value>Né</value></data>
+  <data name="Combat.Miss" xml:space="preserve"><value>Trượt</value></data>
+  <data name="Count.DoYouWant" xml:space="preserve"><value>Bạn muốn</value></data>
+  <data name="Count.HowManyItems" xml:space="preserve"><value>Bao nhiêu vật phẩm</value></data>
+  <data name="Count.HowMuchGold" xml:space="preserve"><value>Bao nhiêu vàng</value></data>
+  <data name="Count.ToBuy" xml:space="preserve"><value>muốn mua?</value></data>
+  <data name="Count.ToDrop" xml:space="preserve"><value>muốn vứt bỏ?</value></data>
+  <data name="Count.ToSell" xml:space="preserve"><value>muốn bán?</value></data>
+  <data name="Count.ToStore" xml:space="preserve"><value>muốn cất?</value></data>
+  <data name="Count.ToTakeOut" xml:space="preserve"><value>muốn lấy ra?</value></data>
+  <data name="Crystal.Dismiss" xml:space="preserve"><value>giải tán thú cưng này?</value></data>
+  <data name="Crystal.Title" xml:space="preserve"><value>Pha lê quái vật</value></data>
+  <data name="Display.Keep" xml:space="preserve"><value>Giữ các cài đặt hiển thị này?</value></data>
+  <data name="Display.KeepButton" xml:space="preserve"><value>Giữ (Enter)</value></data>
+  <data name="Display.RevertButton" xml:space="preserve"><value>Hoàn lại (Esc)</value></data>
+  <data name="Display.Reverting" xml:space="preserve"><value>Hoàn lại sau {0} giây</value></data>
+  <data name="Element.Bionic" xml:space="preserve"><value>hữu cơ</value></data>
+  <data name="Element.Earth" xml:space="preserve"><value>đất</value></data>
+  <data name="Element.Fire" xml:space="preserve"><value>lửa</value></data>
+  <data name="Element.Ice" xml:space="preserve"><value>băng</value></data>
+  <data name="Element.Lighting" xml:space="preserve"><value>sét</value></data>
+  <data name="Element.Poison" xml:space="preserve"><value>độc</value></data>
+  <data name="Element.Water" xml:space="preserve"><value>nước</value></data>
+  <data name="Element.Wind" xml:space="preserve"><value>gió</value></data>
+  <data name="Friends.Friends" xml:space="preserve"><value>[Bạn bè] {0}/{1}</value></data>
+  <data name="Friends.Ignored" xml:space="preserve"><value>[Đã chặn] {0}/{1}</value></data>
+  <data name="Friends.Recent" xml:space="preserve"><value>[Gần đây]</value></data>
+  <data name="Game.ActionPending" xml:space="preserve"><value>Một hành động khác đang chờ xử lý; hãy thử lại</value></data>
+  <data name="Game.AgedItemMatured" xml:space="preserve"><value>Vật phẩm aging đã hoàn thành</value></data>
+  <data name="Game.AgingNotice" xml:space="preserve"><value>{0} đã aging {1} lên +{2}!</value></data>
+  <data name="Game.AlreadyApplied" xml:space="preserve"><value>Đã thực hiện rồi</value></data>
+  <data name="Game.AlreadyTalking" xml:space="preserve"><value>Đang trò chuyện với NPC này</value></data>
+  <data name="Game.BellatraBossDown" xml:space="preserve"><value>Một boss đã gục ({0} điểm).</value></data>
+  <data name="Game.BellatraCleared" xml:space="preserve"><value>Chúc mừng! Bellatra đã kết thúc. Bạn nhận được {0} vàng.</value></data>
+  <data name="Game.BellatraClosed" xml:space="preserve"><value>Bạn không thể vào Bellatra lúc này. Hãy quay lại sau.</value></data>
+  <data name="Game.BellatraEntered" xml:space="preserve"><value>Bạn đã ở trong trận Bellatra này rồi.</value></data>
+  <data name="Game.BellatraFreeze" xml:space="preserve"><value>{0} đã phá Ấn Đóng Băng: quái vật trong phòng bị đóng băng.</value></data>
+  <data name="Game.BellatraGuardian" xml:space="preserve"><value>{0} đã phá Ấn Hộ Vệ: một Guardian Saint chiến đấu cho họ.</value></data>
+  <data name="Game.BellatraLevel" xml:space="preserve"><value>Bạn chưa đủ mạnh để vào Bellatra (level {0}). Hãy luyện thêm rồi quay lại.</value></data>
+  <data name="Game.BellatraNoTickets" xml:space="preserve"><value>Vé Bellatra được bán lúc bình minh (giờ trong game {0} và {1}), trước mỗi trận. Hãy quay lại lúc đó.</value></data>
+  <data name="Game.BellatraOpening" xml:space="preserve"><value>Bellatra đã mở: vé đang được bán ở Navisko.</value></data>
+  <data name="Game.ChatTranslated" xml:space="preserve"><value>{0} (đã dịch)</value></data>
+  <data name="Game.PvpOn" xml:space="preserve"><value>Chế độ PvP đã bật: ở khu săn quái, bạn có thể chiến đấu với người chơi đang bật PvP, ngoài party và bang hội của bạn.</value></data>
+  <data name="Game.ArenaOpen" xml:space="preserve"><value>Đấu trường mở trong {0} phút: gõ /arena 1x1 hoặc /arena 3x3 để vào hàng chờ.</value></data>
+  <data name="Game.ArenaQueued" xml:space="preserve"><value>Bạn đã vào hàng chờ đấu trường {0}.</value></data>
+  <data name="Game.ArenaLeft" xml:space="preserve"><value>Bạn đã rời hàng chờ đấu trường.</value></data>
+  <data name="Game.ArenaClosed" xml:space="preserve"><value>Đấu trường đã đóng. Sẽ mở lúc {0}.</value></data>
+  <data name="Game.ArenaLevel" xml:space="preserve"><value>Đấu trường mở từ level {0}.</value></data>
+  <data name="Game.ArenaParty" xml:space="preserve"><value>Với 3x3, trưởng nhóm của một party đúng {0} người chơi sẽ vào hàng chờ.</value></data>
+  <data name="Game.ArenaBusy" xml:space="preserve"><value>Bạn hoặc một người trong party không thể vào đấu trường lúc này.</value></data>
+  <data name="Game.ArenaNotQueued" xml:space="preserve"><value>Bạn không ở trong hàng chờ đấu trường.</value></data>
+  <data name="Game.ArenaQueueClosed" xml:space="preserve"><value>Đấu trường đã đóng và hàng chờ đã kết thúc.</value></data>
+  <data name="Game.ArenaStarted" xml:space="preserve"><value>Trận đấu trường {0} của bạn với {1} bắt đầu! Ai còn lại 1 máu sẽ bị loại; không ai chết.</value></data>
+  <data name="Game.ArenaOut" xml:space="preserve"><value>Bạn đã bị loại khỏi trận. Hãy chờ trận kết thúc để quay về.</value></data>
+  <data name="Game.ArenaWon" xml:space="preserve"><value>Chiến thắng đấu trường! +{0} điểm trong tuần này.</value></data>
+  <data name="Game.ArenaLost" xml:space="preserve"><value>Thất bại đấu trường: -{0} điểm trong tuần này.</value></data>
+  <data name="Game.ArenaDraw" xml:space="preserve"><value>Trận đấu trường kết thúc với kết quả hòa.</value></data>
+  <data name="Game.ArenaNotice" xml:space="preserve"><value>Đấu trường {0}: {1} đã đánh bại {2}.</value></data>
+  <data name="Game.ArenaDrawNotice" xml:space="preserve"><value>Đấu trường {0}: {1} và {2} hòa nhau.</value></data>
+  <data name="Arena.Queued" xml:space="preserve"><value>Trong hàng chờ đấu trường {0}</value></data>
+  <data name="Arena.Status" xml:space="preserve"><value>Đấu trường {0}: phe bạn {1} x {2}, còn {3}:{4}</value></data>
+  <data name="Arena.Out" xml:space="preserve"><value>Bạn đã bị loại. Đấu trường {0}: phe bạn {1} x {2}, còn {3}:{4}</value></data>
+  <data name="QuickMenu.ArenaSolo" xml:space="preserve"><value>Đấu trường 1x1</value></data>
+  <data name="QuickMenu.ArenaTrio" xml:space="preserve"><value>Đấu trường 3x3</value></data>
+  <data name="Game.RoyaleOpen" xml:space="preserve"><value>Đã mở đăng ký Battle Royale: bắt đầu sau {0} phút, từ level {1}. Gõ /royale để đăng ký.</value></data>
+  <data name="Game.RoyaleRegistered" xml:space="preserve"><value>Bạn đã đăng ký Battle Royale ({0} người đã đăng ký).</value></data>
+  <data name="Game.RoyaleLeft" xml:space="preserve"><value>Bạn đã hủy đăng ký Battle Royale.</value></data>
+  <data name="Game.RoyaleClosed" xml:space="preserve"><value>Đăng ký Battle Royale mở 10 phút trước {0}.</value></data>
+  <data name="Game.RoyaleLevel" xml:space="preserve"><value>Battle Royale cần level {0}.</value></data>
+  <data name="Game.RoyaleFull" xml:space="preserve"><value>Battle Royale đã đầy ({0} người chơi).</value></data>
+  <data name="Game.RoyaleBusy" xml:space="preserve"><value>Bạn không thể đăng ký lúc này: hãy rời trận duel, đấu trường, Bellatra hoặc đấu trường nhiệm vụ trước.</value></data>
+  <data name="Game.RoyaleNotRegistered" xml:space="preserve"><value>Bạn chưa đăng ký Battle Royale.</value></data>
+  <data name="Game.RoyaleCancelled" xml:space="preserve"><value>Battle Royale đã bị hủy: {0} người đăng ký, cần {1}.</value></data>
+  <data name="Game.RoyaleStarted" xml:space="preserve"><value>Battle Royale đã bắt đầu với {0} người chơi!</value></data>
+  <data name="Game.RoyaleOut" xml:space="preserve"><value>Bạn đã bị loại khỏi Battle Royale và đang theo dõi: còn {0} người trụ lại.</value></data>
+  <data name="Game.RoyalePlace" xml:space="preserve"><value>Battle Royale: bạn đạt hạng {0} và nhận {1} kinh nghiệm.</value></data>
+  <data name="Game.RoyaleWinner" xml:space="preserve"><value>{0} đã chiến thắng Battle Royale!</value></data>
+  <data name="Game.RoyaleSkipped" xml:space="preserve"><value>Bạn bị bỏ ra khỏi Battle Royale: bạn đang bận khi trận bắt đầu.</value></data>
+  <data name="Royale.Registered" xml:space="preserve"><value>Đã đăng ký Battle Royale ({0} người đã đăng ký)</value></data>
+  <data name="Royale.Status" xml:space="preserve"><value>Battle Royale: còn {0}/{1} người, vùng an toàn thu hẹp sau {2}, còn {3}</value></data>
+  <data name="Game.TitleGained" xml:space="preserve"><value>{0} đã nhận danh hiệu {1}!</value></data>
+  <data name="Game.TitleLost" xml:space="preserve"><value>{0} đã mất danh hiệu {1} vào tay {2}!</value></data>
+  <data name="Game.TitleEarned" xml:space="preserve"><value>Bạn đã nhận danh hiệu {0}. Hãy chọn nó trong cửa sổ trạng thái để hiển thị trên tên của bạn.</value></data>
+  <data name="Game.TitleTaken" xml:space="preserve"><value>Bạn đã mất danh hiệu {0} vào tay {1}.</value></data>
+  <data name="Game.BossRouletteWinner" xml:space="preserve"><value>{0} đã trúng {1} trong vòng quay boss {2}!</value></data>
+  <data name="Game.BossRouletteWon" xml:space="preserve"><value>Bạn đã trúng {0} trong vòng quay boss {1}! Vật phẩm đang chờ ở Item Distributor (More).</value></data>
+  <data name="Title.None" xml:space="preserve"><value>Không có danh hiệu</value></data>
+  <data name="Title.Veteran" xml:space="preserve"><value>Lão luyện</value></data>
+  <data name="Title.Master" xml:space="preserve"><value>Bậc thầy</value></data>
+  <data name="Title.Legend" xml:space="preserve"><value>Huyền thoại</value></data>
+  <data name="Title.Immortal" xml:space="preserve"><value>Bất tử</value></data>
+  <data name="Title.Artisan" xml:space="preserve"><value>Thợ thủ công</value></data>
+  <data name="Title.MasterArtisan" xml:space="preserve"><value>Bậc thầy thủ công</value></data>
+  <data name="Title.Adventurer" xml:space="preserve"><value>Nhà thám hiểm</value></data>
+  <data name="Title.Hunter" xml:space="preserve"><value>Thợ săn</value></data>
+  <data name="Title.Exterminator" xml:space="preserve"><value>Kẻ diệt trừ</value></data>
+  <data name="Title.BossHunter" xml:space="preserve"><value>Thợ săn boss</value></data>
+  <data name="Title.ArenaKingLow" xml:space="preserve"><value>Vua đấu trường 100-119</value></data>
+  <data name="Title.ArenaKingMiddle" xml:space="preserve"><value>Vua đấu trường 120-139</value></data>
+  <data name="Title.ArenaKingHigh" xml:space="preserve"><value>Vua đấu trường 140+</value></data>
+  <data name="Title.Survivor" xml:space="preserve"><value>Người sống sót</value></data>
+  <data name="Title.CastleLord" xml:space="preserve"><value>Chúa tể lâu đài</value></data>
+  <data name="Title.Strongest" xml:space="preserve"><value>Kẻ mạnh nhất</value></data>
+  <data name="Royale.Closing" xml:space="preserve"><value>Battle Royale: còn {0}/{1} người, còn {3}</value></data>
+  <data name="Royale.Out" xml:space="preserve"><value>Bạn đã bị loại, đang theo dõi. Battle Royale: còn {0}/{1} người, còn {3}</value></data>
+  <data name="QuickMenu.Royale" xml:space="preserve"><value>Battle Royale</value></data>
+  <data name="Game.DuelChallenged" xml:space="preserve"><value>Bạn đã thách đấu {0}.</value></data>
+  <data name="Game.DuelNotFound" xml:space="preserve"><value>{0} hiện không chơi.</value></data>
+  <data name="Game.DuelTooFar" xml:space="preserve"><value>{0} ở quá xa để duel.</value></data>
+  <data name="Game.DuelField" xml:space="preserve"><value>Chỉ có thể duel ở khu săn quái.</value></data>
+  <data name="Game.DuelBusy" xml:space="preserve"><value>{0} không thể duel lúc này.</value></data>
+  <data name="Game.DuelSelf" xml:space="preserve"><value>Bạn không thể tự duel với chính mình.</value></data>
+  <data name="Game.DuelRefused" xml:space="preserve"><value>{0} đã từ chối lời thách đấu của bạn.</value></data>
+  <data name="Game.DuelStarted" xml:space="preserve"><value>Trận duel với {0} bắt đầu: hãy ở trong vòng tròn vàng. Ai còn lại 1 máu sẽ thua; không ai chết.</value></data>
+  <data name="Game.DuelWon" xml:space="preserve"><value>Bạn đã thắng trận duel với {0}!</value></data>
+  <data name="Game.DuelLost" xml:space="preserve"><value>Bạn đã thua trận duel với {0}.</value></data>
+  <data name="Game.DuelDraw" xml:space="preserve"><value>Trận duel của bạn với {0} kết thúc với kết quả hòa.</value></data>
+  <data name="Game.DuelNotice" xml:space="preserve"><value>{0} đã đánh bại {1} trong một trận duel.</value></data>
+  <data name="Game.DuelDrawNotice" xml:space="preserve"><value>{0} và {1} hòa nhau trong một trận duel.</value></data>
+  <data name="Duel.Button" xml:space="preserve"><value>Duel</value></data>
+  <data name="Duel.Request" xml:space="preserve"><value>muốn duel</value></data>
+  <data name="Duel.Status" xml:space="preserve"><value>Duel với {0}: {1}:{2}</value></data>
+  <data name="Duel.Outside" xml:space="preserve"><value>Hãy quay lại đấu trường: bạn sẽ thua trận duel với {0} sau {1} giây</value></data>
+  <data name="Game.PvpOff" xml:space="preserve"><value>Chế độ PvP đã tắt.</value></data>
+  <data name="Game.PvpLevel" xml:space="preserve"><value>Chế độ PvP mở từ level {0}.</value></data>
+  <data name="Game.PvpInCombat" xml:space="preserve"><value>Bạn vừa chiến đấu với một người chơi: có thể tắt PvP sau {0} giây.</value></data>
+  <data name="Game.PvpMurderer" xml:space="preserve"><value>Bạn là kẻ sát nhân: PvP của bạn vẫn bật thêm {0} giây.</value></data>
+  <data name="Game.PvpMurder" xml:space="preserve"><value>Bạn đã giết {0}: bạn là kẻ sát nhân trong {1} phút. Bất kỳ người chơi nào đang bật PvP đều có thể tấn công bạn, và PvP của bạn vẫn bật.</value></data>
+  <data name="Game.BellatraOut" xml:space="preserve"><value>Đội của bạn đã bị loại (hạng {0}). Bạn nhận được {1} vàng.</value></data>
+  <data name="Game.BellatraPoints" xml:space="preserve"><value>{0} đã phá Ấn Điểm: thêm {1} điểm.</value></data>
+  <data name="Game.BellatraQuake" xml:space="preserve"><value>{0} đã phá Ấn Địa Chấn: quái vật trong phòng rung chuyển.</value></data>
+  <data name="Game.BellatraRabbit" xml:space="preserve"><value>{0} đã phá Ấn Thỏ: quái vật biến thành Rabies.</value></data>
+  <data name="Game.BellatraSealIdle" xml:space="preserve"><value>Ấn chỉ vỡ ở một trong các phòng của đấu trường khi đang diễn ra một vòng.</value></data>
+  <data name="Game.BellatraStun" xml:space="preserve"><value>{0} đã phá Ấn Choáng: quái vật trong phòng bị choáng.</value></data>
+  <data name="Game.BellatraStygian" xml:space="preserve"><value>{0} đã phá Ấn Stygian: một Stygian Lord chiến đấu cho họ.</value></data>
+  <data name="Game.BellatraTeamFull" xml:space="preserve"><value>Vé của đội này đã bán hết.</value></data>
+  <data name="Game.BellatraTicket" xml:space="preserve"><value>Vé Bellatra đang được bán: {0} vàng.</value></data>
+  <data name="Game.BossTime" xml:space="preserve"><value>Giờ boss: XX:{0}</value></data>
+  <data name="Game.CannotDrop" xml:space="preserve"><value>Vật phẩm này không thể vứt bỏ</value></data>
+  <data name="Game.CannotUseYet" xml:space="preserve"><value>Chưa thể dùng vật phẩm này</value></data>
+  <data name="Game.CastleTaken" xml:space="preserve"><value>Bang hội {0} đã chiếm Bless Castle.</value></data>
+  <data name="Game.CharacterBusy" xml:space="preserve"><value>Đang chờ lưu hoặc một thao tác nhân vật khác; hãy thử lại</value></data>
+  <data name="Game.CharacterUnchanged" xml:space="preserve"><value>Kho lưu trữ đã từ chối thao tác; nhân vật không thay đổi</value></data>
+  <data name="Game.ClanAlreadyInClan" xml:space="preserve"><value>Bạn đã ở trong một bang hội.</value></data>
+  <data name="Game.ClanBelowSix" xml:space="preserve"><value>Bang hội có ít hơn {1} thành viên. Hãy tuyển thêm trong {0} ngày, nếu không bang sẽ bị giải tán.</value></data>
+  <data name="Game.ClanBusy" xml:space="preserve"><value>Hãy đóng giao dịch hoặc cửa hàng cá nhân trước.</value></data>
+  <data name="Game.ClanCapacityTooLow" xml:space="preserve"><value>Ở level đó, bang chủ mới không thể giữ được toàn bộ thành viên.</value></data>
+  <data name="Game.ClanChiefCannotLeave" xml:space="preserve"><value>Bang chủ không thể rời bang: hãy giao bang hội hoặc giải tán.</value></data>
+  <data name="Game.ClanChiefChanged" xml:space="preserve"><value>Bang chủ đã đổi từ {0} sang {1}.</value></data>
+  <data name="Game.ClanChiefOnAccount" xml:space="preserve"><value>Tài khoản này đã có một bang chủ. Mỗi tài khoản chỉ có thể có một bang chủ.</value></data>
+  <data name="Game.ClanDisbanded" xml:space="preserve"><value>Bang hội {0} đã bị giải tán.</value></data>
+  <data name="Game.ClanExpelled" xml:space="preserve"><value>{0} đã bị trục xuất khỏi bang hội.</value></data>
+  <data name="Game.ClanFounded" xml:space="preserve"><value>Bang hội [{0}] đã được thành lập. Hãy tuyển {1} thành viên (tính cả bang chủ) trong vòng {2} ngày để đăng ký.</value></data>
+  <data name="Game.ClanFull" xml:space="preserve"><value>Bạn không thể tuyển thêm thành viên.</value></data>
+  <data name="Game.ClanInviteRefused" xml:space="preserve"><value>{0} đã từ chối gia nhập bang hội.</value></data>
+  <data name="Game.ClanInviteSent" xml:space="preserve"><value>Lời mời vào bang hội đã được gửi đến {0}.</value></data>
+  <data name="Game.ClanJoinCooldown" xml:space="preserve"><value>Nhân vật không thể gia nhập bang hội trong {0} ngày sau khi bang hội của mình bị giải tán.</value></data>
+  <data name="Game.ClanJoined" xml:space="preserve"><value>{0} đã gia nhập bang hội.</value></data>
+  <data name="Game.ClanLeft" xml:space="preserve"><value>{0} đã rời bang hội.</value></data>
+  <data name="Game.ClanLevelTooLow" xml:space="preserve"><value>Bạn phải đạt level {0} để thành lập bang hội.</value></data>
+  <data name="Game.ClanMarkChanged" xml:space="preserve"><value>Bang hội [{0}] có biểu tượng mới.</value></data>
+  <data name="Game.ClanMarkUnavailable" xml:space="preserve"><value>Hiện chưa thể tải lên biểu tượng bang hội.</value></data>
+  <data name="Game.ClanNameInvalid" xml:space="preserve"><value>Tên bang hội gồm {0} đến {1} chữ cái, chữ số, dấu cách, '-' hoặc '_'.</value></data>
+  <data name="Game.ClanNameTaken" xml:space="preserve"><value>Tên bang hội này đã tồn tại. Vui lòng chọn tên khác.</value></data>
+  <data name="Game.ClanNoInvitation" xml:space="preserve"><value>Lời mời vào bang hội không còn hiệu lực.</value></data>
+  <data name="Game.ClanNotChief" xml:space="preserve"><value>Chỉ bang chủ mới làm được việc đó.</value></data>
+  <data name="Game.ClanNotInClan" xml:space="preserve"><value>Bạn không ở trong bang hội nào.</value></data>
+  <data name="Game.ClanNotMember" xml:space="preserve"><value>Nhân vật đó không phải thành viên của bang hội.</value></data>
+  <data name="Game.ClanNotRecruiter" xml:space="preserve"><value>Chỉ bang chủ hoặc phó bang mới có thể tuyển thành viên.</value></data>
+  <data name="Game.ClanNotRegistered" xml:space="preserve"><value>Bang hội phải được đăng ký chính thức trước.</value></data>
+  <data name="Game.ClanNotVice" xml:space="preserve"><value>Thành viên đó không phải phó bang.</value></data>
+  <data name="Game.ClanOnly" xml:space="preserve"><value>Chỉ thành viên bang hội mới dùng được vật phẩm này</value></data>
+  <data name="Game.ClanPetOwned" xml:space="preserve"><value>Bạn chỉ có thể triệu hồi một con mỗi lần.</value></data>
+  <data name="Game.ClanPetsNearby" xml:space="preserve"><value>Bang hội của bạn đã có ba con ở đây.</value></data>
+  <data name="Game.ClanRegistered" xml:space="preserve"><value>Chúc mừng! Bang hội [{0}] nay đã được đăng ký chính thức.</value></data>
+  <data name="Game.ClanTargetInClan" xml:space="preserve"><value>Người chơi đó đã ở trong một bang hội.</value></data>
+  <data name="Game.ClanTargetLevelTooLow" xml:space="preserve"><value>Bang chủ mới phải có level bằng hoặc cao hơn bạn.</value></data>
+  <data name="Game.ClanTargetNotFound" xml:space="preserve"><value>Người chơi đó hiện không khả dụng.</value></data>
+  <data name="Game.ClanUnavailable" xml:space="preserve"><value>Dịch vụ bang hội hiện không khả dụng. Vui lòng thử lại sau.</value></data>
+  <data name="Game.ClanViceAppointed" xml:space="preserve"><value>{0} đã được bổ nhiệm làm phó bang.</value></data>
+  <data name="Game.ClanViceDischarged" xml:space="preserve"><value>{0} đã bị bãi nhiệm khỏi chức phó bang.</value></data>
+  <data name="Game.ClanViceExists" xml:space="preserve"><value>Bang hội đã có phó bang.</value></data>
+  <data name="Game.ClanYouWereExpelled" xml:space="preserve"><value>Bạn đã bị trục xuất khỏi bang hội {0}.</value></data>
+  <data name="Game.CloseShopFirst" xml:space="preserve"><value>Hãy đóng cửa hàng cá nhân trước</value></data>
+  <data name="Game.CloseTradeFirst" xml:space="preserve"><value>Hãy đóng cửa sổ giao dịch trước</value></data>
+  <data name="Game.ConfirmAcceptQuest" xml:space="preserve"><value>Nhận nhiệm vụ</value></data>
+  <data name="Game.ConfirmBattleZone" xml:space="preserve"><value>di chuyển đến Battle Zone?</value></data>
+  <data name="Game.ConfirmCarryOut" xml:space="preserve"><value>thực hiện nhiệm vụ?</value></data>
+  <data name="Game.ConfirmDoYouWanna" xml:space="preserve"><value>Bạn muốn</value></data>
+  <data name="Game.ConfirmDoYouWantTo" xml:space="preserve"><value>Bạn có muốn</value></data>
+  <data name="Game.ConfirmExchangeItem" xml:space="preserve"><value>đổi lấy vật phẩm?</value></data>
+  <data name="Game.ConfirmGetQuest" xml:space="preserve"><value>nhận nhiệm vụ?</value></data>
+  <data name="Game.ConfirmProcessQuest" xml:space="preserve"><value>Tiến hành nhiệm vụ</value></data>
+  <data name="Game.ConfirmRankUp" xml:space="preserve"><value>thăng hạng?</value></data>
+  <data name="Game.ConfirmRankUpFifth" xml:space="preserve"><value>Thăng hạng</value></data>
+  <data name="Game.ConfirmReceiveItem" xml:space="preserve"><value>nhận vật phẩm?</value></data>
+  <data name="Game.ConfirmRedistribute" xml:space="preserve"><value>phân bổ lại?</value></data>
+  <data name="Game.ConfirmSearchQuest" xml:space="preserve"><value>tìm nhiệm vụ?</value></data>
+  <data name="Game.ConfirmTheQuest" xml:space="preserve"><value>nhiệm vụ?</value></data>
+  <data name="Game.ConfirmWantToAccept" xml:space="preserve"><value>muốn nhận?</value></data>
+  <data name="Game.ConfirmWantToDo" xml:space="preserve"><value>muốn làm?</value></data>
+  <data name="Game.ConnectionError" xml:space="preserve"><value>Lỗi kết nối. Vui lòng thử lại.</value></data>
+  <data name="Game.ContactListFull" xml:space="preserve"><value>Danh sách đã đầy</value></data>
+  <data name="Game.ContactListed" xml:space="preserve"><value>{0} đã có trong danh sách</value></data>
+  <data name="Game.ContactNotListed" xml:space="preserve"><value>{0} không có trong danh sách</value></data>
+  <data name="Game.ContactRefused" xml:space="preserve"><value>Không thể thêm tên này vào danh sách</value></data>
+  <data name="Game.ContactsUnavailable" xml:space="preserve"><value>Hiện không thể thay đổi danh sách</value></data>
+  <data name="Game.CrystalRefused" xml:space="preserve"><value>Bạn không thể dùng viên pha lê này</value></data>
+  <data name="Game.DeadCannotUse" xml:space="preserve"><value>Không thể dùng vật phẩm khi đã chết</value></data>
+  <data name="Game.DeathPenaltyReduced" xml:space="preserve"><value>Phạt EXP khi chết giảm 1</value></data>
+  <data name="Game.DropOutOfReach" xml:space="preserve"><value>Vật phẩm đã biến mất hoặc ngoài tầm với</value></data>
+  <data name="Game.EliteQuestDone" xml:space="preserve"><value>{0} : hoàn thành</value></data>
+  <data name="Game.EliteQuestExpired" xml:space="preserve"><value>Nhiệm vụ đã hết thời hạn.</value></data>
+  <data name="Game.EliteQuestProgress" xml:space="preserve"><value>{0} : {1}/{2}</value></data>
+  <data name="Game.EliteSkillPointsGained" xml:space="preserve"><value>Điểm kỹ năng Elite tăng +{0}.</value></data>
+  <data name="Game.EnterWorldFirst" xml:space="preserve"><value>Hãy vào thế giới trước</value></data>
+  <data name="Game.FemaleCannotUse" xml:space="preserve"><value>Nhân vật nữ không thể dùng</value></data>
+  <data name="Game.FountainPotion" xml:space="preserve"><value>&gt; {0} đã lấy một Mystic Mana Potion từ Soul Fountain [Còn lại: {1}]</value></data>
+  <data name="Game.FuryLost" xml:space="preserve"><value>Thua trong cuộc đối đầu với Fury.</value></data>
+  <data name="Game.FuryTitle" xml:space="preserve"><value>Ảo ảnh của Fury</value></data>
+  <data name="Game.FuryWon" xml:space="preserve"><value>Thắng trong cuộc đối đầu với Fury.</value></data>
+  <data name="Game.GateNotAtStone" xml:space="preserve"><value>Hãy đứng trên cổng dịch chuyển trước</value></data>
+  <data name="Game.GateNotReached" xml:space="preserve"><value>Wing của bạn không đến được cổng này</value></data>
+  <data name="Game.GateRefused" xml:space="preserve"><value>Cổng dịch chuyển đã từ chối</value></data>
+  <data name="Game.GoldLimit" xml:space="preserve"><value>Vượt quá lượng vàng tối đa được phép mang</value></data>
+  <data name="Game.GravityStoneUsed" xml:space="preserve"><value>Bạn đã dùng một Gravity Stone</value></data>
+  <data name="Game.HestianLost" xml:space="preserve"><value>Bạn đã thua Hestian.</value></data>
+  <data name="Game.HestianWon" xml:space="preserve"><value>Bạn đã thắng Hestian.</value></data>
+  <data name="Game.InvalidQuestRequest" xml:space="preserve"><value>Yêu cầu nhiệm vụ không hợp lệ</value></data>
+  <data name="Game.InventoryChanged" xml:space="preserve"><value>Túi đồ đã thay đổi; hãy thử lại</value></data>
+  <data name="Game.ItemAlreadyRunning" xml:space="preserve"><value>Vật phẩm này đang được sử dụng</value></data>
+  <data name="Game.ItemInTrade" xml:space="preserve"><value>Vật phẩm đang ở trong cửa sổ giao dịch</value></data>
+  <data name="Game.ItemNamedUsed" xml:space="preserve"><value>Đã dùng {0}</value></data>
+  <data name="Game.ItemNotHere" xml:space="preserve"><value>Không thể dùng vật phẩm này ở đây</value></data>
+  <data name="Game.ItemNotUsable" xml:space="preserve"><value>Không thể dùng vật phẩm này</value></data>
+  <data name="Game.ItemNotUsed" xml:space="preserve"><value>Không thể dùng vật phẩm</value></data>
+  <data name="Game.ItemReceived" xml:space="preserve"><value>Bạn nhận được {0}</value></data>
+  <data name="Game.ItemUsed" xml:space="preserve"><value>Đã dùng vật phẩm</value></data>
+  <data name="Game.ItemsReceived" xml:space="preserve"><value>Bạn nhận được {0} x{1}</value></data>
+  <data name="Game.LevelNotice" xml:space="preserve"><value>{0} đã đạt level {1}!</value></data>
+  <data name="Game.LevelTooLow" xml:space="preserve"><value>Level của bạn quá thấp</value></data>
+  <data name="Game.LifeFifteen" xml:space="preserve"><value>Tăng HP +15</value></data>
+  <data name="Game.LuckyBagHeld" xml:space="preserve"><value>Túi may mắn chứa {0}</value></data>
+  <data name="Game.MaleCannotUse" xml:space="preserve"><value>Nhân vật nam không thể dùng</value></data>
+  <data name="Game.MercenaryLimit" xml:space="preserve"><value>Bạn đã vượt quá giới hạn triệu hồi</value></data>
+  <data name="Game.MissionTimedOut" xml:space="preserve"><value>Nhiệm vụ thất bại do quá thời gian.</value></data>
+  <data name="Game.Name" xml:space="preserve"><value>{0}</value></data>
+  <data name="Game.NoClassChange" xml:space="preserve"><value>Hiện tại sư phụ không có lượt chuyển class cho bạn</value></data>
+  <data name="Game.NoQuestWeapon" xml:space="preserve"><value>Sư phụ không thể rèn vũ khí nhiệm vụ cho class này</value></data>
+  <data name="Game.NoRoomOnGround" xml:space="preserve"><value>Không còn chỗ trên mặt đất</value></data>
+  <data name="Game.NoSession" xml:space="preserve"><value>Phiên không hợp lệ</value></data>
+  <data name="Game.NoShopHere" xml:space="preserve"><value>Không có cửa hàng nào mở ở đây</value></data>
+  <data name="Game.NoSkillRedistribution" xml:space="preserve"><value>Không có dịch vụ phân bổ lại kỹ năng</value></data>
+  <data name="Game.NoSpace" xml:space="preserve"><value>Túi đồ không đủ chỗ</value></data>
+  <data name="Game.NotEnoughGold" xml:space="preserve"><value>Không đủ vàng</value></data>
+  <data name="Game.NotPlaying" xml:space="preserve"><value>Nhân vật không đang chơi</value></data>
+  <data name="Game.NothingToChange" xml:space="preserve"><value>Vật phẩm này không có gì để thay đổi</value></data>
+  <data name="Game.NpcNoSuchService" xml:space="preserve"><value>NPC này không cung cấp dịch vụ đó</value></data>
+  <data name="Game.NpcOutOfReach" xml:space="preserve"><value>Hãy đến gần NPC này khi còn sống</value></data>
+  <data name="Game.NpcRefused" xml:space="preserve"><value>NPC đã từ chối</value></data>
+  <data name="Game.OperationConflict" xml:space="preserve"><value>Xung đột định danh thao tác</value></data>
+  <data name="Game.OtherTownMaster" xml:space="preserve"><value>Sư phụ này huấn luyện các class của thị trấn khác</value></data>
+  <data name="Game.OverWeight" xml:space="preserve"><value>Bạn đã vượt quá giới hạn trọng lượng túi đồ</value></data>
+  <data name="Game.PartyAlreadyMember" xml:space="preserve"><value>{0} đã là thành viên party</value></data>
+  <data name="Game.PartyCannotEnter" xml:space="preserve"><value>Không thể vào party</value></data>
+  <data name="Game.PartyDelegated" xml:space="preserve"><value>{0} đã được giao làm trưởng nhóm mới</value></data>
+  <data name="Game.PartyDisbanded" xml:space="preserve"><value>Party đã bị giải tán</value></data>
+  <data name="Game.PartyEntered" xml:space="preserve"><value>{0} đã vào party</value></data>
+  <data name="Game.PartyExpelled" xml:space="preserve"><value>{0} đã bị mời ra khỏi party</value></data>
+  <data name="Game.PartyInOther" xml:space="preserve"><value>{0} đã là thành viên của party khác</value></data>
+  <data name="Game.PartyLeaderNow" xml:space="preserve"><value>trưởng nhóm hiện là {0}</value></data>
+  <data name="Game.PartyLeft" xml:space="preserve"><value>{0} đã rời party</value></data>
+  <data name="Game.PartyLevelGap" xml:space="preserve"><value>Chênh lệch level quá lớn</value></data>
+  <data name="Game.PartyLoot" xml:space="preserve"><value>{0} đã nhặt {1}.</value></data>
+  <data name="Game.PartyRareLoot" xml:space="preserve"><value>{0} đã nhặt được vật phẩm hiếm: {1}!</value></data>
+  <data name="Game.PartyRecommended" xml:space="preserve"><value>Trưởng nhóm {0} đã đề cử {1} vào party</value></data>
+  <data name="Game.PartyRecommends" xml:space="preserve"><value>đề cử {0}</value></data>
+  <data name="Game.PartyReleased" xml:space="preserve"><value>party đã bị giải tán</value></data>
+  <data name="Game.PartyRequest" xml:space="preserve"><value>đã gửi lời mời vào party</value></data>
+  <data name="Game.PartyRequested" xml:space="preserve"><value>đã gửi lời mời vào party cho {0}</value></data>
+  <data name="Game.PartyYouLeft" xml:space="preserve"><value>Bạn đã rời party</value></data>
+  <data name="Game.PersonalShopRefused" xml:space="preserve"><value>Cửa hàng cá nhân đã từ chối</value></data>
+  <data name="Game.PickupNoRoom" xml:space="preserve"><value>Túi đồ đầy hoặc đã đạt giới hạn vàng</value></data>
+  <data name="Game.PlayerNotFound" xml:space="preserve"><value>{0} hiện đang offline hoặc không tìm thấy</value></data>
+  <data name="Game.PlayerOnline" xml:space="preserve"><value>{0} hiện đang online</value></data>
+  <data name="Game.PotionNotNow" xml:space="preserve"><value>Bạn chưa thể dùng thêm bình thuốc lúc này</value></data>
+  <data name="Game.PotionNotStored" xml:space="preserve"><value>Không thể cất thuốc</value></data>
+  <data name="Game.ProgressionRefused" xml:space="preserve"><value>Chưa đủ điều kiện hoặc nhân vật đã thay đổi; hãy thử lại</value></data>
+  <data name="Game.QuestHunt" xml:space="preserve"><value>&lt;Nhiệm vụ&gt; Săn {0} trên {1}</value></data>
+  <data name="Game.QuestHuntFinished" xml:space="preserve"><value>&lt;Nhiệm vụ&gt;  Đã săn xong {0} trên {1}</value></data>
+  <data name="Game.QuestInProgress" xml:space="preserve"><value>Bạn đang thực hiện một nhiệm vụ</value></data>
+  <data name="Game.QuestItemFrom" xml:space="preserve"><value>&lt;Nhiệm vụ&gt; Lấy vật phẩm từ {0}</value></data>
+  <data name="Game.QuestItemGone" xml:space="preserve"><value>Vật phẩm nhiệm vụ {0} đã biến mất</value></data>
+  <data name="Game.QuestItemLevelUp" xml:space="preserve"><value>Vật phẩm nhiệm vụ tăng cấp</value></data>
+  <data name="Game.QuestItemSlowed" xml:space="preserve"><value>Tốc độ đánh của vật phẩm nhiệm vụ giảm</value></data>
+  <data name="Game.QuestKillCount" xml:space="preserve"><value>Nhiệm vụ&gt; {0} {1} số quái vật cần thiết</value></data>
+  <data name="Game.QuestMovedOn" xml:space="preserve"><value>Nhiệm vụ đã chuyển sang bước tiếp theo; hãy nói chuyện lại với NPC</value></data>
+  <data name="Game.QuestName" xml:space="preserve"><value>{0}</value></data>
+  <data name="Game.QuestTitle" xml:space="preserve"><value> N H I Ệ M   V Ụ </value></data>
+  <data name="Game.RegisteredClanOnly" xml:space="preserve"><value>Chỉ thành viên của bang hội đã đăng ký mới dùng được vật phẩm này</value></data>
+  <data name="Game.RequestRefused" xml:space="preserve"><value>Yêu cầu đã bị từ chối</value></data>
+  <data name="Game.RewardAlreadyClaimed" xml:space="preserve"><value>Phần thưởng này đã được nhận.</value></data>
+  <data name="Game.RewardBusy" xml:space="preserve"><value>Một hành động khác đang diễn ra; hãy thử lại.</value></data>
+  <data name="Game.RewardClaimed" xml:space="preserve"><value>Đã nhận phần thưởng.</value></data>
+  <data name="Game.RewardExpired" xml:space="preserve"><value>Sự kiện này đã kết thúc.</value></data>
+  <data name="Game.RewardGoldLimit" xml:space="preserve"><value>Bạn không thể mang nhiều vàng như vậy.</value></data>
+  <data name="Game.RewardLevelTooLow" xml:space="preserve"><value>Level của bạn quá thấp để nhận phần thưởng này.</value></data>
+  <data name="Game.RewardNotReady" xml:space="preserve"><value>Phần thưởng này chưa sẵn sàng.</value></data>
+  <data name="Game.RewardReceived" xml:space="preserve"><value>Đã nhận vật phẩm bồi thường.</value></data>
+  <data name="Game.SameAttributeRunning" xml:space="preserve"><value>Đang dùng một vật phẩm có cùng thuộc tính</value></data>
+  <data name="Game.SellerNotFound" xml:space="preserve"><value>Không tìm thấy người bán</value></data>
+  <data name="Game.SellerShopClosed" xml:space="preserve"><value>Cửa hàng cá nhân của người bán đã đóng</value></data>
+  <data name="Game.ServiceNotAvailable" xml:space="preserve"><value>Dịch vụ này hiện chưa khả dụng</value></data>
+  <data name="Game.ServiceStale" xml:space="preserve"><value>Túi đồ hoặc kho đã thay đổi; hãy thử lại</value></data>
+  <data name="Game.SevenStatPoints" xml:space="preserve"><value>Từ level 80 trở lên, bạn sẽ nhận 7 điểm chỉ số mỗi level.</value></data>
+  <data name="Game.ShopBuysAndRepairs" xml:space="preserve"><value>Cửa hàng này chỉ mua và sửa chữa</value></data>
+  <data name="Game.ShopCountChanged" xml:space="preserve"><value>Số lượng vật phẩm không đúng</value></data>
+  <data name="Game.ShopNotInTown" xml:space="preserve"><value>Chỉ có thể mở cửa hàng cá nhân trong thị trấn</value></data>
+  <data name="Game.ShopNotListable" xml:space="preserve"><value>Không thể bán vật phẩm này ở cửa hàng cá nhân.</value></data>
+  <data name="Game.ShopPriceChanged" xml:space="preserve"><value>Giá vật phẩm đã thay đổi</value></data>
+  <data name="Game.ShopRefused" xml:space="preserve"><value>Cửa hàng đã từ chối</value></data>
+  <data name="Game.ShopSold" xml:space="preserve"><value>Người chơi {0} đã mua {1} {2} với giá {3} Gold</value></data>
+  <data name="Game.ShopSoldOut" xml:space="preserve"><value>Vật phẩm đã được bán rồi</value></data>
+  <data name="Game.ShopTradePending" xml:space="preserve"><value>Một giao dịch vẫn đang chờ xử lý; hãy thử lại</value></data>
+  <data name="Game.SiegeInAnHour" xml:space="preserve"><value>Bless Castle sẽ bắt đầu sau 1 giờ nữa. Hãy chuẩn bị sẵn sàng.</value></data>
+  <data name="Game.SiegeInHalfAnHour" xml:space="preserve"><value>Bless Castle sẽ bắt đầu sau 30 phút nữa. Hãy chuẩn bị sẵn sàng.</value></data>
+  <data name="Game.SiegeLeague" xml:space="preserve"><value>Giải đấu Bless Castle đã bắt đầu: các trận công thành nối tiếp nhau trong hai giờ.</value></data>
+  <data name="Game.SiegeOver" xml:space="preserve"><value>Bless Castle đã kết thúc. Cảm ơn bạn đã tham gia Bless Castle.</value></data>
+  <data name="Game.SiegeRestartsSoon" xml:space="preserve"><value>Bless Castle sắp bắt đầu. Hãy sẵn sàng tham gia.</value></data>
+  <data name="Game.SiegeStarted" xml:space="preserve"><value>Bless Castle đang diễn ra. Chúc tất cả người chơi may mắn.</value></data>
+  <data name="Game.SkillMasterAway" xml:space="preserve"><value>Hãy đến gặp bậc thầy kỹ năng của thị trấn khi còn sống</value></data>
+  <data name="Game.SkillPointName" xml:space="preserve"><value>Điểm kỹ năng</value></data>
+  <data name="Game.SkillPointOne" xml:space="preserve"><value>điểm kỹ năng tăng thêm 1</value></data>
+  <data name="Game.SkillsMastered" xml:space="preserve"><value>Đã hoàn thành luyện kỹ năng</value></data>
+  <data name="Game.SkillsRedistributed" xml:space="preserve"><value>Các chỉ số đã được đặt lại</value></data>
+  <data name="Game.SkillsReset" xml:space="preserve"><value>Điểm kỹ năng của bạn có thể được phân phối lại</value></data>
+  <data name="Game.StaleInventory" xml:space="preserve"><value>Thao tác không hợp lệ hoặc túi đồ đã thay đổi; hãy thử lại</value></data>
+  <data name="Game.StarterGift" xml:space="preserve"><value>Bạn đã nhận được {0} làm quà tặng.</value></data>
+  <data name="Game.StatFiveSkillOne" xml:space="preserve"><value>điểm chỉ số &amp; điểm kỹ năng tăng thêm 5 và 1</value></data>
+  <data name="Game.StatFiveSkillTwo" xml:space="preserve"><value>điểm chỉ số &amp; điểm kỹ năng tăng thêm 5 và 2</value></data>
+  <data name="Game.StatPointsFive" xml:space="preserve"><value>điểm chỉ số tăng thêm 5</value></data>
+  <data name="Game.StatPointsGained" xml:space="preserve"><value>Điểm chỉ số tăng thêm +{0}.</value></data>
+  <data name="Game.StatsReset" xml:space="preserve"><value>Điểm chỉ số của bạn có thể được phân phối lại</value></data>
+  <data name="Game.StorageRejected" xml:space="preserve"><value>Kho từ chối thao tác; không có gì thay đổi</value></data>
+  <data name="Game.SummonLimit" xml:space="preserve"><value>Bạn chỉ có thể triệu hồi tối đa {0} tinh thể cùng lúc</value></data>
+  <data name="Game.TalkToNpcFirst" xml:space="preserve"><value>Hãy nói chuyện với NPC trước</value></data>
+  <data name="Game.TenStatPoints" xml:space="preserve"><value>Từ level 90 trở lên, bạn sẽ nhận 10 điểm chỉ số mỗi level.</value></data>
+  <data name="Game.TooManyRequests" xml:space="preserve"><value>Quá nhiều yêu cầu; hãy chờ một lát</value></data>
+  <data name="Game.TradeBusy" xml:space="preserve"><value>Người chơi đang bận</value></data>
+  <data name="Game.TradeCancelled" xml:space="preserve"><value>Giao dịch đã bị hủy</value></data>
+  <data name="Game.TradeChanged" xml:space="preserve"><value>Vật phẩm đã thay đổi. Vui lòng kiểm tra lại</value></data>
+  <data name="Game.TradeNotTradable" xml:space="preserve"><value>Vật phẩm này không thể giao dịch</value></data>
+  <data name="Game.TradeOutOfReach" xml:space="preserve"><value>Người chơi ở quá xa</value></data>
+  <data name="Game.TradeRefused" xml:space="preserve"><value>Giao dịch đã bị từ chối</value></data>
+  <data name="Game.TradeRequested" xml:space="preserve"><value>Đã gửi yêu cầu giao dịch tới {0}</value></data>
+  <data name="Game.TradeTooFar" xml:space="preserve"><value>{0} ở quá xa để yêu cầu giao dịch</value></data>
+  <data name="Game.TradeTooMany" xml:space="preserve"><value>Vượt quá số vật phẩm giao dịch tối đa</value></data>
+  <data name="Game.TrainingReset" xml:space="preserve"><value>Đặt lại các chỉ số để luyện tập.</value></data>
+  <data name="Game.TwentyBargons" xml:space="preserve"><value>Bạn đã tiêu diệt 20 Bargon.</value></data>
+  <data name="Game.UnionCoreAway" xml:space="preserve"><value>Không thể dùng Union Core: hiện không thể liên lạc với thành viên bang hội đó.</value></data>
+  <data name="Game.UnionCoreBound" xml:space="preserve"><value>Union Core đã được đăng ký cho bạn: thành viên bang hội nào dùng nó sẽ được dịch chuyển đến chỗ bạn.</value></data>
+  <data name="Game.UnionCoreOwn" xml:space="preserve"><value>Bạn không thể dùng Union Core của chính mình.</value></data>
+  <data name="Game.UnionCoreWrongClan" xml:space="preserve"><value>Union Core đó thuộc về bang hội khác.</value></data>
+  <data name="Game.UseDelay" xml:space="preserve"><value>Hãy chờ một lát trước khi dùng cái khác</value></data>
+  <data name="Game.VitalityForty" xml:space="preserve"><value>Sinh lực tăng thêm 40</value></data>
+  <data name="Game.WarehouseChanged" xml:space="preserve"><value>Kho đã thay đổi ở nơi khác; hãy mở lại</value></data>
+  <data name="Game.WarehouseNotOpen" xml:space="preserve"><value>Hãy mở kho trước</value></data>
+  <data name="Game.WarehouseUnreadable" xml:space="preserve"><value>Không thể đọc dữ liệu kho đã lưu</value></data>
+  <data name="Game.WhisperRefused" xml:space="preserve"><value>Tin nhắn riêng đã bị từ chối</value></data>
+  <data name="Game.WhisperUnable" xml:space="preserve"><value>Không thể gửi tin nhắn riêng</value></data>
+  <data name="Game.WhispersAccepted" xml:space="preserve"><value>Nhận tin nhắn riêng</value></data>
+  <data name="Game.WhispersDenied" xml:space="preserve"><value>Từ chối tin nhắn riêng</value></data>
+  <data name="Game.WrongMaterials" xml:space="preserve"><value>Các nguyên liệu này không phù hợp với công việc này</value></data>
+  <data name="Game.WrongPuzzle" xml:space="preserve"><value>Câu đố sai rồi</value></data>
+  <data name="Guide.More" xml:space="preserve"><value>&gt;&gt;xem thêm...</value></data>
+  <data name="Hud.AttackAuto" xml:space="preserve"><value>Kiểu tấn công: Tự động</value></data>
+  <data name="Hud.AttackManual" xml:space="preserve"><value>Kiểu tấn công: Thủ công</value></data>
+  <data name="Hud.DoubleClickSwitch" xml:space="preserve"><value>Nhấp đúp để chuyển</value></data>
+  <data name="Hud.Effect" xml:space="preserve"><value>Hiệu ứng {0}</value></data>
+  <data name="Hud.Life" xml:space="preserve"><value>HP : {0}/{1}</value></data>
+  <data name="Hud.Mana" xml:space="preserve"><value>MP : {0}/{1}</value></data>
+  <data name="Hud.Monster" xml:space="preserve"><value>Quái vật</value></data>
+  <data name="Hud.Npc" xml:space="preserve"><value>NPC</value></data>
+  <data name="Hud.Quest" xml:space="preserve"><value>Nhiệm vụ</value></data>
+  <data name="Hud.RightClickDismiss" xml:space="preserve"><value>Nhấp chuột phải để đóng</value></data>
+  <data name="Hud.Stamina" xml:space="preserve"><value>STM : {0}/{1}</value></data>
+  <data name="Hud.Target" xml:space="preserve"><value>Mục tiêu</value></data>
+  <data name="Hud.TargetLevel" xml:space="preserve"><value>Lv. {0}</value></data>
+  <data name="Hud.TimeLeft" xml:space="preserve"><value>Thời gian còn lại: {0}</value></data>
+  <data name="Hud.TimeLeftSeconds" xml:space="preserve"><value>Thời gian còn lại: {0} giây</value></data>
+  <data name="Inventory.HintCarry" xml:space="preserve"><value>Nhấp: cầm</value></data>
+  <data name="Inventory.HintDrink" xml:space="preserve"><value>Nhấp chuột phải: uống một lọ</value></data>
+  <data name="Inventory.HintEquip" xml:space="preserve"><value>Nhấp: cầm  Shift+nhấp: tách  Nhấp chuột phải: trang bị</value></data>
+  <data name="Inventory.HintUnequip" xml:space="preserve"><value>Nhấp chuột phải: tháo trang bị</value></data>
+  <data name="Inventory.HintUse" xml:space="preserve"><value>Nhấp chuột phải: sử dụng</value></data>
+  <data name="Inventory.OperationFailed" xml:space="preserve"><value>Thao tác thất bại; hãy kết nối lại để xác minh trạng thái đã lưu.</value></data>
+  <data name="Item.Absorb" xml:space="preserve"><value>Chỉ số hấp thụ:  </value></data>
+  <data name="Item.AddLife" xml:space="preserve"><value>HP cộng thêm: </value></data>
+  <data name="Item.AddMana" xml:space="preserve"><value>MP cộng thêm:  </value></data>
+  <data name="Item.AddStamina" xml:space="preserve"><value>STM cộng thêm:  </value></data>
+  <data name="Item.AnyClass" xml:space="preserve"><value>Class</value></data>
+  <data name="Item.AttackPower" xml:space="preserve"><value>Sức tấn công:  </value></data>
+  <data name="Item.AttackRating" xml:space="preserve"><value>Chỉ số tấn công:  </value></data>
+  <data name="Item.Block" xml:space="preserve"><value>Chỉ số đỡ đòn:  </value></data>
+  <data name="Item.Critical" xml:space="preserve"><value>Chí mạng:  </value></data>
+  <data name="Item.Defence" xml:space="preserve"><value>Chỉ số phòng thủ:  </value></data>
+  <data name="Item.Integrity" xml:space="preserve"><value>Độ bền:  </value></data>
+  <data name="Item.LifeRegen" xml:space="preserve"><value>Hồi HP:  </value></data>
+  <data name="Item.MagicMastery" xml:space="preserve"><value>Thành thạo phép:  </value></data>
+  <data name="Item.ManaRegen" xml:space="preserve"><value>Hồi MP: </value></data>
+  <data name="Item.PotionSpace" xml:space="preserve"><value>Sức chứa bình thuốc:  </value></data>
+  <data name="Item.Range" xml:space="preserve"><value>Tầm đánh:  </value></data>
+  <data name="Item.RequiredAgility" xml:space="preserve"><value>Yêu cầu Nhanh nhẹn:  </value></data>
+  <data name="Item.RequiredHealth" xml:space="preserve"><value>Yêu cầu Sức khỏe:  </value></data>
+  <data name="Item.RequiredLevel" xml:space="preserve"><value>Yêu cầu Level:  </value></data>
+  <data name="Item.RequiredSpirit" xml:space="preserve"><value>Yêu cầu Tinh thần:  </value></data>
+  <data name="Item.RequiredStrength" xml:space="preserve"><value>Yêu cầu Sức mạnh:  </value></data>
+  <data name="Item.RequiredTalent" xml:space="preserve"><value>Yêu cầu Tài năng:  </value></data>
+  <data name="Item.ResistFlame" xml:space="preserve"><value>Hệ Lửa:  </value></data>
+  <data name="Item.ResistFrost" xml:space="preserve"><value>Hệ Băng:  </value></data>
+  <data name="Item.ResistLightning" xml:space="preserve"><value>Hệ Sét:  </value></data>
+  <data name="Item.ResistNature" xml:space="preserve"><value>Hệ Tự nhiên:  </value></data>
+  <data name="Item.ResistOrganic" xml:space="preserve"><value>Hệ Hữu cơ:  </value></data>
+  <data name="Item.ResistPoison" xml:space="preserve"><value>Hệ Độc: </value></data>
+  <data name="Item.ResistWater" xml:space="preserve"><value>Hệ Nước:  </value></data>
+  <data name="Item.ResistWind" xml:space="preserve"><value>Hệ Gió:  </value></data>
+  <data name="Item.SpecAbsorb" xml:space="preserve"><value>Hấp thụ chuyên biệt:  </value></data>
+  <data name="Item.SpecAttackPower" xml:space="preserve"><value>Sức tấn công chuyên biệt:  </value></data>
+  <data name="Item.SpecAttackRating" xml:space="preserve"><value>Chỉ số tấn công chuyên biệt:  </value></data>
+  <data name="Item.SpecAttackSpeed" xml:space="preserve"><value>Tốc độ đánh chuyên biệt:  </value></data>
+  <data name="Item.SpecBlock" xml:space="preserve"><value>Đỡ đòn chuyên biệt:  </value></data>
+  <data name="Item.SpecCritical" xml:space="preserve"><value>Chí mạng chuyên biệt:  </value></data>
+  <data name="Item.SpecDefence" xml:space="preserve"><value>Phòng thủ chuyên biệt:  </value></data>
+  <data name="Item.SpecHeader" xml:space="preserve"><value>{0} chuyên biệt </value></data>
+  <data name="Item.SpecLevelLife" xml:space="preserve"><value>Tăng HP tối đa:  </value></data>
+  <data name="Item.SpecLevelMana" xml:space="preserve"><value>Tăng MP tối đa:  </value></data>
+  <data name="Item.SpecLifeRegen" xml:space="preserve"><value>Phục hồi HP:  </value></data>
+  <data name="Item.SpecManaRegen" xml:space="preserve"><value>Phục hồi MP:  </value></data>
+  <data name="Item.SpecRange" xml:space="preserve"><value>Tầm đánh chuyên biệt:  </value></data>
+  <data name="Item.SpecSpeed" xml:space="preserve"><value>Tốc độ chuyên biệt:  </value></data>
+  <data name="Item.SpecStaminaRegen" xml:space="preserve"><value>Phục hồi STM:  </value></data>
+  <data name="Item.Speed" xml:space="preserve"><value>Tốc độ:  </value></data>
+  <data name="Item.StaminaRegen" xml:space="preserve"><value>Hồi STM: </value></data>
+  <data name="Item.WeaponSpeed" xml:space="preserve"><value>Tốc độ vũ khí:  </value></data>
+  <data name="ItemKind.Amulet" xml:space="preserve"><value>Bùa hộ mệnh</value></data>
+  <data name="ItemKind.Armor" xml:space="preserve"><value>Giáp</value></data>
+  <data name="ItemKind.Axe" xml:space="preserve"><value>Rìu</value></data>
+  <data name="ItemKind.Boots" xml:space="preserve"><value>Giày</value></data>
+  <data name="ItemKind.Bow" xml:space="preserve"><value>Cung</value></data>
+  <data name="ItemKind.Bracelet" xml:space="preserve"><value>Vòng tay</value></data>
+  <data name="ItemKind.Claw" xml:space="preserve"><value>Móng vuốt</value></data>
+  <data name="ItemKind.Dagger" xml:space="preserve"><value>Dao găm</value></data>
+  <data name="ItemKind.ForceOrb" xml:space="preserve"><value>Force Orb</value></data>
+  <data name="ItemKind.Gloves" xml:space="preserve"><value>Găng tay</value></data>
+  <data name="ItemKind.Hammer" xml:space="preserve"><value>Búa</value></data>
+  <data name="ItemKind.Material" xml:space="preserve"><value>Nguyên liệu</value></data>
+  <data name="ItemKind.Misc" xml:space="preserve"><value>Linh tinh</value></data>
+  <data name="ItemKind.Orb" xml:space="preserve"><value>Orb</value></data>
+  <data name="ItemKind.Phantom" xml:space="preserve"><value>Phantom</value></data>
+  <data name="ItemKind.Pole" xml:space="preserve"><value>Giáo dài</value></data>
+  <data name="ItemKind.Potion" xml:space="preserve"><value>Thuốc</value></data>
+  <data name="ItemKind.Quest" xml:space="preserve"><value>Vật phẩm nhiệm vụ</value></data>
+  <data name="ItemKind.Ring" xml:space="preserve"><value>Nhẫn</value></data>
+  <data name="ItemKind.Sheltom" xml:space="preserve"><value>Sheltom</value></data>
+  <data name="ItemKind.Shield" xml:space="preserve"><value>Khiên</value></data>
+  <data name="ItemKind.Staff" xml:space="preserve"><value>Trượng</value></data>
+  <data name="ItemKind.Sword" xml:space="preserve"><value>Kiếm</value></data>
+  <data name="ItemKind.ThrowingWeapon" xml:space="preserve"><value>Vũ khí phóng</value></data>
+  <data name="ItemKind.Vambrace" xml:space="preserve"><value>Giáp tay</value></data>
+  <data name="ItemUse.BindUnionCore" xml:space="preserve"><value>Đăng ký Union Core cho bạn?</value></data>
+  <data name="ItemUse.Confirm" xml:space="preserve"><value>Bạn có muốn</value></data>
+  <data name="ItemUse.Confirm2" xml:space="preserve"><value>dùng vật phẩm này?</value></data>
+  <data name="ItemUse.ConnectionError" xml:space="preserve"><value>Lỗi kết nối. Hãy kiểm tra túi đồ trước khi thử lại.</value></data>
+  <data name="ItemUse.Teleport" xml:space="preserve"><value>Dịch chuyển?</value></data>
+  <data name="Language.en" xml:space="preserve"><value>English</value></data>
+  <data name="Language.pt-BR" xml:space="preserve"><value>Português (Brasil)</value></data>
+  <data name="Mail.NoAnswer" xml:space="preserve"><value>Không có phản hồi. Hãy thử lại.</value></data>
+  <data name="Mail.Claim.Already" xml:space="preserve"><value>Phần thưởng này đã được nhận rồi.</value></data>
+  <data name="Mail.Claim.Space" xml:space="preserve"><value>Phần thưởng không vừa trong túi đồ.</value></data>
+  <data name="Mail.Claim.Unavailable" xml:space="preserve"><value>Phần thưởng không khả dụng.</value></data>
+  <data name="Mail.Claim.Retry" xml:space="preserve"><value>Hãy thử lại sau giây lát.</value></data>
+  <data name="Mail.Title.Distributor" xml:space="preserve"><value>Người phát vật phẩm</value></data>
+  <data name="Mail.Title.Inbox" xml:space="preserve"><value>Thư · Hộp thư đến</value></data>
+  <data name="Mail.Title.Message" xml:space="preserve"><value>Thư · Nội dung thư</value></data>
+  <data name="Mail.Loading" xml:space="preserve"><value>Đang tải…</value></data>
+  <data name="Mail.ServerSilent" xml:space="preserve"><value>Máy chủ không phản hồi.</value></data>
+  <data name="Mail.AutoRefresh" xml:space="preserve"><value>Tự động làm mới</value></data>
+  <data name="Mail.Attachments" xml:space="preserve"><value>Tệp đính kèm</value></data>
+  <data name="Mail.AttachmentsGold" xml:space="preserve"><value>Tệp đính kèm · {0} gold</value></data>
+  <data name="Mail.Claimed" xml:space="preserve"><value>Đã nhận thưởng</value></data>
+  <data name="Mail.Inbox" xml:space="preserve"><value>Hộp thư đến</value></data>
+  <data name="Mail.Wait" xml:space="preserve"><value>Vui lòng chờ…</value></data>
+  <data name="Mail.Claim" xml:space="preserve"><value>Nhận</value></data>
+  <data name="Mail.Previous" xml:space="preserve"><value>Trước</value></data>
+  <data name="Mail.Next" xml:space="preserve"><value>Tiếp</value></data>
+  <data name="Language.es" xml:space="preserve"><value>Español</value></data>
+  <data name="Language.fil" xml:space="preserve"><value>Filipino</value></data>
+  <data name="Language.vi" xml:space="preserve"><value>Tiếng Việt</value></data>
+  <data name="Language.zh-CN" xml:space="preserve"><value>Tiếng Trung (giản thể)</value></data>
+  <data name="Language.ja" xml:space="preserve"><value>Tiếng Nhật</value></data>
+  <data name="Login.Account" xml:space="preserve"><value>Tài khoản</value></data>
+  <data name="Login.Failure.AlreadyLoggedIn" xml:space="preserve"><value>Đã đăng nhập trên kết nối này.</value></data>
+  <data name="Login.Failure.BadCredentials" xml:space="preserve"><value>Tài khoản hoặc mật khẩu không hợp lệ.</value></data>
+  <data name="Login.Failure.Busy" xml:space="preserve"><value>Máy chủ đang bận, hãy thử lại sau.</value></data>
+  <data name="Login.Failure.LoginDenied" xml:space="preserve"><value>Tài khoản đã bị khóa.</value></data>
+  <data name="Login.Failure.None" xml:space="preserve"><value>Đăng nhập thất bại.</value></data>
+  <data name="Login.Failure.OutdatedClient" xml:space="preserve"><value>Phiên bản game này cũ hơn mức máy chủ yêu cầu.</value></data>
+  <data name="Login.Hint" xml:space="preserve"><value>Kết nối đến máy chủ game</value></data>
+  <data name="Login.LogIn" xml:space="preserve"><value>Đăng nhập</value></data>
+  <data name="Login.Password" xml:space="preserve"><value>Mật khẩu</value></data>
+  <data name="Login.Subtitle" xml:space="preserve"><value>Cuộc phiêu lưu của bạn bắt đầu từ đây</value></data>
+  <data name="Login.Unreachable" xml:space="preserve"><value>Không thể kết nối đến máy chủ game.</value></data>
+  <data name="Loot.Gold" xml:space="preserve"><value>{0} Gold</value></data>
+  <data name="Manufacture.Done" xml:space="preserve"><value>Vật phẩm đã được chế tạo.</value></data>
+  <data name="Manufacture.Failed" xml:space="preserve"><value>Chế tạo vật phẩm thất bại.</value></data>
+  <data name="Manufacture.Random" xml:space="preserve"><value>Ngẫu nhiên</value></data>
+  <data name="Manufacture.RunesPlaced" xml:space="preserve"><value>Khi đã đặt rune, không thể đổi công thức.</value></data>
+  <data name="Manufacture.WrongRune" xml:space="preserve"><value>Đây không phải cách chế tạo đúng.</value></data>
+  <data name="Mix.Bonus.Absorb" xml:space="preserve"><value>Chỉ số hấp thụ +{0}</value></data>
+  <data name="Mix.Bonus.AttackRating" xml:space="preserve"><value>Chỉ số tấn công +{0}</value></data>
+  <data name="Mix.Bonus.AttackSpeed" xml:space="preserve"><value>Tốc độ đánh +{0}</value></data>
+  <data name="Mix.Bonus.Block" xml:space="preserve"><value>Chỉ số đỡ đòn +{0}%</value></data>
+  <data name="Mix.Bonus.Critical" xml:space="preserve"><value>Chí mạng +{0}%</value></data>
+  <data name="Mix.Bonus.DamageMax" xml:space="preserve"><value>Sức tấn công tối đa +{0}</value></data>
+  <data name="Mix.Bonus.DamageMin" xml:space="preserve"><value>Sức tấn công tối thiểu +{0}</value></data>
+  <data name="Mix.Bonus.Defence" xml:space="preserve"><value>Chỉ số phòng thủ +{0}</value></data>
+  <data name="Mix.Bonus.Fire" xml:space="preserve"><value>Thuộc tính Lửa +{0}</value></data>
+  <data name="Mix.Bonus.Ice" xml:space="preserve"><value>Thuộc tính Băng +{0}</value></data>
+  <data name="Mix.Bonus.Life" xml:space="preserve"><value>HP +{0}</value></data>
+  <data name="Mix.Bonus.LifeRegen" xml:space="preserve"><value>Hồi HP +{0}</value></data>
+  <data name="Mix.Bonus.Lightning" xml:space="preserve"><value>Thuộc tính Sét +{0}</value></data>
+  <data name="Mix.Bonus.Mana" xml:space="preserve"><value>MP +{0}</value></data>
+  <data name="Mix.Bonus.ManaRegen" xml:space="preserve"><value>Hồi MP +{0}</value></data>
+  <data name="Mix.Bonus.MoveSpeed" xml:space="preserve"><value>Tốc độ di chuyển +{0}</value></data>
+  <data name="Mix.Bonus.Organic" xml:space="preserve"><value>Thuộc tính Hữu cơ +{0}</value></data>
+  <data name="Mix.Bonus.Poison" xml:space="preserve"><value>Thuộc tính Độc +{0}</value></data>
+  <data name="Mix.Bonus.Stamina" xml:space="preserve"><value>STM +{0}</value></data>
+  <data name="Mix.Bonus.StaminaRegen" xml:space="preserve"><value>Hồi STM +{0}</value></data>
+  <data name="Mix.CannotMix" xml:space="preserve"><value>Vật phẩm không thể mix</value></data>
+  <data name="Mix.Failed" xml:space="preserve"><value>Mix vật phẩm thất bại</value></data>
+  <data name="Mix.Reconstructed" xml:space="preserve"><value>Vật phẩm đã được tái cấu trúc.</value></data>
+  <data name="Mix.Refined" xml:space="preserve"><value>Các sheltom đã được tinh luyện thành force orb.</value></data>
+  <data name="Mix.Result" xml:space="preserve"><value>Kết quả mix vật phẩm: {0}</value></data>
+  <data name="MixReset.CannotReset" xml:space="preserve"><value>Chỉ vật phẩm đã mix mới có thể đặt lại.</value></data>
+  <data name="MixReset.Done" xml:space="preserve"><value>Lần mix của vật phẩm đã được đặt lại.</value></data>
+  <data name="MixReset.ItemFirst" xml:space="preserve"><value>Hãy đặt vật phẩm đã mix vào trước.</value></data>
+  <data name="Npc.Bought" xml:space="preserve"><value>Đã mua.</value></data>
+  <data name="Npc.Destination" xml:space="preserve"><value>{0}  {1} gold</value></data>
+  <data name="Npc.DestinationLevel" xml:space="preserve"><value>{0}  {1} gold  (Lv {2})</value></data>
+  <data name="Npc.Repaired" xml:space="preserve"><value>Đã sửa chữa.</value></data>
+  <data name="Npc.Sold" xml:space="preserve"><value>Đã bán.</value></data>
+  <data name="Npc.Teleporting" xml:space="preserve"><value>Đang dịch chuyển...</value></data>
+  <data name="Npc.WhereTo" xml:space="preserve"><value>Bạn muốn đi đâu?</value></data>
+  <data name="NpcService.Aging" xml:space="preserve"><value>Aging</value></data>
+  <data name="NpcService.Alchemy" xml:space="preserve"><value>Giả kim</value></data>
+  <data name="NpcService.BlessCastle" xml:space="preserve"><value>Bless Castle</value></data>
+  <data name="NpcService.Broadcast" xml:space="preserve"><value>Thông báo</value></data>
+  <data name="NpcService.Clan" xml:space="preserve"><value>Bang hội</value></data>
+  <data name="NpcService.Crafting" xml:space="preserve"><value>Chế tạo</value></data>
+  <data name="NpcService.DonationBox" xml:space="preserve"><value>Hòm quyên góp</value></data>
+  <data name="NpcService.Donations" xml:space="preserve"><value>Quyên góp</value></data>
+  <data name="NpcService.Event" xml:space="preserve"><value>Sự kiện</value></data>
+  <data name="NpcService.EventQuest" xml:space="preserve"><value>Nhiệm vụ sự kiện</value></data>
+  <data name="NpcService.ItemDelivery" xml:space="preserve"><value>Giao vật phẩm</value></data>
+  <data name="NpcService.Mixing" xml:space="preserve"><value>Mix</value></data>
+  <data name="NpcService.MixtureReset" xml:space="preserve"><value>Đặt lại mix</value></data>
+  <data name="NpcService.PrizeDraw" xml:space="preserve"><value>Quay thưởng</value></data>
+  <data name="NpcService.PuzzleExchange" xml:space="preserve"><value>Đổi câu đố</value></data>
+  <data name="NpcService.Quest" xml:space="preserve"><value>Nhiệm vụ</value></data>
+  <data name="NpcService.Service" xml:space="preserve"><value>Dịch vụ</value></data>
+  <data name="NpcService.Shop" xml:space="preserve"><value>Cửa hàng</value></data>
+  <data name="NpcService.SkillMaster" xml:space="preserve"><value>Luyện kỹ năng</value></data>
+  <data name="NpcService.Smelting" xml:space="preserve"><value>Nung luyện</value></data>
+  <data name="NpcService.StarPoints" xml:space="preserve"><value>Điểm sao</value></data>
+  <data name="NpcService.Survey" xml:space="preserve"><value>Khảo sát</value></data>
+  <data name="NpcService.Teleport" xml:space="preserve"><value>Dịch chuyển</value></data>
+  <data name="NpcService.Warehouse" xml:space="preserve"><value>Kho đồ</value></data>
+  <data name="NpcService.WarpGate" xml:space="preserve"><value>Cổng dịch chuyển</value></data>
+  <data name="PersonalShop.BuyItem" xml:space="preserve"><value>mua vật phẩm này?</value></data>
+  <data name="PersonalShop.CancelRegister" xml:space="preserve"><value>hủy đăng ký?</value></data>
+  <data name="PersonalShop.NoRoom" xml:space="preserve"><value>Cửa hàng không còn chỗ cho vật phẩm này</value></data>
+  <data name="PersonalShop.NothingToSell" xml:space="preserve"><value>Không còn vật phẩm nào để bán</value></data>
+  <data name="PersonalShop.OnSale" xml:space="preserve"><value>Đang bán</value></data>
+  <data name="PersonalShop.PriceValue" xml:space="preserve"><value>Giá: {0}</value></data>
+  <data name="PersonalShop.Register" xml:space="preserve"><value>Bạn có muốn đăng ký</value></data>
+  <data name="PersonalShop.Register2" xml:space="preserve"><value>giá tiền vật phẩm của bạn?</value></data>
+  <data name="PersonalShop.SignTitle" xml:space="preserve"><value>Thông tin cửa hàng</value></data>
+  <data name="PersonalShop.TakeBack" xml:space="preserve"><value>Nhấp: lấy lại</value></data>
+  <data name="PersonalShop.UnitPrice" xml:space="preserve"><value>Giá bán mỗi đơn vị</value></data>
+  <data name="PersonalShop.UnitPrice2" xml:space="preserve"><value>của vật phẩm?</value></data>
+  <data name="PersonalShop.UnitPriceValue" xml:space="preserve"><value>Giá bán mỗi đơn vị: {0}</value></data>
+  <data name="Pet.Dismissed" xml:space="preserve"><value>Thú cưng đã được giải tán</value></data>
+  <data name="Premium.ExperienceUp" xml:space="preserve"><value>Tăng {0}% EXP</value></data>
+  <data name="Premium.FightsBeside" xml:space="preserve"><value>Chiến đấu bên cạnh bạn</value></data>
+  <data name="Premium.ManaRecharging" xml:space="preserve"><value>Hồi MP mỗi đòn đánh</value></data>
+  <data name="Premium.ManaReduce" xml:space="preserve"><value>Giảm {0}% MP tiêu hao khi sử dụng</value></data>
+  <data name="Premium.MightOfAwell" xml:space="preserve"><value>Tăng sức chứa thêm {0}</value></data>
+  <data name="Premium.Mute" xml:space="preserve"><value>Sức tấn công +10%</value></data>
+  <data name="Premium.Phoenix" xml:space="preserve"><value>EXP +20%, tỷ lệ rơi đồ +50%</value></data>
+  <data name="Premium.StaminaReduce" xml:space="preserve"><value>Giảm {0}% STM tiêu hao khi sử dụng</value></data>
+  <data name="Premium.ThirdEyes" xml:space="preserve"><value>{0}% cơ hội rơi thêm vật phẩm</value></data>
+  <data name="Premium.Vampiric" xml:space="preserve"><value>Hồi HP mỗi đòn đánh</value></data>
+  <data name="Progression.ConnectionError" xml:space="preserve"><value>Lỗi kết nối. Hãy kiểm tra trạng thái nhân vật trước khi thử lại.</value></data>
+  <data name="Progression.Saved" xml:space="preserve"><value>Đã lưu</value></data>
+  <data name="Progression.Saving" xml:space="preserve"><value>Đang lưu...</value></data>
+  <data name="Puzzle.Exchange" xml:space="preserve"><value>đổi lấy vật phẩm?</value></data>
+  <data name="Puzzle.Help" xml:space="preserve"><value>Hãy xếp tám mảnh của một câu đố lên bảng trong túi đồ của bạn, rồi mang đến cho ta.</value></data>
+  <data name="Puzzle.Title" xml:space="preserve"><value>Câu đố hoàn chỉnh</value></data>
+  <data name="Request.ConnectionError" xml:space="preserve"><value>Lỗi kết nối. Vui lòng thử lại.</value></data>
+  <data name="Resource.Life" xml:space="preserve"><value>sinh lực</value></data>
+  <data name="Resource.Mana" xml:space="preserve"><value>mana</value></data>
+  <data name="Resource.Stamina" xml:space="preserve"><value>thể lực</value></data>
+  <data name="Restart.Field" xml:space="preserve"><value> Hồi sinh tại bản đồ?</value></data>
+  <data name="Restart.NoExperience" xml:space="preserve"><value> Không đủ EXP</value></data>
+  <data name="Restart.NoExperience2" xml:space="preserve"><value> để ở lại bản đồ</value></data>
+  <data name="Restart.Penalty" xml:space="preserve"><value> Phạt (Gold/EXP) 1%</value></data>
+  <data name="Restart.Quit" xml:space="preserve"><value> Thoát game?</value></data>
+  <data name="Restart.Town" xml:space="preserve"><value> Hồi sinh tại thị trấn?</value></data>
+  <data name="Settings.AntiAliasing" xml:space="preserve"><value>Khử răng cưa: {0}</value></data>
+  <data name="Settings.AntiAliasingMsaa" xml:space="preserve"><value>Khử răng cưa: MSAA {0}x</value></data>
+  <data name="Settings.AntiAliasingOff" xml:space="preserve"><value>Khử răng cưa: tắt</value></data>
+  <data name="Settings.BackgroundFps" xml:space="preserve"><value>FPS nền: {0}</value></data>
+  <data name="Settings.BackgroundFpsForeground" xml:space="preserve"><value>FPS nền: theo giới hạn chính</value></data>
+  <data name="Settings.Clouds" xml:space="preserve"><value>Mây: {0}</value></data>
+  <data name="Settings.Clouds.High" xml:space="preserve"><value>cao</value></data>
+  <data name="Settings.Clouds.Low" xml:space="preserve"><value>thấp</value></data>
+  <data name="Settings.Clouds.Medium" xml:space="preserve"><value>trung bình</value></data>
+  <data name="Settings.Clouds.Off" xml:space="preserve"><value>tắt</value></data>
+  <data name="Settings.Frequency" xml:space="preserve"><value>Tần số: {0} Hz (0 = tự động)</value></data>
+  <data name="Settings.FrequencyDesktop" xml:space="preserve"><value>Tần số: theo máy tính</value></data>
+  <data name="Settings.Hint" xml:space="preserve"><value>Nhấp: tiếp theo   Shift+nhấp: trước đó</value></data>
+  <data name="Settings.Language" xml:space="preserve"><value>Ngôn ngữ: {0}</value></data>
+  <data name="Settings.MaxFps" xml:space="preserve"><value>FPS tối đa: {0}</value></data>
+  <data name="Settings.MaxFpsUnlimited" xml:space="preserve"><value>FPS tối đa: không giới hạn</value></data>
+  <data name="Settings.Monitor" xml:space="preserve"><value>Màn hình: {0}</value></data>
+  <data name="Settings.MonitorCurrent" xml:space="preserve"><value>Màn hình: hiện tại</value></data>
+  <data name="Settings.MusicOff" xml:space="preserve"><value>Nhạc nền: tắt</value></data>
+  <data name="Settings.MusicOn" xml:space="preserve"><value>Nhạc nền: bật</value></data>
+  <data name="Settings.NamePlatesClassic" xml:space="preserve"><value>Bảng tên: cổ điển</value></data>
+  <data name="Settings.NamePlatesCompact" xml:space="preserve"><value>Bảng tên: gọn</value></data>
+  <data name="Settings.NeedsAttention" xml:space="preserve"><value>Cài đặt cần được xem xét; xem nhật ký client.</value></data>
+  <data name="Settings.Quality" xml:space="preserve"><value>Chất lượng đồ họa: {0}</value></data>
+  <data name="Settings.Quality.Custom" xml:space="preserve"><value>tùy chỉnh</value></data>
+  <data name="Settings.Quality.High" xml:space="preserve"><value>cao</value></data>
+  <data name="Settings.Quality.Low" xml:space="preserve"><value>thấp</value></data>
+  <data name="Settings.Quality.Medium" xml:space="preserve"><value>trung bình</value></data>
+  <data name="Settings.Quality.Ultra" xml:space="preserve"><value>siêu cao</value></data>
+  <data name="Settings.Resolution" xml:space="preserve"><value>Độ phân giải: {0} x {1}</value></data>
+  <data name="Settings.ResolutionDesktop" xml:space="preserve"><value>Độ phân giải: theo máy tính</value></data>
+  <data name="Settings.ShadowAnimation" xml:space="preserve"><value>Hoạt ảnh bóng đổ: {0} Hz</value></data>
+  <data name="Settings.ShadowAnimationEveryFrame" xml:space="preserve"><value>Hoạt ảnh bóng đổ: mọi khung hình</value></data>
+  <data name="Settings.ShadowsOff" xml:space="preserve"><value>Bóng đổ: tắt</value></data>
+  <data name="Settings.ShadowsOn" xml:space="preserve"><value>Bóng đổ: bật</value></data>
+  <data name="Settings.SkyClassic" xml:space="preserve"><value>Bầu trời: cổ điển</value></data>
+  <data name="Settings.SkyRealistic" xml:space="preserve"><value>Bầu trời: chân thực</value></data>
+  <data name="Settings.SoundOff" xml:space="preserve"><value>Âm thanh: tắt</value></data>
+  <data name="Settings.SoundOn" xml:space="preserve"><value>Âm thanh: bật</value></data>
+  <data name="Settings.SunShadow" xml:space="preserve"><value>Bóng đổ mặt trời: {0}</value></data>
+  <data name="Settings.TargetHealthAlways" xml:space="preserve"><value>HP mục tiêu: luôn hiện, kèm phần trăm</value></data>
+  <data name="Settings.TargetHealthClassic" xml:space="preserve"><value>HP mục tiêu: cổ điển (sau đòn đánh đầu tiên)</value></data>
+  <data name="Settings.Title" xml:space="preserve"><value>Cài đặt</value></data>
+  <data name="Settings.VSyncOff" xml:space="preserve"><value>VSync: tắt</value></data>
+  <data name="Settings.VSyncOn" xml:space="preserve"><value>VSync: bật</value></data>
+  <data name="Settings.WeatherOff" xml:space="preserve"><value>Thời tiết: tắt</value></data>
+  <data name="Settings.WeatherOn" xml:space="preserve"><value>Thời tiết: bật</value></data>
+  <data name="Settings.Window" xml:space="preserve"><value>Cửa sổ: {0}</value></data>
+  <data name="Settings.WindowMode.Borderless" xml:space="preserve"><value>không viền</value></data>
+  <data name="Settings.WindowMode.Fullscreen" xml:space="preserve"><value>toàn màn hình</value></data>
+  <data name="Settings.WindowMode.Windowed" xml:space="preserve"><value>cửa sổ</value></data>
+  <data name="Shop.ClickBuy" xml:space="preserve"><value>Nhấp: mua</value></data>
+  <data name="Shop.DoesNotBuy" xml:space="preserve"><value>Cửa hàng không thu mua món này</value></data>
+  <data name="Shop.Mobile" xml:space="preserve"><value>Cửa hàng di động</value></data>
+  <data name="Shop.NotDamaged" xml:space="preserve"><value>Không hư hỏng</value></data>
+  <data name="Shop.Price" xml:space="preserve"><value>Giá: {0} gold</value></data>
+  <data name="Shop.RepairCost" xml:space="preserve"><value>Sửa chữa: {0} gold</value></data>
+  <data name="Shop.SellsFor" xml:space="preserve"><value>Bán được {0} gold</value></data>
+  <data name="Siege.Crystals" xml:space="preserve"><value>Tháp tinh thể {0}/{1}</value></data>
+  <data name="Siege.DoorDown" xml:space="preserve"><value>Cổng thành đã bị phá</value></data>
+  <data name="Siege.DoorStands" xml:space="preserve"><value>Cổng thành còn nguyên</value></data>
+  <data name="Siege.Ended" xml:space="preserve"><value>Cuộc công thành Bless Castle đã kết thúc.</value></data>
+  <data name="Siege.EndedText" xml:space="preserve"><value>Trong giây lát, tất cả những ai có bang hội không nắm giữ Bless Castle sẽ bị đưa về điểm đầu của bản đồ lâu đài.</value></data>
+  <data name="Siege.HeldBy" xml:space="preserve"><value>Do {0} nắm giữ</value></data>
+  <data name="Siege.League" xml:space="preserve"><value>GIẢI ĐẤU BLESS CASTLE</value></data>
+  <data name="Siege.NoOwner" xml:space="preserve"><value>Chưa có bang hội nào nắm giữ lâu đài</value></data>
+  <data name="Siege.Title" xml:space="preserve"><value>BLESS CASTLE</value></data>
+  <data name="Siege.Won" xml:space="preserve"><value>Bang hội của bạn đang nắm giữ Bless Castle!</value></data>
+  <data name="Siege.WonText" xml:space="preserve"><value>Chúc mừng chiến thắng của bạn! Lâu đài thuộc về bang hội của bạn cho đến cuộc công thành tiếp theo. Bang chủ đặt thuế và kỹ năng bang hội tại quản gia của lâu đài.</value></data>
+  <data name="Skill.AlreadyActive" xml:space="preserve"><value>Hiệu ứng đó vẫn đang có tác dụng.</value></data>
+  <data name="Skill.CannotUse" xml:space="preserve"><value>Hiện không thể dùng kỹ năng.</value></data>
+  <data name="Skill.InVillage" xml:space="preserve"><value>Không thể dùng kỹ năng trong thị trấn.</value></data>
+  <data name="Skill.InvalidTarget" xml:space="preserve"><value>Không có mục tiêu hợp lệ cho kỹ năng này.</value></data>
+  <data name="Skill.LearnFirst" xml:space="preserve"><value>Hãy học kỹ năng này ở bậc thầy kỹ năng trước.</value></data>
+  <data name="Skill.NotEnoughMana" xml:space="preserve"><value>Không đủ mana.</value></data>
+  <data name="Skill.NotEnoughStamina" xml:space="preserve"><value>Không đủ thể lực.</value></data>
+  <data name="Skill.NotReady" xml:space="preserve"><value>Kỹ năng chưa sẵn sàng.</value></data>
+  <data name="Skill.OutOfRange" xml:space="preserve"><value>Mục tiêu nằm ngoài tầm.</value></data>
+  <data name="Skill.TargetAggressive" xml:space="preserve"><value>{0}: tấn công mọi kẻ địch ở gần.</value></data>
+  <data name="Skill.TargetFocused" xml:space="preserve"><value>{0}: chỉ tấn công mục tiêu của bạn.</value></data>
+  <data name="Skill.WeaponNotAllowed" xml:space="preserve"><value>Kỹ năng này cần vũ khí khác.</value></data>
+  <data name="SkillInfo.Absorbs" xml:space="preserve"><value>Hấp thụ {0}% sát thương bằng {1}</value></data>
+  <data name="SkillInfo.AddingRate" xml:space="preserve"><value>Tỷ lệ cộng thêm {0}%</value></data>
+  <data name="SkillInfo.Allies" xml:space="preserve"><value>Đồng minh trong phạm vi {0}</value></data>
+  <data name="SkillInfo.AlliesShare" xml:space="preserve"><value>Đồng minh trong phạm vi {0} ({1}%)</value></data>
+  <data name="SkillInfo.Area" xml:space="preserve"><value>Vùng {0}{1}</value></data>
+  <data name="SkillInfo.AreaBox" xml:space="preserve"><value>Vùng {0} x {1}{2}</value></data>
+  <data name="SkillInfo.AttackRating" xml:space="preserve"><value>Chỉ số tấn công {0}</value></data>
+  <data name="SkillInfo.AttackRatingPercent" xml:space="preserve"><value>Chỉ số tấn công {0}%</value></data>
+  <data name="SkillInfo.BroodBonus" xml:space="preserve"><value>{0} {1}%</value></data>
+  <data name="SkillInfo.ByRelatedRank" xml:space="preserve"><value>{0} theo cấp của kỹ năng liên quan</value></data>
+  <data name="SkillInfo.Chain" xml:space="preserve"><value>Chuỗi {0}, mắt xích {1}</value></data>
+  <data name="SkillInfo.Charm" xml:space="preserve"><value>Thành công {0}%, sinh lực {1}%</value></data>
+  <data name="SkillInfo.Critical" xml:space="preserve"><value>Chí mạng {0}%</value></data>
+  <data name="SkillInfo.Damage" xml:space="preserve"><value>Sát thương {0}-{1}</value></data>
+  <data name="SkillInfo.DamageElement" xml:space="preserve"><value>Sát thương {0}-{1} {2}</value></data>
+  <data name="SkillInfo.DamagePercent" xml:space="preserve"><value>Sát thương {0}%</value></data>
+  <data name="SkillInfo.Drains" xml:space="preserve"><value>Hút {0}% sinh lực tối đa</value></data>
+  <data name="SkillInfo.Duration" xml:space="preserve"><value>Thời gian {0} giây</value></data>
+  <data name="SkillInfo.Enchant" xml:space="preserve"><value>{0} +{1}-{2}</value></data>
+  <data name="SkillInfo.Guard" xml:space="preserve"><value>{0}% sát thương {1} trừ vào sinh lực</value></data>
+  <data name="SkillInfo.GuardBlocked" xml:space="preserve"><value>{0}% sát thương {1} đã đỡ trừ vào sinh lực</value></data>
+  <data name="SkillInfo.Heals" xml:space="preserve"><value>Hồi {0}-{1} (+ vũ khí / 3, tinh thần)</value></data>
+  <data name="SkillInfo.Hits" xml:space="preserve"><value>{0} đòn đánh</value></data>
+  <data name="SkillInfo.PlusLevel" xml:space="preserve"><value>{0} + level/{1}</value></data>
+  <data name="SkillInfo.Range" xml:space="preserve"><value>Tầm {0}</value></data>
+  <data name="SkillInfo.RangeAdded" xml:space="preserve"><value>Tầm +{0}</value></data>
+  <data name="SkillInfo.Reflects" xml:space="preserve"><value>Phản {0}% đòn tấn công {1}</value></data>
+  <data name="SkillInfo.Revive" xml:space="preserve"><value>Tỷ lệ hồi sinh {0}%, sinh lực {1}%</value></data>
+  <data name="SkillInfo.ShareChance" xml:space="preserve"><value>{0}% cơ hội: {1}% sinh lực</value></data>
+  <data name="SkillInfo.Shots" xml:space="preserve"><value>{0} phát bắn</value></data>
+  <data name="SkillInfo.Sparks" xml:space="preserve"><value>Tối đa {0} tia lửa</value></data>
+  <data name="SkillInfo.StrikesEvery" xml:space="preserve"><value>Đánh mỗi {0} giây</value></data>
+  <data name="SkillInfo.Summon" xml:space="preserve"><value>{0}: sát thương {1}-{2}, sinh lực {3}</value></data>
+  <data name="SkillInfo.Targets" xml:space="preserve"><value>, {0} mục tiêu</value></data>
+  <data name="SkillWindow.AnyWeapon" xml:space="preserve"><value>Mọi vũ khí</value></data>
+  <data name="SkillWindow.BasicAttack" xml:space="preserve"><value>Đòn đánh thường</value></data>
+  <data name="SkillWindow.BasicAttackBind" xml:space="preserve"><value>Giữ nút chuột + F1-F8 để gán phím.</value></data>
+  <data name="SkillWindow.BasicAttackSelect" xml:space="preserve"><value>Nhả chuột trái hoặc phải để chọn.</value></data>
+  <data name="SkillWindow.Cost" xml:space="preserve"><value>Cấp {0}: MP {1} | SP {2}</value></data>
+  <data name="SkillWindow.EitherMouse" xml:space="preserve"><value>Chuột trái hoặc phải</value></data>
+  <data name="SkillWindow.ElitePoints" xml:space="preserve"><value>Điểm kỹ năng Elite : {0}</value></data>
+  <data name="SkillWindow.Equipment" xml:space="preserve"><value>Trang bị: {0}</value></data>
+  <data name="SkillWindow.Learned" xml:space="preserve"><value>Đã học cấp {0} / {1}</value></data>
+  <data name="SkillWindow.LeftMouse" xml:space="preserve"><value>Chuột trái</value></data>
+  <data name="SkillWindow.Level" xml:space="preserve"><value>Lv {0}</value></data>
+  <data name="SkillWindow.NoCost" xml:space="preserve"><value>Không tốn chi phí kích hoạt</value></data>
+  <data name="SkillWindow.NoPoints" xml:space="preserve"><value>Không đủ điểm kỹ năng</value></data>
+  <data name="SkillWindow.NoPoints2" xml:space="preserve"><value>để học hoặc luyện tập</value></data>
+  <data name="SkillWindow.OnlyLeft" xml:space="preserve"><value>{0} chỉ có thể dùng bằng chuột trái.</value></data>
+  <data name="SkillWindow.OnlyRight" xml:space="preserve"><value>{0} chỉ có thể dùng bằng chuột phải.</value></data>
+  <data name="SkillWindow.Passive" xml:space="preserve"><value> | Bị động</value></data>
+  <data name="SkillWindow.PassiveSkill" xml:space="preserve"><value>Kỹ năng bị động</value></data>
+  <data name="SkillWindow.PlaceHint" xml:space="preserve"><value> | Nhấp để đặt vào ô chuột, F1-F8 khi đang giữ để gán phím</value></data>
+  <data name="SkillWindow.Recharge" xml:space="preserve"><value> | Hồi chiêu {0} giây</value></data>
+  <data name="SkillWindow.RightMouse" xml:space="preserve"><value>Chuột phải</value></data>
+  <data name="SkillWindow.SelectSkill" xml:space="preserve"><value>Chọn một kỹ năng hoặc phép thuật</value></data>
+  <data name="SkillWindow.SkillPoints" xml:space="preserve"><value>Điểm kỹ năng : {0}</value></data>
+  <data name="SkillWindow.ToLearn" xml:space="preserve"><value>Để học hoặc luyện</value></data>
+  <data name="SkillWindow.TrainPrice" xml:space="preserve"><value>Cấp {0}: {1} gold</value></data>
+  <data name="SkillWindow.TrainTitle" xml:space="preserve"><value>Luyện kỹ năng/phép thuật</value></data>
+  <data name="SkillWindow.Unavailable" xml:space="preserve"><value>Không khả dụng ở phiên bản này</value></data>
+  <data name="SkillWindow.Unlearned" xml:space="preserve"><value>Chưa học | Xem trước cấp 1</value></data>
+  <data name="Smelt.CannotSmelt" xml:space="preserve"><value>Chỉ có thể nung ba quặng hoặc tinh thể cùng loại và sheltom của chúng.</value></data>
+  <data name="Smelt.Done" xml:space="preserve"><value>Đã nung luyện xong.</value></data>
+  <data name="Smelt.Failed" xml:space="preserve"><value>Nung luyện vật phẩm thất bại.</value></data>
+  <data name="Smelt.NotSame" xml:space="preserve"><value>Đây không phải cùng loại quặng hoặc tinh thể.</value></data>
+  <data name="Stat.Absorption" xml:space="preserve"><value>Hấp thụ</value></data>
+  <data name="Stat.AbsorptionVsUndead" xml:space="preserve"><value>Hấp thụ vs undead</value></data>
+  <data name="Stat.Agility" xml:space="preserve"><value>Nhanh nhẹn</value></data>
+  <data name="Stat.ArmorDefence" xml:space="preserve"><value>Phòng thủ của giáp</value></data>
+  <data name="Stat.AttackMotionSpeed" xml:space="preserve"><value>Tốc độ động tác tấn công</value></data>
+  <data name="Stat.AttackRange" xml:space="preserve"><value>Tầm đánh</value></data>
+  <data name="Stat.AttackRating" xml:space="preserve"><value>Chỉ số tấn công</value></data>
+  <data name="Stat.AttackSpeed" xml:space="preserve"><value>Tốc độ đánh</value></data>
+  <data name="Stat.BlockChance" xml:space="preserve"><value>Tỷ lệ đỡ đòn</value></data>
+  <data name="Stat.CompanionDamage" xml:space="preserve"><value>Sát thương đồng hành</value></data>
+  <data name="Stat.CriticalChance" xml:space="preserve"><value>Tỷ lệ chí mạng</value></data>
+  <data name="Stat.CriticalChanceTaken" xml:space="preserve"><value>Tỷ lệ chí mạng phải chịu</value></data>
+  <data name="Stat.CriticalDamage" xml:space="preserve"><value>Sát thương chí mạng</value></data>
+  <data name="Stat.DamageDealt" xml:space="preserve"><value>Sát thương gây ra</value></data>
+  <data name="Stat.DamageMax" xml:space="preserve"><value>Sát thương tối đa</value></data>
+  <data name="Stat.DamageMin" xml:space="preserve"><value>Sát thương tối thiểu</value></data>
+  <data name="Stat.DamageTaken" xml:space="preserve"><value>Sát thương phải chịu</value></data>
+  <data name="Stat.DamageVsUndead" xml:space="preserve"><value>Sát thương vs undead</value></data>
+  <data name="Stat.Defence" xml:space="preserve"><value>Phòng thủ</value></data>
+  <data name="Stat.Evasion" xml:space="preserve"><value>Né tránh</value></data>
+  <data name="Stat.ForceOrbDamage" xml:space="preserve"><value>Sức mạnh Force Orb</value></data>
+  <data name="Stat.HealingTaken" xml:space="preserve"><value>Hồi máu nhận được</value></data>
+  <data name="Stat.HitDamage" xml:space="preserve"><value>Sát thương mỗi đòn</value></data>
+  <data name="Stat.HitDamageMax" xml:space="preserve"><value>Sát thương mỗi đòn tối đa</value></data>
+  <data name="Stat.HitDamageMin" xml:space="preserve"><value>Sát thương mỗi đòn tối thiểu</value></data>
+  <data name="Stat.LifeCostPerAttack" xml:space="preserve"><value>Tiêu hao sinh lực mỗi đòn đánh</value></data>
+  <data name="Stat.LifeLeech" xml:space="preserve"><value>Hút sinh lực</value></data>
+  <data name="Stat.LifeRegen" xml:space="preserve"><value>Hồi sinh lực (phần mười/giây)</value></data>
+  <data name="Stat.ManaLeech" xml:space="preserve"><value>Hút mana</value></data>
+  <data name="Stat.ManaRegen" xml:space="preserve"><value>Hồi mana (phần mười/giây)</value></data>
+  <data name="Stat.MaxLife" xml:space="preserve"><value>Sinh lực tối đa</value></data>
+  <data name="Stat.MaxMana" xml:space="preserve"><value>Mana tối đa</value></data>
+  <data name="Stat.MaxStamina" xml:space="preserve"><value>Thể lực tối đa</value></data>
+  <data name="Stat.MonsterSight" xml:space="preserve"><value>Tầm nhìn của quái vật</value></data>
+  <data name="Stat.MoveSpeed" xml:space="preserve"><value>Tốc độ</value></data>
+  <data name="Stat.MoveSpeedUnbound" xml:space="preserve"><value>Tốc độ không giới hạn</value></data>
+  <data name="Stat.NextHitDamage" xml:space="preserve"><value>Sát thương đòn kế tiếp</value></data>
+  <data name="Stat.NormalAttackWeaponDamage" xml:space="preserve"><value>Sát thương vũ khí đòn đánh thường</value></data>
+  <data name="Stat.NormalAttackWeaponMax" xml:space="preserve"><value>Sát thương vũ khí tối đa đòn đánh thường</value></data>
+  <data name="Stat.ResistAll" xml:space="preserve"><value>Mọi kháng tính</value></data>
+  <data name="Stat.ResistBionic" xml:space="preserve"><value>Kháng Hữu cơ</value></data>
+  <data name="Stat.ResistEarth" xml:space="preserve"><value>Kháng Đất</value></data>
+  <data name="Stat.ResistFire" xml:space="preserve"><value>Kháng Lửa</value></data>
+  <data name="Stat.ResistIce" xml:space="preserve"><value>Kháng Băng</value></data>
+  <data name="Stat.ResistLightning" xml:space="preserve"><value>Kháng Sét</value></data>
+  <data name="Stat.ResistPoison" xml:space="preserve"><value>Kháng Độc</value></data>
+  <data name="Stat.ResistWater" xml:space="preserve"><value>Kháng Nước</value></data>
+  <data name="Stat.ResistWind" xml:space="preserve"><value>Kháng Gió</value></data>
+  <data name="Stat.SkillDamageTaken" xml:space="preserve"><value>Sát thương kỹ năng phải chịu</value></data>
+  <data name="Stat.SkillManaCost" xml:space="preserve"><value>Mana tiêu hao của kỹ năng</value></data>
+  <data name="Stat.SpellDamage" xml:space="preserve"><value>Sức mạnh phép</value></data>
+  <data name="Stat.SpellPower" xml:space="preserve"><value>Sát thương phép</value></data>
+  <data name="Stat.Spirit" xml:space="preserve"><value>Tinh thần</value></data>
+  <data name="Stat.StaminaRegen" xml:space="preserve"><value>Hồi thể lực</value></data>
+  <data name="Stat.Strength" xml:space="preserve"><value>Sức mạnh</value></data>
+  <data name="Stat.WeaponDamagePercent" xml:space="preserve"><value>Sát thương vũ khí</value></data>
+  <data name="Status.CharacterSelect" xml:space="preserve"><value>Chọn nhân vật</value></data>
+  <data name="Status.CrystalPet" xml:space="preserve"><value>Thú cưng được triệu hồi để hỗ trợ bạn trong chiến đấu</value></data>
+  <data name="Status.LifeBooster" xml:space="preserve"><value>Tăng sinh lực thêm {0}%</value></data>
+  <data name="Status.Loading" xml:space="preserve"><value>Đang tải…</value></data>
+  <data name="Status.ManaBooster" xml:space="preserve"><value>Tăng mana thêm {0}%</value></data>
+  <data name="Status.Opening" xml:space="preserve"><value>Đang mở: {0}</value></data>
+  <data name="Status.SavingAndDisconnecting" xml:space="preserve"><value>Đang lưu và ngắt kết nối…</value></data>
+  <data name="Status.SkillDelay" xml:space="preserve"><value>Kỹ năng hồi lại sau nửa giây</value></data>
+  <data name="Status.StaminaBooster" xml:space="preserve"><value>Tăng thể lực thêm {0}%</value></data>
+  <data name="TeleportCore.Page" xml:space="preserve"><value>[Teleport Core - Trang {0}]</value></data>
+  <data name="TeleportCore.Row" xml:space="preserve"><value>{0}. {1} (Lv {2})</value></data>
+  <data name="TeleportCore.Title" xml:space="preserve"><value>DỊCH CHUYỂN</value></data>
+  <data name="Time.Days" xml:space="preserve"><value>{0} ngày</value></data>
+  <data name="Time.Hours" xml:space="preserve"><value>{0} giờ</value></data>
+  <data name="Time.OneDay" xml:space="preserve"><value>1 ngày</value></data>
+  <data name="Time.OneHour" xml:space="preserve"><value>1 giờ</value></data>
+  <data name="Time.Seconds" xml:space="preserve"><value>{0} giây</value></data>
+  <data name="Trade.Gold" xml:space="preserve"><value>bạn muốn giao dịch không?</value></data>
+  <data name="Tutorial.Ok" xml:space="preserve"><value>Đã hiểu</value></data>
+  <data name="Tutorial.Off" xml:space="preserve"><value>Tắt gợi ý</value></data>
+  <data name="Tutorial.Move.Title" xml:space="preserve"><value>Di chuyển</value></data>
+  <data name="Tutorial.Move.Text" xml:space="preserve"><value>Nhấp vào mặt đất để đi tới đó; giữ nút chuột để đi theo con trỏ. Nhấp đúp vào mặt đất để tiếp tục đi.</value></data>
+  <data name="Tutorial.Attack.Title" xml:space="preserve"><value>Tấn công</value></data>
+  <data name="Tutorial.Attack.Text" xml:space="preserve"><value>Nhấp vào quái vật để tấn công. Shift + nhấp sẽ tiếp tục tấn công cho đến khi bạn nhấp chỗ khác.</value></data>
+  <data name="Tutorial.Inventory.Title" xml:space="preserve"><value>Túi đồ</value></data>
+  <data name="Tutorial.Inventory.Text" xml:space="preserve"><value>Nhấn {0} để mở túi đồ: vật phẩm, trang bị và vàng của bạn.</value></data>
+  <data name="Tutorial.Character.Title" xml:space="preserve"><value>Nhân vật</value></data>
+  <data name="Tutorial.Character.Text" xml:space="preserve"><value>Nhấn {0} để xem thuộc tính và dùng điểm nhận được khi lên level.</value></data>
+  <data name="Tutorial.Skills.Title" xml:space="preserve"><value>Kỹ năng</value></data>
+  <data name="Tutorial.Skills.Text" xml:space="preserve"><value>Nhấn {0} để mở kỹ năng. Giữ chuột vào một kỹ năng và nhấn {1} đến {2} để đặt vào phím tắt.</value></data>
+  <data name="Tutorial.Potions.Title" xml:space="preserve"><value>Bình thuốc</value></data>
+  <data name="Tutorial.Potions.Text" xml:space="preserve"><value>Bình thuốc trên đai được dùng bằng {0}, {1} và {2}.</value></data>
+  <data name="Tutorial.Chat.Title" xml:space="preserve"><value>Trò chuyện</value></data>
+  <data name="Tutorial.Chat.Text" xml:space="preserve"><value>Nhấn Enter để viết vào khung chat và nhấn Enter lần nữa để gửi.</value></data>
+  <data name="Tutorial.Settings.Title" xml:space="preserve"><value>Cài đặt</value></data>
+  <data name="Tutorial.Settings.Text" xml:space="preserve"><value>Nhấn {0} để mở cài đặt. Tab Phím cho phép đổi mọi phím tắt.</value></data>
+  <data name="Usable.AgingArmlet" xml:space="preserve"><value>armlet</value></data>
+  <data name="Usable.AgingArmor" xml:space="preserve"><value>giáp hoặc áo choàng</value></data>
+  <data name="Usable.AgingBoots" xml:space="preserve"><value>giày</value></data>
+  <data name="Usable.AgingGloves" xml:space="preserve"><value>găng tay</value></data>
+  <data name="Usable.AgingShield" xml:space="preserve"><value>khiên hoặc orb</value></data>
+  <data name="Usable.AgingWeapon" xml:space="preserve"><value>vũ khí</value></data>
+  <data name="Usable.BigHead" xml:space="preserve"><value>Làm đầu bạn to ra trong {0} phút.</value></data>
+  <data name="Usable.CastleOnly" xml:space="preserve"><value>Chỉ dùng ở Bless Castle</value></data>
+  <data name="Usable.ClanOnly" xml:space="preserve"><value>Chỉ dành cho thành viên bang hội</value></data>
+  <data name="Usable.ClanPet" xml:space="preserve"><value>Triệu hồi một {0} cho bang hội của bạn.</value></data>
+  <data name="Usable.ClanTeleport" xml:space="preserve"><value>Dịch chuyển đến một thành viên bang hội</value></data>
+  <data name="Usable.CriticalScroll" xml:space="preserve"><value>Tăng {0}%</value></data>
+  <data name="Usable.CriticalScroll2" xml:space="preserve"><value>tỉ lệ đòn chí mạng.</value></data>
+  <data name="Usable.Duration" xml:space="preserve"><value>Thời gian: {0}</value></data>
+  <data name="Usable.EvasionScroll" xml:space="preserve"><value>Tăng {0}%</value></data>
+  <data name="Usable.EvasionScroll2" xml:space="preserve"><value>tỉ lệ né tránh.</value></data>
+  <data name="Usable.FemaleOnly" xml:space="preserve"><value>Chỉ dành cho nhân vật nữ</value></data>
+  <data name="Usable.Fireworks" xml:space="preserve"><value>Pháo hoa thắp sáng bầu trời quanh bạn.</value></data>
+  <data name="Usable.Gift" xml:space="preserve"><value>Mở ra để nhận một món quà.</value></data>
+  <data name="Usable.Gravity" xml:space="preserve"><value>Sức chứa +{0}</value></data>
+  <data name="Usable.GravityUses" xml:space="preserve"><value>(tối đa {0} lần dùng)</value></data>
+  <data name="Usable.Hair" xml:space="preserve"><value>Đổi tóc của bạn sang kiểu {0}.</value></data>
+  <data name="Usable.Invulnerability" xml:space="preserve"><value>Bất khả chiến bại trong thời gian đã định.</value></data>
+  <data name="Usable.Invulnerability2" xml:space="preserve"><value>Sức tấn công giảm 1/2.</value></data>
+  <data name="Usable.LevelFrom" xml:space="preserve"><value>Level yêu cầu: {0}+</value></data>
+  <data name="Usable.LevelRange" xml:space="preserve"><value>Level yêu cầu: {0}-{1}</value></data>
+  <data name="Usable.MaleOnly" xml:space="preserve"><value>Chỉ dành cho nhân vật nam</value></data>
+  <data name="Usable.Mature" xml:space="preserve"><value>Hoàn tất aging cho {0} bạn đang mặc.</value></data>
+  <data name="Usable.Mercenary" xml:space="preserve"><value>Triệu hồi một {0} để canh giữ</value></data>
+  <data name="Usable.Mercenary2" xml:space="preserve"><value>lâu đài trong cuộc công thành.</value></data>
+  <data name="Usable.Merchant" xml:space="preserve"><value>Mở một cửa hàng mua và sửa đồ.</value></data>
+  <data name="Usable.OrbDamage" xml:space="preserve"><value>AddedATKPOWER: {0}</value></data>
+  <data name="Usable.OrbPercent" xml:space="preserve"><value>AddATKPOWER%: {0}%</value></data>
+  <data name="Usable.Pet" xml:space="preserve"><value>Triệu hồi một {0} chiến đấu cho bạn</value></data>
+  <data name="Usable.Pet2" xml:space="preserve"><value>trong {0} phút, level càng cao càng lâu.</value></data>
+  <data name="Usable.PuzzleBag" xml:space="preserve"><value>Lộ ra mảnh ghép bên trong với {0} vàng.</value></data>
+  <data name="Usable.PuzzleBoard" xml:space="preserve"><value>Xếp bộ ghép lên bảng ghép hình.</value></data>
+  <data name="Usable.PuzzlePiece" xml:space="preserve"><value>Mảnh ghép {0} trên {1}</value></data>
+  <data name="Usable.Recall" xml:space="preserve"><value>Quay về {0}</value></data>
+  <data name="Usable.Redistributed" xml:space="preserve"><value>để phân bổ lại.</value></data>
+  <data name="Usable.ResetAttribute" xml:space="preserve"><value>Đưa {0} về giá trị ban đầu</value></data>
+  <data name="Usable.ResetAttribute2" xml:space="preserve"><value>và hoàn lại điểm chỉ số của nó.</value></data>
+  <data name="Usable.ResetBoth" xml:space="preserve"><value>Biến điểm chỉ số/kỹ năng</value></data>
+  <data name="Usable.ResetSkills" xml:space="preserve"><value>Biến điểm kỹ năng</value></data>
+  <data name="Usable.ResetStats" xml:space="preserve"><value>Biến điểm chỉ số</value></data>
+  <data name="Usable.Restoration" xml:space="preserve"><value>Hồi sinh bạn ngay nơi bạn ngã xuống</value></data>
+  <data name="Usable.Restoration2" xml:space="preserve"><value>{0} giây sau khi chết trong lâu đài.</value></data>
+  <data name="Usable.Restores" xml:space="preserve"><value>Hồi sinh lực, mana và thể lực.</value></data>
+  <data name="Usable.SoccerHead" xml:space="preserve"><value>Biến đầu bạn thành quả bóng đá trong {0}.</value></data>
+  <data name="Usable.SoulStone" xml:space="preserve"><value>Thả một linh hồn thù địch trong {0} phút.</value></data>
+  <data name="Usable.TeleportCore" xml:space="preserve"><value>Dịch chuyển bạn đến một khu vực tùy chọn.</value></data>
+  <data name="Usable.TrainTier" xml:space="preserve"><value>Luyện đầy đủ kỹ năng của lớp nhân vật bậc {0}.</value></data>
+  <data name="Usable.UnionCoreName" xml:space="preserve"><value>Tên: {0}</value></data>
+  <data name="Usable.VirtualLife" xml:space="preserve"><value>Virtual Life Lv {0}</value></data>
+  <data name="WingGate.MoveThere" xml:space="preserve"><value>di chuyển đến đó?</value></data>
+  <data name="WingGate.Title" xml:space="preserve"><value>Cổng dịch chuyển</value></data>
+  <data name="Workbench.TakeBack" xml:space="preserve"><value>Nhấp chuột phải: lấy lại</value></data>
+  <data name="Status.EnteringWorld" xml:space="preserve"><value>Đang vào thế giới…</value></data>
+  <data name="CharSelect.Title.Characters" xml:space="preserve"><value>Nhân vật</value></data>
+  <data name="CharSelect.Title.Tribe" xml:space="preserve"><value>Tộc</value></data>
+  <data name="CharSelect.Title.Class" xml:space="preserve"><value>Lớp nhân vật</value></data>
+  <data name="CharSelect.Title.Face" xml:space="preserve"><value>Khuôn mặt</value></data>
+  <data name="CharSelect.NewCharacter" xml:space="preserve"><value>Tạo nhân vật</value></data>
+  <data name="CharSelect.Button.Create" xml:space="preserve"><value>Tạo</value></data>
+  <data name="CharSelect.Button.Select" xml:space="preserve"><value>Chọn</value></data>
+  <data name="CharSelect.Button.Exit" xml:space="preserve"><value>Thoát</value></data>
+  <data name="CharSelect.Button.Back" xml:space="preserve"><value>Quay lại</value></data>
+  <data name="CharSelect.Button.Delete" xml:space="preserve"><value>Xóa</value></data>
+  <data name="Chat.Tab.All" xml:space="preserve"><value>Tất cả</value></data>
+  <data name="Chat.Tab.Clan" xml:space="preserve"><value>Bang hội</value></data>
+  <data name="Chat.Tab.Party" xml:space="preserve"><value>Party</value></data>
+  <data name="Chat.Tab.Trade" xml:space="preserve"><value>Giao dịch</value></data>
+  <data name="Chat.Tab.Whisper" xml:space="preserve"><value>Nhắn riêng</value></data>
+  <data name="Chat.Alert" xml:space="preserve"><value>Cảnh báo</value></data>
+  <data name="ServerSelect.Title" xml:space="preserve"><value>Máy chủ</value></data>
+  <data name="ServerSelect.Hint" xml:space="preserve"><value>Phím mũi tên: chọn   Enter: kết nối   Esc: quay lại</value></data>
+  <data name="GlobalBonuses.Title" xml:space="preserve"><value>Thưởng toàn cục</value></data>
+  <data name="GlobalBonuses.ExpRate" xml:space="preserve"><value>Tỉ lệ EXP</value></data>
+  <data name="GlobalBonuses.ExpEvent" xml:space="preserve"><value>EXP sự kiện</value></data>
+  <data name="GlobalBonuses.AgingCost" xml:space="preserve"><value>Chi phí aging</value></data>
+  <data name="GlobalBonuses.MixCost" xml:space="preserve"><value>Chi phí mix</value></data>
+  <data name="GlobalBonuses.Contacting" xml:space="preserve"><value>Đang kết nối với máy chủ...</value></data>
+  <data name="Rewards.UpdateFailed" xml:space="preserve"><value>Không thể cập nhật phần thưởng.</value></data>
+  <data name="Rewards.Title" xml:space="preserve"><value>Sự kiện và Phần thưởng</value></data>
+  <data name="Rewards.Claim" xml:space="preserve"><value>Nhận ({0})</value></data>
+  <data name="RecentDrops.Title" xml:space="preserve"><value>Vật phẩm rơi gần đây</value></data>
+  <data name="RecentDrops.None" xml:space="preserve"><value>Chưa thấy vật phẩm nào trong phiên này.</value></data>
+  <data name="ShopDirectory.Title" xml:space="preserve"><value>Cửa hàng người chơi</value></data>
+  <data name="ShopDirectory.None" xml:space="preserve"><value>Không có cửa hàng nào trong tầm nhìn.</value></data>
+  <data name="Premium.BuffActivated" xml:space="preserve"><value>Đã kích hoạt buff Premium.</value></data>
+  <data name="Hud.ExpGained" xml:space="preserve"><value>EXP nhận được: {0:N0}</value></data>
+  <data name="QuickMenu.Calendar" xml:space="preserve"><value>Lịch</value></data>
+  <data name="QuickMenu.Auction" xml:space="preserve"><value>Đấu giá</value></data>
+  <data name="QuickMenu.Security" xml:space="preserve"><value>Bảo mật</value></data>
+  <data name="QuickMenu.RecentDrops" xml:space="preserve"><value>Vật phẩm rơi gần đây</value></data>
+  <data name="QuickMenu.CoinHistory" xml:space="preserve"><value>Lịch sử xu</value></data>
+  <data name="QuickMenu.Events" xml:space="preserve"><value>Sự kiện</value></data>
+  <data name="QuickMenu.Eragon" xml:space="preserve"><value>Eragon</value></data>
+  <data name="QuickMenu.Rankings" xml:space="preserve"><value>Bảng xếp hạng</value></data>
+  <data name="QuickMenu.Distributor" xml:space="preserve"><value>Phân phối vật phẩm</value></data>
+  <data name="QuickMenu.ItemShop" xml:space="preserve"><value>Item Shop</value></data>
+  <data name="QuickMenu.Mail" xml:space="preserve"><value>Thư</value></data>
+  <data name="QuickMenu.AutoHuntNeedsQuest" xml:space="preserve"><value>Tự động săn cần một nhiệm vụ săn đang hoạt động ngoài thị trấn.</value></data>
+  <data name="QuickMenu.News" xml:space="preserve"><value>Tin tức &amp; Hỗ trợ</value></data>
+  <data name="QuickMenu.AutoHunt" xml:space="preserve"><value>Tự động săn</value></data>
+  <data name="QuickMenu.MoreOpen" xml:space="preserve"><value>Thêm  ^</value></data>
+  <data name="QuickMenu.MoreClosed" xml:space="preserve"><value>Thêm  v</value></data>
+  <data name="QuickMenu.Quests" xml:space="preserve"><value>Nhiệm vụ</value></data>
+  <data name="SystemMenu.Help" xml:space="preserve"><value>Trợ giúp</value></data>
+  <data name="SystemMenu.Quit" xml:space="preserve"><value>Thoát</value></data>
+  <data name="LootFilter.LifePotions" xml:space="preserve"><value>Bình sinh lực</value></data>
+  <data name="LootFilter.ManaPotions" xml:space="preserve"><value>Bình mana</value></data>
+  <data name="LootFilter.StaminaPotions" xml:space="preserve"><value>Bình thể lực</value></data>
+  <data name="LootFilter.Armor" xml:space="preserve"><value>Giáp và áo choàng</value></data>
+  <data name="LootFilter.Shields" xml:space="preserve"><value>Khiên</value></data>
+  <data name="LootFilter.Boots" xml:space="preserve"><value>Giày</value></data>
+  <data name="LootFilter.Gloves" xml:space="preserve"><value>Găng tay</value></data>
+  <data name="LootFilter.Bracelets" xml:space="preserve"><value>Vòng tay và orb</value></data>
+  <data name="LootFilter.Amulets" xml:space="preserve"><value>Dây chuyền</value></data>
+  <data name="LootFilter.Rings" xml:space="preserve"><value>Nhẫn</value></data>
+  <data name="LootFilter.Sheltoms" xml:space="preserve"><value>Sheltom</value></data>
+  <data name="LootFilter.ForceOrbs" xml:space="preserve"><value>Force orb</value></data>
+  <data name="LootFilter.Other" xml:space="preserve"><value>Vật phẩm khác</value></data>
+  <data name="LootFilter.Crystals" xml:space="preserve"><value>Tinh thể triệu hồi</value></data>
+  <data name="LootFilter.Cores" xml:space="preserve"><value>Core</value></data>
+  <data name="LootFilter.Job.Mechanician" xml:space="preserve"><value>Mechanician</value></data>
+  <data name="LootFilter.Job.Fighter" xml:space="preserve"><value>Fighter</value></data>
+  <data name="LootFilter.Job.Pikeman" xml:space="preserve"><value>Pikeman</value></data>
+  <data name="LootFilter.Job.Archer" xml:space="preserve"><value>Archer</value></data>
+  <data name="LootFilter.Job.Knight" xml:space="preserve"><value>Knight</value></data>
+  <data name="LootFilter.Job.Atalanta" xml:space="preserve"><value>Atalanta</value></data>
+  <data name="LootFilter.Job.Priestess" xml:space="preserve"><value>Priestess</value></data>
+  <data name="LootFilter.Job.Magician" xml:space="preserve"><value>Magician</value></data>
+  <data name="LootFilter.Job.Assassin" xml:space="preserve"><value>Assassin</value></data>
+  <data name="LootFilter.Job.MartialArtist" xml:space="preserve"><value>Martial Artist</value></data>
+  <data name="LootFilter.Job.Shaman" xml:space="preserve"><value>Shaman</value></data>
+  <data name="Settings.Tab.Video" xml:space="preserve"><value>Hình ảnh</value></data>
+  <data name="Settings.Tab.Audio" xml:space="preserve"><value>Âm thanh</value></data>
+  <data name="Settings.Tab.Keys" xml:space="preserve"><value>Phím</value></data>
+  <data name="Settings.Tab.Other" xml:space="preserve"><value>Khác</value></data>
+  <data name="Settings.Voice.Nearby" xml:space="preserve"><value>Xung quanh</value></data>
+  <data name="Settings.Voice.Party" xml:space="preserve"><value>Party</value></data>
+  <data name="Settings.Voice.Clan" xml:space="preserve"><value>Bang hội</value></data>
+  <data name="Settings.Voice.Map" xml:space="preserve"><value>Mọi người trên bản đồ</value></data>
+  <data name="Shortcut.Inventory" xml:space="preserve"><value>Túi đồ</value></data>
+  <data name="Shortcut.Character" xml:space="preserve"><value>Nhân vật</value></data>
+  <data name="Shortcut.Skills" xml:space="preserve"><value>Kỹ năng</value></data>
+  <data name="Shortcut.Quests" xml:space="preserve"><value>Nhiệm vụ</value></data>
+  <data name="Shortcut.Social" xml:space="preserve"><value>Xã hội</value></data>
+  <data name="Shortcut.SystemMenu" xml:space="preserve"><value>Menu hệ thống</value></data>
+  <data name="Shortcut.RunWalk" xml:space="preserve"><value>Chạy / đi bộ</value></data>
+  <data name="Shortcut.Settings" xml:space="preserve"><value>Cài đặt</value></data>
+  <data name="Shortcut.SwitchBag" xml:space="preserve"><value>Đổi túi (A/B)</value></data>
+  <data name="Shortcut.SwitchWeapons" xml:space="preserve"><value>Đổi bộ vũ khí</value></data>
+  <data name="Shortcut.BeltPotion" xml:space="preserve"><value>Bình thuốc trên đai {0}</value></data>
+  <data name="Shortcut.Skill" xml:space="preserve"><value>Phím tắt kỹ năng {0}</value></data>
+  <data name="Shortcut.Minimap" xml:space="preserve"><value>Bản đồ nhỏ</value></data>
+  <data name="Shortcut.News" xml:space="preserve"><value>Tin tức</value></data>
+  <data name="Shortcut.GroundNames" xml:space="preserve"><value>Tên vật phẩm trên đất</value></data>
+  <data name="Shortcut.RotateLeft" xml:space="preserve"><value>Xoay camera sang trái</value></data>
+  <data name="Shortcut.RotateRight" xml:space="preserve"><value>Xoay camera sang phải</value></data>
+  <data name="Shortcut.ZoomIn" xml:space="preserve"><value>Phóng to</value></data>
+  <data name="Shortcut.ZoomOut" xml:space="preserve"><value>Thu nhỏ</value></data>
+  <data name="Shortcut.TiltUp" xml:space="preserve"><value>Nghiêng camera lên</value></data>
+  <data name="Shortcut.TiltDown" xml:space="preserve"><value>Nghiêng camera xuống</value></data>
+  <data name="Shortcut.ActionBar" xml:space="preserve"><value>Thanh hành động: ô {0}</value></data>
+  <data name="Shortcut.PushToTalk" xml:space="preserve"><value>Nhấn để nói</value></data>
+  <data name="Shortcut.HideHud" xml:space="preserve"><value>Ẩn toàn bộ HUD (để chụp màn hình)</value></data>
+  <data name="Shortcut.PersistentInfo" xml:space="preserve"><value>Thông tin nhân vật luôn hiển thị</value></data>
+  <data name="Shortcut.DungeonCamera" xml:space="preserve"><value>Camera hầm ngục 2D / 3D</value></data>
+  <data name="Shortcut.Pvp" xml:space="preserve"><value>Chế độ PvP: bật / tắt</value></data>
+  <data name="Settings.Toggle.On" xml:space="preserve"><value>{0}: Bật</value></data>
+  <data name="Settings.Toggle.Off" xml:space="preserve"><value>{0}: Tắt</value></data>
+  <data name="Settings.Switch.OnWords" xml:space="preserve"><value>bật,on</value></data>
+  <data name="Settings.Switch.OffWords" xml:space="preserve"><value>tắt,off</value></data>
+  <data name="Settings.Row.ChatTranslateTo" xml:space="preserve"><value>Dịch chat sang: {0}</value></data>
+  <data name="Settings.ChatTranslate.Off" xml:space="preserve"><value>Không dịch</value></data>
+  <data name="Settings.ChatTranslate.Game" xml:space="preserve"><value>Ngôn ngữ trò chơi</value></data>
+  <data name="Settings.Row.LevelGuide" xml:space="preserve"><value>Hướng dẫn level</value></data>
+  <data name="Settings.Row.ScreenReflections" xml:space="preserve"><value>Phản chiếu màn hình</value></data>
+  <data name="Settings.Row.Fog" xml:space="preserve"><value>Sương mù</value></data>
+  <data name="Settings.Row.VolumetricLight" xml:space="preserve"><value>Ánh sáng thể tích</value></data>
+  <data name="Settings.Row.ColorGrading" xml:space="preserve"><value>Chỉnh màu</value></data>
+  <data name="Settings.Row.AutoExposure" xml:space="preserve"><value>Tự động phơi sáng</value></data>
+  <data name="Settings.Row.Bloom" xml:space="preserve"><value>Bloom</value></data>
+  <data name="Settings.Row.GroundGold" xml:space="preserve"><value>Hiện vàng trên đất</value></data>
+  <data name="Settings.Row.GroundPotions" xml:space="preserve"><value>Hiện bình thuốc trên đất</value></data>
+  <data name="Settings.Row.GroundWeapons" xml:space="preserve"><value>Hiện vũ khí trên đất</value></data>
+  <data name="Settings.Row.TradeChat" xml:space="preserve"><value>Chat giao dịch</value></data>
+  <data name="Settings.Row.CastleNotices" xml:space="preserve"><value>Thông báo Bless Castle</value></data>
+  <data name="Settings.Row.OnlinePlayers" xml:space="preserve"><value>Hiện người chơi trực tuyến</value></data>
+  <data name="Settings.Row.UseLootFilter" xml:space="preserve"><value>Dùng bộ lọc vật phẩm rơi</value></data>
+  <data name="Settings.Row.MinimumLevel" xml:space="preserve"><value>Level tối thiểu: {0}</value></data>
+  <data name="Settings.Row.MaximumLevel" xml:space="preserve"><value>Level tối đa: {0}</value></data>
+  <data name="Settings.Row.Unlimited" xml:space="preserve"><value>Không giới hạn</value></data>
+  <data name="Settings.Row.RareEquipment" xml:space="preserve"><value>Luôn hiện trang bị hiếm</value></data>
+  <data name="Settings.Row.ShowAll" xml:space="preserve"><value>Hiện tất cả (bộ lọc vật phẩm rơi)</value></data>
+  <data name="Settings.VoiceChat" xml:space="preserve"><value>Chat thoại</value></data>
+  <data name="Settings.Microphone" xml:space="preserve"><value>Micro</value></data>
+  <data name="Settings.Row.SpeakTo" xml:space="preserve"><value>Nói với: {0}</value></data>
+  <data name="Settings.Row.PushToTalkKey" xml:space="preserve"><value>Nhấn để nói: {0}</value></data>
+  <data name="Settings.Row.Device" xml:space="preserve"><value>Thiết bị: {0}</value></data>
+  <data name="Settings.Row.SystemDefault" xml:space="preserve"><value>Mặc định hệ thống</value></data>
+  <data name="Settings.Row.PushToTalkMode" xml:space="preserve"><value>Chế độ: Nhấn để nói</value></data>
+  <data name="Settings.Row.AlwaysShow" xml:space="preserve"><value>Luôn hiện: {0}</value></data>
+  <data name="Settings.MouseButtons.Swapped" xml:space="preserve"><value>Đã đổi</value></data>
+  <data name="Settings.MouseButtons.Off" xml:space="preserve"><value>Tắt</value></data>
+  <data name="Settings.MouseButtons.Default" xml:space="preserve"><value>Mặc định</value></data>
+  <data name="Settings.Row.CameraSideButtons" xml:space="preserve"><value>Nút bên chuột điều khiển camera: {0}</value></data>
+  <data name="Settings.Row.BellatraBoss" xml:space="preserve"><value>Hạ boss Bellatra</value></data>
+  <data name="Settings.Row.ClanMembership" xml:space="preserve"><value>Bang hội: thành viên vào và rời</value></data>
+  <data name="Settings.Row.EventRewards" xml:space="preserve"><value>Phần thưởng sự kiện</value></data>
+  <data name="Settings.Row.PremiumBuffs" xml:space="preserve"><value>Kích hoạt buff Premium</value></data>
+  <data name="Settings.Row.EventCalendar" xml:space="preserve"><value>Thông báo lịch sự kiện</value></data>
+  <data name="Settings.Row.CharacterNames" xml:space="preserve"><value>Hiện tên nhân vật</value></data>
+  <data name="Settings.Row.Damage" xml:space="preserve"><value>Hiện sát thương</value></data>
+  <data name="Settings.Row.GroundItemNames" xml:space="preserve"><value>Luôn hiện tên vật phẩm trên đất</value></data>
+  <data name="Settings.Row.InvertCameraRotation" xml:space="preserve"><value>Đảo chiều xoay camera</value></data>
+  <data name="Settings.Row.InvertCameraScroll" xml:space="preserve"><value>Đảo chiều cuộn camera</value></data>
+  <data name="Settings.Row.DungeonCameraTopDown" xml:space="preserve"><value>Camera hầm ngục: 2D (nhìn từ trên xuống)</value></data>
+  <data name="Settings.Row.DungeonCameraNormal" xml:space="preserve"><value>Camera hầm ngục: 3D (camera thường)</value></data>
+  <data name="Settings.Row.HudScale" xml:space="preserve"><value>Tỉ lệ HUD: {0}%</value></data>
+  <data name="Settings.Row.MoveChat" xml:space="preserve"><value>Di chuyển chat (kéo khung chat)</value></data>
+  <data name="Settings.Row.TutorialTips" xml:space="preserve"><value>Gợi ý hướng dẫn</value></data>
+  <data name="Settings.Row.ResetInterface" xml:space="preserve"><value>Đặt lại giao diện (tỉ lệ và chat)</value></data>
+  <data name="Settings.Row.GlobalBonuses" xml:space="preserve"><value>Thông báo thưởng toàn cục</value></data>
+  <data name="Settings.Row.ExpGained" xml:space="preserve"><value>EXP nhận được</value></data>
+  <data name="Settings.Row.BellatraResults" xml:space="preserve"><value>Thông báo kết quả Bellatra</value></data>
+  <data name="Settings.Row.BellatraSeals" xml:space="preserve"><value>Ấn đội Bellatra</value></data>
+  <data name="Settings.MouseAction.Off" xml:space="preserve"><value>Tắt</value></data>
+  <data name="Settings.MouseAction.RotateLeft" xml:space="preserve"><value>Xoay trái</value></data>
+  <data name="Settings.MouseAction.RotateRight" xml:space="preserve"><value>Xoay phải</value></data>
+  <data name="Settings.MouseAction.ZoomIn" xml:space="preserve"><value>Phóng to</value></data>
+  <data name="Settings.MouseAction.ZoomOut" xml:space="preserve"><value>Thu nhỏ</value></data>
+  <data name="Settings.MouseAction.TiltUp" xml:space="preserve"><value>Nghiêng lên</value></data>
+  <data name="Settings.MouseAction.TiltDown" xml:space="preserve"><value>Nghiêng xuống</value></data>
+  <data name="Settings.Row.QuestTracker" xml:space="preserve"><value>Theo dõi nhiệm vụ</value></data>
+  <data name="Settings.Row.WithoutSpecialization" xml:space="preserve"><value>Không chuyên môn hóa</value></data>
+  <data name="Settings.Card.Textures" xml:space="preserve"><value>Texture</value></data>
+  <data name="Settings.Card.InterfaceAndNames" xml:space="preserve"><value>Giao diện và tên</value></data>
+  <data name="Settings.Card.BackgroundMusic" xml:space="preserve"><value>Nhạc nền</value></data>
+  <data name="Settings.Card.SoundEffects" xml:space="preserve"><value>Hiệu ứng âm thanh</value></data>
+  <data name="Settings.Card.Windows" xml:space="preserve"><value>Cửa sổ</value></data>
+  <data name="Settings.Card.Skills" xml:space="preserve"><value>Kỹ năng</value></data>
+  <data name="Settings.Card.Language" xml:space="preserve"><value>Ngôn ngữ</value></data>
+  <data name="Settings.Card.Interface" xml:space="preserve"><value>Giao diện</value></data>
+  <data name="Settings.Section.Character" xml:space="preserve"><value>Nhân vật</value></data>
+  <data name="Settings.Section.Voice" xml:space="preserve"><value>Giọng nói</value></data>
+  <data name="Settings.Section.Potions" xml:space="preserve"><value>Bình thuốc</value></data>
+  <data name="Settings.Section.Camera" xml:space="preserve"><value>Camera</value></data>
+  <data name="Settings.Section.GraphicsQuality" xml:space="preserve"><value>Chất lượng đồ họa</value></data>
+  <data name="Settings.Section.EnhancedGraphics" xml:space="preserve"><value>Đồ họa nâng cao</value></data>
+  <data name="Settings.Section.Display" xml:space="preserve"><value>Hiển thị và độ phân giải</value></data>
+  <data name="Settings.Section.Game" xml:space="preserve"><value>Trò chơi</value></data>
+  <data name="Settings.Section.LootFilter" xml:space="preserve"><value>Bộ lọc vật phẩm rơi</value></data>
+  <data name="Settings.Section.ChatNotifications" xml:space="preserve"><value>Thông báo chat</value></data>
+  <data name="Settings.PressKey" xml:space="preserve"><value>Nhấn một phím</value></data>
+  <data name="Settings.RestoreDefaults" xml:space="preserve"><value>Khôi phục mặc định</value></data>
+  <data name="Settings.Hint.LootNames" xml:space="preserve"><value>Ngăn cách các tên bằng dấu phẩy. Enter để xác nhận, Esc để hủy.</value></data>
+  <data name="Settings.Hint.Rebind" xml:space="preserve"><value>Nhấp để gán lại phím. Shift + nhấp để khôi phục phím tắt.</value></data>
+  <data name="Settings.Hint.Scroll" xml:space="preserve"><value>Cuộn để xem thêm tùy chọn.</value></data>
+  <data name="Settings.Cancel" xml:space="preserve"><value>Hủy</value></data>
+  <data name="Settings.Save" xml:space="preserve"><value>LƯU</value></data>
+  <data name="QuestWindow.ResetsDaily" xml:space="preserve"><value>Đặt lại hằng ngày.</value></data>
+  <data name="QuestWindow.AutoGuide" xml:space="preserve"><value>Tự động dẫn đường</value></data>
+  <data name="QuestWindow.Tracker" xml:space="preserve"><value>Theo dõi</value></data>
+  <data name="QuestWindow.MonthlyNotStarted" xml:space="preserve"><value>Thử thách tháng này chưa bắt đầu.</value></data>
+  <data name="QuestWindow.SelectQuest" xml:space="preserve"><value>Chọn một nhiệm vụ trong danh sách.</value></data>
+  <data name="QuestWindow.NoQuests" xml:space="preserve"><value>Không có nhiệm vụ.</value></data>
+  <data name="QuestWindow.Completed" xml:space="preserve"><value>Hoàn thành</value></data>
+  <data name="QuestWindow.InProgress" xml:space="preserve"><value>Đang thực hiện</value></data>
+  <data name="QuestWindow.Loading" xml:space="preserve"><value>Đang tải...</value></data>
+  <data name="QuestWindow.Now" xml:space="preserve"><value>Bây giờ</value></data>
+  <data name="QuestWindow.QuestCompleted" xml:space="preserve"><value>Đã hoàn thành nhiệm vụ.</value></data>
+  <data name="QuestWindow.ClickGo" xml:space="preserve"><value>Nhấp Đi để đi theo lộ trình.</value></data>
+  <data name="QuestWindow.ReadInstructions" xml:space="preserve"><value>Đọc hướng dẫn nhiệm vụ.</value></data>
+  <data name="QuestWindow.Objectives" xml:space="preserve"><value>Mục tiêu</value></data>
+  <data name="QuestWindow.Done" xml:space="preserve"><value>Xong</value></data>
+  <data name="QuestWindow.Reward" xml:space="preserve"><value>Phần thưởng</value></data>
+  <data name="QuestWindow.Tracking" xml:space="preserve"><value>Đang theo dõi</value></data>
+  <data name="QuestWindow.Track" xml:space="preserve"><value>Theo dõi</value></data>
+  <data name="QuestWindow.Go" xml:space="preserve"><value>ĐI</value></data>
+  <data name="QuestWindow.LoadingDaily" xml:space="preserve"><value>Đang tải nhiệm vụ hằng ngày...</value></data>
+  <data name="QuestWindow.Daily" xml:space="preserve"><value>Hằng ngày</value></data>
+  <data name="QuestWindow.CompleteToClaim" xml:space="preserve"><value>Hoàn thành mục tiêu để nhận thưởng.</value></data>
+  <data name="QuestWindow.Claimed" xml:space="preserve"><value>Đã nhận</value></data>
+  <data name="QuestWindow.Waiting" xml:space="preserve"><value>Đang chờ...</value></data>
+  <data name="QuestWindow.Claim" xml:space="preserve"><value>Nhận</value></data>
+  <data name="QuestWindow.HowTo" xml:space="preserve"><value>? Cách làm</value></data>
+  <data name="QuestWindow.Goal.MonsterKills" xml:space="preserve"><value>Hạ quái vật</value></data>
+  <data name="QuestWindow.Goal.Sheltoms" xml:space="preserve"><value>Thu thập Sheltom</value></data>
+  <data name="QuestWindow.Goal.Potions" xml:space="preserve"><value>Dùng bình thuốc</value></data>
+  <data name="QuestWindow.Goal.MonsterDrops" xml:space="preserve"><value>Thu thập vật phẩm</value></data>
+  <data name="QuestWindow.Goal.BellatraEntries" xml:space="preserve"><value>Vào Bellatra</value></data>
+  <data name="QuestWindow.Goal.Level" xml:space="preserve"><value>Lên level</value></data>
+  <data name="QuestWindow.Goal.Login" xml:space="preserve"><value>Đăng nhập</value></data>
+  <data name="QuestWindow.Tab.Journey" xml:space="preserve"><value>Hành trình</value></data>
+  <data name="QuestWindow.Tab.Daily" xml:space="preserve"><value>Hằng ngày</value></data>
+  <data name="QuestWindow.Tab.Monthly" xml:space="preserve"><value>Hằng tháng</value></data>
+  <data name="QuestWindow.Tab.Completed" xml:space="preserve"><value>Hoàn thành</value></data>
+  <data name="QuestWindow.AvailableAtLevel" xml:space="preserve"><value>Có từ level {0}.</value></data>
+  <data name="QuestWindow.CompletedCount" xml:space="preserve"><value>HOÀN THÀNH ({0})</value></data>
+  <data name="QuestWindow.InProgressCount" xml:space="preserve"><value>ĐANG THỰC HIỆN ({0})</value></data>
+  <data name="QuestDocument.Avalon.MeetSkadi" xml:space="preserve"><value>Hãy tìm Adventurer Skadi ở Ricarten.
+
+Cô ấy sẽ giới thiệu trang bị khởi đầu và cuộc săn đầu tiên của Hành trình Nhà thám hiểm.</value></data>
+  <data name="QuestDocument.Avalon.MeetJin" xml:space="preserve"><value>Hãy tìm Adventurer Jin ở Pillai.
+
+Anh ấy sẽ giới thiệu trang bị khởi đầu và cuộc săn đầu tiên của Hành trình Nhà thám hiểm.</value></data>
+  <data name="QuestDocument.Avalon.Preparation" xml:space="preserve"><value>Trang bị vũ khí khởi đầu và đặt một bình thuốc vào đai.
+
+Quay lại gặp người dẫn đường Hành trình để nhận hướng dẫn cho cuộc săn đầu tiên.
+
+Bước này thưởng kinh nghiệm, 500 vàng và 15 bình sinh lực nhỏ.</value></data>
+  <data name="QuestDocument.Avalon.SkadiHunt" xml:space="preserve"><value>Hạ 3 Hopy trong khu rừng khởi đầu.
+
+Tiếp tục săn cho đến khi nhận được tinh thể được yêu cầu, rồi giao cho Adventurer Skadi ở Ricarten.
+
+Việc giao nộp thưởng kinh nghiệm và 300 vàng.</value></data>
+  <data name="QuestDocument.Avalon.JinHunt" xml:space="preserve"><value>Hạ 3 Rabies trong khu rừng bên ngoài Pillai.
+
+Tiếp tục săn cho đến khi nhận được tinh thể được yêu cầu, rồi giao cho Adventurer Jin ở Pillai.
+
+Việc giao nộp thưởng kinh nghiệm và 300 vàng.</value></data>
+  <data name="QuestDocument.Avalon.Finished" xml:space="preserve"><value>Bạn đã hoàn thành Hành trình Nhà thám hiểm.
+
+Phần chuẩn bị và cuộc săn đầu tiên cùng người dẫn đường của tộc bạn đã xong.</value></data>
+  <data name="QuestDocument.Avalon.JourneyStart" xml:space="preserve"><value>Chào mừng đến với Hành trình Nhà thám hiểm.
+
+Hãy nhận trang bị khởi đầu, trang bị vũ khí và đặt một bình thuốc vào đai. Khi sẵn sàng, hãy nói chuyện với tôi lần nữa.</value></data>
+  <data name="QuestDocument.Avalon.JourneyBag" xml:space="preserve"><value>Hãy trang bị vũ khí khởi đầu và đặt ít nhất một bình thuốc vào đai trước khi tiếp tục.
+
+Nếu thiếu món trang bị khởi đầu nào, hãy nói chuyện với tôi để nhận.</value></data>
+  <data name="QuestDocument.Avalon.JourneyHuntSkadi" xml:space="preserve"><value>Cuộc săn đầu tiên của bạn diễn ra ở khu rừng phía bắc Ricarten.
+
+Hạ 3 Hopy, lấy tinh thể được yêu cầu rồi quay lại nói chuyện với tôi.</value></data>
+  <data name="QuestDocument.Avalon.JourneyHuntJin" xml:space="preserve"><value>Cuộc săn đầu tiên của bạn diễn ra ở khu rừng gần Pillai.
+
+Hạ 3 Rabies, lấy tinh thể được yêu cầu rồi quay lại nói chuyện với tôi.</value></data>
+  <data name="QuestDocument.Avalon.JourneyCollect" xml:space="preserve"><value>Hoàn thành cuộc săn và mang về tinh thể được yêu cầu.
+
+Sau khi hạ ba con quái vật, hãy tiếp tục săn cho đến khi thu được tinh thể.</value></data>
+  <data name="QuestDocument.Avalon.JourneyFinish" xml:space="preserve"><value>Bạn đã hoàn thành cuộc săn đầu tiên.
+
+Giao tinh thể để nhận kinh nghiệm và 300 vàng, rồi hoàn thành Hành trình Nhà thám hiểm.</value></data>
+  <data name="QuestDocument.Avalon.ObjectiveSkadi" xml:space="preserve"><value>Nói chuyện với Skadi ở Ricarten.</value></data>
+  <data name="QuestDocument.Avalon.ObjectiveJin" xml:space="preserve"><value>Nói chuyện với Jin ở Pillai.</value></data>
+  <data name="QuestDocument.Avalon.ObjectivePreparation" xml:space="preserve"><value>Trang bị vũ khí và bình thuốc trên đai.</value></data>
+  <data name="QuestDocument.Avalon.ObjectiveOther" xml:space="preserve"><value>Làm theo hướng dẫn nhiệm vụ.</value></data>
+  <data name="QuestDocument.Avalon.RewardPreparation" xml:space="preserve"><value>EXP, 500 vàng và 15 bình thuốc.</value></data>
+  <data name="QuestDocument.Avalon.RewardMeet" xml:space="preserve"><value>Trang bị khởi đầu và kinh nghiệm.</value></data>
+  <data name="QuestDocument.Avalon.RewardOther" xml:space="preserve"><value>Xem mô tả nhiệm vụ.</value></data>
+  <data name="QuestRoute.WaitCalculation" xml:space="preserve"><value>Hãy chờ tính toán lộ trình hiện tại.</value></data>
+  <data name="QuestRoute.Unreachable" xml:space="preserve"><value>Không thể đến đích theo lộ trình này.</value></data>
+  <data name="QuestRoute.Calculating" xml:space="preserve"><value>Đang tính lộ trình...</value></data>
+  <data name="QuestRoute.NoSafeRoute" xml:space="preserve"><value>Không tìm thấy lộ trình an toàn.</value></data>
+  <data name="QuestRoute.Following" xml:space="preserve"><value>Đang đi theo lộ trình nhiệm vụ...</value></data>
+  <data name="QuestRoute.Arrived" xml:space="preserve"><value>Bạn đã đến mục tiêu nhiệm vụ.</value></data>
+  <data name="QuestRoute.CannotWalk" xml:space="preserve"><value>Nhân vật không thể đi lúc này.</value></data>
+  <data name="QuestRoute.Obstacle" xml:space="preserve"><value>Một chướng ngại vật đã làm gián đoạn lộ trình.</value></data>
+  <data name="QuestRoute.ApproachingGuide" xml:space="preserve"><value>Đang tiến đến người dẫn đường...</value></data>
+  <data name="QuestRoute.EnterField" xml:space="preserve"><value>Vào {0} để bắt đầu lộ trình này.</value></data>
+  <data name="Chat.Event.CrystalsOff" xml:space="preserve"><value>Đã tắt sự kiện tinh thể.</value></data>
+  <data name="Chat.Event.CrystalsHalfDay" xml:space="preserve"><value>Sự kiện tinh thể: từ 12 giờ trưa đến nửa đêm.</value></data>
+  <data name="Chat.Event.CrystalsAllDay" xml:space="preserve"><value>Sự kiện tinh thể: cả ngày.</value></data>
+  <data name="Chat.Event.Drops" xml:space="preserve"><value>Vật phẩm rơi sự kiện đã thay đổi. Hãy xem lịch.</value></data>
+  <data name="Chat.Event.Aging" xml:space="preserve"><value>Thiết lập Aging toàn cục đã thay đổi.</value></data>
+  <data name="Chat.Event.Mixing" xml:space="preserve"><value>Thiết lập mix và giả kim toàn cục đã thay đổi.</value></data>
+  <data name="Chat.Event.Exp" xml:space="preserve"><value>Sự kiện EXP: {0}%.</value></data>
+  <data name="Chat.Event.ExpMultiplier" xml:space="preserve"><value>Hệ số EXP toàn cục: {0}x.</value></data>
+  <data name="News.Kind.Event" xml:space="preserve"><value>Sự kiện</value></data>
+  <data name="News.Kind.Improvement" xml:space="preserve"><value>Cải tiến</value></data>
+  <data name="News.Kind.News" xml:space="preserve"><value>Tin tức</value></data>
+  <data name="News.Loading" xml:space="preserve"><value>Đang tải…</value></data>
+  <data name="News.Unavailable" xml:space="preserve"><value>Không thể tải bảng tin.</value></data>
+  <data name="News.None" xml:space="preserve"><value>Không có tin tức.</value></data>
+  <data name="News.Link.Title" xml:space="preserve"><value>Mở liên kết?</value></data>
+  <data name="News.Link.Cancel" xml:space="preserve"><value>Hủy</value></data>
+  <data name="News.Link.Open" xml:space="preserve"><value>MỞ</value></data>
+  <data name="News.Ticket.Sent" xml:space="preserve"><value>Đã gửi phiếu hỗ trợ.</value></data>
+  <data name="News.Ticket.Replied" xml:space="preserve"><value>Đã gửi phản hồi.</value></data>
+  <data name="News.Ticket.Edited" xml:space="preserve"><value>Đã thay đổi phiếu hỗ trợ.</value></data>
+  <data name="News.Ticket.Closed" xml:space="preserve"><value>Đã hủy phiếu hỗ trợ.</value></data>
+  <data name="News.Ticket.Waiting" xml:space="preserve"><value>Đang chờ máy chủ...</value></data>
+  <data name="News.Ticket.Invalid" xml:space="preserve"><value>Hãy điền tiêu đề và mô tả.</value></data>
+  <data name="News.Ticket.Error" xml:space="preserve"><value>Hỗ trợ hiện không khả dụng.</value></data>
+  <data name="News.Ticket.Refresh" xml:space="preserve"><value>Làm mới</value></data>
+  <data name="News.Ticket.New" xml:space="preserve"><value>+ PHIẾU MỚI</value></data>
+  <data name="News.Ticket.None" xml:space="preserve"><value>Không có phiếu hỗ trợ.</value></data>
+  <data name="News.Ticket.Back" xml:space="preserve"><value>‹ Quay lại</value></data>
+  <data name="News.Ticket.Edit" xml:space="preserve"><value>Sửa</value></data>
+  <data name="News.Ticket.Confirm" xml:space="preserve"><value>Xác nhận</value></data>
+  <data name="News.Ticket.Cancel" xml:space="preserve"><value>Hủy phiếu</value></data>
+  <data name="News.Ticket.CancelledByYou" xml:space="preserve"><value>Phiếu đã được bạn hủy.</value></data>
+  <data name="News.Ticket.ClosedByStaff" xml:space="preserve"><value>Phiếu đã được đội ngũ hỗ trợ đóng.</value></data>
+  <data name="News.Ticket.ReplyHint" xml:space="preserve"><value>Viết phản hồi...</value></data>
+  <data name="News.Ticket.ReplySend" xml:space="preserve"><value>GỬI</value></data>
+  <data name="News.Ticket.Subject" xml:space="preserve"><value>Tiêu đề</value></data>
+  <data name="News.Ticket.Description" xml:space="preserve"><value>Mô tả</value></data>
+  <data name="News.Ticket.Send" xml:space="preserve"><value>Gửi phiếu</value></data>
+  <data name="News.Ticket.FormBack" xml:space="preserve"><value>Quay lại</value></data>
+  <data name="News.Ticket.SaveChanges" xml:space="preserve"><value>Lưu thay đổi</value></data>
+  <data name="News.Ticket.Status.Answered" xml:space="preserve"><value>Đã trả lời</value></data>
+  <data name="News.Ticket.Status.Closed" xml:space="preserve"><value>Đã đóng</value></data>
+  <data name="News.Ticket.Status.Cancelled" xml:space="preserve"><value>Đã hủy</value></data>
+  <data name="News.Ticket.Status.Open" xml:space="preserve"><value>Đang mở</value></data>
+  <data name="News.Link.Discord" xml:space="preserve"><value>Mở lời mời Discord của cộng đồng trong tab mới?</value></data>
+  <data name="News.Link.Instagram" xml:space="preserve"><value>Mở Instagram của cộng đồng trong tab mới?</value></data>
+  <data name="News.Link.X" xml:space="preserve"><value>Mở X của cộng đồng trong tab mới?</value></data>
+  <data name="News.Ticket.OneMessage" xml:space="preserve"><value>1 tin nhắn</value></data>
+  <data name="News.Ticket.Messages" xml:space="preserve"><value>{0} tin nhắn</value></data>
+  <data name="News.Ticket.Details" xml:space="preserve"><value>mở {0} · {1} · cập nhật {2}</value></data>
+  <data name="News.Ticket.Opened" xml:space="preserve"><value>Mở vào {0} bởi {1}</value></data>
+  <data name="News.Ticket.Tab.News" xml:space="preserve"><value>Tin tức</value></data>
+  <data name="News.Ticket.Tab.Mine" xml:space="preserve"><value>Phiếu của tôi</value></data>
+  <data name="News.Ticket.Tab.New" xml:space="preserve"><value>Phiếu mới</value></data>
+  <data name="News.Ticket.EditHint" xml:space="preserve"><value>Cho đến khi đội ngũ hỗ trợ trả lời, bạn có thể sửa hoặc hủy phiếu này.</value></data>
+  <data name="News.Ticket.Category.Bug" xml:space="preserve"><value>Báo lỗi</value></data>
+  <data name="News.Ticket.Category.Improvement" xml:space="preserve"><value>Đề xuất cải tiến</value></data>
+  <data name="News.Ticket.Category.Other" xml:space="preserve"><value>Khác</value></data>
+  <data name="News.Ticket.CategoryImprovement" xml:space="preserve"><value>Cải tiến</value></data>
+  <data name="News.Ticket.CategoryBug" xml:space="preserve"><value>Lỗi</value></data>
+  <data name="News.Ticket.CategoryOther" xml:space="preserve"><value>Khác</value></data>
+  <data name="Party.RequestSent" xml:space="preserve"><value>Đã gửi yêu cầu.</value></data>
+  <data name="Party.Creating" xml:space="preserve"><value>ĐANG TẠO...</value></data>
+  <data name="Party.Create" xml:space="preserve"><value>TẠO PARTY</value></data>
+  <data name="Party.OpenHint" xml:space="preserve"><value>Mở: người chơi có thể tự do tham gia</value></data>
+  <data name="Party.Open" xml:space="preserve"><value>Mở</value></data>
+  <data name="Party.Closed" xml:space="preserve"><value>Đóng</value></data>
+  <data name="Party.FindParty" xml:space="preserve"><value>Tìm party</value></data>
+  <data name="Party.Searching" xml:space="preserve"><value>Đang tìm party...</value></data>
+  <data name="Party.NoOpenParties" xml:space="preserve"><value>Hiện không có party nào đang mở.</value></data>
+  <data name="Party.Refresh" xml:space="preserve"><value>LÀM MỚI</value></data>
+  <data name="Party.Back" xml:space="preserve"><value>QUAY LẠI</value></data>
+  <data name="Party.Request" xml:space="preserve"><value>YÊU CẦU</value></data>
+  <data name="Party.Join" xml:space="preserve"><value>THAM GIA</value></data>
+  <data name="Party.Empty.Party" xml:space="preserve"><value>Bạn không ở trong party nào.</value></data>
+  <data name="Party.Empty.Friends" xml:space="preserve"><value>Chưa có bạn bè.</value></data>
+  <data name="Party.Empty.Clan" xml:space="preserve"><value>Bạn không phải thành viên bang hội.</value></data>
+  <data name="Party.Empty.Blocked" xml:space="preserve"><value>Không chặn ai.</value></data>
+  <data name="Party.Empty.Recent" xml:space="preserve"><value>Không có cuộc trò chuyện gần đây.</value></data>
+  <data name="Party.Empty.FriendsHint" xml:space="preserve"><value>Thêm một tên bên dưới hoặc dùng nút Bạn bè của mục tiêu.</value></data>
+  <data name="Party.Empty.PartyHint" xml:space="preserve"><value>Dùng Tìm để tham gia một party, hoặc mời người chơi theo tên.</value></data>
+  <data name="Party.Empty.BlockedHint" xml:space="preserve"><value>Người chơi bị chặn không thể nhắn riêng cho bạn.</value></data>
+  <data name="Party.Empty.RecentHint" xml:space="preserve"><value>Những người bạn nhắn riêng gần đây sẽ hiện ở đây.</value></data>
+  <data name="Party.Empty.PartyHintEnd" xml:space="preserve"><value></value></data>
+  <data name="Party.SelectName" xml:space="preserve"><value>Chọn một tên trong danh sách để xem các hành động.</value></data>
+  <data name="Party.VisitClanMaster" xml:space="preserve"><value>Hãy đến gặp Clan Master trong thị trấn.</value></data>
+  <data name="Party.CharacterName" xml:space="preserve"><value>Tên nhân vật</value></data>
+  <data name="Party.Invite" xml:space="preserve"><value>MỜI</value></data>
+  <data name="Party.Block" xml:space="preserve"><value>CHẶN</value></data>
+  <data name="Party.Add" xml:space="preserve"><value>THÊM</value></data>
+  <data name="Party.Profile" xml:space="preserve"><value>Hồ sơ nhân vật</value></data>
+  <data name="Party.Command.Leader" xml:space="preserve"><value>Trưởng nhóm</value></data>
+  <data name="Party.Command.Disband" xml:space="preserve"><value>Giải tán</value></data>
+  <data name="Party.Command.Kick" xml:space="preserve"><value>Đuổi</value></data>
+  <data name="Party.Command.Leave" xml:space="preserve"><value>Rời</value></data>
+  <data name="Party.Title" xml:space="preserve"><value>Party   {0}/{1}</value></data>
+  <data name="Party.DirectoryDetail" xml:space="preserve"><value>Level trung bình {0} · {1}</value></data>
+  <data name="Party.Profile.Class" xml:space="preserve"><value>Lớp   {0}</value></data>
+  <data name="Party.Profile.Level" xml:space="preserve"><value>Level   {0}</value></data>
+  <data name="Party.Profile.Clan" xml:space="preserve"><value>Bang hội   {0}</value></data>
+  <data name="Party.Tab.Party" xml:space="preserve"><value>Party</value></data>
+  <data name="Party.Tab.Friends" xml:space="preserve"><value>Bạn bè</value></data>
+  <data name="Party.Tab.Clan" xml:space="preserve"><value>Bang hội</value></data>
+  <data name="Party.Tab.Blocked" xml:space="preserve"><value>Đã chặn</value></data>
+  <data name="Party.Tab.Recent" xml:space="preserve"><value>Gần đây</value></data>
+  <data name="Party.Action.Whisper" xml:space="preserve"><value>Nhắn riêng</value></data>
+  <data name="Party.Action.Find" xml:space="preserve"><value>Tìm</value></data>
+  <data name="Party.Action.Profile" xml:space="preserve"><value>Hồ sơ</value></data>
+  <data name="Party.Action.Party" xml:space="preserve"><value>Party</value></data>
+  <data name="Party.Action.Remove" xml:space="preserve"><value>Xóa</value></data>
+  <data name="Party.Action.ClanChat" xml:space="preserve"><value>Chat bang hội</value></data>
+  <data name="Party.Action.Unblock" xml:space="preserve"><value>Bỏ chặn</value></data>
+  <data name="Party.Action.Friend" xml:space="preserve"><value>Kết bạn</value></data>
+  <data name="Party.Action.Block" xml:space="preserve"><value>Chặn</value></data>
+  <data name="Party.Map" xml:space="preserve"><value>Bản đồ {0}</value></data>
+</root>

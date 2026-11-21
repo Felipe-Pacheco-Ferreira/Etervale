@@ -27,7 +27,7 @@ public sealed class GameClient : IDisposable
     private GameScreen _pendingScreen;
     private Task _leavingWorld;
     private Task _shutdown;
-    private SpriteFont _font;
+    private UiFonts _fonts;
     private HudAtlas _uiAtlas;
     private HudCursor _cursor;
     private PristonSkyLibrary _sky;
@@ -69,8 +69,8 @@ public sealed class GameClient : IDisposable
         var started = System.Diagnostics.Stopwatch.GetTimestamp();
         var browser = OperatingSystem.IsBrowser();
         _spriteBatch = new SpriteBatch(_graphicsDevice);
-        var font = _content.Load<SpriteFont>("Fonts/UI");
-        _font = font;
+        _fonts = new UiFonts(_content);
+        _fonts.Use(_presentation.Requested.Language);
         var fontReady = System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds;
         if (!browser)
         {
@@ -84,14 +84,15 @@ public sealed class GameClient : IDisposable
         _effects = PristonTale.Gameplay.Effects.EffectLibrary.LoadBootstrap(_graphicsDevice, _content, _assetRoot, ConsoleClientLog.Instance);
         ConsoleClientLog.Instance.Info($"[Startup] font {fontReady:F0} ms, interface {interfaceReady - fontReady:F0} ms, sky {skyReady - interfaceReady:F0} ms, "
             + $"effects {System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds - skyReady:F0} ms.");
-        _audio = browser ? null : PristonAudioLibrary.LoadBootstrap(_assetRoot, ConsoleClientLog.Instance);
+        // The browser page plays the opening music itself while the game loads.
+        _audio = PristonAudioLibrary.LoadBootstrap(_assetRoot, ConsoleClientLog.Instance, loadOpeningMusic: !browser);
         _audio?.ApplySettings(_presentation.Requested);
         _backend = new GameServerConnection(_serverAddress);
         _context = new ScreenContext(
             _graphicsDevice,
             _content,
             _spriteBatch,
-            font,
+            _fonts,
             _assetRoot,
             _backend,
             ConsoleClientLog.Instance,
@@ -134,6 +135,7 @@ public sealed class GameClient : IDisposable
     public void Update(GameTime gameTime, bool isWindowActive = true)
     {
         ClientText.Use(_presentation.Requested.Language);
+        _fonts?.Use(_presentation.Requested.Language);
         _audio?.ApplySettings(_presentation.Requested);
         if (_context is not null)
         {
@@ -185,7 +187,7 @@ public sealed class GameClient : IDisposable
 
         _graphicsDevice.Clear(Color.Black);
         _spriteBatch.Begin();
-        _spriteBatch.DrawString(_font, StatusText, new Vector2(24f, 24f), Color.White);
+        _spriteBatch.DrawString(_fonts.Current, StatusText, new Vector2(24f, 24f), Color.White);
         _spriteBatch.End();
     }
 
@@ -197,8 +199,8 @@ public sealed class GameClient : IDisposable
         }
 
         _spriteBatch.Begin();
-        _spriteBatch.DrawString(_font, Diagnostics, new Vector2(9f, 9f), Color.Black);
-        _spriteBatch.DrawString(_font, Diagnostics, new Vector2(8f, 8f), Color.White);
+        _spriteBatch.DrawString(_fonts.Current, Diagnostics, new Vector2(9f, 9f), Color.Black);
+        _spriteBatch.DrawString(_fonts.Current, Diagnostics, new Vector2(8f, 8f), Color.White);
         _spriteBatch.End();
     }
 

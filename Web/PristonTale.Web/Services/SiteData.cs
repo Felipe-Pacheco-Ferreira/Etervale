@@ -2,6 +2,7 @@ using Microsoft.Extensions.Caching.Memory;
 using PristonTale.Application.Calendar;
 using PristonTale.Application.Settings;
 using PristonTale.Contracts.Characters;
+using PristonTale.Persistence.Abstractions.Arena;
 using PristonTale.Persistence.Abstractions.Rankings;
 using PristonTale.Persistence.Abstractions.Settings;
 using PristonTale.Persistence.Abstractions.WorldData;
@@ -12,10 +13,28 @@ using PristonTale.Simulation.World.Monsters;
 namespace PristonTale.Web.Services;
 
 // What the public pages read from storage, each kept for a short while so a busy page does not reach storage per request.
-public sealed class SiteData(IRankingRepository rankings, IServerSettingsRepository settings, IWorldDataRepository worldData, WorldCatalog fields,
-    IMemoryCache cache, TimeProvider time, ILogger<SiteData> logger)
+public sealed class SiteData(IRankingRepository rankings, IArenaRepository arena, IServerSettingsRepository settings, IWorldDataRepository worldData,
+    WorldCatalog fields, IMemoryCache cache, TimeProvider time, ILogger<SiteData> logger)
 {
     public const int RankingSize = 50;
+    public const int ArenaRankingSize = 10;
+
+    // The arena's current week (ArenaRules.WeekStart in the server's time zone, which the site runs in).
+    public DateOnly ArenaWeek => Simulation.Combat.ArenaRules.WeekStart(DateOnly.FromDateTime(time.GetLocalNow().DateTime));
+
+    // Each level band's best of the arena's current week, band 0 first.
+    public Task<IReadOnlyList<ArenaStanding>[]> ArenaAsync(CancellationToken ct) => CachedAsync("arena", ShortLife, async () =>
+    {
+        var week = Simulation.Combat.ArenaRules.WeekKey(ArenaWeek);
+        var bands = new IReadOnlyList<ArenaStanding>[Simulation.Combat.ArenaRules.Bands];
+        for (var band = 0; band < bands.Length; band++)
+        {
+            bands[band] = await arena.TopAsync(week, band, ArenaRankingSize, ct);
+        }
+
+        return bands;
+    });
+
     private static readonly TimeSpan ShortLife = TimeSpan.FromSeconds(60);
     private static readonly TimeSpan BossLife = TimeSpan.FromHours(1);
 

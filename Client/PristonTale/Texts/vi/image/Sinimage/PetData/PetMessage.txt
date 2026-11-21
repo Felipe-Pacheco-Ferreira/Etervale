@@ -1,0 +1,411 @@
+*PetKind
+"Rồng Lửa   ASTERYAN"
+"Rồng Nước   KRONAPSYS"
+"Rồng Gió  RINDBEOR"
+"Rồng Đất  BAHAMUT"
+end
+
+*PetName
+"Terry"
+"Napsys"
+"EOR"
+"Mut"
+end
+
+*Welcom_ALL
+"Rất vui được gặp bạn! Mình là hậu duệ của( %s )."
+"Mình chưa có tên, nhưng bạn có thể gọi mình là( %s )."
+"Nghe nói bạn là một trong những chiến binh được chọn, nhưng trông bạn yếu quá."
+"Không sao~ Con người và rồng cùng nhau lớn lên"
+"Đừng lo, mình sẽ giúp bạn. Cùng nhau học hỏi nhé"
+end
+
+*Welcom_Tems
+"Chào mừng đến với PristonTale."
+"Đây là thành phố Ricarten, ở phía nam vùng đất Priston."
+"Ở đây bạn có thể mua mọi trang bị đi săn."
+"Người chơi cấp thấp nên ghé các cửa hàng thường xuyên."
+"Trước tiên, hãy dạo quanh Ricarten và trò chuyện với người dân."
+end
+
+*Welcom_Mora
+"Chào mừng đến với PristonTale."
+"Đây là thành phố Pillai, ở phía bắc vùng đất Priston."
+"Ở đây bạn có thể mua mọi trang bị đi săn."
+"Người chơi cấp thấp nên ghé các cửa hàng thường xuyên."
+"Trước tiên, hãy dạo quanh thành phố này và trò chuyện với người dân."
+end
+
+
+*ChatBox
+"Ở đây bạn xem được cuộc trò chuyện của chúng ta"
+"Bạn muốn hỏi gì?"
+"Giờ mình trò chuyện được không?"
+"Chỉ cần gõ điều bạn muốn nói."
+end
+
+
+*ChatTab_All
+"Bạn muốn nói chuyện với mọi người?"
+"Mọi người đều nghe thấy bạn"
+"Bạn muốn biết thêm thông tin?"
+end
+
+
+*ChatTab_Clan
+"Bạn muốn nói chuyện với bang hội của mình?"
+"Chỉ người chơi trong bang hội nghe thấy bạn."
+"Bạn muốn biết thêm thông tin?"
+end
+
+
+*ChatTab_Party
+"Bạn muốn nói chuyện với người chơi trong nhóm?"
+"Chỉ thành viên trong nhóm nghe thấy bạn."
+"Mình cũng là thành viên của nhóm bạn^^"
+end
+
+
+*ChatTab_Trade
+"Rất tiện để mua bán đồ."
+"Hãy viết điều bạn muốn trao đổi."
+"Bạn muốn bán trang bị của mình?"
+end
+
+
+*ChatTab_Whisper
+"Bạn muốn nói chuyện riêng với một người?"
+"Chỉ người đó nghe thấy bạn."
+"thì thầm, thì thầm..."
+end
+
+*Bar_Stamina
+"Ở đây bạn xem thể lực (stamina) của mình."
+"Stamina giảm khi bạn chạy hoặc di chuyển."
+"Chạy cùng mình nhé?"
+end
+*Bar_Life
+"Ở đây bạn xem HP của mình."
+"HP giảm khi quái vật tấn công bạn."
+"Không đủ HP là bạn ngã đó.-_-"
+end
+*LeftSkill
+"Dùng kỹ năng bằng cách nhấp chuột trái."
+"Hình ảnh ‘Đấm’ là đòn tấn công thường."
+"Ê! Đừng tấn công mình!"
+end
+*RightSkill
+"Dùng kỹ năng bằng cách nhấp chuột phải."
+"Sau khi học kỹ năng, hãy đăng ký vào đây để dùng cho dễ."
+"Từ cấp 10 bạn có thể học kỹ năng."
+end
+*Bar_Mana
+"Ở đây bạn xem mana của mình."
+"Mana giảm khi bạn dùng kỹ năng hoặc phép thuật."
+"Không cửa hàng nào bán mana đâu."
+end
+*DayandNight
+"Thanh này cho biết giờ thực của vùng đất Priston."
+"Thấy Mặt Trời là ban ngày.."
+"Thấy Mặt Trăng là ban đêm-_-"
+end
+*Bar_Exp
+"Ở đây bạn xem EXP của mình."
+"Khi thanh đầy, bạn lên cấp!!"
+"Còn bao lâu nữa đến cấp tiếp theo?"
+end
+*Exp_Num
+"Ở đây bạn xem EXP của cấp hiện tại (%)."
+"Khi EXP đạt 100%, bạn lên cấp!"
+"Còn lâu mới lên cấp không?"
+end
+*Potion_ShortKey
+"Rất hữu ích khi đi săn."
+"Số lượng bình thuốc phụ thuộc vào vòng tay."
+"Ực ực…"
+"Bạn đã dùng bình thuốc ở ô thứ nhất."
+"Bạn đã dùng bình thuốc ở ô thứ hai."
+"Bạn đã dùng bình thuốc ở ô thứ ba."
+end
+*RunAndWalk
+"Bạn có thể chọn chạy hoặc đi bộ."
+"CHẠY? ĐI BỘ?"
+"Chạy đi! Còn nhiều việc phải làm lắm!"
+"Phím tắt này chuyển đổi giữa chạy và đi bộ."
+end
+*Camera_Hand
+"Bạn đang xem màn hình ở chế độ thủ công."
+"Bạn có thể chọn góc nhìn khác."
+"Bạn thích góc này chứ?"
+end
+*Camera_Auto
+"Bạn đang xem màn hình ở chế độ tự động."
+"Bạn có thể chọn góc nhìn khác."
+"Đừng xoay nhiều quá. Chóng mặt quá…"
+end
+*Camera_Fix
+"Bạn đang xem màn hình ở chế độ cố định."
+"Bạn có thể chọn góc nhìn khác."
+"Bạn thấy mình rõ không?"
+end
+*Mini_Map
+"Bản đồ này cho bạn biết bạn đang ở đâu một cách đơn giản."
+"Bạn thấy bạn bè, cửa hàng, kho đồ và cổng dịch chuyển chỉ trong nháy mắt."
+"Bạn không tìm thấy mình trên bản đồ đâu. Mình luôn ở bên bạn..^^"
+"Bạn có thể mở và đóng nó."
+end
+*CarStatus
+"Bạn muốn biết EXP và cấp độ của mình?"
+"Xem này! Ở đây bạn kiểm tra sức tấn công, phòng thủ v.v..."
+"Bạn tò mò cấp độ của mình à?"
+"Phím tắt này mở và đóng thông tin nhân vật."
+end
+*InvenTory
+"Cho mình xem vật phẩm của bạn nhé?"
+"Bạn không nhặt được vật phẩm nếu túi đồ đầy hoặc hết chỗ."
+"Cho mình một chút nhé-_-;;;"
+"Phím tắt này mở và đóng túi đồ vật phẩm."
+end
+*Skill
+"Cho mình xem kỹ năng của bạn nhé?"
+"Mọi kỹ năng đều có thể đăng ký ở đây để dùng sau."
+"Ôi! Bạn chưa có kỹ năng nào."
+"Phím tắt này mở và đóng cửa sổ kỹ năng."
+end
+*Party
+"Ở đây bạn xem những người chơi trong nhóm của mình."
+"Nhóm có tối đa 6 người."
+"Bạn có thể lập nhóm tối đa 6 người."
+"Phím tắt này mở và đóng cửa sổ nhóm."
+end
+*Quest
+"Ở đây bạn kiểm tra nhiệm vụ đang làm."
+"Hãy xem nhiệm vụ của bạn trong cửa sổ nhiệm vụ."
+"Bạn muốn mình làm giúp à-_-? Tự làm đi!"
+"Phím tắt này mở và đóng cửa sổ nhiệm vụ."
+end
+*System
+"Ở đây bạn xem hướng dẫn hoặc thoát game."
+"Bạn cần hướng dẫn? Muốn thoát à?"
+"Bạn định bỏ mình lại một mình sao? Ghét bạn..T_T"
+"Phím tắt này mở menu hệ thống."
+end
+*InvenTory_Item
+"Đây là vật phẩm của bạn."
+"Bạn muốn chuyển nó đến đâu?"
+"Bạn đã dùng vật phẩm gì vậy?"
+end
+*Drop_Item
+"Bạn có thể nhặt vật phẩm đó!"
+"Nhặt hết các vật phẩm nhé. Cái gì cũng có ích!"
+"Nhặt được gì rồi? Cho mình một ít với~"
+end
+*Monster
+"Có quái vật!! Tấn công thôi~!!!"
+"Cố lên! Bạn thắng được mà!"
+"Bạn vẫn chưa có kỹ năng nào...-_-;"
+end
+*Message
+"Bạn cần mình giúp không?"
+"Mình vẫn là rồng con, chưa đủ sức mạnh. Cùng nhau mạnh lên nhé!"
+"Vũ khí mạnh nhất của mình là sự đáng yêu. Hô Hô"
+end
+*Battle_Message
+"Tốt lắm! Giữ Shift và nhấp chuột phải để tấn công tự động."
+"Cố lên~"
+"Cố lên! Có vẻ bạn sắp lên cấp rồi~"
+"Chỉ một chút nữa thôi~ nữa~ Cố lên!"
+"TRÔNG BẠN MỆT RỒI~ Nghỉ một chút đi."
+"Bây giờ bạn không bị phạt khi chết, nhưng ở cấp cao thì hình phạt rất nặng."
+"Bạn không cần bình thuốc sao?"
+"Bạn đang mạnh lên đó!!"
+"Mình sẽ cùng lớn lên với bạn."
+"Nếu túi đồ đầy, hãy về thành bán vật phẩm nhé."
+"Hây~ Là tấn công của mình" hoặc "HP~"
+"Hộc, hộc, giúp người khác thật khó..T.T"
+"Cùng chơi nhé~"
+"Nếu nhận được vật phẩm tuyệt vời, chia mình một nửa nhé!"
+"...Bạn mạnh hơn mình tưởng."
+"Mình đói rồi! Ăn gì đó trước đã.."
+"Nhận được vật phẩm tuyệt vời chưa?"
+"Mệt rồi..."
+"Tấn công mạnh hoặc HP~ Hây!"
+"Nếu có được tinh thể, hãy dùng nó: một con quái vật sẽ thành bạn của bạn."
+"Nào~ Cùng chơi PT đến ngày mai!"
+"Dũng cảm lên~ Cố lên! Dũng cảm lên~"
+"Chơi cùng người mình yêu vui hơn đó, bạn có ai chưa?"
+"Hôm nay đẹp trời nhỉ?"
+"La la la~ la la la~"
+"Để dùng kỹ năng, bạn cần cấp 10~ Cố lên~"
+"Ồ! Có vẻ bạn sắp lên cấp rồi! Mình giúp được chứ?"
+end
+*Normal_Message
+"Ôi! Không biết khi nào mình mới thành rồng thật sự nhỉ?'
+"Hôm nay là ngày đẹp để nhận vật phẩm tuyệt vời, đúng không?'
+"Bạn thấy an toàn khi có mình bên cạnh, đúng không?"
+"Zzz. Mình ngủ gật, xin lỗi."
+"Chơi nhiều quá không tốt đâu."
+"Bạn đã nghe nói về aging và mix chưa?"
+"Hôm nay đẹp trời nhỉ?"
+"La la la~ la la la~"
+"Chơi cùng người mình yêu vui hơn đó, bạn có ai chưa?"
+end
+*Level_Message2-1
+"Chúc mừng! Bạn đã lên cấp!"
+"Mỗi cấp bạn nhận 5 điểm thuộc tính. Hãy phân phối điểm trong cửa sổ thông tin nhân vật."
+"Nhân vật của bạn mạnh lên khi chia điểm cho sức mạnh, tinh thần, tài năng, nhanh nhẹn và sức khỏe."
+"Bây giờ hãy nhấn C."
+end
+*Level_Message2-2
+"Sức mạnh: tăng tấn công, STM, hồi phục STM, HP, hấp thụ và trọng lượng."
+"Tinh thần: tăng tấn công phép, MP và hồi phục MP."
+"Tài năng: tăng tỷ lệ tấn công, sức tấn công, phòng thủ, STM, tốc độ và hấp thụ."
+"Nhanh nhẹn: tăng sát thương vũ khí tầm xa, tỷ lệ tấn công và phòng thủ."
+"Sức khỏe: tăng HP, hồi phục HP, STM, trọng lượng và hồi phục MP."
+end
+*Level_Message3
+"Trong Pristontale có phím tắt để dùng bình thuốc dễ dàng khi bạn muốn hồi phục HP, STM và MP của nhân vật."
+"Hãy đặt bình thuốc vào túi phím tắt, ở giữa phía dưới, và dùng chúng bằng phím 1 đến 3."
+"Bạn có biết số lượng bình thuốc phụ thuộc vào vòng tay không?"
+end
+*Level_Message4
+"Có một bản đồ nhỏ ở góc dưới bên phải."
+"Nó cho biết bạn đang ở đâu."
+"Nó cho biết bạn đang ở khu vực nào."
+"Nó hiển thị NPC màu xanh lá và đồng đội của bạn màu vàng."
+"Với nó bạn quan sát được xung quanh."
+"Bật và tắt bản đồ nhỏ bằng phím Tab."
+end
+*Level_Message5
+"Bạn có thể trang bị 2 vũ khí và chuyển đổi giữa chúng."
+"Hãy đổi vũ khí: nhấn V rồi W, hoặc nhấn mũi tên trong túi đồ."
+"Và đổi vũ khí tùy theo tình huống."
+"Như vậy bạn săn quái có lợi thế hơn."
+end
+*Level_Message6-1
+"Trong Pristontale có hệ thống nhóm."
+"Bạn có thể tham gia cùng người chơi khác để đi săn.
+"Một nhóm có từ 2 đến 6 người chơi."
+"EXP và vàng được chia cho những người chơi trong nhóm."
+"Bạn có thể trò chuyện với người chơi trong nhóm."
+end
+*Level_Message6-2
+"Nhưng nếu chênh lệch hơn 10 cấp so với nhân vật,"
+"có thể bạn sẽ không lập nhóm được."
+"Nhấp vào nhân vật để lập nhóm,"
+"nhấn nút mời và hỏi xem họ có muốn tham gia không."
+"Nếu họ đồng ý, hai bạn đã thành nhóm!"
+end
+*Level_Message7
+"Cổng dịch chuyển là cách đi từ nơi này đến nơi khác trong chớp mắt."
+"Với cổng dịch chuyển, bạn đến được những nơi xa."
+"Cổng của Pillai và Ricarten miễn phí."
+"Để đi lại giữa nhiều khu vực, bạn cần một cánh"
+"từ nhà phát minh cổng dịch chuyển ở Ricarten. Bạn đã gặp ông ấy chưa?"
+end
+*Level_Message8
+"Hãy tìm thợ Mix ở Ricarten"
+"và mix trang bị của bạn để làm chúng mạnh hơn.
+"Để mix, bạn tốn sheltom và vàng,"
+"nhưng đây là cách an toàn để tăng sức mạnh trang bị."
+"Cẩn thận! Sau khi mix, không thể mix lại lần nữa."
+end
+*Level_Message9-1
+"Hãy tìm thợ Aging"
+"và aging vật phẩm của bạn để làm chúng mạnh hơn."
+"Để aging, bạn tốn sheltom và vàng."
+"Một vật phẩm có thể aging tổng cộng 9 lần."
+end
+*Level_Message9-2
+"Vật phẩm đã aging phát sáng nhiều màu ở mỗi giai đoạn, thật tuyệt!"
+"Nhưng càng nhiều giai đoạn, khả năng thất bại càng cao."
+"Nếu thất bại, bạn có thể mất sheltom, vàng và cả vật phẩm."
+"Cẩn thận~!"
+end
+*Level_Message10-1
+"Chúc mừng! Bạn đã đạt cấp 10. Từ giờ bạn tiếp tục như một chiến binh thực thụ."
+"Mình đã nói chuyện với thầy kỹ năng ở Ricarten và Pillai."
+"Thầy kỹ năng sẽ dạy kỹ năng mà bạn cần."
+"Bạn học kỹ năng từ thầy kỹ năng."
+"Và nhận 1 điểm kỹ năng mỗi 2 cấp~"
+end
+*Level_Message10-2
+"Cấp kỹ năng càng cao, kỹ năng càng mạnh."
+"Giờ là lúc nói lời tạm biệt."
+"Chúng ta sẽ gặp lại khi bạn đã là một chiến binh vĩ đại."
+"Vì đó là lời hứa giữa chiến binh và rồng."
+"Hứa là bạn sẽ trở thành chiến binh vĩ đại nhé^^"
+"Mình sẽ nhớ bạn lắm..."
+end
+*Special_Message8_Mecha
+"Mechanician là nhân vật tài năng"
+"sử dụng đủ loại vũ khí của vùng đất Priston."
+"Mechanician dùng vũ khí chuyên biệt của Mechanician."
+"Trên cấp 20, thầy kỹ năng ở Ricarten sẽ giúp bạn thăng rank."
+end
+*Special_Message8_Fighter
+"Fighter là nhân vật bền bỉ nhất vùng đất Priston."
+"Fighter chủ yếu dùng rìu."
+"Muốn sát thương mạnh, hãy dùng vũ khí hai tay;"
+"muốn phòng thủ và sức tấn công, hãy dùng vũ khí một tay."
+"Trên cấp 20, thầy kỹ năng ở Ricarten sẽ giúp bạn thăng rank."
+end
+*Special_Message8_Pikeman
+"Pikeman chiến đấu trong nhiều trận chiến với kỹ năng và vũ khí lộng lẫy!"
+"Pikeman chủ yếu dùng giáo."
+"Họ có những kỹ năng mạnh nhất để gây thương tích cho kẻ địch ở cự ly gần…"
+"Nhưng không dùng khiên nên phòng thủ yếu."
+"Trên cấp 20, thầy kỹ năng ở Ricarten sẽ giúp bạn thăng rank."
+end
+*Special_Message8_Archer
+"Archer cho quái vật thấy sức mạnh cây cung của mình từ xa!"
+"Cô ấy chủ yếu dùng cung."
+"Một phát bắn, một mạng! Mơ ước trở thành xạ thủ bắn tỉa~"
+"Trên cấp 20, thầy kỹ năng ở Pillai sẽ giúp bạn thăng rank."
+end
+*Special_Message8_Assassin
+"Assassin là nữ chiến binh duy nhất trong tộc Tempskron."
+"Cô ấy dùng hai lưỡi dao để tấn công nhanh."
+"Trong tình huống khó, cô ấy còn dùng bóng tối, độc và bẫy để uy hiếp kẻ địch."
+"Khi đạt cấp 20, thầy kỹ năng ở Ricarten sẽ giúp bạn thăng rank."
+end
+*Special_Message8_Knight
+"Knight đi theo con đường của Hiệp Sĩ Thánh của vùng đất này."
+"Knight chủ yếu dùng kiếm."
+"Trên cấp 20, thầy phép thuật ở Pillai sẽ giúp bạn thăng rank."
+end
+*Special_Message8_Atalanta
+"Atalanta là nữ chiến binh rong ruổi khắp vùng đất với cây lao của mình!"
+"Atalanta chủ yếu dùng lao."
+"Trên cấp 20, thầy phép thuật ở Pillai sẽ giúp bạn thăng rank."
+end
+*Special_Message8_Priestess
+"Priestess là vị thánh giúp đỡ mọi người theo lời của Thượng Đế."
+"Priestess chủ yếu dùng trượng hoặc đũa phép."
+"Priestess ở vùng đất này có những đòn tấn công tầm xa mạnh mẽ"
+"và còn đảm nhiệm vai trò hồi máu."
+"Trên cấp 20, thầy phép thuật ở Pillai sẽ giúp bạn thăng rank."
+end
+*Special_Message8_Magician
+"Magician dùng sức mạnh phép thuật bằng sức mạnh tinh thần thay vì rèn luyện cơ thể."
+"Magician chủ yếu dùng trượng hoặc đũa phép."
+"Hiện tại còn yếu, nhưng càng lên cấp sẽ càng bộc lộ hết tài năng."
+"Trên cấp 20, thầy phép thuật ở Pillai sẽ giúp bạn thăng rank."
+end
+*Special_Message8_Shaman
+"Shaman nắm giữ sức mạnh của phù thủy và hắc ma thuật."
+"Họ dùng loại vũ khí khác hẳn các lớp nhân vật khác, gọi là bóng ma."
+"Ngay cả phụ kiện như đầu lâu, sừng và lông vũ cũng toát ra khí chất quỷ dị."
+"Khi đạt cấp 20, thầy phép thuật ở Pillai sẽ giúp bạn thăng rank."
+end
+*Special_Message8_MartialArtist
+"Chiến đấu bằng chân và nắm đấm làm vũ khí!"
+"Dùng găng tay để tung đòn tấn công mạnh mẽ."
+"Từ cấp 20, thầy kỹ năng ở Ricarten sẽ giúp bạn."
+end
+*Special_Message9
+"Giờ là lúc nói lời tạm biệt. Ồ! Đừng buồn nhé."
+"Đây không phải lời chia tay. Chắc chắn chúng ta sẽ gặp lại."
+"Và bạn đã đủ mạnh mà không cần mình giúp."
+"Nào, ra chiến đấu đi"
+end

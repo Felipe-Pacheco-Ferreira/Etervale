@@ -26,11 +26,11 @@ internal sealed partial class HudNews
     private const float BodyScale = HudPainter.TextScale;
     private const float BadgeScale = HudPainter.TextScale * 0.85f;
 
-    private static NewsLayout LayoutCard(HudPainter painter, NewsCard card, int width, bool portuguese)
+    private static NewsLayout LayoutCard(HudPainter painter, NewsCard card, int width)
     {
         var rows = new List<NewsRow>();
         var y = TitleTop;
-        var titleX = BadgeWidth(painter, card.Kind, portuguese) + BadgeGap + (card.NewSystem ? ToolsIcon.Length + BadgeGap : 0);
+        var titleX = BadgeWidth(painter, card.Kind) + BadgeGap + (card.NewSystem ? ToolsIcon.Length + BadgeGap : 0);
         foreach (var line in Wrap(painter, BoldMark + card.Title + BoldMark, width - titleX, TitleScale))
         {
             rows.Add(new NewsRow(NewsRowKind.Title, Spans(painter, line, titleX, TitleScale), y, TitleScale));
@@ -119,7 +119,7 @@ internal sealed partial class HudNews
         }
     }
 
-    private static int BadgeWidth(HudPainter painter, NewsKind kind, bool portuguese) => painter.MeasureAt(KindLabel(kind, portuguese), BadgeScale) + 16;
+    private static int BadgeWidth(HudPainter painter, NewsKind kind) => painter.MeasureAt(KindLabel(kind), BadgeScale) + 16;
 
     // Wrapped lines that each open and close their own bold marks, so a bold run broken across lines stays bold.
     internal static List<string> WrapBold(string text, float width, Func<string, float> measure)

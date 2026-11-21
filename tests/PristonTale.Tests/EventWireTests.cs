@@ -6,6 +6,7 @@ using PristonTale.Contracts.Skills;
 using PristonTale.Contracts.World;
 using PristonTale.Protocol.Binary;
 using PristonTale.Protocol.Packets;
+using PristonTale.Simulation.Combat;
 
 namespace PristonTale.Tests;
 
@@ -36,6 +37,7 @@ internal static class EventWireTests
         yield return ("event lists name a known entity by its handle and another by its id, carry only what an event has and split across frames", ListsAsync);
         yield return ("the encoder names the entities a receiver knows by the handles its decoder bound, and others by id", RoundTripAsync);
         yield return ("an event names an entity by a handle freed by another and taken again, and by the handles of a new field", ReuseAsync);
+        yield return ("a hit carries its element in one byte and a physical hit none, from the server's event to the client's", ElementAsync);
     }
 
     private sealed class Handles(params (ulong Id, uint Handle)[] pairs) : IEventHandleWriter, IEventHandleReader
@@ -110,6 +112,32 @@ internal static class EventWireTests
         update = wire.PushMerged(new WorldSnapshot(4, [self, At(30, 10)], [new(30, 1, CombatEventKind.Hit, damage: 6), new(1, 20, CombatEventKind.Hit, damage: 7)], 4));
         Assert.True(update.Events.Select(item => (item.AttackerId, item.TargetId)).SequenceEqual([(30UL, 1UL), (1UL, 20UL)]),
             "the events of a new field named the wrong entities");
+        return Task.CompletedTask;
+    }
+
+    private static Task ElementAsync()
+    {
+        var buffer = new byte[FrameCodec.MaxFrameSize];
+        var physical = new CombatEventEntry(5, 6, CombatEventKind.Hit, CombatEventFlags.Critical, 0f, 0f, 1234, 0, 0, 0, 0, 0, 0);
+        var fire = physical with { Element = (byte)Element.Fire };
+        var physicalLength = CombatEventList.Write(buffer, [physical], NoEventHandles.Instance, out _);
+        var length = CombatEventList.Write(buffer, [fire], NoEventHandles.Instance, out _);
+        Assert.True(length == physicalLength + 1, $"an element took {length - physicalLength} bytes");
+        Assert.True(CombatEventList.Read(buffer.AsSpan(0, length), NoEventHandles.Instance).Single() == fire, "the element did not round trip");
+        buffer[length - 1] = 0;
+        Assert.Throws<InvalidDataException>(() => CombatEventList.Read(buffer.AsSpan(0, length).ToArray(), NoEventHandles.Instance),
+            "a flagged but empty element was read");
+
+        EntityView[] views = [At(1, 0, EntityKind.Player), At(10, 20)];
+        CombatEventView[] combat =
+        [
+            new(1, 10, CombatEventKind.Hit, damage: 15) { Skill = true, Element = Element.Ice },
+            new(1, 10, CombatEventKind.Hit, damage: 9),
+            new(1, 10, CombatEventKind.Hit, damage: 4) { Element = Element.Wind }
+        ];
+        var update = new WireRoundTrip(1).PushMerged(new WorldSnapshot(5, views, combat, 3));
+        Assert.True(update.Events.Select(item => item.Element).SequenceEqual([Element.Ice, Element.Bionic, Element.Wind]),
+            "the client did not read the elements the server sent");
         return Task.CompletedTask;
     }
 

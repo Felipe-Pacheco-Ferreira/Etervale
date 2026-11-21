@@ -21,6 +21,7 @@ using PristonTale.Simulation.Skills;
 using PristonTale.Simulation.World;
 using PristonTale.Simulation.World.Fields;
 using PristonTale.Contracts.Skills;
+using PristonTale.Contracts.Social;
 using PristonTale.Contracts.Texts;
 
 using PristonTale.Simulation.Social.Castle;
@@ -88,6 +89,11 @@ public sealed partial class WorldServer
         // The events and rewards window last published and the book revision it shows.
         public RewardBoard? Rewards { get; set; }
         public long RewardRevision { get; set; } = -1;
+
+        // The titles last published (WorldServer.StepTitles) and the book and holders revisions they show.
+        public TitleView? Titles { get; set; }
+        public long TitleRevision { get; set; } = -1;
+        public long TitleHoldersRevision { get; set; } = -1;
     }
 
     public WorldServer(
@@ -190,6 +196,7 @@ public sealed partial class WorldServer
         field.Aging = options.Aging with { Tax = tax };
         field.Mixing = options.Mixing with { Tax = tax };
         field.PlayersFight = field.State == FieldState.Castle && !options.CastleLeague;
+        field.PvpDamagePercent = options.PvpDamagePercent;
     }
 
     // The game clock in game milliseconds: the Unix time plus the configured offset (World:ClockOffsetMinutes game minutes).
@@ -242,6 +249,7 @@ public sealed partial class WorldServer
 
             player.EnterField(position, definition.State == FieldState.Village);
             player.Guard(PlayerGrace.ArrivalMs);
+            RestorePvp(player);
             field.Add(player);
             _connections.Add(player.EntityId, new Connection(fieldId, player, outbound, session) { NextGiftTick = GiftTick(StarterGifts.FirstDelay) });
             _membershipChanged = true;
@@ -264,6 +272,7 @@ public sealed partial class WorldServer
             var save = connection.Session is { } session ? CaptureLeaving(session, connection) : null;
             LeaveParty(connection.Player);
             LeaveTrade(connection.Player);
+            KeepPvp(connection.Player);
 
             _fields[connection.FieldId].Remove(entityId);
             _connections.Remove(entityId);
@@ -394,6 +403,31 @@ public sealed partial class WorldServer
         });
     }
 
+    // The player asks to turn its PvP mode on or off (PvpRules); the answer reaches it as a system line, and every viewer
+    // sees the mode in the player's description. Null when the player is not in the world.
+    public Task<PvpSwitch?> SwitchPvpAsync(ulong entityId, bool on)
+    {
+        return EnqueueAsync<PvpSwitch?>(entityId, () =>
+        {
+            if (!_connections.TryGetValue(entityId, out var connection))
+            {
+                return null;
+            }
+
+            var player = connection.Player;
+            var answer = player.SwitchPvp(on);
+            Notify(entityId, ChatKind.System, answer switch
+            {
+                PvpSwitch.On => GameText.Of(GameTextId.PvpOn),
+                PvpSwitch.LevelTooLow => GameText.Of(GameTextId.PvpLevel, PvpRules.MinimumLevel),
+                PvpSwitch.InCombat => GameText.Of(GameTextId.PvpInCombat, PvpRules.SecondsLeft(player.PvpCombatMsLeft)),
+                PvpSwitch.Murderer => GameText.Of(GameTextId.PvpMurderer, PvpRules.SecondsLeft(player.MurdererMsLeft)),
+                _ => GameText.Of(GameTextId.PvpOff)
+            });
+            return answer;
+        });
+    }
+
     public Task<CharacterSaveSnapshot?> CaptureForSaveAsync(PlayerSession session)
     {
         return EnqueueAsync(NoOwner, () => CaptureForSave(session, _connections.GetValueOrDefault(session.EntityId)), waitForCapacity: true);
@@ -408,7 +442,14 @@ public sealed partial class WorldServer
 
         if (connection is not null)
         {
-            if (connection.Player.IsDead && CaptureDead(session, connection.Player.Character, connection.FieldId, connection.Player.Position) is { } dead)
+            // An arena or Battle Royale player is stored where it goes back to, and dies in neither.
+            if (connection.Player.Arena is not null || connection.Player.Royale is not null)
+            {
+                var (fieldId, position) = SavedPlace(connection);
+                return CharacterRecordFactory.Capture(session.Loaded, session.Character, fieldId, position);
+            }
+
+            if (connection.Player.IsDead && CaptureDead(session, session.Character, connection.FieldId, connection.Player.Position, connection.Player.SlainByPlayer) is { } dead)
             {
                 return dead;
             }
@@ -424,13 +465,16 @@ public sealed partial class WorldServer
     // dead one through its town restart.
     private CharacterSaveSnapshot? CaptureLeaving(PlayerSession session, Connection connection)
     {
+        // Where the next session's entry starts: an event's player where it goes back to.
+        var (fieldId, position) = SavedPlace(connection);
+        UpdatePlacement(session, fieldId, position);
         if (session.SaveGate.CurrentCount > 0)
         {
             return CaptureForSave(session, connection);
         }
 
-        UpdatePlacement(session, connection.FieldId, connection.Player.Position);
-        session.LeftDead = connection.Player.IsDead;
+        session.LeftDead = connection.Player.IsDead && connection.Player.Arena is null && connection.Player.Royale is null;
+        session.LeftSlainByPlayer = connection.Player.SlainByPlayer;
         return null;
     }
 
@@ -459,7 +503,7 @@ public sealed partial class WorldServer
     {
         return EnqueueAsync(NoOwner, () => session.Character is null || session.Loaded is null
             ? null
-            : CaptureDead(session, session.Character, session.FieldId, session.SpawnPosition)
+            : CaptureDead(session, session.Character, session.FieldId, session.SpawnPosition, session.LeftSlainByPlayer)
                 ?? CharacterRecordFactory.Capture(session.Loaded, session.Character, session.FieldId, session.SpawnPosition), waitForCapacity: true);
     }
 
@@ -604,7 +648,7 @@ public sealed partial class WorldServer
                 // A member who left or reloaded since the pickup was prepared, or who can no longer take its part, gets nothing.
                 foreach (var share in pickup.Shares)
                 {
-                    if (_connections.TryGetValue(share.MemberId, out var member) && ReferenceEquals(member.Player.Character, share.Character)
+                    if (_connections.TryGetValue(share.MemberId, out var member) && ReferenceEquals(member.Player.Home ?? member.Player.Character, share.Character)
                         && TakesGoldShare(member) && MoneyLimits.CanCarry(share.Character, share.Gold))
                     {
                         share.Character.TryChangeMoney(share.Gold);
@@ -615,6 +659,7 @@ public sealed partial class WorldServer
                 pickup.Ground.Resolve(pickup.DropId, pickup.OperationId, committed: true);
                 Log(pickedUp);
                 CountPickup(operation.Original, pickup.MonsterItem);
+                TellPartyLoot(session, pickup.MonsterItem);
             }
             if (operation is PreparedThrowOperation thrown)
             {
@@ -793,12 +838,16 @@ public sealed partial class WorldServer
             _stepInputs.NowSeconds, _stepInputs.Night, _stepInputs.Weather));
         LastPhases = new TickPhases(processed, Stopwatch.GetElapsedTime(started, commandsDone).TotalMilliseconds,
             Stopwatch.GetElapsedTime(commandsDone).TotalMilliseconds);
+        AnnounceLevels();
+        AnnounceRoulettes();
+        StepTitles();
         PublishSiege(nowSeconds);
         CheerCastleOwners(UnixNowMs);
         ApplyCastleTax();
         RenewClanSkill(nowSeconds);
         StepBellatra(UnixNowMs);
         ApplyQuestTravels();
+        StepFights(dt * 1000f);
         Checkpoint(serverTick);
         OfferStarterGifts(serverTick);
 
@@ -852,14 +901,19 @@ public sealed partial class WorldServer
                 connection.Outbound.TryWrite(snapshot.WithOwner(owner, cooldowns) with
                 {
                     Quest = connection.Player.QuestState.TakeUpdate(connection.Player.Character),
-                    Restart = connection.Player.IsDead ? DeathPenalty.Offer(connection.Player.Character, field.State) : null,
+                    Restart = connection.Player.IsDead ? DeathPenalty.Offer(connection.Player.Character, field.State, connection.Player.SlainByPlayer) : null,
                     Party = connection.Player.Party?.View,
                     PartyRequest = connection.Player.PartyRequest,
                     PartyDirectory = connection.Player.PartyDirectory,
                     Trade = connection.Player.Trade?.ViewFor(entityId),
                     TradeRequest = connection.Player.TradeRequest,
+                    Duel = connection.Player.Duel?.ViewOf(entityId),
+                    DuelRequest = connection.Player.DuelRequest,
+                    Arena = ArenaViewOf(connection.Player),
+                    Royale = RoyaleViewOf(connection.Player),
                     Bellatra = BellatraViewOf(connection),
-                    Rewards = RewardsOf(connection)
+                    Rewards = RewardsOf(connection),
+                    Titles = connection.Titles
                 });
                 // Only an outbox pins and releases frames; any other writer may keep the snapshot forever.
                 frame.Retained |= connection.Outbound is not WorldOutbox.OutboxWriter;

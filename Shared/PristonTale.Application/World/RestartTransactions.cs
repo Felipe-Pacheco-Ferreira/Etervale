@@ -35,7 +35,7 @@ internal static class RestartTransactions
             return Final(original, command, RestartStatus.Rejected);
         }
 
-        var candidate = Resolve(original, field.State, command.Choice, out var experience, out var gold, out var scroll);
+        var candidate = Resolve(original, field.State, command.Choice, player.SlainByPlayer, out var experience, out var gold, out var scroll);
         if (candidate is null)
         {
             return Final(original, command, RestartStatus.FieldRefused);
@@ -61,15 +61,17 @@ internal static class RestartTransactions
 
     // The character after the restart's costs, or null when the field restart is refused: the scroll is used up, or the
     // death's share is taken; standing up in the field takes its own share unless the scroll was used. Life comes back at
-    // half.
-    public static PlayerCharacter? Resolve(PlayerCharacter original, FieldState field, RestartChoice choice, out ulong experience, out long gold, out bool scroll)
+    // half. A player slain by another (PvpRules) takes no share and keeps its scroll.
+    public static PlayerCharacter? Resolve(PlayerCharacter original, FieldState field, RestartChoice choice, bool slainByPlayer, out ulong experience, out long gold,
+        out bool scroll)
     {
         experience = 0;
         gold = 0;
         var candidate = original.CloneForInventoryOperation();
-        var anchor = DeathPenalty.ScrollAnchor(candidate);
+        var anchor = slainByPlayer ? -1 : DeathPenalty.ScrollAnchor(candidate);
         scroll = anchor >= 0 && candidate.Inventory.ConsumeAt(anchor);
-        if (!scroll)
+        var free = scroll || slainByPlayer;
+        if (!free)
         {
             Take(candidate, DeathPenalty.Divisor(candidate, field), ref experience, ref gold);
         }
@@ -81,7 +83,7 @@ internal static class RestartTransactions
                 return null;
             }
 
-            if (!scroll)
+            if (!free)
             {
                 Take(candidate, DeathPenalty.FieldDivisor, ref experience, ref gold);
             }

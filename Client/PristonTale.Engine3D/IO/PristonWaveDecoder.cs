@@ -7,11 +7,14 @@ public static class PristonWaveDecoder
 {
     private const int WaveHeaderSize = 12;
 
-    public static Stream OpenRead(string path)
+    public static Stream OpenRead(string path) => new MemoryStream(ReadAllBytes(path), writable: false);
+
+    // The file with its header normalized to RIFF, as SoundEffect.FromStream reads it.
+    public static byte[] ReadAllBytes(string path)
     {
         var bytes = AssetFiles.ReadAllBytes(path);
         NormalizeHeader(bytes);
-        return new MemoryStream(bytes, writable: false);
+        return bytes;
     }
 
     internal static void NormalizeHeader(Span<byte> bytes)

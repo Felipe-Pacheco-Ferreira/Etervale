@@ -125,7 +125,7 @@ internal sealed partial class FieldSkills
             var damageRule = new SkillDamageRule { Element = counter.Element, BonusBroods = counter.BonusBroods, BonusPercent = counter.BonusPercent };
             var power = Math.Max(1, _rng.Range(low, Math.Max(low, high)));
             var dealt = SkillFormulas.PowerAgainst(power, damageRule, attacker.Def, defender.Character.Effects.Totals, attacker.Effects.Totals, rank);
-            Pay(defender, attacker, dealt, false);
+            Pay(defender, attacker, dealt, false, element: SkillDamageRule.HitElement(damageRule));
             _skillEvents.Add(new SkillEventView(defender.EntityId, attacker.EntityId, rule.Code, SkillEventPhase.Impact, rank,
                 SkillEventFlags.Counter, 0f, 0f, attacker.Position, defender.Facing, 1, 0f));
             return;

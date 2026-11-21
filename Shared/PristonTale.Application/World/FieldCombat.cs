@@ -29,13 +29,24 @@ internal interface IFieldCombatHost
 
     (float DurationMs, float HitAtMs) PlayerSwingTiming(WorldPlayer player);
 
-    // Whether two players of the field may fight each other (the castle's battle zone).
+    // Whether two players of the field may fight each other (the castle's battle zone, the PvP mode in a hunting field, a
+    // duel, an arena match), and whether blows between players here take PvpDamagePercent (a hunting field, the arena).
     bool MayFight(WorldPlayer attacker, WorldPlayer target);
+
+    bool ScalesPlayerBlows { get; }
+
+    // A blow of a fight where nobody dies (WorldPlayer.Spares) left the target at 1 life (DuelRules.Blow): the duel is won,
+    // or the target is out of its arena match; the world settles it on the tick.
+    void Spared(WorldPlayer attacker, WorldPlayer target);
 
     void EmitCombatEvent(in CombatEventView combatEvent);
 }
 
-public readonly record struct KillPayout(ulong MonsterEntityId, ulong CreditedPlayerId, ulong ExpAwarded, IReadOnlyList<RolledDrop> Drops);
+public readonly record struct KillPayout(ulong MonsterEntityId, ulong CreditedPlayerId, ulong ExpAwarded, IReadOnlyList<RolledDrop> Drops)
+{
+    // A scheduled boss's damage by player (MonsterDamageLog.ByPlayer), for the boss roulette; null for any other monster.
+    public IReadOnlyDictionary<ulong, long>? BossDamage { get; init; }
+}
 
 internal sealed class FieldCombat
 {
@@ -149,12 +160,30 @@ internal sealed class FieldCombat
         HurtPlayer(player, foe, damage + (SkillCombat?.EnchantOnPlayer(player, defender) ?? 0), result.Crit);
     }
 
-    // A player's blow or skill reaches another player for this damage: the attacker's Might Stone, the target's absorbing
-    // shields, then the life it takes (PlayerHurtPlayer) and the hit's event.
-    public void HurtPlayer(WorldPlayer attacker, WorldPlayer foe, int damage, bool crit, bool skill = false)
+    // The percent of a blow's damage players take from each other in a hunting field (PvpRules).
+    public int PvpDamagePercent { get; set; } = PvpRules.DefaultDamagePercent;
+
+    // A player's blow or skill reaches another player for this damage: in a hunting field or the arena PvpDamagePercent
+    // of it, the attacker's Might Stone, the target's absorbing shields, in a duel or an arena match never the last life
+    // (DuelRules.Blow), then the life it takes (PlayerHurtPlayer) and the hit's event with the element it shows.
+    public void HurtPlayer(WorldPlayer attacker, WorldPlayer foe, int damage, bool crit, bool skill = false, Element element = Element.Bionic)
     {
+        if (_host.ScalesPlayerBlows)
+        {
+            damage = PvpRules.Damage(damage, PvpDamagePercent);
+        }
+
         damage = CastleItems.Strike(attacker.Character.Effects, foe.Character.Class.Class, damage);
         damage = SkillCombat?.DefendFromPlayer(attacker, foe, damage) ?? damage;
+        if (attacker.Spares(foe) && foe.GuardMsLeft <= 0f)
+        {
+            (damage, var last) = DuelRules.Blow(damage, foe.Life);
+            if (last)
+            {
+                _host.Spared(attacker, foe);
+            }
+        }
+
         var lifeBefore = foe.Life;
         foe.ApplyDamage(damage);
         if (lifeBefore > foe.Life)
@@ -163,10 +192,10 @@ internal sealed class FieldCombat
         }
 
         _host.EmitCombatEvent(new CombatEventView(attacker.EntityId, foe.EntityId, CombatEventKind.Hit, damage: lifeBefore - foe.Life, crit: crit,
-            killed: foe.IsDead) { Skill = skill });
+            killed: foe.IsDead) { Skill = skill, Element = element });
     }
 
-    // A player's blow that took another's life, for the siege's board.
+    // A player's blow that hurt another (life taken), for the siege's board, the PvP mode and the feats.
     public Action<WorldPlayer, WorldPlayer, int>? PlayerHurtPlayer { get; set; }
 
     public KillPayout? ResolvePlayerSwingHit(WorldPlayer player, ulong targetId, long nowMs)
@@ -217,9 +246,9 @@ internal sealed class FieldCombat
     // hurt by it.
     public static bool OwnClan(WorldPlayer player, MonsterInstance monster) => monster.ClanId != 0 && player.Clan?.ClanId == monster.ClanId;
 
-    // skill: the hit is not the player's basic attack (a skill's, or a pet's strike), reported on its event.
+    // skill: the hit is not the player's basic attack (a skill's, or a pet's strike); it and element are reported on its event.
     public KillPayout? ApplyPlayerDamage(WorldPlayer player, MonsterInstance monster, int damage, bool crit, long nowMs, bool forceFlinch = false,
-        ulong sourceEntityId = 0, bool skill = false)
+        ulong sourceEntityId = 0, bool skill = false, Element element = Element.Bionic)
     {
         if (damage <= 0 || !monster.IsAlive || monster.DuelPlayerId != 0 && monster.DuelPlayerId != player.EntityId || OwnClan(player, monster))
         {
@@ -227,7 +256,8 @@ internal sealed class FieldCombat
         }
 
         bool monsterAtFullLife = monster.Life >= monster.Def.Combat.MaxLife;
-        Log(monster.EntityId).RecordHit(player.EntityId, damage, monsterAtFullLife, nowMs);
+        var log = Log(monster.EntityId);
+        log.RecordHit(player.EntityId, damage, monsterAtFullLife, nowMs);
         if (sourceEntityId == 0 && !monster.IsSummon)
         {
             PlayerHitLanded?.Invoke(player, monster, damage);
@@ -236,14 +266,20 @@ internal sealed class FieldCombat
 
         var lifeBefore = monster.Life;
         monster.ApplyDamage(damage);
-        DamageDealt?.Invoke(player, monster, Math.Min(damage, lifeBefore));
+        var dealt = Math.Min(damage, lifeBefore);
+        if (monster.Scheduled)
+        {
+            log.Tally(player.EntityId, dealt);
+        }
+
+        DamageDealt?.Invoke(player, monster, dealt);
         SkillCombat?.MonsterDamaged(monster);
 
         MonsterAiBrain.ApplyBossRetargetOnHit(monster, sourceEntityId != 0 ? sourceEntityId : player.EntityId);
 
         _host.EmitCombatEvent(new CombatEventView(
             sourceEntityId != 0 ? sourceEntityId : player.EntityId, monster.EntityId, CombatEventKind.Hit,
-            damage: damage, crit: crit, killed: !monster.IsAlive) { Skill = skill });
+            damage: damage, crit: crit, killed: !monster.IsAlive) { Skill = skill, Element = element });
 
         if (!monster.IsAlive)
             return OnMonsterDeath(monster, nowMs);
@@ -402,7 +438,7 @@ internal sealed class FieldCombat
         _damageLogs.Remove(monster.EntityId);
         _corpseMsLeft[monster.EntityId] = CorpseDespawnMs;
 
-        return new KillPayout(monster.EntityId, credited, exp, drops);
+        return new KillPayout(monster.EntityId, credited, exp, drops) { BossDamage = log.ByPlayer };
     }
 
     // The kill's experience at the party's average level, shared by its size (PartyRules); members in other fields share

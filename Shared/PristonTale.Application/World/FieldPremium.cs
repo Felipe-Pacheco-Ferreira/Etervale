@@ -15,7 +15,7 @@ internal interface IFieldPremiumHost
     CombatRng Rng { get; }
     bool TryGetMonster(ulong entityId, [MaybeNullWhen(false)] out MonsterInstance monster);
     bool TryGetPlayer(ulong entityId, [MaybeNullWhen(false)] out WorldPlayer player);
-    void PetStrike(WorldPlayer owner, MonsterInstance monster, int damage);
+    void PetStrike(WorldPlayer owner, MonsterInstance monster, int damage, Element element);
     void QueueMonsterEffect(ulong monsterId, EffectSpec spec, float durationMs);
     void AddItemEvent(in ItemEffectView effect);
 }
@@ -197,7 +197,7 @@ internal sealed class FieldPremium
         _petStriking = true;
         try
         {
-            _host.PetStrike(owner, monster, damage);
+            _host.PetStrike(owner, monster, damage, PremiumPets.ElementOf(cycle.Pet) ?? Element.Bionic);
         }
         finally
         {

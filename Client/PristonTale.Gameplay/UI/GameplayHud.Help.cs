@@ -8,12 +8,13 @@ using PristonTale.Simulation.Items.Usable;
 namespace PristonTale.Gameplay.UI;
 
 // The help window of the system menu and the level guide's notice: the character the guide reads, the levels reached,
-// the starter gifts, and the On/Off switch kept in the client settings.
+// the starter gifts, and the On/Off switch kept in the client settings; and the tutorial's tips.
 public sealed partial class GameplayHud
 {
     private HudTextFiles _helpTexts;
     private HudHelpWindow _helpWindow;
     private HudLevelGuide _levelGuide;
+    private HudTutorialTips _tips;
     // The level the guide last saw (0 before the first owner state), and a starter gift's order whose page waits for the
     // guide's files (-1 none).
     private int _guideLevel;
@@ -30,8 +31,12 @@ public sealed partial class GameplayHud
 
     private bool GuideBlocked => HelpCovered || _helpPet.Shown is not null;
 
+    // A tip waits while the guide's summary box, which reaches the middle of the top, is open.
+    private bool TipBlocked => HelpCovered || _levelGuide.Showing && _levelGuide.Summary;
+
     private void SetUpHelp()
     {
+        _tips = new HudTutorialTips(_settings.ShortcutLabel);
         _helpTexts = new HudTextFiles(_context.AssetRoot, Assets.Cp949.Encoding, _context.Log, "Help");
         _helpWindow = new HudHelpWindow(_helpTexts, _sprites.Request);
         _levelGuide = new HudLevelGuide(_helpTexts, _sprites.Request);
@@ -57,6 +62,8 @@ public sealed partial class GameplayHud
         {
             return;
         }
+
+        _tips.Update(_context.Presentation.Requested, CharacterName, state.Level);
 
         var tempskron = SkillClasses.Get(_class).Brood == CharacterBrood.Tempskron;
         _helpWindow.Level = state.Level;
@@ -102,6 +109,12 @@ public sealed partial class GameplayHud
             return true;
         }
 
+        if (_tips.Click(pointer, TipBlocked) is { } kept)
+        {
+            _context.Presentation.Requested = kept;
+            return true;
+        }
+
         if (!_levelGuide.Click(pointer, GuideBlocked, out var more))
         {
             return false;
@@ -115,10 +128,13 @@ public sealed partial class GameplayHud
         return true;
     }
 
-    private bool CapturesHelp(Point pointer) => !HelpCovered && (_helpWindow.Contains(pointer) || _levelGuide.Captures(pointer, GuideBlocked));
+    private bool CapturesHelp(Point pointer) =>
+        !HelpCovered && (_helpWindow.Contains(pointer) || _tips.Captures(pointer, TipBlocked) || _levelGuide.Captures(pointer, GuideBlocked));
 
-    private void DrawHelp(Point pointer)
+    private void DrawHelp(HudLayout layout, Point pointer)
     {
+        _painter.Flush();
+        _tips.Draw(_painter, layout, pointer, TipBlocked);
         _painter.Flush();
         _levelGuide.Draw(_painter, pointer, _clock.Elapsed.TotalMilliseconds, GuideBlocked);
         _painter.Flush();

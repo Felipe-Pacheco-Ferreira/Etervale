@@ -56,6 +56,23 @@ public static partial class BrowserHost
     [JSExport]
     public static bool HudHidden() => WebWorldHud.Current?.HudHidden ?? false;
 
+    // The server translates the chat: the page shows its "Traduzir chat para" row.
+    [JSExport]
+    public static bool ChatTranslationAvailable() => WebWorldHud.Current?.ChatTranslationAvailable ?? false;
+
+    // The panel's PvP button, as K in game: false outside the game, where there is no mode to switch.
+    [JSExport]
+    public static bool SwitchPvp()
+    {
+        if (WebWorldHud.Current is not { } hud)
+        {
+            return false;
+        }
+
+        hud.RequestPvpToggle();
+        return true;
+    }
+
     [JSExport]
     public static string SettingsWithQuality(string json, string quality) =>
         ClientSettingsStore.Serialize(Enum.TryParse<GraphicsQuality>(quality, out var preset) && preset != GraphicsQuality.Custom
@@ -87,13 +104,12 @@ public static partial class BrowserHost
     public static string Shortcuts(string json, string language)
     {
         var settings = Parse(json);
-        var portuguese = ClientSettings.NormalizeLanguage(language) == ClientSettings.BrazilianPortugueseLanguage;
         var shortcuts = HudSettingsPanel.PageShortcutRows;
         var rows = new ShortcutRow[shortcuts.Count];
         for (var index = 0; index < rows.Length; index++)
         {
             var (slot, group) = shortcuts[index];
-            rows[index] = new ShortcutRow(slot, group, HudSettingsPanel.ShortcutName(slot, portuguese),
+            rows[index] = new ShortcutRow(slot, group, HudSettingsPanel.ShortcutName(slot, language),
                 HudSettingsPanel.PageShortcutLabel(settings, slot), HudSettingsPanel.PageShortcutDefaultLabel(slot), Available(slot));
         }
 
@@ -118,6 +134,9 @@ public static partial class BrowserHost
 
     [JSExport]
     public static string RestoreShortcuts(string json) => ClientSettingsStore.Serialize(Parse(json) with { ShortcutKeys = [] });
+
+    [JSExport]
+    public static string ResetInterface(string json) => ClientSettingsStore.Serialize(Parse(json).WithInterfaceReset());
 
     private static bool Available(int slot) => HudSettingsPanel.OnPage(slot);
 

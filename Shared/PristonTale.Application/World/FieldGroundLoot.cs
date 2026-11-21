@@ -90,6 +90,20 @@ public sealed class FieldGroundLoot(ItemCatalog catalog, FieldTerrain? terrain =
     public bool PlaceItem(uint code, Vector3 position, long nowMs, ISimRng rng) =>
         catalog.TryGet(code, out var definition) && PlaceCreated(ItemRoller.Create(definition, 1, rng), 0, position, 0, nowMs);
 
+    // One unit of a catalog item an event lays for its own players (the Battle Royale's potions): its id, Guid.Empty when
+    // the catalog lacks it or the field is full.
+    public Guid PlaceEventItem(uint code, Vector3 position, long nowMs, ISimRng rng) =>
+        _entries.Count < Capacity && catalog.TryGet(code, out var definition) ? Add(ItemRoller.Create(definition, 1, rng), 0, position, 0, nowMs) : Guid.Empty;
+
+    // Takes an event's leftover drop away, unless a pickup holds it (that pickup resolves it).
+    public void Withdraw(Guid id)
+    {
+        if (_entries.TryGetValue(id, out var entry) && entry.Reservation == Guid.Empty)
+        {
+            RemoveEntry(id);
+        }
+    }
+
     // The character id a drop nobody threw names (ThrownBy).
     public const long NoThrower = 0;
 
@@ -111,7 +125,7 @@ public sealed class FieldGroundLoot(ItemCatalog catalog, FieldTerrain? terrain =
             HasEquipmentDetails = true,
             RequiredLevel = item.Roll.RequiredLevel,
             SpecJob = item.Roll.SpecJob,
-            Rare = item.Definition.UniqueItem != 0 || item.Definition.UniqueVariant > 0 || item.Definition.SetCode != 0
+            Rare = item.Definition.IsRare
         };
     }
 

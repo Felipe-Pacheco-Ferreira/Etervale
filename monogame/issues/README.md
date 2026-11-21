@@ -34,3 +34,6 @@ upstream notes, in `../upstream/`.
 | 020 | [android-surface-after-background](020-android-surface-after-background.md) | runtime |
 | 021 | [webgpu-backend](021-webgpu-backend.md) | runtime, framework |
 | 022 | [webgpu-effects](022-webgpu-effects.md) | processor, runtime |
+| 023 | [webgpu-buffer-destruction](023-webgpu-buffer-destruction.md) | runtime |
+| 024 | [three-browser-renderer](024-three-browser-renderer.md) | runtime |
+| 025 | [web-audio](025-web-audio.md) | runtime |

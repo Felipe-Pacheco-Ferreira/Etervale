@@ -88,6 +88,9 @@ public sealed class GameServerConnection : IGameBackend
 
     // The player's game master level from WorldJoined (0 for players).
     public int GameMasterLevel { get; private set; }
+
+    // The server translates the chat (WorldJoined's flag), so the player's chosen language is worth sending.
+    public bool ChatTranslation { get; private set; }
     private int _onlinePlayers = -1;
     public int OnlinePlayers => Volatile.Read(ref _onlinePlayers);
 
@@ -403,6 +406,11 @@ public sealed class GameServerConnection : IGameBackend
         Send(input);
     }
 
+    internal void SendChatTranslateTo(string language)
+    {
+        Send(new ChatTranslateToPacket(language));
+    }
+
     internal void SendYahooKey()
     {
         Send(new YahooKeyPacket());
@@ -416,6 +424,11 @@ public sealed class GameServerConnection : IGameBackend
     internal void SendMount(bool mount)
     {
         Send(new MountRequestPacket(mount));
+    }
+
+    internal void SendPvpSwitch(bool on)
+    {
+        Send(new PvpSwitchPacket(on));
     }
 
     internal void SendDismissCrystalPets(uint statusCode)
@@ -562,6 +575,7 @@ public sealed class GameServerConnection : IGameBackend
             case EtervaleOpcodes.WorldJoined:
                 var joined = WorldJoinedPacket.Read(packet);
                 GameMasterLevel = joined.GameMasterLevel;
+                ChatTranslation = joined.ChatTranslation;
                 GameClockOffsetMs = joined.GameClockMs - Environment.TickCount64;
                 HasGameClock = true;
                 _joined?.TrySetResult(true);

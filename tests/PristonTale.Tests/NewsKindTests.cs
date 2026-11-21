@@ -34,8 +34,8 @@ internal static class NewsKindTests
         Assert.True(HudNews.ParseKind("Event") == HudNews.NewsKind.Event && HudNews.ParseKind("improvement") == HudNews.NewsKind.Improvement
             && HudNews.ParseKind("") == HudNews.NewsKind.News && HudNews.ParseKind("other") == HudNews.NewsKind.News,
             "the game read a kind wrongly");
-        Assert.True(HudNews.KindLabel(HudNews.NewsKind.News, true) == "Novidade" && HudNews.KindLabel(HudNews.NewsKind.Event, true) == "Evento"
-            && HudNews.KindLabel(HudNews.NewsKind.Improvement, true) == "Melhoria" && HudNews.KindLabel(HudNews.NewsKind.Improvement, false) == "Improvement",
+        Assert.True(HudNews.KindLabel(HudNews.NewsKind.News, "pt-BR") == "Novidade" && HudNews.KindLabel(HudNews.NewsKind.Event, "pt-BR") == "Evento"
+            && HudNews.KindLabel(HudNews.NewsKind.Improvement, "pt-BR") == "Melhoria" && HudNews.KindLabel(HudNews.NewsKind.Improvement, "en") == "Improvement",
             "a badge is not named Novidade, Evento or Melhoria");
 
         var defaults = new PristonTale.Engine3D.Rendering.ClientSettings();

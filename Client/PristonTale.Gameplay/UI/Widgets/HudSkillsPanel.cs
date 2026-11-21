@@ -16,7 +16,7 @@ namespace PristonTale.Gameplay.UI.Widgets;
 // tier's boxes, skill buttons (gray "_" variant when unusable), rank gauges, F1-F8 short keys, the selected-skill hover
 // frame, and for a skill master's pupil the training box: the skill and elite points left (or that there are none) and
 // the class change button.
-public sealed class HudSkillsPanel(SpriteFont font, HudSprites sprites)
+public sealed class HudSkillsPanel(UiFonts fonts, HudSprites sprites)
 {
     private const int TooltipWidth = 260;
 
@@ -100,8 +100,8 @@ public sealed class HudSkillsPanel(SpriteFont font, HudSprites sprites)
             };
             var cost = CostLine(skill, 1);
             _entries[index] = new Entry(skill, ClientText.Format("SkillWindow.Level", skill.RequiredLevel),
-                HudTextLayout.Wrap(font, DataText.SkillDescription(skill.Code, skill.Description), TooltipWidth - 20, HudPainter.TextScale),
-                HudTextLayout.Wrap(font, ClientText.Format("SkillWindow.Equipment", weapons), TooltipWidth - 20, HudPainter.TextScale), cost, mouse)
+                HudTextLayout.Wrap(fonts.Current, DataText.SkillDescription(skill.Code, skill.Description), TooltipWidth - 20, HudPainter.TextScale),
+                HudTextLayout.Wrap(fonts.Current, ClientText.Format("SkillWindow.Equipment", weapons), TooltipWidth - 20, HudPainter.TextScale), cost, mouse)
             {
                 Button = button,
                 GrayButton = grayButton

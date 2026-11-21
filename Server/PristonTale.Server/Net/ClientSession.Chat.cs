@@ -1,6 +1,7 @@
 using System.Numerics;
 using PristonTale.Application.Chat;
 using PristonTale.Application.Sessions;
+using PristonTale.Persistence.Abstractions.WorldData;
 using PristonTale.Simulation.Social;
 using PristonTale.Protocol.Binary;
 using PristonTale.Protocol.Packets;
@@ -32,6 +33,16 @@ internal sealed partial class ClientSession
         else
         {
             await _services.Chat.SayAsync(session.EntityId, input.Text);
+        }
+    }
+
+    // A language the catalog knows, or none: anything else turns the translation off.
+    private void TranslateTo(ChatTranslateToPacket input)
+    {
+        if (_session is { } session && _services.Chat.Directory.TryGet(session.EntityId, out var member))
+        {
+            var wanted = CatalogLanguages.Supported.FirstOrDefault(language => string.Equals(language, input.Language, StringComparison.OrdinalIgnoreCase));
+            member.TranslateTo = wanted ?? "";
         }
     }
 

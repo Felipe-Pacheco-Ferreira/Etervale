@@ -88,10 +88,11 @@ public readonly record struct JoinWorldPacket(ulong EntityId) : IFramePacket
     }
 }
 
-// S->C {header, uint16 Version = 1, uint8 GameMasterLevel, uint8 0, uint64 EntityId, int64 ServerTimeMs, int64 GameClockMs}:
+// S->C {header, uint16 Version = 1, uint8 GameMasterLevel, uint8 Flags, uint64 EntityId, int64 ServerTimeMs, int64 GameClockMs}:
 // the player's game master level enables its client-side game master controls (the server checks every command and move
 // itself); GameClockMs is the server's game clock, which the client's sky follows from then on.
-public readonly record struct WorldJoinedPacket(ulong EntityId, long ServerTimeMs, byte GameMasterLevel = 0, long GameClockMs = 0)
+// Flags bit 0: the server translates the chat (ChatTranslateTo is worth sending).
+public readonly record struct WorldJoinedPacket(ulong EntityId, long ServerTimeMs, byte GameMasterLevel = 0, long GameClockMs = 0, bool ChatTranslation = false)
 {
     public const int Size = 8 + 4 + 8 + 8 + 8;
 
@@ -100,7 +101,7 @@ public readonly record struct WorldJoinedPacket(ulong EntityId, long ServerTimeM
         var writer = new PacketWriter(destination, EtervaleOpcodes.WorldJoined);
         writer.UInt16(WorldEntryWire.CurrentVersion);
         writer.Byte(GameMasterLevel);
-        writer.Byte(0);
+        writer.Byte(ChatTranslation ? (byte)1 : (byte)0);
         writer.UInt64(EntityId);
         writer.Int64(ServerTimeMs);
         writer.Int64(GameClockMs);
@@ -112,10 +113,10 @@ public readonly record struct WorldJoinedPacket(ulong EntityId, long ServerTimeM
         var reader = new PacketReader(packet, Size);
         WireHeader.ReadVersion(ref reader, "World joined");
         var level = reader.Byte();
-        reader.Skip(1);
+        var flags = reader.Byte();
         var entity = reader.UInt64();
         var serverTime = reader.Int64();
-        return new WorldJoinedPacket(entity, serverTime, level, reader.Int64());
+        return new WorldJoinedPacket(entity, serverTime, level, reader.Int64(), (flags & 1) != 0);
     }
 }
 

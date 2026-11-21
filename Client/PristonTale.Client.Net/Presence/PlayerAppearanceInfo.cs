@@ -21,6 +21,17 @@ public sealed record PlayerAppearanceInfo(
     // Riding the travel mount (MountRules).
     public bool Mounted { get; init; }
 
+    // The PvP mode is on, the player is a murderer (PvpRules), and it fights a duel (DuelRules).
+    public bool Pvp { get; init; }
+    public bool Murderer { get; init; }
+    public bool Duelling { get; init; }
+
+    // The side (1 or 2) of the arena match the player still fights in, 0 for none (ArenaRules).
+    public int ArenaSide { get; init; }
+
+    // The title shown over the name (TitleRules), 0 for none.
+    public int Title { get; init; }
+
     // How the held weapon and off-hand item glow.
     public Simulation.Items.HeldItemGlow WeaponGlow { get; init; } = Simulation.Items.HeldItemGlow.None;
     public Simulation.Items.HeldItemGlow OffHandGlow { get; init; } = Simulation.Items.HeldItemGlow.None;

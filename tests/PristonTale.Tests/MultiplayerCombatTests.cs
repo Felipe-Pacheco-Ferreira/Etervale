@@ -25,7 +25,7 @@ internal static class MultiplayerCombatTests
 
     public static IEnumerable<(string, Func<Task>)> Cases()
     {
-        yield return ("multiplayer: a basic attack's swings, hits (without the skill flag), kill, drop, pickup and level up reach a watching player identically", AttackAsync);
+        yield return ("multiplayer: a basic attack's swings, hits (without the skill flag or an element), kill, drop, pickup and level up reach a watching player identically", AttackAsync);
         yield return ("multiplayer: a skill cast on a monster reaches a watching player as the same start, impact and damage, its hit flagged as a skill's", SkillAsync);
         yield return ("multiplayer: a monster's movement and attacks are the same for every player watching it", MonsterAsync);
     }
@@ -68,6 +68,8 @@ internal static class MultiplayerCombatTests
         Assert.True(seenByA.Where(blow => blow.Kind == CombatEventKind.Hit).Sum(blow => blow.Damage) >= 12, "the hits do not add up to the dummy's life");
         Assert.True(b.World.Read(world => world.Combat.All(entry => entry.Event.AttackerId != a.EntityId || !entry.Event.Skill)),
             "a basic attack's hit came flagged as a skill's");
+        Assert.True(b.World.Read(world => world.Combat.All(entry => entry.Event.AttackerId != a.EntityId || entry.Event.Element == Element.Bionic)),
+            "a basic attack's hit came with an element");
         Assert.True(a.World.Read(world => world.Combat.Any(entry => entry.Event.Kind == CombatEventKind.SwingBegin && entry.Event.AttackerId == a.EntityId)),
             "the swings were not shown");
 

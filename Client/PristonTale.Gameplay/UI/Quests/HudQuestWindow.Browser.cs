@@ -12,8 +12,7 @@ public sealed partial class HudQuestWindow
     private const int BrowserRows = 7;
     private const float BrowserTextScale = 11f / HudPainter.BakePixels;
     private const float BrowserTitleScale = 14f / HudPainter.BakePixels;
-    private static readonly string[] PortugueseTabs = ["Jornada", "Diárias", "Mensal", "Concluídas"];
-    private static readonly string[] EnglishTabs = ["Journey", "Daily", "Monthly", "Completed"];
+    private static readonly string[] BrowserTabs = ["QuestWindow.Tab.Journey", "QuestWindow.Tab.Daily", "QuestWindow.Tab.Monthly", "QuestWindow.Tab.Completed"];
     private static readonly Color BrowserGold = new(219, 190, 112);
     private static readonly Color BrowserText = new(221, 213, 190);
     private RewardTrackInfo _daily;
@@ -25,8 +24,8 @@ public sealed partial class HudQuestWindow
     private int _detailContentHeight;
     private int _browserEntryCount;
     private bool _showHowTo;
-    private readonly Dictionary<(string Text, int Width), string[]> _browserWrapped = new();
-    private readonly Dictionary<(string Text, int Width, float Scale), string> _browserFitted = new();
+    private readonly Dictionary<(string Language, string Text, int Width), string[]> _browserWrapped = new();
+    private readonly Dictionary<(string Language, string Text, int Width, float Scale), string> _browserFitted = new();
     private readonly Dictionary<(string Language, string Title), string> _browserTitles = new();
     private string[] _dailyProgress = [];
     private string[] _dailyGold = [];
@@ -71,7 +70,6 @@ public sealed partial class HudQuestWindow
     internal static Rectangle BrowserSwitch(Rectangle box, int index, HudQuestPage page = HudQuestPage.Running) => new(box.X + (index == 1 ? 100 : 19), box.Y + (index == 2 && page == HudQuestPage.Running ? 121 : 101), index == 1 ? 78 : 82, 17);
     internal static Rectangle BrowserHowTo(Rectangle box) => new(box.Right - 100, box.Y + 100, 75, 19);
     private static Rectangle BrowserDetailClip(Rectangle box) => new(box.X + 197, box.Y + 151, box.Width - 222, box.Height - 212);
-    private static string BrowserLabel(string portuguese, string english) => ClientText.Language == "pt-BR" ? portuguese : english;
     public void SetDailyRewards(RewardTrackInfo daily, int level, bool pending, string message)
     {
         if (!ReferenceEquals(_daily, daily) || _dailyLanguage != ClientText.Language || _playerLevel != level)
@@ -80,7 +78,7 @@ public sealed partial class HudQuestWindow
             _dailyProgress = daily?.Entries.Select(entry => $"{entry.Progress} / {entry.Target}").ToArray() ?? [];
             _dailyGold = daily?.Entries.Select(entry => entry.Gold > 0 ? $"{entry.Gold:N0} Gold" : "").ToArray() ?? [];
             _dailyItems = daily?.Entries.Select(entry => entry.Items.Take(5).Select(item => $"{item.Count}x {item.Name}").ToArray()).ToArray() ?? [];
-            _dailyFooter = daily is not null && level < daily.MinLevel ? BrowserLabel($"Disponível no nível {daily.MinLevel}.", $"Available at level {daily.MinLevel}.") : BrowserLabel("Renovação diária.", "Resets daily.");
+            _dailyFooter = daily is not null && level < daily.MinLevel ? ClientText.Format("QuestWindow.AvailableAtLevel", daily.MinLevel) : ClientText.Get("QuestWindow.ResetsDaily");
         }
 
         _daily = daily;
@@ -236,16 +234,15 @@ public sealed partial class HudQuestWindow
         painter.FramedBox(box, new Color(143, 119, 62), new Color(35, 30, 20), new Color(15, 14, 10), 3);
         painter.RoundedGradient(new Rectangle(box.X + 2, box.Y + 2, box.Width - 4, 34), new Color(56, 46, 27), new Color(31, 27, 18), 1);
         painter.Diamond(box.X + 16, box.Y + 18, 6, BrowserGold);
-        DrawBrowserText(painter, BrowserLabel("Missões", "Quests"), box.X + 29, box.Y + 9, BrowserGold, BrowserTitleScale);
+        DrawBrowserText(painter, ClientText.Get("QuickMenu.Quests"), box.X + 29, box.Y + 9, BrowserGold, BrowserTitleScale);
         var close = BrowserClose(box);
         painter.Disc(close.Center.X, close.Center.Y, 10, new Color(116, 103, 68));
         painter.Disc(close.Center.X, close.Center.Y, 9, close.Contains(pointer) ? new Color(65, 52, 29) : new Color(29, 25, 17));
         BrowserCentered(painter, "x", close.Left, close.Right, close.Top + 3, BrowserGold);
-        var labels = ClientText.Language == "pt-BR" ? PortugueseTabs : EnglishTabs;
         var active = Page switch { HudQuestPage.Daily => 1, HudQuestPage.Monthly => 2, HudQuestPage.Finished => 3, _ => 0 };
         for (var tab = 0; tab < 4; tab++)
         {
-            DrawBrowserTab(painter, BrowserTab(box, tab), labels[tab], pointer, tab == active, tab);
+            DrawBrowserTab(painter, BrowserTab(box, tab), ClientText.Get(BrowserTabs[tab]), pointer, tab == active, tab);
         }
 
         var list = new Rectangle(box.X + 12, box.Y + 96, 177, box.Height - 108);
@@ -256,23 +253,23 @@ public sealed partial class HudQuestWindow
         }
         if (Page == HudQuestPage.Running)
         {
-            DrawSwitch(painter, BrowserSwitch(box, 0, Page), BrowserLabel("Guia auto", "Auto guide"), GuideEnabled, CanNavigate);
-            DrawSwitch(painter, BrowserSwitch(box, 1, Page), BrowserLabel("Auto-caça", "Auto-hunt"), AutoHuntEnabled);
-            DrawSwitch(painter, BrowserSwitch(box, 2, Page), BrowserLabel("Rastreador", "Tracker"), TrackingEnabled);
+            DrawSwitch(painter, BrowserSwitch(box, 0, Page), ClientText.Get("QuestWindow.AutoGuide"), GuideEnabled, CanNavigate);
+            DrawSwitch(painter, BrowserSwitch(box, 1, Page), ClientText.Get("QuickMenu.AutoHunt"), AutoHuntEnabled);
+            DrawSwitch(painter, BrowserSwitch(box, 2, Page), ClientText.Get("QuestWindow.Tracker"), TrackingEnabled);
         }
         else if (Page == HudQuestPage.Daily)
         {
-            DrawSwitch(painter, BrowserSwitch(box, 2, Page), BrowserLabel("Rastreador", "Tracker"), TrackingEnabled);
+            DrawSwitch(painter, BrowserSwitch(box, 2, Page), ClientText.Get("QuestWindow.Tracker"), TrackingEnabled);
         }
 
         if (Page == HudQuestPage.Monthly)
         {
-            var lines = WrappedBrowser(font, BrowserLabel("O desafio do mês ainda não começou.", "This month's challenge has not started yet."), 150);
+            var lines = WrappedBrowser(font, ClientText.Get("QuestWindow.MonthlyNotStarted"), 150);
             for (var line = 0; line < lines.Length; line++)
             {
                 BrowserCentered(painter, lines[line], list.Left + 5, list.Right - 5, box.Y + 120 + line * 15, BrowserText);
             }
-            BrowserCentered(painter, BrowserLabel("Escolha uma missão na lista.", "Select a quest from the list."), box.X + 197, box.Right - 21, box.Y + 109, BrowserText);
+            BrowserCentered(painter, ClientText.Get("QuestWindow.SelectQuest"), box.X + 197, box.Right - 21, box.Y + 109, BrowserText);
             return;
         }
         if (Page == HudQuestPage.Daily)
@@ -305,7 +302,7 @@ public sealed partial class HudQuestWindow
         if (_captionState != (Page, entries.Count, ClientText.Language))
         {
             _captionState = (Page, entries.Count, ClientText.Language);
-            _journalCaption = BrowserLabel(Page == HudQuestPage.Finished ? "CONCLUÍDAS" : "EM ANDAMENTO", Page == HudQuestPage.Finished ? "COMPLETED" : "IN PROGRESS") + $" ({entries.Count})";
+            _journalCaption = ClientText.Format(Page == HudQuestPage.Finished ? "QuestWindow.CompletedCount" : "QuestWindow.InProgressCount", entries.Count);
         }
         if (Page == HudQuestPage.Running)
         {
@@ -313,8 +310,8 @@ public sealed partial class HudQuestWindow
         }
         if (entries.Count == 0)
         {
-            DrawBrowserText(painter, BrowserLabel("Nenhuma missão.", "No quests."), box.X + 22, box.Y + 177, new Color(150, 143, 121));
-            BrowserCentered(painter, BrowserLabel("Escolha uma missão na lista.", "Select a quest from the list."), box.X + 197, box.Right - 21, box.Y + 109, BrowserText);
+            DrawBrowserText(painter, ClientText.Get("QuestWindow.NoQuests"), box.X + 22, box.Y + 177, new Color(150, 143, 121));
+            BrowserCentered(painter, ClientText.Get("QuestWindow.SelectQuest"), box.X + 197, box.Right - 21, box.Y + 109, BrowserText);
             return;
         }
         if (_selected < 0 || _selected >= entries.Count || _description != HudQuestDocuments.BoardPath(entries[_selected].Description) || _descriptionLanguage != ClientText.Language)
@@ -345,11 +342,11 @@ public sealed partial class HudQuestWindow
             }
         }
 
-        DrawDetailHeading(painter, box, _descriptionTitle, Page == HudQuestPage.Finished ? BrowserLabel("Concluída", "Completed") : BrowserLabel("Em andamento", "In progress"), pointer);
+        DrawDetailHeading(painter, box, _descriptionTitle, Page == HudQuestPage.Finished ? ClientText.Get("QuestWindow.Completed") : ClientText.Get("QuestWindow.InProgress"), pointer);
         var clip = BrowserDetailClip(box);
         var x = box.X + 207;
         var source = documents.Wrapped(_description, font, 226, scale: BrowserTextScale);
-        var text = source ?? WrappedBrowser(font, BrowserLabel("Carregando...", "Loading..."), 226);
+        var text = source ?? WrappedBrowser(font, ClientText.Get("QuestWindow.Loading"), 226);
         var lines = _showHowTo ? text.Length : Math.Min(2, text.Length);
         var objective = HudQuestDocuments.AvalonObjective(_description);
         if (!ReferenceEquals(view, _objectiveView) || _objectiveLanguage != ClientText.Language)
@@ -359,13 +356,13 @@ public sealed partial class HudQuestWindow
             _objectiveText = view is { KillsNeeded: > 0 } ? $"{view.TargetName}   {view.Kills}/{view.KillsNeeded}" : objective;
         }
         var summary = new Rectangle(box.X + 197, box.Y + 151 - _detailScroll, 246, 77);
-        ContentCard(painter, summary, clip, BrowserLabel("Agora", "Now"));
-        var now = WrappedBrowser(font, Page == HudQuestPage.Finished ? BrowserLabel("Missão concluída.", "Quest completed.") : _objectiveText, 222);
+        ContentCard(painter, summary, clip, ClientText.Get("QuestWindow.Now"));
+        var now = WrappedBrowser(font, Page == HudQuestPage.Finished ? ClientText.Get("QuestWindow.QuestCompleted") : _objectiveText, 222);
         for (var line = 0; line < Math.Min(2, now.Length); line++)
         {
             ContentText(painter, now[line], x, summary.Y + 25 + line * 14, BrowserText, clip);
         }
-        ContentText(painter, CanNavigate ? BrowserLabel("Clique em Ir para seguir a rota.", "Click Go to follow the route.") : BrowserLabel("Consulte as instruções da missão.", "Read the quest instructions."),
+        ContentText(painter, CanNavigate ? ClientText.Get("QuestWindow.ClickGo") : ClientText.Get("QuestWindow.ReadInstructions"),
             x, summary.Y + 59, new Color(169, 161, 122), clip);
         var descriptionY = box.Y + 239 - _detailScroll;
         for (var line = 0; line < lines; line++)
@@ -374,11 +371,11 @@ public sealed partial class HudQuestWindow
         }
         var objectiveY = box.Y + 239 + lines * 14 + 4 - _detailScroll;
         var objectives = new Rectangle(box.X + 197, objectiveY, 246, 103);
-        ContentCard(painter, objectives, clip, BrowserLabel("Objetivos", "Objectives"));
+        ContentCard(painter, objectives, clip, ClientText.Get("QuestWindow.Objectives"));
         ContentText(painter, _objectiveText, x, objectives.Y + 35, BrowserText, clip);
         if (Page == HudQuestPage.Running && view is { KillsNeeded: > 0 })
         {
-            ContentText(painter, view.Kills >= view.KillsNeeded ? BrowserLabel("Feito", "Done") : BrowserLabel("Em andamento", "In progress"), x, objectives.Y + 57, BrowserGold, clip);
+            ContentText(painter, view.Kills >= view.KillsNeeded ? ClientText.Get("QuestWindow.Done") : ClientText.Get("QuestWindow.InProgress"), x, objectives.Y + 57, BrowserGold, clip);
             var bar = new Rectangle(x, objectives.Bottom - 15, 221, 5);
             if (clip.Contains(bar))
             {
@@ -386,13 +383,13 @@ public sealed partial class HudQuestWindow
             }
         }
         var reward = new Rectangle(box.X + 197, objectives.Bottom + 8, 246, 73);
-        ContentCard(painter, reward, clip, BrowserLabel("Recompensa", "Reward"));
+        ContentCard(painter, reward, clip, ClientText.Get("QuestWindow.Reward"));
         ContentText(painter, HudQuestDocuments.AvalonReward(_description), x, reward.Y + 34, BrowserGold, clip);
         _detailContentHeight = reward.Bottom + _detailScroll - (box.Y + 151);
         if (Page == HudQuestPage.Running)
         {
-            Button(painter, BrowserTrack(box), TrackingEnabled ? BrowserLabel("Rastreando", "Tracking") : BrowserLabel("Rastrear", "Track"), pointer);
-            Button(painter, BrowserGo(box), BrowserLabel("IR", "GO"), pointer, enabled: CanNavigate, positive: true);
+            Button(painter, BrowserTrack(box), TrackingEnabled ? ClientText.Get("QuestWindow.Tracking") : ClientText.Get("QuestWindow.Track"), pointer);
+            Button(painter, BrowserGo(box), ClientText.Get("QuestWindow.Go"), pointer, enabled: CanNavigate, positive: true);
         }
         if (_browserMessage.Length > 0)
         {
@@ -404,7 +401,7 @@ public sealed partial class HudQuestWindow
     {
         if (_daily is null)
         {
-            DrawBrowserText(painter, BrowserLabel("Carregando diárias...", "Loading daily quests..."), box.X + 207, box.Y + 108, BrowserText);
+            DrawBrowserText(painter, ClientText.Get("QuestWindow.LoadingDaily"), box.X + 207, box.Y + 108, BrowserText);
             return;
         }
         for (var row = 0; row < Math.Min(BrowserRows, _daily.Entries.Count - _firstRow); row++)
@@ -423,16 +420,16 @@ public sealed partial class HudQuestWindow
         {
             return;
         }
-        DrawDetailHeading(painter, box, DailyTitle(selected.Goal), BrowserLabel("Diária", "Daily"), pointer);
+        DrawDetailHeading(painter, box, DailyTitle(selected.Goal), ClientText.Get("QuestWindow.Daily"), pointer);
         var clip = BrowserDetailClip(box);
         var x = box.X + 207;
         var objective = new Rectangle(box.X + 197, box.Y + 151 - _detailScroll, 246, _showHowTo ? 138 : 100);
-        ContentCard(painter, objective, clip, BrowserLabel("Objetivos", "Objectives"));
+        ContentCard(painter, objective, clip, ClientText.Get("QuestWindow.Objectives"));
         ContentText(painter, DailyTitle(selected.Goal), x, objective.Y + 33, BrowserText, clip);
         ContentText(painter, _dailyProgress[_dailySelection], x, objective.Y + 54, BrowserGold, clip);
         if (_showHowTo)
         {
-            ContentText(painter, BrowserLabel("Complete a meta para resgatar.", "Complete the goal to claim."), x, objective.Y + 78, BrowserText, clip);
+            ContentText(painter, ClientText.Get("QuestWindow.CompleteToClaim"), x, objective.Y + 78, BrowserText, clip);
             ContentText(painter, _dailyFooter, x, objective.Y + 95, BrowserText, clip);
         }
         var progress = new Rectangle(x, objective.Bottom - 13, 221, 5);
@@ -441,7 +438,7 @@ public sealed partial class HudQuestWindow
             ProgressBar(painter, progress, selected.Progress, selected.Target);
         }
         var reward = new Rectangle(box.X + 197, objective.Bottom + 8, 246, 74 + _dailyItems[_dailySelection].Length * 17);
-        ContentCard(painter, reward, clip, BrowserLabel("Recompensa", "Reward"));
+        ContentCard(painter, reward, clip, ClientText.Get("QuestWindow.Reward"));
         var y = reward.Y + 32;
         if (selected.Gold > 0)
         {
@@ -455,7 +452,7 @@ public sealed partial class HudQuestWindow
         }
         ContentText(painter, _dailyFooter, x, reward.Bottom - 20, BrowserGold, clip);
         _detailContentHeight = reward.Bottom + _detailScroll - (box.Y + 151);
-        var claim = selected.State == RewardEntryState.Claimed ? BrowserLabel("Resgatado", "Claimed") : _dailyPending ? BrowserLabel("Aguardando...", "Waiting...") : BrowserLabel("Resgatar", "Claim");
+        var claim = selected.State == RewardEntryState.Claimed ? ClientText.Get("QuestWindow.Claimed") : _dailyPending ? ClientText.Get("QuestWindow.Waiting") : ClientText.Get("QuestWindow.Claim");
         Button(painter, BrowserClaim(box), claim, pointer, enabled: DailyClaimable, positive: true);
         if (_browserMessage.Length > 0)
         {
@@ -469,10 +466,10 @@ public sealed partial class HudQuestWindow
         painter.Disc(box.X + 210, box.Y + 109, 11, new Color(50, 44, 27));
         painter.Stretch(HudQuestArt.Running, new Rectangle(box.X + 204, box.Y + 103, 12, 12));
         DrawBrowserText(painter, FitBrowser(painter, title, 138, BrowserTitleScale), box.X + 227, box.Y + 100, BrowserGold, BrowserTitleScale);
-        Button(painter, BrowserHowTo(box), BrowserLabel("? Como fazer", "? How to"), pointer, selected: _showHowTo);
+        Button(painter, BrowserHowTo(box), ClientText.Get("QuestWindow.HowTo"), pointer, selected: _showHowTo);
         var tag = new Rectangle(box.X + 197, box.Y + 127, 50, 18);
         painter.FramedBox(tag, new Color(115, 99, 58), new Color(51, 44, 24), 8);
-        BrowserCentered(painter, Page == HudQuestPage.Daily ? BrowserLabel("Diária", "Daily") : "Tutorial", tag.Left, tag.Right, tag.Y + 4, BrowserGold);
+        BrowserCentered(painter, Page == HudQuestPage.Daily ? ClientText.Get("QuestWindow.Daily") : "Tutorial", tag.Left, tag.Right, tag.Y + 4, BrowserGold);
         DrawBrowserText(painter, state, box.X + 255, box.Y + 132, new Color(167, 157, 126), 9f / HudPainter.BakePixels);
     }
 
@@ -531,19 +528,19 @@ public sealed partial class HudQuestWindow
     }
     internal static string DailyTitle(RewardGoal goal) => goal switch
     {
-        RewardGoal.MonsterKills => BrowserLabel("Elimine monstros", "Defeat monsters"),
-        RewardGoal.Sheltoms => BrowserLabel("Colete Sheltoms", "Collect Sheltoms"),
-        RewardGoal.Potions => BrowserLabel("Use poções", "Use potions"),
-        RewardGoal.MonsterDrops => BrowserLabel("Colete itens", "Collect items"),
-        RewardGoal.BellatraEntries => BrowserLabel("Participe do Bellatra", "Enter Bellatra"),
-        RewardGoal.Level => BrowserLabel("Suba de nível", "Level up"),
-        _ => BrowserLabel("Entre no jogo", "Log in")};
+        RewardGoal.MonsterKills => ClientText.Get("QuestWindow.Goal.MonsterKills"),
+        RewardGoal.Sheltoms => ClientText.Get("QuestWindow.Goal.Sheltoms"),
+        RewardGoal.Potions => ClientText.Get("QuestWindow.Goal.Potions"),
+        RewardGoal.MonsterDrops => ClientText.Get("QuestWindow.Goal.MonsterDrops"),
+        RewardGoal.BellatraEntries => ClientText.Get("QuestWindow.Goal.BellatraEntries"),
+        RewardGoal.Level => ClientText.Get("QuestWindow.Goal.Level"),
+        _ => ClientText.Get("QuestWindow.Goal.Login")};
     private string[] WrappedBrowser(SpriteFont font, string text, int width)
     {
-        if (!_browserWrapped.TryGetValue((text, width), out var lines))
+        if (!_browserWrapped.TryGetValue((ClientText.Language, text, width), out var lines))
         {
             lines = HudTextLayout.Wrap(font, text, width, BrowserTextScale);
-            _browserWrapped[(text, width)] = lines;
+            _browserWrapped[(ClientText.Language, text, width)] = lines;
         }
 
         return lines;
@@ -551,10 +548,10 @@ public sealed partial class HudQuestWindow
 
     private string FitBrowser(HudPainter painter, string text, int width, float scale = BrowserTextScale)
     {
-        if (!_browserFitted.TryGetValue((text, width, scale), out var fitted))
+        if (!_browserFitted.TryGetValue((ClientText.Language, text, width, scale), out var fitted))
         {
             fitted = HudTextLayout.Fit(text, width, candidate => painter.MeasureAt(candidate, scale));
-            _browserFitted[(text, width, scale)] = fitted;
+            _browserFitted[(ClientText.Language, text, width, scale)] = fitted;
         }
 
         return fitted;

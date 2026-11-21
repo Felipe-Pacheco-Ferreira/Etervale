@@ -187,7 +187,7 @@ end
 *System
 "Aqui você vê o guia ou fecha o jogo."
 "Precisa de um guia? Quer sair?"
-"Vai me deixar sozinho? Odeio você..ㅠ_ㅠ"
+"Vai me deixar sozinho? Odeio você..T_T"
 "Este atalho abre o menu do sistema."
 end
 *InvenTory_Item
@@ -222,7 +222,7 @@ end
 "Eu vou crescer junto com você."
 "Se o inventário encher, vá à cidade vender seus itens."
 "Iá~ É o meu ataque" ou "HP~"
-"Ufa, ufa, é difícil ajudar alguém..ㅜ.ㅜ"
+"Ufa, ufa, é difícil ajudar alguém..T.T"
 "Vamos brincar juntos~"
 "Se ganhar um item ótimo, me dá metade!"
 "...Você é mais forte do que eu esperava."

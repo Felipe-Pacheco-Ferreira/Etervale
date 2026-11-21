@@ -20,11 +20,12 @@ public sealed class BrowserClient(WebSettings settings)
 
     public bool IsAvailable => Endpoint.Length > 0 && File.Exists(Path.Combine(Root, EntryFile)) && File.Exists(Path.Combine(Root, FrameworkFolder, Loader));
 
-    // The served types: the web's own plus MonoGame's built content (.xnb), which the game fetches before it starts.
+    // The served types: the web's own plus MonoGame's built content (.xnb) and the original game files the client fetches
+    // (the music's .bgm among them).
     public static FileExtensionContentTypeProvider ContentTypes()
     {
         var provider = new FileExtensionContentTypeProvider();
-        foreach (var extension in new[] { ".ase", ".cam", ".ini", ".inx", ".msg", ".sin", ".smb", ".smd", ".tga", ".xnb" })
+        foreach (var extension in new[] { ".ase", ".bgm", ".cam", ".ini", ".inx", ".msg", ".sin", ".smb", ".smd", ".tga", ".xnb" })
         {
             provider.Mappings[extension] = "application/octet-stream";
         }

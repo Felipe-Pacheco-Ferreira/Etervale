@@ -13,7 +13,9 @@ public enum CalendarEventKind : byte
     CastleSiege = 3,
     CrystalEvent = 4,
     ExperienceEvent = 5,
-    DropEvents = 6
+    DropEvents = 6,
+    Arena = 7,
+    Royale = 8
 }
 
 [Flags]
@@ -80,6 +82,12 @@ public sealed record EventScheduleRules
     public int ExperiencePercent { get; init; } = KillReward.NoEventPercent;
 
     public DropEvents Drops { get; init; }
+
+    // The arena's opening hours (ArenaRules.IsOpen, EventSchedule.HourMask), 0 for none.
+    public int ArenaHours { get; init; }
+
+    // The Battle Royale's starting hours (RoyaleRules, EventSchedule.HourMask), 0 for none.
+    public int RoyaleHours { get; init; }
 }
 
 // The calendar as sent to a player: the bosses the boss calls name and the occurrences.
@@ -142,6 +150,25 @@ public static class EventSchedule
         return hours;
     }
 
+    // An hours setting ("13,19,22", the arena's and the Battle Royale's): each an hour 0 to 23, at most one each, as a
+    // HourMask; null when it is not that.
+    public static int? ParseHours(string text)
+    {
+        var mask = 0;
+        foreach (var part in text.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (!int.TryParse(part, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var hour) || hour >= HoursPerDay
+                || (mask & 1 << hour) != 0)
+            {
+                return null;
+            }
+
+            mask |= 1 << hour;
+        }
+
+        return mask;
+    }
+
     public static EventCalendar Calendar(EventScheduleRules rules, DateTimeOffset now, TimeZoneInfo zone, TimeSpan horizon)
     {
         var bosses = new List<CalendarBoss>(Math.Min(rules.Bosses.Count, MaxBosses));
@@ -174,6 +201,16 @@ public static class EventSchedule
         if (rules.CrystalEvent == MonsterCrystals.EventAfternoons)
         {
             AddDaily(CalendarEventKind.CrystalEvent, MonsterCrystals.EventStartHour, HoursPerDay, reach, list);
+        }
+
+        foreach (var hour in Hours(rules.ArenaHours))
+        {
+            AddDaily(CalendarEventKind.Arena, hour, 0, hour, Combat.ArenaRules.OpenMinutes, reach, list);
+        }
+
+        foreach (var hour in Hours(rules.RoyaleHours))
+        {
+            AddDaily(CalendarEventKind.Royale, hour, 0, hour, Combat.RoyaleRules.LimitMinutes, reach, list);
         }
 
         AddSieges(rules, reach, list);
@@ -251,12 +288,16 @@ public static class EventSchedule
     }
 
     // A window from hour from to hour to (24: the day's end) of each server day.
-    private static void AddDaily(CalendarEventKind kind, int from, int to, Reach reach, List<CalendarOccurrence> list)
+    private static void AddDaily(CalendarEventKind kind, int from, int to, Reach reach, List<CalendarOccurrence> list) =>
+        AddDaily(kind, from, 0, to, 0, reach, list);
+
+    private static void AddDaily(CalendarEventKind kind, int fromHour, int fromMinute, int toHour, int toMinute, Reach reach, List<CalendarOccurrence> list)
     {
         for (var day = -1; day < reach.Days; day++)
         {
             var date = reach.Today.AddDays(day);
-            if (TryUtc(date, from, 0, reach.Zone, out var start) && TryUtc(date, to, 0, reach.Zone, out var end) && reach.Overlaps(start, end))
+            if (TryUtc(date, fromHour, fromMinute, reach.Zone, out var start) && TryUtc(date, toHour, toMinute, reach.Zone, out var end)
+                && reach.Overlaps(start, end))
             {
                 list.Add(new CalendarOccurrence(kind, start, end));
             }

@@ -1,0 +1,617 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="Castle.BC101.Effect" xml:space="preserve"><value>Bất khả chiến bại trong chốc lát; sức tấn công giảm một nửa</value></data>
+  <data name="Castle.BC102.Effect" xml:space="preserve"><value>Tỷ lệ chí mạng +5%</value></data>
+  <data name="Castle.BC103.Effect" xml:space="preserve"><value>Tỷ lệ né tránh +5%</value></data>
+  <data name="Castle.BC106.Effect" xml:space="preserve"><value>Giảm 50% sức tấn công của Fire Crystal Tower</value></data>
+  <data name="Castle.BC107.Effect" xml:space="preserve"><value>Giảm 50% sức tấn công của Ice Crystal Tower</value></data>
+  <data name="Castle.BC108.Effect" xml:space="preserve"><value>Giảm 50% sức tấn công của Lightning Crystal Tower</value></data>
+  <data name="Castle.BC109.Effect" xml:space="preserve"><value>+20% sát thương khi đánh trúng Fighter</value></data>
+  <data name="Castle.BC110.Effect" xml:space="preserve"><value>+20% sát thương khi đánh trúng Mechanician</value></data>
+  <data name="Castle.BC111.Effect" xml:space="preserve"><value>+20% sát thương khi đánh trúng Pikeman</value></data>
+  <data name="Castle.BC112.Effect" xml:space="preserve"><value>+20% sát thương khi đánh trúng Archer</value></data>
+  <data name="Castle.BC113.Effect" xml:space="preserve"><value>+20% sát thương khi đánh trúng Knight</value></data>
+  <data name="Castle.BC114.Effect" xml:space="preserve"><value>+20% sát thương khi đánh trúng Atalanta</value></data>
+  <data name="Castle.BC115.Effect" xml:space="preserve"><value>+20% sát thương khi đánh trúng Magician</value></data>
+  <data name="Castle.BC116.Effect" xml:space="preserve"><value>+20% sát thương khi đánh trúng Priestess</value></data>
+  <data name="Class.Archer.0" xml:space="preserve"><value>Archer</value></data>
+  <data name="Class.Archer.1" xml:space="preserve"><value>Huntress Master</value></data>
+  <data name="Class.Archer.2" xml:space="preserve"><value>Dion's Disciple</value></data>
+  <data name="Class.Archer.3" xml:space="preserve"><value>Sagittarion</value></data>
+  <data name="Class.Archer.4" xml:space="preserve"><value>Iskar</value></data>
+  <data name="Class.Assassin.0" xml:space="preserve"><value>Assassin</value></data>
+  <data name="Class.Assassin.1" xml:space="preserve"><value>Rogue</value></data>
+  <data name="Class.Assassin.2" xml:space="preserve"><value>Shadow</value></data>
+  <data name="Class.Assassin.3" xml:space="preserve"><value>Shadow Walker</value></data>
+  <data name="Class.Assassin.4" xml:space="preserve"><value>Shadow Master</value></data>
+  <data name="Class.Atalanta.0" xml:space="preserve"><value>Atalanta</value></data>
+  <data name="Class.Atalanta.1" xml:space="preserve"><value>Valkyrie</value></data>
+  <data name="Class.Atalanta.2" xml:space="preserve"><value>Brunhild</value></data>
+  <data name="Class.Atalanta.3" xml:space="preserve"><value>Valhalla</value></data>
+  <data name="Class.Atalanta.4" xml:space="preserve"><value>Queen of Valhalla</value></data>
+  <data name="Class.Fighter.0" xml:space="preserve"><value>Fighter</value></data>
+  <data name="Class.Fighter.1" xml:space="preserve"><value>Warrior</value></data>
+  <data name="Class.Fighter.2" xml:space="preserve"><value>Champion</value></data>
+  <data name="Class.Fighter.3" xml:space="preserve"><value>Immortal Warrior</value></data>
+  <data name="Class.Fighter.4" xml:space="preserve"><value>Warlord</value></data>
+  <data name="Class.Knight.0" xml:space="preserve"><value>Knight</value></data>
+  <data name="Class.Knight.1" xml:space="preserve"><value>Paladin</value></data>
+  <data name="Class.Knight.2" xml:space="preserve"><value>Holy Knight</value></data>
+  <data name="Class.Knight.3" xml:space="preserve"><value>SaintKnight</value></data>
+  <data name="Class.Knight.4" xml:space="preserve"><value>Valiant</value></data>
+  <data name="Class.Magician.0" xml:space="preserve"><value>Magician</value></data>
+  <data name="Class.Magician.1" xml:space="preserve"><value>Wizard</value></data>
+  <data name="Class.Magician.2" xml:space="preserve"><value>RoyalWizard</value></data>
+  <data name="Class.Magician.3" xml:space="preserve"><value>ArchMage</value></data>
+  <data name="Class.Magician.4" xml:space="preserve"><value>Elemental Master</value></data>
+  <data name="Class.MartialArtist.0" xml:space="preserve"><value>Martial Artist</value></data>
+  <data name="Class.MartialArtist.1" xml:space="preserve"><value>Striker</value></data>
+  <data name="Class.MartialArtist.2" xml:space="preserve"><value>Trick Artist</value></data>
+  <data name="Class.MartialArtist.3" xml:space="preserve"><value>Master</value></data>
+  <data name="Class.MartialArtist.4" xml:space="preserve"><value>Grand Master</value></data>
+  <data name="Class.Mechanician.0" xml:space="preserve"><value>Mechanician</value></data>
+  <data name="Class.Mechanician.1" xml:space="preserve"><value>Mechanic Master</value></data>
+  <data name="Class.Mechanician.2" xml:space="preserve"><value>Metal Leader</value></data>
+  <data name="Class.Mechanician.3" xml:space="preserve"><value>Metallion</value></data>
+  <data name="Class.Mechanician.4" xml:space="preserve"><value>Metal Rage</value></data>
+  <data name="Class.Pikeman.0" xml:space="preserve"><value>Pikeman</value></data>
+  <data name="Class.Pikeman.1" xml:space="preserve"><value>Combatant</value></data>
+  <data name="Class.Pikeman.2" xml:space="preserve"><value>Lancer</value></data>
+  <data name="Class.Pikeman.3" xml:space="preserve"><value>Lancelot</value></data>
+  <data name="Class.Pikeman.4" xml:space="preserve"><value>Bayiolunt</value></data>
+  <data name="Class.Priestess.0" xml:space="preserve"><value>Priestess</value></data>
+  <data name="Class.Priestess.1" xml:space="preserve"><value>Saintess</value></data>
+  <data name="Class.Priestess.2" xml:space="preserve"><value>Bishop</value></data>
+  <data name="Class.Priestess.3" xml:space="preserve"><value>Celestial</value></data>
+  <data name="Class.Priestess.4" xml:space="preserve"><value>Arc Angel</value></data>
+  <data name="Class.Shaman.0" xml:space="preserve"><value>Shaman</value></data>
+  <data name="Class.Shaman.1" xml:space="preserve"><value>Summoner</value></data>
+  <data name="Class.Shaman.2" xml:space="preserve"><value>High Summoner</value></data>
+  <data name="Class.Shaman.3" xml:space="preserve"><value>Soul Catcher</value></data>
+  <data name="Class.Shaman.4" xml:space="preserve"><value>Soul Master</value></data>
+  <data name="Quest.4th Rank-Up Test(Finished)" xml:space="preserve"><value>Thử thách thăng cấp lần 4(Hoàn thành)</value></data>
+  <data name="Quest.4th Rank-Up Test[1]" xml:space="preserve"><value>Thử thách thăng cấp lần 4[1]</value></data>
+  <data name="Quest.4th Rank-Up Test[2]" xml:space="preserve"><value>Thử thách thăng cấp lần 4[2]</value></data>
+  <data name="Quest.4th Rank-Up Test[3]" xml:space="preserve"><value>Thử thách thăng cấp lần 4[3]</value></data>
+  <data name="Quest.4th Rank-Up Test[4]" xml:space="preserve"><value>Thử thách thăng cấp lần 4[4]</value></data>
+  <data name="Quest.4th Rank-Up Test[5]" xml:space="preserve"><value>Thử thách thăng cấp lần 4[5]</value></data>
+  <data name="Quest.4th Rank-Up Test[6]" xml:space="preserve"><value>Thử thách thăng cấp lần 4[6]</value></data>
+  <data name="Quest.A lost Hammer" xml:space="preserve"><value>Chiếc búa bị mất</value></data>
+  <data name="Quest.A lost Hammer(Complete)" xml:space="preserve"><value>Chiếc búa bị mất(Hoàn thành)</value></data>
+  <data name="Quest.A tired warehouse keeper" xml:space="preserve"><value>Người giữ kho mệt mỏi</value></data>
+  <data name="Quest.A tired warehouse keeper(Complete)" xml:space="preserve"><value>Người giữ kho mệt mỏi(Hoàn thành)</value></data>
+  <data name="Quest.Bitter ordeal" xml:space="preserve"><value>Thử thách cay đắng</value></data>
+  <data name="Quest.Bitter ordeal(Complete)" xml:space="preserve"><value>Thử thách cay đắng(Hoàn thành)</value></data>
+  <data name="Quest.Candy Delivery" xml:space="preserve"><value>Giao kẹo</value></data>
+  <data name="Quest.Candy Delivery(Complete)" xml:space="preserve"><value>Giao kẹo(Hoàn thành)</value></data>
+  <data name="Quest.Capturing the devil" xml:space="preserve"><value>Bắt ác quỷ</value></data>
+  <data name="Quest.Capturing the devil(Complete)" xml:space="preserve"><value>Bắt ác quỷ(Hoàn thành)</value></data>
+  <data name="Quest.Clever Newter" xml:space="preserve"><value>Newter thông minh</value></data>
+  <data name="Quest.Clever Newter(Complete)" xml:space="preserve"><value>Newter thông minh(Hoàn thành)</value></data>
+  <data name="Quest.Delivery bomb" xml:space="preserve"><value>Giao bom</value></data>
+  <data name="Quest.Delivery bomb(Complete)" xml:space="preserve"><value>Giao bom(Hoàn thành)</value></data>
+  <data name="Quest.Destroyed destruction weapon" xml:space="preserve"><value>Vũ khí hủy diệt bị phá hủy</value></data>
+  <data name="Quest.Destroyed destruction weapon(Complete)" xml:space="preserve"><value>Vũ khí hủy diệt bị phá hủy(Hoàn thành)</value></data>
+  <data name="Quest.Devious Necromancer" xml:space="preserve"><value>Tên Necromancer xảo quyệt</value></data>
+  <data name="Quest.Devious Necromancer(Complete)" xml:space="preserve"><value>Tên Necromancer xảo quyệt(Hoàn thành)</value></data>
+  <data name="Quest.Enclosed Fury" xml:space="preserve"><value>Fury bị giam cầm</value></data>
+  <data name="Quest.Enclosed Fury(completed)" xml:space="preserve"><value>Fury bị giam cầm(Hoàn thành)</value></data>
+  <data name="Quest.Eternal Love1" xml:space="preserve"><value>Tình yêu vĩnh cửu 1</value></data>
+  <data name="Quest.Eternal Love1(Complete)" xml:space="preserve"><value>Tình yêu vĩnh cửu 1(Hoàn thành)</value></data>
+  <data name="Quest.Eternal Love2" xml:space="preserve"><value>Tình yêu vĩnh cửu 2</value></data>
+  <data name="Quest.Eternal Love2(Complete)" xml:space="preserve"><value>Tình yêu vĩnh cửu 2(Hoàn thành)</value></data>
+  <data name="Quest.For her" xml:space="preserve"><value>Vì nàng</value></data>
+  <data name="Quest.For her(completed)" xml:space="preserve"><value>Vì nàng(Hoàn thành)</value></data>
+  <data name="Quest.Fury's phantasma(Complete)" xml:space="preserve"><value>Bóng ma của Fury(Hoàn thành)</value></data>
+  <data name="Quest.Fury's phantasma[1]" xml:space="preserve"><value>Bóng ma của Fury[1]</value></data>
+  <data name="Quest.Fury's phantasma[2]" xml:space="preserve"><value>Bóng ma của Fury[2]</value></data>
+  <data name="Quest.Fury's phantasma[3]" xml:space="preserve"><value>Bóng ma của Fury[3]</value></data>
+  <data name="Quest.Fury's phantasma[4]" xml:space="preserve"><value>Bóng ma của Fury[4]</value></data>
+  <data name="Quest.Fury's phantasma[5]" xml:space="preserve"><value>Bóng ma của Fury[5]</value></data>
+  <data name="Quest.Goblin Hill" xml:space="preserve"><value>Goblin Hill</value></data>
+  <data name="Quest.Goblin Hill(Complete)" xml:space="preserve"><value>Goblin Hill(Hoàn thành)</value></data>
+  <data name="Quest.Helping Michelle" xml:space="preserve"><value>Giúp đỡ Michelle</value></data>
+  <data name="Quest.Helping Michelle(completed)" xml:space="preserve"><value>Giúp đỡ Michelle(Hoàn thành)</value></data>
+  <data name="Quest.Invaders chopped up" xml:space="preserve"><value>Chém nát quân xâm lược</value></data>
+  <data name="Quest.Invaders chopped up(Complete)" xml:space="preserve"><value>Chém nát quân xâm lược(Hoàn thành)</value></data>
+  <data name="Quest.Job Quest 3th(Complete)" xml:space="preserve"><value>Nhiệm vụ chuyển nghề cấp 3(Hoàn thành)</value></data>
+  <data name="Quest.Job Quest 3th[1]" xml:space="preserve"><value>Nhiệm vụ chuyển nghề cấp 3[1]</value></data>
+  <data name="Quest.Job Quest 3th[2]" xml:space="preserve"><value>Nhiệm vụ chuyển nghề cấp 3[2]</value></data>
+  <data name="Quest.Job Quest 3th[3]" xml:space="preserve"><value>Nhiệm vụ chuyển nghề cấp 3[3]</value></data>
+  <data name="Quest.Job Quest 3th[4]" xml:space="preserve"><value>Nhiệm vụ chuyển nghề cấp 3[4]</value></data>
+  <data name="Quest.Lovers of history1" xml:space="preserve"><value>Những người yêu lịch sử 1</value></data>
+  <data name="Quest.Lovers of history1(Complete)" xml:space="preserve"><value>Những người yêu lịch sử 1(Hoàn thành)</value></data>
+  <data name="Quest.Lovers of history2" xml:space="preserve"><value>Những người yêu lịch sử 2</value></data>
+  <data name="Quest.Lovers of history2(Complete)" xml:space="preserve"><value>Những người yêu lịch sử 2(Hoàn thành)</value></data>
+  <data name="Quest.Manufacturing bomb" xml:space="preserve"><value>Chế tạo bom</value></data>
+  <data name="Quest.Manufacturing bomb(Complete)" xml:space="preserve"><value>Chế tạo bom(Hoàn thành)</value></data>
+  <data name="Quest.Miranda's location" xml:space="preserve"><value>Tung tích của Miranda</value></data>
+  <data name="Quest.Miranda's location(Complete)" xml:space="preserve"><value>Tung tích của Miranda(Hoàn thành)</value></data>
+  <data name="Quest.Mission from the ancestor" xml:space="preserve"><value>Sứ mệnh từ tổ tiên</value></data>
+  <data name="Quest.Mission from the ancestor(Complete)" xml:space="preserve"><value>Sứ mệnh từ tổ tiên(Hoàn thành)</value></data>
+  <data name="Quest.One-eyed Monsters" xml:space="preserve"><value>Quái vật một mắt</value></data>
+  <data name="Quest.One-eyed Monsters(Complete)" xml:space="preserve"><value>Quái vật một mắt(Hoàn thành)</value></data>
+  <data name="Quest.Patron's request" xml:space="preserve"><value>Lời thỉnh cầu của Patron</value></data>
+  <data name="Quest.Patron's request(Complete)" xml:space="preserve"><value>Lời thỉnh cầu của Patron(Hoàn thành)</value></data>
+  <data name="Quest.Questionable document" xml:space="preserve"><value>Tài liệu đáng ngờ</value></data>
+  <data name="Quest.Questionable document(Complete)" xml:space="preserve"><value>Tài liệu đáng ngờ(Hoàn thành)</value></data>
+  <data name="Quest.Rank up quest" xml:space="preserve"><value>Nhiệm vụ thăng cấp</value></data>
+  <data name="Quest.Rank up quest (Completed)" xml:space="preserve"><value>Nhiệm vụ thăng cấp (Hoàn thành)</value></data>
+  <data name="Quest.Rank up quest [Second]" xml:space="preserve"><value>Nhiệm vụ thăng cấp [Thứ hai]</value></data>
+  <data name="Quest.Rank up quest second[1]" xml:space="preserve"><value>Nhiệm vụ thăng cấp lần 2[1]</value></data>
+  <data name="Quest.Rank up quest second[2]" xml:space="preserve"><value>Nhiệm vụ thăng cấp lần 2[2]</value></data>
+  <data name="Quest.Rank up quest second[3]" xml:space="preserve"><value>Nhiệm vụ thăng cấp lần 2[3]</value></data>
+  <data name="Quest.Rank up quest second[4]" xml:space="preserve"><value>Nhiệm vụ thăng cấp lần 2[4]</value></data>
+  <data name="Quest.Rank up quest second[5]" xml:space="preserve"><value>Nhiệm vụ thăng cấp lần 2[5]</value></data>
+  <data name="Quest.Rank up quest second[Completed]" xml:space="preserve"><value>Nhiệm vụ thăng cấp lần 2[Hoàn thành]</value></data>
+  <data name="Quest.Rank up quest(Completed)" xml:space="preserve"><value>Nhiệm vụ thăng cấp(Hoàn thành)</value></data>
+  <data name="Quest.Rank-up Exam (Done)" xml:space="preserve"><value>Kỳ thi thăng cấp (Hoàn thành)</value></data>
+  <data name="Quest.Report delivery" xml:space="preserve"><value>Giao báo cáo</value></data>
+  <data name="Quest.Report delivery(Complete)" xml:space="preserve"><value>Giao báo cáo(Hoàn thành)</value></data>
+  <data name="Quest.Ring purification1" xml:space="preserve"><value>Thanh tẩy chiếc nhẫn 1</value></data>
+  <data name="Quest.Ring purification1(Complete)" xml:space="preserve"><value>Thanh tẩy chiếc nhẫn 1(Hoàn thành)</value></data>
+  <data name="Quest.Ring purification2" xml:space="preserve"><value>Thanh tẩy chiếc nhẫn 2</value></data>
+  <data name="Quest.Ring purification2(Complete)" xml:space="preserve"><value>Thanh tẩy chiếc nhẫn 2(Hoàn thành)</value></data>
+  <data name="Quest.Shattering Ancient weapon" xml:space="preserve"><value>Phá hủy vũ khí cổ đại</value></data>
+  <data name="Quest.Shattering Ancient weapon(Complete)" xml:space="preserve"><value>Phá hủy vũ khí cổ đại(Hoàn thành)</value></data>
+  <data name="Quest.Signs of fear" xml:space="preserve"><value>Dấu hiệu của nỗi sợ</value></data>
+  <data name="Quest.Signs of fear(Complete)" xml:space="preserve"><value>Dấu hiệu của nỗi sợ(Hoàn thành)</value></data>
+  <data name="Quest.Soul of Devil" xml:space="preserve"><value>Linh hồn ác quỷ</value></data>
+  <data name="Quest.Soul of Devil(Complete)" xml:space="preserve"><value>Linh hồn ác quỷ(Hoàn thành)</value></data>
+  <data name="Quest.Tears of Khalia" xml:space="preserve"><value>Giọt lệ của Khalia</value></data>
+  <data name="Quest.Tears of Khalia(completed)" xml:space="preserve"><value>Giọt lệ của Khalia(Hoàn thành)</value></data>
+  <data name="Quest.Test of Kingdom" xml:space="preserve"><value>Thử thách của vương quốc</value></data>
+  <data name="Quest.Test of Kingdom(Complete)" xml:space="preserve"><value>Thử thách của vương quốc(Hoàn thành)</value></data>
+  <data name="Quest.The Cave" xml:space="preserve"><value>Hang động</value></data>
+  <data name="Quest.The Cave(completed)" xml:space="preserve"><value>Hang động(Hoàn thành)</value></data>
+  <data name="Quest.Threats of the Undead" xml:space="preserve"><value>Mối đe dọa từ Undead</value></data>
+  <data name="Quest.Threats of the Undead(Complete)" xml:space="preserve"><value>Mối đe dọa từ Undead(Hoàn thành)</value></data>
+  <data name="Quest.Village of Eura(completed)" xml:space="preserve"><value>Làng Eura(Hoàn thành)</value></data>
+  <data name="Quest.Village of eura" xml:space="preserve"><value>Làng Eura</value></data>
+  <data name="Quest.War of the Ancient" xml:space="preserve"><value>Cuộc chiến của người cổ đại</value></data>
+  <data name="Quest.War of the Ancient(Complete)" xml:space="preserve"><value>Cuộc chiến của người cổ đại(Hoàn thành)</value></data>
+  <data name="Skill.01010001.Description" xml:space="preserve"><value>Tạm thời tăng tỷ lệ đỡ đòn của khiên đang trang bị</value></data>
+  <data name="Skill.01010001.Name" xml:space="preserve"><value>Extreme Shield</value></data>
+  <data name="Skill.01010002.Description" xml:space="preserve"><value>Ném bom vào kẻ địch trong phạm vi nổ</value></data>
+  <data name="Skill.01010002.Name" xml:space="preserve"><value>Mechanic Bomb</value></data>
+  <data name="Skill.01010003.Description" xml:space="preserve"><value>Tạm thời tăng khả năng hấp thụ sát thương của cơ thể</value></data>
+  <data name="Skill.01010003.Name" xml:space="preserve"><value>Physical Absorption</value></data>
+  <data name="Skill.01010004.Description" xml:space="preserve"><value>Vĩnh viễn tăng kháng độc</value></data>
+  <data name="Skill.01010004.Name" xml:space="preserve"><value>Poison Attribute</value></data>
+  <data name="Skill.01020001.Description" xml:space="preserve"><value>Dồn toàn bộ sức mạnh vào một cú đập cực mạnh</value></data>
+  <data name="Skill.01020001.Name" xml:space="preserve"><value>Great Smash</value></data>
+  <data name="Skill.01020002.Description" xml:space="preserve"><value>Tối ưu hóa vũ khí để vĩnh viễn tăng sức tấn công</value></data>
+  <data name="Skill.01020002.Name" xml:space="preserve"><value>Maximize</value></data>
+  <data name="Skill.01020003.Description" xml:space="preserve"><value>Tự động hóa vũ khí phóng để tạm thời tăng tốc độ và sức tấn công</value></data>
+  <data name="Skill.01020003.Name" xml:space="preserve"><value>Automation</value></data>
+  <data name="Skill.01020004.Description" xml:space="preserve"><value>Tấn công kẻ địch xung quanh bằng những tia sét mạnh</value></data>
+  <data name="Skill.01020004.Name" xml:space="preserve"><value>Spark</value></data>
+  <data name="Skill.01040001.Description" xml:space="preserve"><value>Tăng phòng thủ của giáp Mechanician trong thời gian giới hạn.</value></data>
+  <data name="Skill.01040001.Name" xml:space="preserve"><value>Metal Armor</value></data>
+  <data name="Skill.01040002.Description" xml:space="preserve"><value>Tấn công liên tục và chính xác vào kẻ địch. Tăng tỷ lệ chính xác</value></data>
+  <data name="Skill.01040002.Name" xml:space="preserve"><value>Grand Smash</value></data>
+  <data name="Skill.01040003.Description" xml:space="preserve"><value>Tối ưu hóa các vật phẩm chuyên dụng của Mechanician.</value></data>
+  <data name="Skill.01040003.Name" xml:space="preserve"><value>Mechanic Weapon Mastery</value></data>
+  <data name="Skill.01040004.Description" xml:space="preserve"><value>Tạo ra một lớp bảo vệ điện vô hình.</value></data>
+  <data name="Skill.01040004.Name" xml:space="preserve"><value>Spark Shield</value></data>
+  <data name="Skill.01080001.Description" xml:space="preserve"><value>Tấn công quái vật xung quanh bằng dòng điện từ một cú đập mạnh.</value></data>
+  <data name="Skill.01080001.Name" xml:space="preserve"><value>Impulsion</value></data>
+  <data name="Skill.01080002.Description" xml:space="preserve"><value>Tập hợp quái vật xung quanh bằng một tiếng hét mạnh mẽ.</value></data>
+  <data name="Skill.01080002.Name" xml:space="preserve"><value>Compulsion</value></data>
+  <data name="Skill.01080003.Description" xml:space="preserve"><value>Tạo ra một quả cầu từ trường mạnh lên người chơi được chọn.</value></data>
+  <data name="Skill.01080003.Name" xml:space="preserve"><value>Magnetic Sphere</value></data>
+  <data name="Skill.01080004.Description" xml:space="preserve"><value>Tăng phòng thủ và tỷ lệ chính xác của bạn nhờ lớp thép giáp vững chắc của Golem.</value></data>
+  <data name="Skill.01080004.Name" xml:space="preserve"><value>Metal Golem</value></data>
+  <data name="Skill.01100001.Description" xml:space="preserve"><value>Nhanh chóng gài mìn xung quanh để đánh trúng kẻ địch trong phạm vi.</value></data>
+  <data name="Skill.01100001.Name" xml:space="preserve"><value>Land Mining</value></data>
+  <data name="Skill.01100002.Description" xml:space="preserve"><value>Tạm thời tăng tốc độ tấn công.</value></data>
+  <data name="Skill.01100002.Name" xml:space="preserve"><value>Hyper Sonic</value></data>
+  <data name="Skill.01100003.Description" xml:space="preserve"><value>4 đòn tấn công mạnh gây sát thương chí mạng.</value></data>
+  <data name="Skill.01100003.Name" xml:space="preserve"><value>Rolling Smash</value></data>
+  <data name="Skill.01100004.Description" xml:space="preserve"><value>Tăng sức tấn công tối thiểu và tối đa của bạn, cùng sức tấn công tối đa của party.</value></data>
+  <data name="Skill.01100004.Name" xml:space="preserve"><value>Power Enhancement</value></data>
+  <data name="Skill.02010001.Description" xml:space="preserve"><value>Tăng độ thành thạo vũ khí cận chiến, vĩnh viễn tăng sức tấn công</value></data>
+  <data name="Skill.02010001.Name" xml:space="preserve"><value>Melee Mastery</value></data>
+  <data name="Skill.02010002.Description" xml:space="preserve"><value>Vĩnh viễn tăng kháng lửa</value></data>
+  <data name="Skill.02010002.Name" xml:space="preserve"><value>Fire Attribute</value></data>
+  <data name="Skill.02010003.Description" xml:space="preserve"><value>Nổi cơn thịnh nộ trong thời gian ngắn, nhưng mất HP sau mỗi đòn tấn công</value></data>
+  <data name="Skill.02010003.Name" xml:space="preserve"><value>Raving</value></data>
+  <data name="Skill.02010004.Description" xml:space="preserve"><value>Tăng tỷ lệ chính xác để đánh trúng kẻ địch</value></data>
+  <data name="Skill.02010004.Name" xml:space="preserve"><value>Impact</value></data>
+  <data name="Skill.02020001.Description" xml:space="preserve"><value>Phiên bản mạnh hơn của Impact</value></data>
+  <data name="Skill.02020001.Name" xml:space="preserve"><value>Triple Impact</value></data>
+  <data name="Skill.02020002.Description" xml:space="preserve"><value>Giáng một đòn mạnh mẽ và chí mạng vào kẻ địch</value></data>
+  <data name="Skill.02020002.Name" xml:space="preserve"><value>Brutal Swing</value></data>
+  <data name="Skill.02020003.Description" xml:space="preserve"><value>Gầm lên chói tai khiến kẻ địch choáng váng và rối loạn trong chốc lát</value></data>
+  <data name="Skill.02020003.Name" xml:space="preserve"><value>Roar</value></data>
+  <data name="Skill.02020004.Description" xml:space="preserve"><value>Mượn sức mạnh của anh hùng huyền thoại Zechram</value></data>
+  <data name="Skill.02020004.Name" xml:space="preserve"><value>Rage of Zechram</value></data>
+  <data name="Skill.02040001.Description" xml:space="preserve"><value>Tăng tỷ lệ chính xác trong một khoảng thời gian ngắn.</value></data>
+  <data name="Skill.02040001.Name" xml:space="preserve"><value>Concentration</value></data>
+  <data name="Skill.02040002.Description" xml:space="preserve"><value>Những đòn tấn công nghiền nát và mạnh mẽ vào kẻ địch.</value></data>
+  <data name="Skill.02040002.Name" xml:space="preserve"><value>Avenging Crash</value></data>
+  <data name="Skill.02040003.Description" xml:space="preserve"><value>Tăng tốc độ tấn công của rìu trong thời gian giới hạn.</value></data>
+  <data name="Skill.02040003.Name" xml:space="preserve"><value>Swift Axe</value></data>
+  <data name="Skill.02040004.Description" xml:space="preserve"><value>Được tổ tiên dùng để đánh bại ác quỷ. Đòn tấn công mạnh đánh trúng kẻ địch hai lần.</value></data>
+  <data name="Skill.02040004.Name" xml:space="preserve"><value>Bone Crash</value></data>
+  <data name="Skill.02080001.Description" xml:space="preserve"><value>Cú đánh đôi mạnh nhất nhằm vào quái vật.</value></data>
+  <data name="Skill.02080001.Name" xml:space="preserve"><value>Destroyer</value></data>
+  <data name="Skill.02080002.Description" xml:space="preserve"><value>Rơi vào trạng thái mất lý trí, nhưng khả năng hấp thụ giảm mạnh</value></data>
+  <data name="Skill.02080002.Name" xml:space="preserve"><value>Berserker</value></data>
+  <data name="Skill.02080003.Description" xml:space="preserve"><value>Tấn công quái vật bằng những vòng xoay mạnh mẽ.</value></data>
+  <data name="Skill.02080003.Name" xml:space="preserve"><value>Cyclone Strike</value></data>
+  <data name="Skill.02080004.Description" xml:space="preserve"><value>Vĩnh viễn tăng HP.</value></data>
+  <data name="Skill.02080004.Name" xml:space="preserve"><value>Boost Health</value></data>
+  <data name="Skill.02100001.Description" xml:space="preserve"><value>Hất kẻ địch lên không trung và tấn công 3 lần.</value></data>
+  <data name="Skill.02100001.Name" xml:space="preserve"><value>Down Hit</value></data>
+  <data name="Skill.02100002.Description" xml:space="preserve"><value>Lao về phía kẻ địch và làm chúng choáng váng.</value></data>
+  <data name="Skill.02100002.Name" xml:space="preserve"><value>Power Rush</value></data>
+  <data name="Skill.02100003.Description" xml:space="preserve"><value>Xoay vũ khí với những chuyển động chậm nhưng đầy sức mạnh.</value></data>
+  <data name="Skill.02100003.Name" xml:space="preserve"><value>Mortal Blow</value></data>
+  <data name="Skill.02100004.Description" xml:space="preserve"><value>Giảm khả năng hấp thụ để tăng sát thương tấn công.</value></data>
+  <data name="Skill.02100004.Name" xml:space="preserve"><value>Bloody Berserker</value></data>
+  <data name="Skill.03010001.Description" xml:space="preserve"><value>Tạo ra một cơn lốc đẩy lùi và gây thương tích cho kẻ địch</value></data>
+  <data name="Skill.03010001.Name" xml:space="preserve"><value>Pike Wind</value></data>
+  <data name="Skill.03010002.Description" xml:space="preserve"><value>Vĩnh viễn tăng kháng băng</value></data>
+  <data name="Skill.03010002.Name" xml:space="preserve"><value>Ice Attribute</value></data>
+  <data name="Skill.03010003.Description" xml:space="preserve"><value>Nhắm vào điểm yếu của kẻ địch để tăng tỷ lệ đòn chí mạng</value></data>
+  <data name="Skill.03010003.Name" xml:space="preserve"><value>Critical Hit</value></data>
+  <data name="Skill.03010004.Description" xml:space="preserve"><value>Nhảy lên không trung và lao xuống với một cú đập mạnh</value></data>
+  <data name="Skill.03010004.Name" xml:space="preserve"><value>Jumping Crash</value></data>
+  <data name="Skill.03020001.Description" xml:space="preserve"><value>Phú cho vũ khí thuộc tính băng để có đòn tấn công mạnh</value></data>
+  <data name="Skill.03020001.Name" xml:space="preserve"><value>Ground Pike</value></data>
+  <data name="Skill.03020002.Description" xml:space="preserve"><value>Triệu hồi lốc xoáy để tấn công kẻ địch xung quanh</value></data>
+  <data name="Skill.03020002.Name" xml:space="preserve"><value>Tornado</value></data>
+  <data name="Skill.03020003.Description" xml:space="preserve"><value>Vĩnh viễn tăng phòng thủ khi cầm vũ khí cán dài</value></data>
+  <data name="Skill.03020003.Name" xml:space="preserve"><value>Weapon Defence Mastery</value></data>
+  <data name="Skill.03020004.Description" xml:space="preserve"><value>Nạp đầy sức mạnh vào vũ khí cho đòn tấn công hủy diệt</value></data>
+  <data name="Skill.03020004.Name" xml:space="preserve"><value>Expansion</value></data>
+  <data name="Skill.03040001.Description" xml:space="preserve"><value>Cắm ngọn giáo xuống đất để tấn công kẻ địch.</value></data>
+  <data name="Skill.03040001.Name" xml:space="preserve"><value>Venom Spear</value></data>
+  <data name="Skill.03040002.Description" xml:space="preserve"><value>Khiến bạn tàng hình trong thời gian giới hạn.</value></data>
+  <data name="Skill.03040002.Name" xml:space="preserve"><value>Vanish</value></data>
+  <data name="Skill.03040003.Description" xml:space="preserve"><value>Vĩnh viễn tăng tỷ lệ tấn công chí mạng (%)</value></data>
+  <data name="Skill.03040003.Name" xml:space="preserve"><value>Critical Mastery</value></data>
+  <data name="Skill.03040004.Description" xml:space="preserve"><value>Đòn chí mạng xoay vòng với 3 nhát đâm</value></data>
+  <data name="Skill.03040004.Name" xml:space="preserve"><value>Chain Lance</value></data>
+  <data name="Skill.03080001.Description" xml:space="preserve"><value>Tìm điểm yếu của quái vật và tăng sự tập trung.</value></data>
+  <data name="Skill.03080001.Name" xml:space="preserve"><value>Assassin Eye</value></data>
+  <data name="Skill.03080002.Description" xml:space="preserve"><value>Tích tụ sức mạnh cho những đòn tấn công liên tiếp.</value></data>
+  <data name="Skill.03080002.Name" xml:space="preserve"><value>Charging Strike</value></data>
+  <data name="Skill.03080003.Description" xml:space="preserve"><value>Khiến cơ thể bạn trở nên mờ ảo.</value></data>
+  <data name="Skill.03080003.Name" xml:space="preserve"><value>Vague</value></data>
+  <data name="Skill.03080004.Description" xml:space="preserve"><value>Những tàn ảnh liên tục gây sát thương lớn lên quái vật.</value></data>
+  <data name="Skill.03080004.Name" xml:space="preserve"><value>Shadow Master</value></data>
+  <data name="Skill.03100001.Description" xml:space="preserve"><value>Xoay dọc người trên không rồi hạ xuống với một đòn tấn công mạnh.</value></data>
+  <data name="Skill.03100001.Name" xml:space="preserve"><value>Dancing Reaper</value></data>
+  <data name="Skill.03100002.Description" xml:space="preserve"><value>Những ngọn giáo khổng lồ trồi lên từ mặt đất để tấn công kẻ địch.</value></data>
+  <data name="Skill.03100002.Name" xml:space="preserve"><value>Final Spear</value></data>
+  <data name="Skill.03100003.Description" xml:space="preserve"><value>Giảm khả năng hấp thụ để tăng sát thương và độ chính xác.</value></data>
+  <data name="Skill.03100003.Name" xml:space="preserve"><value>Amplified</value></data>
+  <data name="Skill.03100004.Description" xml:space="preserve"><value>Xoay quanh để tấn công và đánh cắp sinh lực của kẻ địch.</value></data>
+  <data name="Skill.03100004.Name" xml:space="preserve"><value>Side Spin Attack</value></data>
+  <data name="Skill.04010001.Description" xml:space="preserve"><value>Triệu hồi một con diều hâu canh gác xung quanh, giúp tăng tỷ lệ chính xác</value></data>
+  <data name="Skill.04010001.Name" xml:space="preserve"><value>Scout Hawk</value></data>
+  <data name="Skill.04010002.Description" xml:space="preserve"><value>Vĩnh viễn tăng sức tấn công khi dùng cung và nỏ</value></data>
+  <data name="Skill.04010002.Name" xml:space="preserve"><value>Shooting Mastery</value></data>
+  <data name="Skill.04010003.Description" xml:space="preserve"><value>Phú cho mũi tên thuộc tính gió để tăng sức tấn công</value></data>
+  <data name="Skill.04010003.Name" xml:space="preserve"><value>Wind Arrow</value></data>
+  <data name="Skill.04010004.Description" xml:space="preserve"><value>Bắn một phát ngắm chuẩn với tỷ lệ chính xác và sức mạnh cao hơn</value></data>
+  <data name="Skill.04010004.Name" xml:space="preserve"><value>Perfect Aim</value></data>
+  <data name="Skill.04020001.Description" xml:space="preserve"><value>Rèn luyện thị lực như cung thủ huyền thoại Dion để vĩnh viễn tăng tỷ lệ chính xác</value></data>
+  <data name="Skill.04020001.Name" xml:space="preserve"><value>Dion's Eye</value></data>
+  <data name="Skill.04020002.Description" xml:space="preserve"><value>Triệu hồi một con chim ưng hung dữ để tấn công kẻ địch xung quanh</value></data>
+  <data name="Skill.04020002.Name" xml:space="preserve"><value>Falcon</value></data>
+  <data name="Skill.04020003.Description" xml:space="preserve"><value>Bắn vào khu vực được chọn, mũi tên sẽ phát nổ và trút mưa lửa xuống kẻ địch</value></data>
+  <data name="Skill.04020003.Name" xml:space="preserve"><value>Arrow of Rage</value></data>
+  <data name="Skill.04020004.Description" xml:space="preserve"><value>Bắn liên tiếp những mũi tên xuyên thấu vào cùng một mục tiêu</value></data>
+  <data name="Skill.04020004.Name" xml:space="preserve"><value>Avalanche</value></data>
+  <data name="Skill.04040001.Description" xml:space="preserve"><value>Những đòn tấn công nguyên tố liên tục vào kẻ địch</value></data>
+  <data name="Skill.04040001.Name" xml:space="preserve"><value>Elemental Shot</value></data>
+  <data name="Skill.04040002.Description" xml:space="preserve"><value>Triệu hồi một con chim ưng để tấn công kẻ địch</value></data>
+  <data name="Skill.04040002.Name" xml:space="preserve"><value>Golden Falcon</value></data>
+  <data name="Skill.04040003.Description" xml:space="preserve"><value>Bắn hai mũi tên nổ liên tiếp. Gây sát thương diện rộng lên kẻ địch.</value></data>
+  <data name="Skill.04040003.Name" xml:space="preserve"><value>Bomb Shot</value></data>
+  <data name="Skill.04040004.Description" xml:space="preserve"><value>Những đòn tấn công chính xác và liên tục xuyên qua kẻ địch.</value></data>
+  <data name="Skill.04040004.Name" xml:space="preserve"><value>Perforation</value></data>
+  <data name="Skill.04080001.Description" xml:space="preserve"><value>Triệu hồi Wolverine.</value></data>
+  <data name="Skill.04080001.Name" xml:space="preserve"><value>Recall Wolverine</value></data>
+  <data name="Skill.04080002.Description" xml:space="preserve"><value>Khéo léo né tránh đòn tấn công của kẻ địch.</value></data>
+  <data name="Skill.04080002.Name" xml:space="preserve"><value>Evasion Mastery</value></data>
+  <data name="Skill.04080003.Description" xml:space="preserve"><value>Đòn tấn công diện rộng với năng lượng của Phoenix.</value></data>
+  <data name="Skill.04080003.Name" xml:space="preserve"><value>Phoenix Shot</value></data>
+  <data name="Skill.04080004.Description" xml:space="preserve"><value>Nâng cao khả năng của bạn nhờ sự hòa hợp hoàn hảo với thiên nhiên.</value></data>
+  <data name="Skill.04080004.Name" xml:space="preserve"><value>Force of Nature</value></data>
+  <data name="Skill.04100001.Description" xml:space="preserve"><value>Nhảy lên và đá kẻ địch, khiến chúng choáng váng.</value></data>
+  <data name="Skill.04100001.Name" xml:space="preserve"><value>Evasion Shot</value></data>
+  <data name="Skill.04100002.Description" xml:space="preserve"><value>Bắn hai mũi tên điện trong một đòn tấn công mạnh.</value></data>
+  <data name="Skill.04100002.Name" xml:space="preserve"><value>Thunder Roop</value></data>
+  <data name="Skill.04100003.Description" xml:space="preserve"><value>Nạp năng lượng thiên nhiên vào mũi tên và tạo ra một cơn lốc.</value></data>
+  <data name="Skill.04100003.Name" xml:space="preserve"><value>Nature Splash</value></data>
+  <data name="Skill.04100004.Description" xml:space="preserve"><value>Nhắm vào điểm yếu của kẻ địch và làm chúng chậm lại.</value></data>
+  <data name="Skill.04100004.Name" xml:space="preserve"><value>Circle Trap</value></data>
+  <data name="Skill.05010001.Description" xml:space="preserve"><value>Phóng ra thanh kiếm hủy diệt để tấn công kẻ địch</value></data>
+  <data name="Skill.05010001.Name" xml:space="preserve"><value>Sword Blast</value></data>
+  <data name="Skill.05010002.Description" xml:space="preserve"><value>Trở nên thánh khiết để tăng khả năng hấp thụ trước undead.</value></data>
+  <data name="Skill.05010002.Name" xml:space="preserve"><value>Holy Body</value></data>
+  <data name="Skill.05010003.Description" xml:space="preserve"><value>Rèn luyện thể chất giúp vĩnh viễn tăng thể lực</value></data>
+  <data name="Skill.05010003.Name" xml:space="preserve"><value>Physical Training</value></data>
+  <data name="Skill.05010004.Description" xml:space="preserve"><value>Thực hiện 2 đòn tấn công liên tiếp vào kẻ địch.</value></data>
+  <data name="Skill.05010004.Name" xml:space="preserve"><value>Double Crash</value></data>
+  <data name="Skill.05020001.Description" xml:space="preserve"><value>Tăng sức tấn công lên undead nhờ sức mạnh dũng cảm.</value></data>
+  <data name="Skill.05020001.Name" xml:space="preserve"><value>Holy Valor</value></data>
+  <data name="Skill.05020002.Description" xml:space="preserve"><value>Tấn công mọi kẻ địch trong phạm vi.</value></data>
+  <data name="Skill.05020002.Name" xml:space="preserve"><value>Brandish</value></data>
+  <data name="Skill.05020003.Description" xml:space="preserve"><value>Chém nhiều kẻ địch bằng sức mạnh và tinh thần to lớn.</value></data>
+  <data name="Skill.05020003.Name" xml:space="preserve"><value>Piercing</value></data>
+  <data name="Skill.05020004.Description" xml:space="preserve"><value>Tăng phòng thủ trong một khoảng thời gian ngắn.</value></data>
+  <data name="Skill.05020004.Name" xml:space="preserve"><value>Drastic Spirit</value></data>
+  <data name="Skill.05040001.Description" xml:space="preserve"><value>Vĩnh viễn nâng cao sức tấn công khi dùng kiếm.</value></data>
+  <data name="Skill.05040001.Name" xml:space="preserve"><value>Sword Mastery</value></data>
+  <data name="Skill.05040002.Description" xml:space="preserve"><value>Hút sức tấn công của quái vật undead và hồi phục HP.</value></data>
+  <data name="Skill.05040002.Name" xml:space="preserve"><value>Divine Inhalation</value></data>
+  <data name="Skill.05040003.Description" xml:space="preserve"><value>Bùa chú thánh thu hút quái vật.</value></data>
+  <data name="Skill.05040003.Name" xml:space="preserve"><value>Holy Incantation</value></data>
+  <data name="Skill.05040004.Description" xml:space="preserve"><value>Đòn tấn công hình chữ thập chí mạng vào kẻ địch.</value></data>
+  <data name="Skill.05040004.Name" xml:space="preserve"><value>Grand Cross</value></data>
+  <data name="Skill.05080001.Description" xml:space="preserve"><value>Chém xuống với sức mạnh to lớn, cơ thể ngả ra sau.</value></data>
+  <data name="Skill.05080001.Name" xml:space="preserve"><value>Sword of Justice</value></data>
+  <data name="Skill.05080002.Description" xml:space="preserve"><value>Tạo ra một chiếc khiên thánh được Thần ban phước</value></data>
+  <data name="Skill.05080002.Name" xml:space="preserve"><value>Godly Shield</value></data>
+  <data name="Skill.05080003.Description" xml:space="preserve"><value>Ban tặng sức mạnh vĩ đại của Holy Knight nhân danh Thần.</value></data>
+  <data name="Skill.05080003.Name" xml:space="preserve"><value>God Bless</value></data>
+  <data name="Skill.05080004.Description" xml:space="preserve"><value>Tấn công quái vật bằng sức mạnh của Thần, trong một điệu múa kiếm bất bại.</value></data>
+  <data name="Skill.05080004.Name" xml:space="preserve"><value>Divine Piercing</value></data>
+  <data name="Skill.05100001.Description" xml:space="preserve"><value>Đòn tấn công mạnh vào linh hồn kẻ địch.</value></data>
+  <data name="Skill.05100001.Name" xml:space="preserve"><value>Soul Breaker</value></data>
+  <data name="Skill.05100002.Description" xml:space="preserve"><value>Lao vào kẻ địch xung quanh và tạo ra những nhát chém hình trăng lưỡi liềm.</value></data>
+  <data name="Skill.05100002.Name" xml:space="preserve"><value>Crescent Moon</value></data>
+  <data name="Skill.05100003.Description" xml:space="preserve"><value>Triệu hồi sức mạnh thánh vào thanh kiếm của bạn để tấn công kẻ địch.</value></data>
+  <data name="Skill.05100003.Name" xml:space="preserve"><value>Saint Blade</value></data>
+  <data name="Skill.05100004.Description" xml:space="preserve"><value>Ban khả năng gây thêm sát thương lên quái vật undead.</value></data>
+  <data name="Skill.05100004.Name" xml:space="preserve"><value>Holy Benedic</value></data>
+  <data name="Skill.06010001.Description" xml:space="preserve"><value>Ném khiên để tấn công kẻ địch.</value></data>
+  <data name="Skill.06010001.Name" xml:space="preserve"><value>Shield Strike</value></data>
+  <data name="Skill.06010002.Description" xml:space="preserve"><value>Ném ngọn giáo tạo ra ảo ảnh</value></data>
+  <data name="Skill.06010002.Name" xml:space="preserve"><value>Farina</value></data>
+  <data name="Skill.06010003.Description" xml:space="preserve"><value>Rèn luyện đòn tấn công bằng lao để vĩnh viễn tăng sát thương.</value></data>
+  <data name="Skill.06010003.Name" xml:space="preserve"><value>Throwing Mastery</value></data>
+  <data name="Skill.06010004.Description" xml:space="preserve"><value>Tấn công kẻ địch bằng ngọn lao thánh.</value></data>
+  <data name="Skill.06010004.Name" xml:space="preserve"><value>Bigger Spear</value></data>
+  <data name="Skill.06020001.Description" xml:space="preserve"><value>Tăng tầm với và tỷ lệ chính xác của lao.</value></data>
+  <data name="Skill.06020001.Name" xml:space="preserve"><value>Windy</value></data>
+  <data name="Skill.06020002.Description" xml:space="preserve"><value>Tăng tỷ lệ chính xác và sức mạnh nhờ cú xoắn.</value></data>
+  <data name="Skill.06020002.Name" xml:space="preserve"><value>Twist Javelin</value></data>
+  <data name="Skill.06020003.Description" xml:space="preserve"><value>Hút sinh lực của kẻ địch.</value></data>
+  <data name="Skill.06020003.Name" xml:space="preserve"><value>Soul Sucker</value></data>
+  <data name="Skill.06020004.Description" xml:space="preserve"><value>Tấn công kẻ địch bằng sức mạnh của lửa.</value></data>
+  <data name="Skill.06020004.Name" xml:space="preserve"><value>Fire Javelin</value></data>
+  <data name="Skill.06040001.Description" xml:space="preserve"><value>Tấn công liên tục vào kẻ địch với tốc độ cực nhanh.</value></data>
+  <data name="Skill.06040001.Name" xml:space="preserve"><value>Split Javelin</value></data>
+  <data name="Skill.06040002.Description" xml:space="preserve"><value>Tăng sát thương tấn công của các thành viên party.</value></data>
+  <data name="Skill.06040002.Name" xml:space="preserve"><value>Triumph of Valhalla</value></data>
+  <data name="Skill.06040003.Description" xml:space="preserve"><value>Tăng sát thương nguyên tố sét của lao.</value></data>
+  <data name="Skill.06040003.Name" xml:space="preserve"><value>Lightning Javelin</value></data>
+  <data name="Skill.06040004.Description" xml:space="preserve"><value>Đòn tấn công lốc xoáy mạnh mẽ vào kẻ địch.</value></data>
+  <data name="Skill.06040004.Name" xml:space="preserve"><value>Storm Javelin</value></data>
+  <data name="Skill.06080001.Description" xml:space="preserve"><value>Tạo ra một không gian bằng sức mạnh của Valhalla.</value></data>
+  <data name="Skill.06080001.Name" xml:space="preserve"><value>Hall of Valhalla</value></data>
+  <data name="Skill.06080002.Description" xml:space="preserve"><value>Tấn công kẻ địch bằng cú nhảy cao, mang theo sức mạnh của cơn thịnh nộ.</value></data>
+  <data name="Skill.06080002.Name" xml:space="preserve"><value>X-Rage</value></data>
+  <data name="Skill.06080003.Description" xml:space="preserve"><value>Khi kích hoạt, tăng sức mạnh kỹ năng băng của bạn trong một khoảng thời gian ngắn.</value></data>
+  <data name="Skill.06080003.Name" xml:space="preserve"><value>Frost Javelin</value></data>
+  <data name="Skill.06080004.Description" xml:space="preserve"><value>Đòn tấn công nhanh và liên tục.</value></data>
+  <data name="Skill.06080004.Name" xml:space="preserve"><value>Vengeance</value></data>
+  <data name="Skill.06100001.Description" xml:space="preserve"><value>Làm cơ thể bạn nhẹ hơn và nhanh hơn.</value></data>
+  <data name="Skill.06100001.Name" xml:space="preserve"><value>Talaria</value></data>
+  <data name="Skill.06100002.Description" xml:space="preserve"><value>Triệu hồi ngọn lao nhắm vào tim kẻ địch bằng năng lượng của Valhalla và đóng nó xuống đất.</value></data>
+  <data name="Skill.06100002.Name" xml:space="preserve"><value>Galaxy Coup</value></data>
+  <data name="Skill.06100003.Description" xml:space="preserve"><value>Triệu hồi Arcuda.</value></data>
+  <data name="Skill.06100003.Name" xml:space="preserve"><value>Summon Arcuda</value></data>
+  <data name="Skill.06100004.Description" xml:space="preserve"><value>Ném liên tiếp 2 ngọn lao, gây ra đòn chí mạng.</value></data>
+  <data name="Skill.06100004.Name" xml:space="preserve"><value>Snippy Fear</value></data>
+  <data name="Skill.07010001.Description" xml:space="preserve"><value>Hồi phục sinh lực bằng phép thuật thánh.</value></data>
+  <data name="Skill.07010001.Name" xml:space="preserve"><value>Healing</value></data>
+  <data name="Skill.07010002.Description" xml:space="preserve"><value>Phóng tia sáng thánh vào kẻ địch.</value></data>
+  <data name="Skill.07010002.Name" xml:space="preserve"><value>Holy Bolt</value></data>
+  <data name="Skill.07010003.Description" xml:space="preserve"><value>Phóng ra những tia lửa ma thuật để tấn công kẻ địch.</value></data>
+  <data name="Skill.07010003.Name" xml:space="preserve"><value>Multispark</value></data>
+  <data name="Skill.07010004.Description" xml:space="preserve"><value>Làm yếu đòn tấn công của kẻ địch trong một khoảng thời gian ngắn.</value></data>
+  <data name="Skill.07010004.Name" xml:space="preserve"><value>Holy Mind</value></data>
+  <data name="Skill.07020001.Description" xml:space="preserve"><value>Vĩnh viễn tăng khả năng hồi mana.</value></data>
+  <data name="Skill.07020001.Name" xml:space="preserve"><value>Meditation</value></data>
+  <data name="Skill.07020002.Description" xml:space="preserve"><value>Tấn công kẻ địch bằng tia sét thánh.</value></data>
+  <data name="Skill.07020002.Name" xml:space="preserve"><value>Divine Lightning</value></data>
+  <data name="Skill.07020003.Description" xml:space="preserve"><value>Phản lại đòn tấn công của undead bằng cách tạo ra một tấm khiên ma thuật thánh.</value></data>
+  <data name="Skill.07020003.Name" xml:space="preserve"><value>Holy Reflection</value></data>
+  <data name="Skill.07020004.Description" xml:space="preserve"><value>Hồi phục sinh lực cho một thành viên party.</value></data>
+  <data name="Skill.07020004.Name" xml:space="preserve"><value>Grand Healing</value></data>
+  <data name="Skill.07040001.Description" xml:space="preserve"><value>Ném hai quả cầu năng lượng vào kẻ địch.</value></data>
+  <data name="Skill.07040001.Name" xml:space="preserve"><value>Vigor Ball</value></data>
+  <data name="Skill.07040002.Description" xml:space="preserve"><value>Hồi sinh một thành viên party đã gục ngã.</value></data>
+  <data name="Skill.07040002.Name" xml:space="preserve"><value>Resurrection</value></data>
+  <data name="Skill.07040003.Description" xml:space="preserve"><value>Bùa chú chí mạng chống quái vật undead. Gây sát thương vĩnh viễn lên undead.</value></data>
+  <data name="Skill.07040003.Name" xml:space="preserve"><value>Extinction</value></data>
+  <data name="Skill.07040004.Description" xml:space="preserve"><value>Tăng sinh lực của các thành viên party trong một khoảng thời gian ngắn.</value></data>
+  <data name="Skill.07040004.Name" xml:space="preserve"><value>Virtual Life</value></data>
+  <data name="Skill.07080001.Description" xml:space="preserve"><value>Ném một khối băng khổng lồ để tấn công kẻ địch.</value></data>
+  <data name="Skill.07080001.Name" xml:space="preserve"><value>Glacial Spike</value></data>
+  <data name="Skill.07080002.Description" xml:space="preserve"><value>Sau khi hy sinh bản thân, liên tục hồi phục sức mạnh cho đồng đội.</value></data>
+  <data name="Skill.07080002.Name" xml:space="preserve"><value>Regeneration Field</value></data>
+  <data name="Skill.07080003.Description" xml:space="preserve"><value>Tấn công quái vật bằng những tiếng sấm mạnh mẽ.</value></data>
+  <data name="Skill.07080003.Name" xml:space="preserve"><value>Chain Lightning</value></data>
+  <data name="Skill.07080004.Description" xml:space="preserve"><value>Hấp thụ đòn tấn công của quái vật undead, hồi phục HP và có sức mạnh của summoner.</value></data>
+  <data name="Skill.07080004.Name" xml:space="preserve"><value>Summon Muspell</value></data>
+  <data name="Skill.07100001.Description" xml:space="preserve"><value>Giải phóng một làn sóng xung kích mạnh vào kẻ địch xung quanh.</value></data>
+  <data name="Skill.07100001.Name" xml:space="preserve"><value>Spirit Impact</value></data>
+  <data name="Skill.07100002.Description" xml:space="preserve"><value>Triệu hồi ngọn giáo băng sắc nhọn để tấn công kẻ địch.</value></data>
+  <data name="Skill.07100002.Name" xml:space="preserve"><value>Piercing Ice</value></data>
+  <data name="Skill.07100003.Description" xml:space="preserve"><value>Triệu hồi thiên thần chuyên về những đòn tấn công sét.</value></data>
+  <data name="Skill.07100003.Name" xml:space="preserve"><value>Summon Ramiel</value></data>
+  <data name="Skill.07100004.Description" xml:space="preserve"><value>Tăng phòng thủ và khả năng hấp thụ của bạn nhờ ân sủng của Thần.</value></data>
+  <data name="Skill.07100004.Name" xml:space="preserve"><value>Blessing Krishna</value></data>
+  <data name="Skill.08010001.Description" xml:space="preserve"><value>Hy sinh bản thân để tăng tinh thần.</value></data>
+  <data name="Skill.08010001.Name" xml:space="preserve"><value>Agony</value></data>
+  <data name="Skill.08010002.Description" xml:space="preserve"><value>Thả những quả cầu lửa nhỏ xuống để tấn công kẻ địch</value></data>
+  <data name="Skill.08010002.Name" xml:space="preserve"><value>Fire Bolt</value></data>
+  <data name="Skill.08010003.Description" xml:space="preserve"><value>Tăng các thuộc tính nguyên tố nhờ tinh thần vững vàng trong một khoảng thời gian ngắn.</value></data>
+  <data name="Skill.08010003.Name" xml:space="preserve"><value>Zenith</value></data>
+  <data name="Skill.08010004.Description" xml:space="preserve"><value>Thả những quả cầu lửa lớn xuống để tấn công kẻ địch</value></data>
+  <data name="Skill.08010004.Name" xml:space="preserve"><value>Fire Ball</value></data>
+  <data name="Skill.08020001.Description" xml:space="preserve"><value>Tăng mana tối đa</value></data>
+  <data name="Skill.08020001.Name" xml:space="preserve"><value>Mental Mastery</value></data>
+  <data name="Skill.08020002.Description" xml:space="preserve"><value>Cột nước giáng xuống kẻ địch</value></data>
+  <data name="Skill.08020002.Name" xml:space="preserve"><value>Watornado</value></data>
+  <data name="Skill.08020003.Description" xml:space="preserve"><value>Tăng cường thuộc tính tấn công trên vũ khí của một thành viên party</value></data>
+  <data name="Skill.08020003.Name" xml:space="preserve"><value>Enchant Weapon</value></data>
+  <data name="Skill.08020004.Description" xml:space="preserve"><value>Phóng ra một tia sáng mạnh từ lòng bàn tay</value></data>
+  <data name="Skill.08020004.Name" xml:space="preserve"><value>Dead Ray</value></data>
+  <data name="Skill.08040001.Description" xml:space="preserve"><value>Tạo ra một tấm khiên ma thuật quanh cơ thể</value></data>
+  <data name="Skill.08040001.Name" xml:space="preserve"><value>Energy Shield</value></data>
+  <data name="Skill.08040002.Description" xml:space="preserve"><value>Đòn tấn công đất mạnh mẽ vào kẻ địch trong phạm vi.</value></data>
+  <data name="Skill.08040002.Name" xml:space="preserve"><value>Diastrophism</value></data>
+  <data name="Skill.08040003.Description" xml:space="preserve"><value>Triệu hồi bóng ma để tăng sát thương phép</value></data>
+  <data name="Skill.08040003.Name" xml:space="preserve"><value>Spirit Elemental</value></data>
+  <data name="Skill.08040004.Description" xml:space="preserve"><value>Bóng ma của thanh kiếm xuất hiện và dùng sức mạnh nguyên tố để tấn công kẻ địch.</value></data>
+  <data name="Skill.08040004.Name" xml:space="preserve"><value>Dancing Sword</value></data>
+  <data name="Skill.08080001.Description" xml:space="preserve"><value>Triệu hồi một nguyên tố mạnh mẽ làm từ lửa.</value></data>
+  <data name="Skill.08080001.Name" xml:space="preserve"><value>Fire Elemental</value></data>
+  <data name="Skill.08080002.Description" xml:space="preserve"><value>Tấn công quái vật phía trước bằng những ngọn lửa mạnh.</value></data>
+  <data name="Skill.08080002.Name" xml:space="preserve"><value>Flame Wave</value></data>
+  <data name="Skill.08080003.Description" xml:space="preserve"><value>Giảm khả năng của quái vật bằng cách bóp méo không gian.</value></data>
+  <data name="Skill.08080003.Name" xml:space="preserve"><value>Distortion</value></data>
+  <data name="Skill.08080004.Description" xml:space="preserve"><value>Tấn công quái vật xung quanh bằng thiên thạch được triệu hồi.</value></data>
+  <data name="Skill.08080004.Name" xml:space="preserve"><value>Meteo</value></data>
+  <data name="Skill.08100001.Description" xml:space="preserve"><value>Dùng sức mạnh của Silraphim để tấn công kẻ địch xung quanh.</value></data>
+  <data name="Skill.08100001.Name" xml:space="preserve"><value>Silraphim</value></data>
+  <data name="Skill.08100002.Description" xml:space="preserve"><value>Thu nhỏ kẻ địch, giảm HP và sát thương của chúng.</value></data>
+  <data name="Skill.08100002.Name" xml:space="preserve"><value>Vis Tenus</value></data>
+  <data name="Skill.08100003.Description" xml:space="preserve"><value>Tạo ra quả cầu lửa nguyên thủy cho đòn tấn công mạnh mẽ.</value></data>
+  <data name="Skill.08100003.Name" xml:space="preserve"><value>Prima Ignis</value></data>
+  <data name="Skill.08100004.Description" xml:space="preserve"><value>Giảm MP tối đa của bạn để tăng sức mạnh phép thuật.</value></data>
+  <data name="Skill.08100004.Name" xml:space="preserve"><value>Third Anima</value></data>
+  <data name="Skill.10010001.Description" xml:space="preserve"><value>Lao thẳng vào kẻ địch và gây sát thương.</value></data>
+  <data name="Skill.10010001.Name" xml:space="preserve"><value>Stinger</value></data>
+  <data name="Skill.10010002.Description" xml:space="preserve"><value>Liên tục gây sát thương lên kẻ địch trong khi xoay vòng</value></data>
+  <data name="Skill.10010002.Name" xml:space="preserve"><value>Running Hit</value></data>
+  <data name="Skill.10010003.Description" xml:space="preserve"><value>Vĩnh viễn tăng sức tấn công cơ bản của các loại vũ khí dạng dao găm</value></data>
+  <data name="Skill.10010003.Name" xml:space="preserve"><value>Dual Wield Mastery</value></data>
+  <data name="Skill.10010004.Description" xml:space="preserve"><value>Giảm sát thương của kẻ địch mục tiêu trong một khoảng thời gian ngắn</value></data>
+  <data name="Skill.10010004.Name" xml:space="preserve"><value>Wisp</value></data>
+  <data name="Skill.10020001.Description" xml:space="preserve"><value>Tấn công nhanh kẻ địch hai lần bằng vũ khí tẩm độc.</value></data>
+  <data name="Skill.10020001.Name" xml:space="preserve"><value>Venom Thorn</value></data>
+  <data name="Skill.10020002.Description" xml:space="preserve"><value>Chia sẻ sự nhanh nhẹn của Assassin và tăng né tránh cho party.</value></data>
+  <data name="Skill.10020002.Name" xml:space="preserve"><value>Alas</value></data>
+  <data name="Skill.10020003.Description" xml:space="preserve"><value>Cắm dao găm xuống đất và làm kẻ địch xung quanh choáng váng.</value></data>
+  <data name="Skill.10020003.Name" xml:space="preserve"><value>Soul Shock</value></data>
+  <data name="Skill.10020004.Description" xml:space="preserve"><value>Vĩnh viễn tăng tỷ lệ chính xác và né tránh.</value></data>
+  <data name="Skill.10020004.Name" xml:space="preserve"><value>Attack Mastery</value></data>
+  <data name="Skill.10040001.Description" xml:space="preserve"><value>Tiến lên rồi lùi lại, gây sát thương nặng lên một kẻ địch.</value></data>
+  <data name="Skill.10040001.Name" xml:space="preserve"><value>Sore Blade</value></data>
+  <data name="Skill.10040002.Description" xml:space="preserve"><value>Nhảy về phía kẻ địch, phóng sóng năng lượng vào kẻ địch xung quanh.</value></data>
+  <data name="Skill.10040002.Name" xml:space="preserve"><value>Gust Slash</value></data>
+  <data name="Skill.10040003.Description" xml:space="preserve"><value>Tích tụ ki trong cơ thể để tăng tốc độ tấn công.</value></data>
+  <data name="Skill.10040003.Name" xml:space="preserve"><value>Inpes</value></data>
+  <data name="Skill.10040004.Description" xml:space="preserve"><value>Ẩn mình trong bóng tối, gây sát thương nặng lên kẻ địch đầu tiên bị đánh trúng.</value></data>
+  <data name="Skill.10040004.Name" xml:space="preserve"><value>Blind</value></data>
+  <data name="Skill.10080001.Description" xml:space="preserve"><value>Nạp gió vào lưỡi kiếm, đánh trúng kẻ địch hai lần.</value></data>
+  <data name="Skill.10080001.Name" xml:space="preserve"><value>Cripple</value></data>
+  <data name="Skill.10080002.Description" xml:space="preserve"><value>Tăng tỷ lệ chí mạng khi trang bị dao găm.</value></data>
+  <data name="Skill.10080002.Name" xml:space="preserve"><value>Assassin Mastery</value></data>
+  <data name="Skill.10080003.Description" xml:space="preserve"><value>Phóng ra làn sóng độc xung quanh, đầu độc kẻ địch xung quanh.</value></data>
+  <data name="Skill.10080003.Name" xml:space="preserve"><value>Polluted</value></data>
+  <data name="Skill.10080004.Description" xml:space="preserve"><value>Di chuyển nhanh và đánh trúng kẻ địch bằng chính cái bóng của mình.</value></data>
+  <data name="Skill.10080004.Name" xml:space="preserve"><value>Ninja Shadow</value></data>
+  <data name="Skill.10100001.Description" xml:space="preserve"><value>Ẩn mình trong bóng tối và gây sát thương diện rộng bằng ngọn lửa khổng lồ.</value></data>
+  <data name="Skill.10100001.Name" xml:space="preserve"><value>Shadow Bomb</value></data>
+  <data name="Skill.10100002.Description" xml:space="preserve"><value>Nhảy lên từ chỗ đứng và dùng năng lượng trọng lực để chém kẻ địch.</value></data>
+  <data name="Skill.10100002.Name" xml:space="preserve"><value>Rising Slash</value></data>
+  <data name="Skill.10100003.Description" xml:space="preserve"><value>Gây sát thương bằng cách liên tục đá vào kẻ địch.</value></data>
+  <data name="Skill.10100003.Name" xml:space="preserve"><value>Violent Stab</value></data>
+  <data name="Skill.10100004.Description" xml:space="preserve"><value>Bay lên không trung để gây sát thương diện rộng.</value></data>
+  <data name="Skill.10100004.Name" xml:space="preserve"><value>Storm</value></data>
+  <data name="Skill.20010001.Description" xml:space="preserve"><value>Đá nhanh bằng chân phải.</value></data>
+  <data name="Skill.20010001.Name" xml:space="preserve"><value>Low Kick</value></data>
+  <data name="Skill.20010002.Description" xml:space="preserve"><value>Vĩnh viễn tăng sức tấn công nhờ luyện tập khắc khổ.</value></data>
+  <data name="Skill.20010002.Name" xml:space="preserve"><value>Strength Mastery</value></data>
+  <data name="Skill.20010003.Description" xml:space="preserve"><value>Liên tục đánh bằng lực ly tâm để gây sát thương chí mạng lên kẻ địch.</value></data>
+  <data name="Skill.20010003.Name" xml:space="preserve"><value>Double Backspin Blow</value></data>
+  <data name="Skill.20010004.Description" xml:space="preserve"><value>Dồn sức vào cánh tay phải cho một cú đấm mạnh.</value></data>
+  <data name="Skill.20010004.Name" xml:space="preserve"><value>Hyper Punch</value></data>
+  <data name="Skill.20020001.Description" xml:space="preserve"><value>Bị cơn giận nuốt chửng, tạm thời tăng tốc độ tấn công.</value></data>
+  <data name="Skill.20020001.Name" xml:space="preserve"><value>Rage</value></data>
+  <data name="Skill.20020002.Description" xml:space="preserve"><value>Nhảy lên không trung, xoay người và đá mạnh bằng hai chân.</value></data>
+  <data name="Skill.20020002.Name" xml:space="preserve"><value>Twister Kick</value></data>
+  <data name="Skill.20020003.Description" xml:space="preserve"><value>Lao tới bằng khuỷu tay, phóng sóng lực vào kẻ địch xung quanh.</value></data>
+  <data name="Skill.20020003.Name" xml:space="preserve"><value>Elbow Rush</value></data>
+  <data name="Skill.20020004.Description" xml:space="preserve"><value>Vĩnh viễn tăng thể lực và tỷ lệ chính xác nhờ luyện tập liên tục.</value></data>
+  <data name="Skill.20020004.Name" xml:space="preserve"><value>Stamina Mastery</value></data>
+  <data name="Skill.20040001.Description" xml:space="preserve"><value>Tạm thời tăng HP để tránh cái chết.</value></data>
+  <data name="Skill.20040001.Name" xml:space="preserve"><value>Deep Breath</value></data>
+  <data name="Skill.20040002.Description" xml:space="preserve"><value>Phóng ra một luồng năng lượng gây sát thương chí mạng lên một kẻ địch.</value></data>
+  <data name="Skill.20040002.Name" xml:space="preserve"><value>Tiger Cannon</value></data>
+  <data name="Skill.20040003.Description" xml:space="preserve"><value>Tích tụ năng lượng để hét lên một tiếng mạnh mẽ, giảm khả năng của kẻ địch xung quanh.</value></data>
+  <data name="Skill.20040003.Name" xml:space="preserve"><value>War Cry</value></data>
+  <data name="Skill.20040004.Description" xml:space="preserve"><value>Nhảy nhanh lên không trung rồi lao xuống, hai lần gây sát thương liên tục và diện rộng lên kẻ địch.</value></data>
+  <data name="Skill.20040004.Name" xml:space="preserve"><value>Leap Smash</value></data>
+  <data name="Skill.20080001.Description" xml:space="preserve"><value>Liên tục tấn công mục tiêu bằng nắm đấm 4 lần.</value></data>
+  <data name="Skill.20080001.Name" xml:space="preserve"><value>Barrage</value></data>
+  <data name="Skill.20080002.Description" xml:space="preserve"><value>Tạm thời tăng phòng thủ.</value></data>
+  <data name="Skill.20080002.Name" xml:space="preserve"><value>Nerves of Steel</value></data>
+  <data name="Skill.20080003.Description" xml:space="preserve"><value>Lao tới, và húc kẻ địch hai lần bằng vai.</value></data>
+  <data name="Skill.20080003.Name" xml:space="preserve"><value>Shoulder Charge</value></data>
+  <data name="Skill.20080004.Description" xml:space="preserve"><value>Gây sát thương chí mạng lên kẻ địch bằng 3 cú đá liên tiếp.</value></data>
+  <data name="Skill.20080004.Name" xml:space="preserve"><value>Typhoon Kick</value></data>
+  <data name="Skill.20100001.Description" xml:space="preserve"><value>Vĩnh viễn tăng phòng thủ.</value></data>
+  <data name="Skill.20100001.Name" xml:space="preserve"><value>Defense Mastery</value></data>
+  <data name="Skill.20100002.Description" xml:space="preserve"><value>Nhảy lên không trung và đá kẻ địch ba lần.</value></data>
+  <data name="Skill.20100002.Name" xml:space="preserve"><value>Hunting Hawk</value></data>
+  <data name="Skill.20100003.Description" xml:space="preserve"><value>Nhảy lên không trung và đập xuống đất hai lần, gây sát thương lên kẻ địch xung quanh.</value></data>
+  <data name="Skill.20100003.Name" xml:space="preserve"><value>Line Break</value></data>
+  <data name="Skill.20100004.Description" xml:space="preserve"><value>Tiếp thêm ý chí cho các thành viên party, giúp họ mạnh hơn.</value></data>
+  <data name="Skill.20100004.Name" xml:space="preserve"><value>Hard Training</value></data>
+  <data name="Skill.50010001.Description" xml:space="preserve"><value>Giáng vào kẻ địch một tia ma thuật hắc ám mạnh mẽ do tà thuật tạo ra</value></data>
+  <data name="Skill.50010001.Name" xml:space="preserve"><value>Dark Bolt</value></data>
+  <data name="Skill.50010002.Description" xml:space="preserve"><value>Thực hiện những đòn tấn công diện rộng liên tiếp bằng các tia ma thuật hắc ám mạnh mẽ</value></data>
+  <data name="Skill.50010002.Name" xml:space="preserve"><value>Dark Wave</value></data>
+  <data name="Skill.50010003.Description" xml:space="preserve"><value>Ném lời nguyền lên kẻ địch, tạm thời làm chúng chậm lại</value></data>
+  <data name="Skill.50010003.Name" xml:space="preserve"><value>Inertia</value></data>
+  <data name="Skill.50010004.Description" xml:space="preserve"><value>Nhờ luyện tập tinh thần, vĩnh viễn tăng khả năng hồi phục của bình MP và dung lượng mana</value></data>
+  <data name="Skill.50010004.Name" xml:space="preserve"><value>Inner Peace</value></data>
+  <data name="Skill.50020001.Description" xml:space="preserve"><value>Dùng tà thuật mạnh mẽ để gây sát thương lên kẻ địch và các mục tiêu xung quanh.</value></data>
+  <data name="Skill.50020001.Name" xml:space="preserve"><value>Spiritual Flare</value></data>
+  <data name="Skill.50020002.Description" xml:space="preserve"><value>Giam cầm linh hồn của mục tiêu bằng tà thuật.</value></data>
+  <data name="Skill.50020002.Name" xml:space="preserve"><value>Spiritual Manacle</value></data>
+  <data name="Skill.50020003.Description" xml:space="preserve"><value>Tập hợp kẻ địch xung quanh vào một chỗ.</value></data>
+  <data name="Skill.50020003.Name" xml:space="preserve"><value>Hunt</value></data>
+  <data name="Skill.50020004.Description" xml:space="preserve"><value>Triệu hồi Migal để tăng sát thương tấn công của bạn và các thành viên party.</value></data>
+  <data name="Skill.50020004.Name" xml:space="preserve"><value>Advent Migal</value></data>
+  <data name="Skill.50040001.Description" xml:space="preserve"><value>Tăng khả năng hấp thụ đổi lấy mana tối đa.</value></data>
+  <data name="Skill.50040001.Name" xml:space="preserve"><value>Rainmaker</value></data>
+  <data name="Skill.50040002.Description" xml:space="preserve"><value>Thả những bóng ma bị nguyền rủa xuống để gây sát thương diện rộng lên kẻ địch xung quanh.</value></data>
+  <data name="Skill.50040002.Name" xml:space="preserve"><value>Phantom Call</value></data>
+  <data name="Skill.50040003.Description" xml:space="preserve"><value>Nhờ sức mạnh của bóng ma, gây sát thương lên kẻ địch và hút sinh lực của chúng.</value></data>
+  <data name="Skill.50040003.Name" xml:space="preserve"><value>Haunt</value></data>
+  <data name="Skill.50040004.Description" xml:space="preserve"><value>Gây sát thương bằng móng vuốt của bóng ma được triệu hồi.</value></data>
+  <data name="Skill.50040004.Name" xml:space="preserve"><value>Scratch</value></data>
+  <data name="Skill.50080001.Description" xml:space="preserve"><value>Triệu hồi một Cursed Bloody Knight bằng tà thuật.</value></data>
+  <data name="Skill.50080001.Name" xml:space="preserve"><value>Recall Hestian</value></data>
+  <data name="Skill.50080002.Description" xml:space="preserve"><value>Gây sát thương bằng cách phóng một dòng bóng tối vào kẻ địch.</value></data>
+  <data name="Skill.50080002.Name" xml:space="preserve"><value>Judgement</value></data>
+  <data name="Skill.50080003.Description" xml:space="preserve"><value>Triệu hồi Midranda để tăng tốc độ tấn công của bạn và các thành viên party.</value></data>
+  <data name="Skill.50080003.Name" xml:space="preserve"><value>Advent Midranda</value></data>
+  <data name="Skill.50080004.Description" xml:space="preserve"><value>Mang sức mạnh của Midranda và Migal, gây sát thương lên kẻ địch xung quanh.</value></data>
+  <data name="Skill.50080004.Name" xml:space="preserve"><value>Mourning Pray</value></data>
+  <data name="Skill.50100001.Description" xml:space="preserve"><value>Dùng tà thuật mạnh mẽ để ban thêm mana cho người dùng.</value></data>
+  <data name="Skill.50100001.Name" xml:space="preserve"><value>Creed</value></data>
+  <data name="Skill.50100002.Description" xml:space="preserve"><value>Gây sát thương nguyền rủa lên kẻ địch xung quanh.</value></data>
+  <data name="Skill.50100002.Name" xml:space="preserve"><value>Press Of Deity</value></data>
+  <data name="Skill.50100003.Description" xml:space="preserve"><value>Triệu hồi linh hồn của đất để tấn công kẻ địch.</value></data>
+  <data name="Skill.50100003.Name" xml:space="preserve"><value>Ghostly Nail</value></data>
+  <data name="Skill.50100004.Description" xml:space="preserve"><value>Vĩnh viễn tăng sinh lực bằng sức mạnh của tà thuật.</value></data>
+  <data name="Skill.50100004.Name" xml:space="preserve"><value>High Regeneration</value></data>
+</root>

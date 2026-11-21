@@ -1,0 +1,71 @@
+*Teclado
+1, 2, 3 : Usan los objetos del inventario de atajos.
+   W    : Alterna entre los modos de equipo.
+   E    : Alterna entre los modos de inventario.
+   R    : Alterna entre correr y caminar.
+   S    : Abre o cierra la ventana de habilidades.
+   C    : Abre o cierra la ventana de datos del personaje.
+   V    : Abre o cierra la ventana de inventario.
+   D    : Abre o cierra la ventana de grupo.
+   X    : Abre o cierra la ventana del sistema.
+   Z    : Alterna entre los modos de cámara.
+  Tab   : Muestra u oculta el minimapa.
+ F1~F8  : Seleccionan habilidades.
+ [←] [→] [↓] [↑]  : Acercan/alejan y giran la cámara.
+Ctrl+[↓] [↑] : Inclinan la cámara hacia arriba/abajo.
+ Enter  : Abre el chat. Presiona de nuevo para cerrarlo.
+Barra espaciadora: Cierra la ventana actual.
+Ctrl+Home: Captura la pantalla actual.
+           (Se guarda como .jpg en la carpeta de capturas)
+Ctrl+End : Captura la pantalla actual.
+           (Se guarda como .bmp en la carpeta de capturas)
+Page Up  : Cambia la cámara a la vista desde arriba.
+Page Down: Cambia la cámara a la vista desde abajo.
+  ESC    : Cancela la acción actual.
+
+
+*Mouse
+Clic izquierdo  : .Mueve al personaje
+                  .Recoge objetos
+                  .Habla con NPCs
+                  .Mueve objetos
+                  .Botones de menú
+                  .Elige la habilidad del botón izquierdo
+Clic derecho    : .Elige la habilidad del botón derecho
+                  .Usa la habilidad elegida
+Mover el mouse  : Mueve el puntero por la pantalla.
+Rueda arriba/abajo: Inclina la cámara arriba/abajo.
+Arrastrar rueda : Adelante/atrás acerca o aleja.
+                  A los lados gira la cámara.
+
+
+* Comandos
+ /:nombre del personaje <Buscar personaje>
+ /:(escribe el nombre del personaje buscado)
+
+ /:nombre del personaje mensaje <susurro>
+ /:(nombre del personaje) mensaje
+
+ <responder susurro> Presiona las flechas arriba/abajo
+    para volver a susurrar.
+ //nombre del personaje <Grupo> //personaje
+    (escribe el nombre del personaje para formar grupo)
+
+
+* Intercambio
+1: Haz clic en el personaje con quien quieres intercambiar.
+2: Presiona el botón de intercambio para pedirlo.
+3: Aceptado, coloca los objetos (o el oro) que quieras.
+4: Tras confirmar, presiona el botón de intercambio para terminar.
+
+* Grupo
+1: Haz clic en el personaje con quien quieres formar grupo.
+2: Presiona el botón de la esquina superior derecha para
+ pedir el grupo.
+
+* Agregar a la lista de amigos
+1: Haz clic en el personaje del que quieres ser amigo.
+2: Presiona el botón de la esquina superior derecha para
+  registrarlo como amigo.
+3: Ya registrado, haz doble clic en el nombre para susurrar.
+   (el nombre aparecerá en la caja de chat)

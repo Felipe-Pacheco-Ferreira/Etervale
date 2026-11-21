@@ -1,5 +1,6 @@
 using System.Globalization;
 using PristonTale.Application.Support;
+using PristonTale.Simulation.Combat;
 using PristonTale.Simulation.Progression;
 using PristonTale.Simulation.Social.Castle;
 using PristonTale.Simulation.World.Bellatra;
@@ -34,6 +35,8 @@ public static class SiteText
         CalendarEventKind.CrystalEvent => "Evento dos cristais",
         CalendarEventKind.ExperienceEvent => "Evento de experiência",
         CalendarEventKind.DropEvents => "Drops de evento",
+        CalendarEventKind.Arena => "Arena",
+        CalendarEventKind.Royale => "Battle Royale",
         _ => "Evento"
     };
 
@@ -46,6 +49,11 @@ public static class SiteText
         CalendarEventKind.CrystalEvent => "Os cristais de monstro chamam seus monstros de evento.",
         CalendarEventKind.ExperienceEvent => "Experiência extra em todos os mapas.",
         CalendarEventKind.DropEvents => "Os monstros deixam itens de evento.",
+        CalendarEventKind.Arena =>
+            $"Partidas 1x1 e 3x3 entre jogadores a partir do nível {ArenaRules.MinimumLevel}: /arena 1x1 ou /arena 3x3 no chat durante os {ArenaRules.OpenMinutes} minutos de abertura.",
+        CalendarEventKind.Royale =>
+            $"Último sobrevivente, de {RoyaleRules.MinimumPlayers} a {RoyaleRules.MaximumPlayers} jogadores a partir do nível {RoyaleRules.MinimumLevel}, todos com o mesmo "
+            + $"equipamento do nível {RoyaleRules.KitLevel}: inscrição com /royale no chat nos {RoyaleRules.RegistrationMinutes} minutos antes do horário.",
         _ => ""
     };
 
@@ -55,6 +63,8 @@ public static class SiteText
         CalendarEventKind.FieldBosses => "boss",
         CalendarEventKind.CastleSiege => "siege",
         CalendarEventKind.Bellatra => "bellatra",
+        CalendarEventKind.Arena => "arena",
+        CalendarEventKind.Royale => "arena",
         _ => "event"
     };
 

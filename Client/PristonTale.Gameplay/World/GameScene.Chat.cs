@@ -29,6 +29,24 @@ public sealed partial class GameScene
         return _playChannel is not null ? _playChannel.SendChatAsync(text, party, _presenceCts.Token) : Task.CompletedTask;
     }
 
+    // Whether the server translates the chat (its WorldJoined said so).
+    public bool ChatTranslationAvailable => _playChannel?.ChatTranslation == true;
+
+    // The chat translation language last sent; null before the first send.
+    private string _sentTranslation;
+
+    // Sends the chosen translation language (ClientSettings.ChatTranslationTarget) when it differs from the one sent.
+    public void UpdateChatTranslation(string target)
+    {
+        if (_playChannel is null || !_playChannel.ChatTranslation || string.Equals(target, _sentTranslation, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        _sentTranslation = target;
+        _ = _playChannel.SendChatTranslateToAsync(target, _presenceCts.Token);
+    }
+
     internal Task SendRewardsAsync(PristonTale.Protocol.Packets.RewardEventsAction action, PristonTale.Simulation.Events.RewardTrack track, int index) =>
         _playChannel?.SendRewardEventsAsync(action, track, index, _presenceCts.Token) ?? Task.CompletedTask;
 

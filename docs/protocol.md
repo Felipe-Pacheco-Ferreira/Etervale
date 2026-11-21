@@ -36,13 +36,17 @@ The codecs live in `Shared/PristonTale.Protocol`; the server edge is `Server/Pri
 | `Packets/EventWire.cs` | What the compact combat, skill and status event lists share: entities by presence handle (`IEventHandleWriter`, `IEventHandleReader`), times, points, header and batching. |
 | `Packets/WorldEntryPackets.cs` | `EnterWorld`, `WorldEntry`, `JoinWorld`, `WorldJoined` and `LeaveWorld`. |
 | `Packets/GroundItemPackets.cs` | `GroundItems` and `GroundItemsRemoved`. |
-| `Packets/ChatPackets.cs` | `ChatSay` (typed line), `ChatLine` (received line, kind `ChatKind` from Contracts). |
+| `Packets/ChatPackets.cs` | `ChatSay` (typed line), `ChatLine` (received line, kind `ChatKind` from Contracts), `ChatTranslateTo` (the language the player wants the chat translated to). |
 | `Packets/EtervalePackets.cs` | Owner status, inventory parts, skills, inventory/progression commands and results, combat events, removals, presence clock. |
 | `Packets/ItemPackets.cs` | Owner item details (`ItemDetailEntry`, `ItemDetailsPartPacket`), the equipment status (`OwnerItemStatusPacket`) and the aging progress (`AgingProgressPacket`). |
 | `Packets/SkillPackets.cs` | Skill cast, cast result, skill events, status effects, cooldowns. |
 | `Packets/PersonalShopPackets.cs` | Personal shop open, close, view and buy requests; result, listing and details. |
 | `Packets/PartyPackets.cs` | Party invite, answer and command requests; the request a player receives and the party's members. |
 | `Packets/TradePackets.cs` | Trade request, answer, offer, lock and cancel; the request a player receives, the trade window and its items' values. |
+| `Packets/DuelPackets.cs` | Duel answer; the challenge a player receives and the duellist's duel ([application.md](application.md#duels)). |
+| `Packets/ArenaPackets.cs` | The receiver's arena queue or match ([application.md](application.md#arena)). |
+| `Packets/RoyalePackets.cs` | The receiver's Battle Royale registration or event ([application.md](application.md#battle-royale)). |
+| `Packets/TitlePackets.cs` | The receiver's titles and the choice of the one shown ([application.md](application.md#titles)). |
 | `Packets/ContactPackets.cs` | Friends page: a change to a list, a refresh, and one list with the friends' presence. |
 | `Packets/NpcPackets.cs` | NPC result, service request/result, shop catalog and quotes, warehouse, teleport list, item work result. |
 | [Transport/FrameConnection.cs](../Shared/PristonTale.Protocol/Transport/FrameConnection.cs) | One authenticated stream (TLS or WebSocket): receive loop and coalesced single-writer send. |
@@ -118,7 +122,7 @@ Bodies start with `uint16 Version = 1`; text is UTF-8 with a `uint16` byte lengt
 | Create, delete | C→S `CharacterCommand` (`0x45540F04`), S→C `CharacterResult` (`0x45540F05`) | Command `{uint16 Version, uint8 Action (1 create, 2 delete), uint8 0, int32 Class (PlayerClass), FaceIndex, text Name}`; result `{uint16 Version, uint8 Action, uint8 Ok, int32 Failure (CreateCharacterFailure), text Name}`. |
 | Select | C→S `EnterWorld` (`0x45540E00`) | `{uint16 Version = 1, uint16 0, text Name (64 B)}`. |
 | Entry | S→C `WorldEntry` (`0x45540E01`) | `{uint16 Version, uint8 Status (0 entered, else EnterWorldFailure), uint8 0, uint64 EntityId, int32 Field, int32 X, Z (x256)}`. The owner's stats, inventory and skills follow on the presence stream. |
-| Join | C→S `JoinWorld` (`0x45540E02`), S→C `WorldJoined` (`0x45540E03`) | `JoinWorld` = `{uint16 Version, uint16 0, uint64 EntityId}`, which must be the id from `WorldEntry`; `WorldJoined` = `{uint16 Version, uint8 GameMasterLevel, uint8 0, uint64 EntityId, int64 ServerTimeMs, int64 GameClockMs}`; the level only enables client-side game master controls; `GameClockMs` is the server's game clock (`WorldClock`), which the client's sky follows from then on on its local clock. |
+| Join | C→S `JoinWorld` (`0x45540E02`), S→C `WorldJoined` (`0x45540E03`) | `JoinWorld` = `{uint16 Version, uint16 0, uint64 EntityId}`, which must be the id from `WorldEntry`; `WorldJoined` = `{uint16 Version, uint8 GameMasterLevel, uint8 Flags, uint64 EntityId, int64 ServerTimeMs, int64 GameClockMs}` (Flags bit 0: the server translates the chat, [chat-and-gm.md](chat-and-gm.md#chat-translation)); the level only enables client-side game master controls; `GameClockMs` is the server's game clock (`WorldClock`), which the client's sky follows from then on on its local clock. |
 | Heartbeat | `Heartbeat` (`0x45540F06`) every 4 s | `{uint16 Version, uint16 0, uint32 Counter, int64 TimeMs}`; echoed with the server's time. The server closes connections silent for 60 s. |
 | Leave | `LeaveWorld` (`0x45540160`) | `{uint16 Version, uint8 Saved, uint8 0}`: the client sends Saved 0; the server answers with Saved 1 after storing the character and returning the authenticated connection to selection. |
 
@@ -144,6 +148,7 @@ succeeds. This does not allow a second login on that connection or another redem
 | `YahooKey` (`0x45540D06`) | C→S | Space within the minute a yahoo word opened; the server checks the window, the motion and the stamina, and the cheer shows as the presence motion `yahoo` ([chat-and-gm.md](chat-and-gm.md#server-routing)). |
 | `SwingRequest` (`0x45540D07`) | C→S | Space with nothing ahead in an action field; the server swings at nothing, the way the player faces, when it may swing and holds no attack (`WorldServer.SwingAtNothingAsync`), and the swing shows as the presence motion `attack`. |
 | `MountRequest` (`0x45540D08`) | C→S | Ride the travel mount or leave it (`WorldServer.MountAsync`, `MountRules`); a refusal sends nothing back, the answer is the mounted flag of the player's `EntityDescription`, which every viewer receives. |
+| `PvpSwitch` (`0x45540D09`) | C→S | Turn the PvP mode on or off (`WorldServer.SwitchPvpAsync`, `PvpRules`); the answer is a system line (`GameTextId.PvpOn` .. `PvpMurderer`) and the PvP flag of the player's `EntityDescription`, which every viewer receives ([application.md](application.md#pvp-mode)). |
 
 ### Player actions
 
@@ -158,6 +163,7 @@ Bodies start with `uint16 Version = 1`; positions are fixed point (x256), entity
 | `YahooKey` | `uint16 0` | 12 |
 | `SwingRequest` | `uint16 0` | 12 |
 | `MountRequest` | `uint8 Flags (1 mount, 0 leave the mount), uint8 0` | 12 |
+| `PvpSwitch` | `uint8 Flags (1 on, 0 off), uint8 0` | 12 |
 | `WingGateRequest` | `uint16 0, Guid OperationId, uint8 Destination (map index 0..8), uint8 0, uint16 0` | 32 |
 | `WingGateResult` | `uint16 0, Guid OperationId, uint8 Status (WingGateStatus: 0 warped, 1 rejected, 2 not at a stone, 3 beyond the wing, 4 level too low, 5 not enough gold, 6 busy, 7 storage failed), uint8 Destination, uint16 0, int64 Fee` | 40 |
 
@@ -239,6 +245,12 @@ Every message code has the high word `0x4554` ("ET"); every message keeps the `{
 | `0x45540805` .. `0x45540807` | `TradeAsked`, `TradeState`, `TradeDetails` | S→C | A player asks the receiver to trade; the trade window when it changed, after its partner items' values. |
 | `0x45541000` / `0x45541001` | `ContactChange` / `ContactRefresh` | C→S | Put a name on the friends or ignored list or take it off; send the lists again. |
 | `0x45541002` | `ContactList` | S→C | One list (friends, then ignored) answering each change or refresh. |
+| `0x45541500` | `DuelAnswer` | C→S | Answer a challenge to a duel; a challenge itself is the chat line `/duelo name` ([application.md](application.md#duels)). |
+| `0x45541501` / `0x45541502` | `DuelAsked` / `DuelState` | S→C | A player challenges the receiver; the receiver's duel whenever a shown second changes or it ends. |
+| `0x45541600` | `ArenaState` | S→C | The receiver's arena queue or match whenever it changes, empty once it neither queues nor plays; joining and leaving the queue are the chat lines `/arena 1x1`, `/arena 3x3` and `/arena sair` ([application.md](application.md#arena)). |
+| `0x45541700` | `RoyaleState` | S→C | The receiver's Battle Royale registration or event whenever it changes, empty once it neither registered nor fights; registering and leaving are the chat lines `/royale` and `/royale sair` ([application.md](application.md#battle-royale)). |
+| `0x45541800` | `Titles` | S→C | The receiver's titles (the one shown and those owned) whenever they change ([application.md](application.md#titles)). |
+| `0x45541801` | `ChooseTitle` | C→S | Show an owned title over the name, or none (`WorldServer.ChooseTitleAsync`); when the shown title changes, the answer is `Titles` and the title in the player's `EntityDescription`, which every viewer receives; a title it does not own changes and sends nothing. |
 | `0x45541100` | `ClanRequest` | C→S | A clan action (`ClanAction`): open, found, invite, accept, refuse, leave, expel, disband, appoint, discharge, entrust. |
 | `0x45541101` | `ClanState` | S→C | The player's clan with its members, or none; on entering the world, on opening the Clan Master and after every change. |
 | `0x45541102` | `ClanInvite` | S→C | A recruiter's invitation to a clan. |
@@ -262,6 +274,7 @@ Every message code has the high word `0x4554` ("ET"); every message keeps the `{
 | `0x45540A02` | `RestartOffer` | S→C | While the owner is dead, what a restart would cost, whenever it changes. |
 | `0x45540B00` / `0x45540B01` | `GroundItems` / `GroundItemsRemoved` | S→C | Drops entering and leaving the receiver's view: within the ground-item range (squared `0xC8000` units, about 905 units), private drops only to their owner. |
 | `0x45540C00` / `0x45540C01` | `ChatLine` / `ChatSay` | S→C / C→S | A chat line for the receiver; a typed line (spoken, command or party). Layouts and routing: [chat-and-gm.md](chat-and-gm.md#wire). |
+| `0x45540C02` | `ChatTranslateTo` | C→S | The language other players' lines are translated to, "" for none ([chat-and-gm.md](chat-and-gm.md#chat-translation)). |
 
 ### Owner, inventory and combat layouts
 
@@ -274,7 +287,7 @@ These bodies have no version header, except the combat event list's (see [Event 
 | `InventoryResult` / `ProgressionResult` | `Guid OperationId, int32 Ok, int64 Revision, game text Message` (none for a plain success) | 40 + texts |
 | `Inventory` | `int64 Revision, int32 Part, Parts, Count`, then items `{Guid, uint Code, int32 Kind, Count, Anchor, Slot, int16 Width, Height, text Name (64 B)}` (at most 64 per part) | 28 + up to 106n |
 | `Skills` | `int64 Revision, int32 Count`, then `{uint Code, int32 Rank, int32 Uses}` | 20 + 12n |
-| `CombatEvents` | `uint16 Version (1), uint16 Count`, then compact entries (see [Event lists](#event-lists)) | 12 + 4 to 65 per entry |
+| `CombatEvents` | `uint16 Version (2), uint16 Count`, then compact entries (see [Event lists](#event-lists)) | 12 + 4 to 66 per entry |
 | `RemoveObjects` | `int32 Count`, then `uint64 EntityId` | 12 + 8n |
 | `GroundItems` | `uint16 Version (1), uint16 Flags, int32 Count`, then `{Guid Id, uint32 ItemCode, uint8 Flags (1 gold, 2 equipment details, 4 rare), uint8 RequiredLevel, uint16 PackedSpec, int32 Amount, X, Y, Z, text Name (64 B)}` (1 to 64) | 16 + up to 106n |
 | `GroundItemsRemoved` | `uint16 Version (1), uint16 Flags, int32 Count`, then `Guid Id` | 16 + 16n |
@@ -292,9 +305,12 @@ MoveSpeed, LifeRegen, ManaRegen, StaminaRegen, MagicMastery, SpecAbsorb, SpecMov
 SpecLifeRegen, SpecManaRegen, SpecStaminaRegen, int16 Resistances[8]}` (`ItemDetailEntry`). The client attaches the
 entries to the inventory of the same revision (`OwnedItemView.Details`) and folds the status into the owner state.
 
-A combat entry is `{uint8 Kind, uint8 Flags (1 critical, 2 killed, 4 dealt by a skill or a pet rather than a basic attack), uint8 Fields, entity Attacker}`, then
+A combat entry is `{uint8 Kind, uint8 Flags (1 critical, 2 killed, 4 dealt by a skill or a pet rather than a basic attack, 8 element), uint8 Fields, entity Attacker}`, then
 what `Fields` names in its bit order: 1 entity Target, 2 time DurationMs and HitAtMs, 4 varint Damage, 8 varint Resources,
-16 varint SoundCode, 32 point X, Y, Z, 64 varint Angle, 128 varint Clip (absent: Target 0, times 0, values 0, Clip -1). `Kind` is
+16 varint SoundCode, 32 point X, Y, Z, 64 varint Angle, 128 varint Clip (absent: Target 0, times 0, values 0, Clip -1),
+then, when `Flags` has 8, `uint8 Element`: the hit's element (Simulation's `Element`: 1 earth, 2 fire, 3 ice, 4
+lightning, 5 poison, 6 water, 7 wind; a reader refuses 0 there), which its damage number shows. A physical hit has no
+flag and no byte; the client reads an unknown element as none. `Kind` is
 `CombatEventKind` (Contracts): 1 swing begin, 2 hit, 3 potion begin, 4 potion applied, 5 monster skill impact, 6 heal (amount
 in `Damage`), 7 evade, 8 revive (returned life in `Damage`), 9 block (a player blocked a monster's normal attack), 10 miss (a player's swing missed; its
 weapon's miss sound plays), 11 level up (a player gained a level; everyone near plays the level-up burst), 12 skill learned
@@ -391,15 +407,16 @@ Rules: [special-items.md](special-items.md).
 
 ### Entity descriptions
 
-Bodies start with `{uint16 Version = 3, uint16 Flags = 0}` (version 2 appended the player's shop sign to
-`EntityDescription`, version 3 then its clan: `varuint ClanId` (0 none), `text ClanName` (48 bytes), `varuint ClanMark`;
+Bodies start with `{uint16 Version = 4, uint16 Flags = 0}` (version 2 appended the player's shop sign to
+`EntityDescription`, version 3 then its clan: `varuint ClanId` (0 none), `text ClanName` (48 bytes), `varuint ClanMark`,
+version 4 then its title: `uint8 Title` (the code, 0 none, [application.md](application.md#titles));
 a reader fills each only from its version); text is UTF-8 with a `uint16` byte length (name 64 bytes, model paths 160).
 
 | Message | Layout after the header |
 | --- | --- |
 | `DescribeEntity` | `varuint EntityId` |
 | `EntityDescription` | `varuint EntityId, uint8 Revision, uint8 Kind (1 player, 2 monster, 3 NPC), varuint Level, varuint MoveSpeed, float32 AttackRate, text Name, text Model`, then the player or template part |
-| Player part | `varuint Job, Tier, Face, Hair, text HeadModel, uint32 Weapon, Armor, OffHand (item codes, 0 none), uint8 Flags (1 village, 2 Phoenix, 4 mounted), uint8 HelperPet, uint8 BigHead, glow WeaponGlow, glow OffHandGlow, text ShopSign (128 B, empty when the player sells nothing)` |
+| Player part | `varuint Job, Tier, Face, Hair, text HeadModel, uint32 Weapon, Armor, OffHand (item codes, 0 none), uint8 Flags (1 village, 2 Phoenix, 4 mounted, 8 PvP on, 16 murderer, 32 duelling, 64 or 128 the arena side 1 or 2), uint8 HelperPet, uint8 BigHead, glow WeaponGlow, glow OffHandGlow, text ShopSign (128 B, empty when the player sells nothing), varuint ClanId, text ClanName, varuint ClanMark` (version 3), `uint8 Title` (version 4) |
 | Glow (`DescribedGlow`, 16 bytes) | `int8 Blink (0 none, below 0 steady), int16 R, G, B, A, float32 Scale, int8 Mix (-1 none), uint8 MixScroll, uint8 Flags (1 class-up light)` (`HeldItemGlow`) |
 | Template part | `varuint Template, float32 TemplateScale, varuint SoundCode, varint PortraitY, PortraitZ, uint8 Brood, varuint Owner, float32 InstanceScale, uint32 NpcServices, varuint Class, varint ShadowSize` (the monster class: 1 boss, 200 hammer; the ground shadow -1 none, 0 small to 3 large) |
 
@@ -541,6 +558,18 @@ show what changed.
 | `TradeAsked` | `uint64 FromId, text FromName` |
 | `TradeState` | `uint64 PartnerId` (0 once the trade ended), `text PartnerName, uint8 Flags (1 own offer locked, 2 the partner's), int64 OwnMoney, int64 PartnerMoney, int32 Count, own entries, int32 Count, the partner's StoreItemEntry items` (anchored at their trade grid cells) |
 | `TradeDetails` | `int32 Count, ItemDetailEntry entries`: the partner items' values for the receiver, sent just before `TradeState` |
+
+Duel bodies start with `{uint16 Version = 1, uint16 Flags = 0}`:
+
+| Message | Body |
+|---|---|
+| `DuelAnswer` | `uint64 FromId` (the challenge's), `uint8 Accept` (0 or 1; anything else is refused) |
+| `DuelAsked` | `uint64 FromId, text FromName` |
+| `DuelState` | `uint64 OpponentId` (0 once the duel ended), `text OpponentName, float32 X, Y, Z` (the arena's center in server space), `uint16 SecondsLeft, uint8 OutsideSecondsLeft` (0 inside the arena) |
+| `ArenaState` | `uint8 Mode` (0 none, 1 for 1x1, 3 for 3x3), `uint8 State` (1 queued, 2 out of its match), `uint8 OwnStanding, uint8 FoeStanding, uint16 SecondsLeft` |
+| `RoyaleState` | `uint8 State` (0 none, 1 registered, 2 fighting, 3 out and watching), `uint8 Standing, uint8 Total` (the registered while registered), `uint16 Radius` (the safe zone's), `uint16 SecondsToShrink` (0 once it no longer shrinks), `uint16 SecondsLeft` |
+| `Titles` | `uint8 Shown` (the title code, 0 none), `uint32 Owned` (bit `1 << code` for each title owned: the permanent ones earned and the positions held) |
+| `ChooseTitle` | `uint8 Title` (the code, 0 none) |
 
 ### Contacts
 

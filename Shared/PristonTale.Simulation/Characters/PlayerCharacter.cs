@@ -61,6 +61,9 @@ public sealed partial class PlayerCharacter
     // The welcome login days, weekly and daily goals and level rewards (RewardEvents).
     public RewardEventBook Events { get; } = new();
 
+    // The titles earned and shown and what counts towards them (TitleRules).
+    public Titles.TitleBook Titles { get; } = new();
+
     // The beginner's pet (HelpPets): its kind (0 before one is drawn) and whether the player hid it.
     public int HelpPet { get; private set; }
     public bool HelpPetHidden { get; private set; }
@@ -625,7 +628,11 @@ public sealed partial class PlayerCharacter
         var matured = false;
         foreach (var item in OwnedItems())
         {
-            matured |= Items.Aging.AgingRules.Mature(item);
+            if (Items.Aging.AgingRules.Mature(item))
+            {
+                matured = true;
+                Titles.RecordAging(item.UpgradeLevel);
+            }
         }
 
         if (matured)
@@ -686,8 +693,16 @@ public sealed partial class PlayerCharacter
         OnInventoryChanged();
     }
 
+    // An event's stand-in (RoyaleKits): it only fights, so no change that is stored may start from it.
+    public bool IsStandIn { get; init; }
+
     public PlayerCharacter CloneForInventoryOperation()
     {
+        if (IsStandIn)
+        {
+            throw new InvalidOperationException("An event stand-in is never stored: no character change starts from it.");
+        }
+
         var clone = new PlayerCharacter(Class, Name, Level, Attributes);
         clone.RestoreProgress(Experience, Money, StatPoints, Tier, SkillPoints, EliteSkillPoints);
         clone.Inventory.CopyFrom(Inventory);
@@ -713,6 +728,7 @@ public sealed partial class PlayerCharacter
         clone.RestoreStarterGifts(StarterGiftsReceived);
         clone.RestoreHelpPet(HelpPet, HelpPetHidden);
         clone.Events.CopyFrom(Events);
+        clone.Titles.CopyFrom(Titles);
         clone.Premium.CopyFrom(Premium);
         clone.ItemUses.CopyFrom(ItemUses);
         clone.Recompute();
@@ -871,6 +887,7 @@ public sealed partial class PlayerCharacter
         RestoreInventoryHistory(candidate.InventoryRevision, candidate.InventoryOperations);
         RestoreServiceHistory(candidate.ServiceOperations);
         RestorePurchaseHistory(candidate.ShopPurchases);
+        Titles.Merge(candidate.Titles);
         Recompute();
         Life = Math.Min(Life, MaxLife);
         Mana = Math.Min(Mana, MaxMana);

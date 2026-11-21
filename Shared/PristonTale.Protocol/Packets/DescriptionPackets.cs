@@ -7,8 +7,9 @@ namespace PristonTale.Protocol.Packets;
 
 internal static class DescriptionWire
 {
-    // Version 2 carries the player's shop sign after the fields of version 1; version 3 then the player's clan.
-    public const ushort Version = 3;
+    // Version 2 carries the player's shop sign after the fields of version 1; version 3 then the player's clan; version 4 then
+    // its title.
+    public const ushort Version = 4;
     public const int MaxNameBytes = 64;
     public const int MaxModelBytes = 160;
 
@@ -40,7 +41,7 @@ public readonly record struct DescribeEntityPacket(ulong EntityId) : IFramePacke
 
 // A player's looks: class, tier, face, hair, head model, the equipped weapon, armour and off-hand codes, the village
 // flag, the Phoenix, the helper pet (0 none), the head look (0 normal, 1-2 big head, 3 soccer ball), how the held weapon
-// and off-hand item glow and whether the player rides its travel mount.
+// and off-hand item glow, whether the player rides its travel mount and its PvP mode.
 public sealed record DescribedPlayer(
     PlayerClass Class,
     int Tier,
@@ -61,6 +62,14 @@ public sealed record DescribedPlayer(
     // Riding the travel mount.
     public bool Mounted { get; init; }
 
+    // The PvP mode is on, the player is a murderer, and it fights a duel.
+    public bool Pvp { get; init; }
+    public bool Murderer { get; init; }
+    public bool Duelling { get; init; }
+
+    // The side (1 or 2) of the arena match the player still fights in, 0 for none.
+    public int ArenaSide { get; init; }
+
     // The sign of the personal shop the player sells from; empty when it sells nothing.
     public string ShopSign { get; init; } = "";
 
@@ -68,6 +77,9 @@ public sealed record DescribedPlayer(
     public ulong ClanId { get; init; }
     public string ClanName { get; init; } = "";
     public int ClanMark { get; init; }
+
+    // The title shown over the name (TitleRules), 0 for none.
+    public int Title { get; init; }
 }
 
 // A held item's glow: {int8 Blink (0 none, below 0 steady), int16 R, G, B, A, float32 Scale, int8 Mix (-1 none), uint8
@@ -123,12 +135,13 @@ public sealed record DescribedTemplate(
     public int QuestCode { get; init; }
 }
 
-// S->C: what a viewer needs to draw an entity, for one description revision. {header, uint16 Version = 2, uint16 Flags =
+// S->C: what a viewer needs to draw an entity, for one description revision. {header, uint16 Version = 4, uint16 Flags =
 // 0, varuint EntityId, uint8 Revision, uint8 Kind, varuint Level, varuint MoveSpeed, float32 AttackRate, text Name, text
 // Model}, then for a player {varuint Class, Tier, Face, Hair, text HeadModel, uint32 Weapon, Armor, OffHand, uint8 Flags (1
-// village, 2 Phoenix, 4 mounted), uint8 HelperPet, uint8 BigHead, glow WeaponGlow, glow OffHandGlow (DescribedGlow), text ShopSign
-// (from version 2)}, else {varuint Template, float32 TemplateScale, varuint SoundCode, varint PortraitY, PortraitZ,
-// uint8 Brood, varuint Owner, float32 InstanceScale, uint32 NpcServices, varuint Class (the monster class: 1 boss, 200
+// village, 2 Phoenix, 4 mounted, 8 PvP on, 16 murderer, 32 duelling, 64 or 128 the arena side 1 or 2), uint8 HelperPet,
+// uint8 BigHead, glow WeaponGlow, glow OffHandGlow (DescribedGlow), text ShopSign (from version 2), varuint ClanId, text
+// ClanName, varuint ClanMark (from version 3), uint8 Title (from version 4, TitleRules)}, else {varuint
+// Template, float32 TemplateScale, varuint SoundCode, varint PortraitY, PortraitZ, uint8 Brood, varuint Owner, float32 InstanceScale, uint32 NpcServices, varuint Class (the monster class: 1 boss, 200
 // hammer), varint ShadowSize (-1 none, 0 small to 3 large)}. Text is UTF-8 with a uint16 byte length.
 public sealed record EntityDescriptionPacket(
     ulong EntityId,
@@ -142,9 +155,9 @@ public sealed record EntityDescriptionPacket(
     DescribedPlayer? Player = null,
     DescribedTemplate? Template = null)
 {
-    // The player part (four varuints, the head model, three codes, three bytes, two glows, the sign, the clan) is the larger tail.
+    // The player part (four varuints, the head model, three codes, three bytes, two glows, the sign, the clan, the title) is the larger tail.
     private const int PlayerPart = 5 * 4 + 2 + DescriptionWire.MaxModelBytes + 4 * 3 + 3 + 2 * DescribedGlow.Size + 2 + PersonalShopLimits.MaxSignBytes
-        + VarInt.MaxBytes64 + 2 + ClanWire.MaxClanNameBytes + 5;
+        + VarInt.MaxBytes64 + 2 + ClanWire.MaxClanNameBytes + 5 + 1;
     public const int MaximumSize = 8 + 4 + VarInt.MaxBytes64 + 2 + 5 * 2 + 4 + (2 + DescriptionWire.MaxNameBytes) + (2 + DescriptionWire.MaxModelBytes)
         + PlayerPart;
 
@@ -171,7 +184,7 @@ public sealed record EntityDescriptionPacket(
             writer.UInt32(player.Weapon);
             writer.UInt32(player.Armor);
             writer.UInt32(player.OffHand);
-            writer.Byte((byte)((player.InVillage ? 1 : 0) | (player.Phoenix ? 2 : 0) | (player.Mounted ? 4 : 0)));
+            writer.Byte(PlayerFlags(player));
             writer.Byte((byte)Math.Clamp(player.HelperPet, 0, byte.MaxValue));
             writer.Byte((byte)Math.Clamp(player.BigHead, 0, byte.MaxValue));
             player.WeaponGlow.Write(ref writer);
@@ -180,6 +193,7 @@ public sealed record EntityDescriptionPacket(
             writer.VarUInt(player.ClanId);
             NpcWire.Text(ref writer, player.ClanName, ClanWire.MaxClanNameBytes);
             writer.VarUInt((ulong)Math.Max(0, player.ClanMark));
+            writer.Byte((byte)Math.Clamp(player.Title, 0, byte.MaxValue));
         }
         else
         {
@@ -199,6 +213,18 @@ public sealed record EntityDescriptionPacket(
         }
 
         return writer.Finish();
+    }
+
+    private static byte PlayerFlags(DescribedPlayer player)
+    {
+        var flags = (player.InVillage ? 1 : 0) | (player.Phoenix ? 2 : 0) | (player.Mounted ? 4 : 0) | (player.Pvp ? 8 : 0) | (player.Murderer ? 16 : 0)
+            | (player.Duelling ? 32 : 0);
+        return (byte)(flags | player.ArenaSide switch
+        {
+            1 => 64,
+            2 => 128,
+            _ => 0
+        });
     }
 
     public static EntityDescriptionPacket Read(ReadOnlySpan<byte> packet)
@@ -234,16 +260,22 @@ public sealed record EntityDescriptionPacket(
                 var clanId = version >= 3 ? reader.VarUInt() : 0UL;
                 var clanName = version >= 3 ? NpcWire.Text(ref reader, ClanWire.MaxClanNameBytes) : "";
                 var clanMark = version >= 3 ? reader.VarUInt31() : 0;
+                var title = version >= 4 ? reader.Byte() : 0;
                 return new EntityDescriptionPacket(entityId, revision, kind, level, moveSpeed, attackRate, name, model,
                     new DescribedPlayer(playerClass, tier, face, hair, head, weapon, armor, offHand, (flags & 1) != 0, (flags & 2) != 0, pet, bigHead)
                     {
                         WeaponGlow = weaponGlow,
                         OffHandGlow = offHandGlow,
                         Mounted = (flags & 4) != 0,
+                        Pvp = (flags & 8) != 0,
+                        Murderer = (flags & 16) != 0,
+                        Duelling = (flags & 32) != 0,
+                        ArenaSide = (flags & 64) != 0 ? 1 : (flags & 128) != 0 ? 2 : 0,
                         ShopSign = sign,
                         ClanId = clanId,
                         ClanName = clanName,
-                        ClanMark = clanMark
+                        ClanMark = clanMark,
+                        Title = title
                     });
             }
             case EntityKind.Monster or EntityKind.Npc:

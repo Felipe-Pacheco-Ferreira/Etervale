@@ -124,6 +124,7 @@ public sealed partial class FieldInstance
         if (killed is not null && credited is not null)
         {
             credited.Character.Events.Count(Simulation.Events.RewardGoal.MonsterKills, 1, RewardDate, credited.Character.Level);
+            credited.Character.Titles.CountKill(killed.Def.IsBoss);
             var context = TickContext(credited);
             var revision = credited.Character.Quests.Revision;
             if (QuestTick.OnKill(context, killed.Def.QuestCode))
@@ -225,7 +226,8 @@ public sealed partial class FieldInstance
                 }
             }
 
-            if (state.UpkeepDue && !state.UpkeepSignaled && QuestUpkeepRequested is not null)
+            // A Battle Royale stand-in has no quests of its own: the own character's upkeep waits for it.
+            if (state.UpkeepDue && !state.UpkeepSignaled && QuestUpkeepRequested is not null && player.Home is null)
             {
                 state.UpkeepSignaled = true;
                 QuestUpkeepRequested(player);

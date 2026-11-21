@@ -119,6 +119,7 @@ public sealed partial class GameScene : ISkillSceneHost
     {
         ApplyPresentationSettings();
         UpdatePlayerFilter();
+        ApplySoundOptions();
         _skillFx?.Update((float)gameTime.ElapsedGameTime.TotalSeconds, _skillClockMs);
         if (OperatingSystem.IsBrowser())
             PlayInitialArrival(SelfEntityId);
@@ -169,6 +170,8 @@ public sealed partial class GameScene : ISkillSceneHost
         _skillFx.ShowOthersDamage = settings.ShowOtherPlayersDamage;
         _skillFx.Text.SizeScale = FloatingCombatText.ScaleOf(settings.DamageNumberSize);
         _skillFx.Text.Spread = settings.SpreadDamageNumbers;
+        _skillFx.Text.ShowElementIcon = settings.ShowElementIcon;
+        _skillFx.Text.ColorByElement = settings.ColorDamageByElement;
         _skillFx.Looks.HideStealth = settings.HideStealthEffect;
         if (_monsterFx is not null)
         {
@@ -188,6 +191,7 @@ public sealed partial class GameScene : ISkillSceneHost
         {
             QueueBlobShadows();
             QueueTargetRing();
+            QueueDuelRing();
             QueueFootprints();
             _shots.Draw(_skillFx.Renderer, _skillFx.Library);
 
@@ -195,11 +199,12 @@ public sealed partial class GameScene : ISkillSceneHost
         }
     }
 
-    public void DrawCombatText(SpriteBatch batch, SpriteFont font)
+    // elementArt: the art the element icons are cut from (DamageElementStyle), null while it loads.
+    public void DrawCombatText(SpriteBatch batch, SpriteFont font, Texture2D elementArt)
     {
         if (_skillFx is not null && _camera is not null)
         {
-            _skillFx.Text.Draw(batch, font, _graphicsDevice.Viewport, _camera.View, _camera.Projection);
+            _skillFx.Text.Draw(batch, font, _graphicsDevice.Viewport, _camera.View, _camera.Projection, elementArt);
         }
     }
 

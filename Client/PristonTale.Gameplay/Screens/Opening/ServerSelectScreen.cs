@@ -14,7 +14,7 @@ internal sealed class ServerSelectScreen(ScreenContext context) : GameScreen(con
     private int _selected;
     private Texture2D _pixel;
 
-    public override string StatusText => ClientText.Language == "pt-BR" ? "Servidores" : "Servers";
+    public override string StatusText => ClientText.Get("ServerSelect.Title");
 
     public override void Enter()
     {
@@ -65,7 +65,6 @@ internal sealed class ServerSelectScreen(ScreenContext context) : GameScreen(con
         Context.GraphicsDevice.Clear(new Color(24, 20, 15));
         var batch = Context.SpriteBatch;
         var font = Context.Font;
-        var portuguese = ClientText.Language == "pt-BR";
         var viewport = Context.GraphicsDevice.Viewport;
         var width = Math.Max(1, Math.Min(530, viewport.Width - 24));
         var panel = new Rectangle((viewport.Width - width) / 2, Math.Max(0, (viewport.Height - 340) / 2), width, 340);
@@ -76,7 +75,7 @@ internal sealed class ServerSelectScreen(ScreenContext context) : GameScreen(con
         batch.Draw(_pixel, interior, new Color(26, 21, 14));
         batch.Draw(_pixel, new Rectangle(interior.X, interior.Y, interior.Width, 42), new Color(53, 42, 23));
         batch.DrawString(font, StatusText, new Vector2(panel.X + 16, panel.Y + 12), Color.Wheat);
-        batch.DrawString(font, portuguese ? "Setas: selecionar   Enter: conectar   Esc: voltar" : "Arrows: select   Enter: connect   Esc: back",
+        batch.DrawString(font, ClientText.Get("ServerSelect.Hint"),
             new Vector2(panel.X + 16, panel.Bottom - 31), Color.White);
         var first = Math.Max(0, _selected - 4);
         for (var index = first; index < Math.Min(first + 8, _servers.Length); index++)

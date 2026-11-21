@@ -1,0 +1,411 @@
+*PetKind
+"Dragon ng Apoy    ASTERYAN"
+"Dragon ng Tubig   KRONAPSYS"
+"Dragon ng Hangin  RINDBEOR"
+"Dragon ng Lupa    BAHAMUT"
+end
+
+*PetName
+"Terry"
+"Napsys"
+"EOR"
+"Mut"
+end
+
+*Welcom_ALL
+"Nice to meet you! Ako ay inapo ng( %s )."
+"Wala pa akong pangalan, pero puwede mo akong tawaging( %s )."
+"Narinig kong isa ka sa mga napiling mandirigma, pero mukha kang mahina."
+"Okay lang~ Sabay na lumalaki ang mga tao at dragon"
+"Huwag kang mag-alala, makakatulong ako. Sabay tayong matuto"
+end
+
+*Welcom_Tems
+"Welcome sa PristonTale."
+"Ito ang lungsod ng Ricarten, sa timog ng lupain ng Priston."
+"Dito ka makakabili ng kahit anong gamit pang-hunt."
+"Dapat madalas dumaan sa mga shop ang mga low level na player."
+"Una, libutin mo muna ang Ricarten at kausapin ang mga taga-rito."
+end
+
+*Welcom_Mora
+"Welcome sa PristonTale."
+"Ito ang lungsod ng Pillai, sa hilaga ng lupain ng Priston."
+"Dito ka makakabili ng kahit anong gamit pang-hunt."
+"Dapat madalas dumaan sa mga shop ang mga low level na player."
+"Una, libutin mo muna ang lungsod na ito at kausapin ang mga taga-rito."
+end
+
+
+*ChatBox
+"Dito mo makikita ang usapan natin"
+"Ano ang gusto mong itanong?"
+"Puwede na ba tayong mag-usap ngayon?"
+"I-type mo lang ang gusto mong sabihin."
+end
+
+
+*ChatTab_All
+"Gusto mong kausapin ang lahat?"
+"Maririnig ka ng lahat"
+"Gusto mo ng dagdag na impormasyon?"
+end
+
+
+*ChatTab_Clan
+"Gusto mong kausapin ang clan mo?"
+"Mga player lang ng clan ang makakarinig sa iyo."
+"Gusto mo ng dagdag na impormasyon?"
+end
+
+
+*ChatTab_Party
+"Gusto mong kausapin ang mga player ng party mo?"
+"Mga miyembro lang ng party ang makakarinig sa iyo."
+"Kasama mo rin ako sa party^^"
+end
+
+
+*ChatTab_Trade
+"Napaka-convenient nito para magbenta o bumili ng kahit ano."
+"Isulat mo kung ano ang gusto mong i-trade."
+"Gusto mo bang ibenta ang mga equipment mo?"
+end
+
+
+*ChatTab_Whisper
+"Gusto mong kausapin ang isang tao nang pribado?"
+"Siya lang ang makakarinig sa iyo."
+"Bulong-bulong..."
+end
+
+*Bar_Stamina
+"Dito mo makikita ang stamina mo."
+"Bumababa ang stamina kapag tumatakbo o gumagalaw ka."
+"Takbo tayo?"
+end
+*Bar_Life
+"Dito mo makikita ang HP mo."
+"Bumababa ang HP kapag inatake ka ng monster."
+"Kapag kulang ang HP, babagsak ka.-_-"
+end
+*LeftSkill
+"Gamitin ang skill sa pag-click ng kaliwang button ng mouse."
+"Ang larawan ng 'Suntok' ay ang normal na atake."
+"Naku! Huwag mo akong atakihin!"
+end
+*RightSkill
+"Gamitin ang skill sa pag-click ng kanang button ng mouse."
+"Kapag natuto ka na ng skill, i-register mo ito rito para madali mong magamit."
+"Mula level 10, puwede ka nang matuto ng skill."
+end
+*Bar_Mana
+"Dito mo makikita ang mana mo."
+"Bumababa ang mana kapag gumamit ka ng skill o magic."
+"Hindi mabibili ang mana sa kahit anong shop."
+end
+*DayandNight
+"Ipinapakita ng bar na ito ang totoong oras sa lupain ng Priston."
+"Kapag araw ang nakikita mo, umaga o hapon pa.."
+"Kapag buwan ang nakikita mo, gabi na-_-"
+end
+*Bar_Exp
+"Dito mo makikita ang EXP mo."
+"Kapag napuno ang bar, mag-level up ka!!"
+"Gaano pa katagal bago ang susunod na level?"
+end
+*Exp_Num
+"Dito mo makikita ang EXP ng level mo (%)."
+"Kapag umabot sa 100% ang EXP, mag-level up ka!"
+"Matagal pa ba bago mag-level up?"
+end
+*Potion_ShortKey
+"Napakalaking tulong nito sa hunting."
+"Depende sa bracelet ang dami ng potion."
+"Glub glub…"
+"Ginamit mo ang potion sa unang slot."
+"Ginamit mo ang potion sa pangalawang slot."
+"Ginamit mo ang potion sa pangatlong slot."
+end
+*RunAndWalk
+"Puwede kang pumili sa pagtakbo o paglakad."
+"TAKBO? LAKAD?"
+"Takbo! Marami tayong gagawin!"
+"Ang shortcut na ito ay nagpapalit ng takbo at lakad."
+end
+*Camera_Hand
+"Nakikita mo ang screen sa manual mode."
+"Puwede kang pumili ng ibang view."
+"Nagustuhan mo ba ito?"
+end
+*Camera_Auto
+"Nakikita mo ang screen sa automatic mode."
+"Puwede kang pumili ng ibang view."
+"Huwag masyadong iikot. Nahihilo ako…"
+end
+*Camera_Fix
+"Nakikita mo ang screen sa locked mode."
+"Puwede kang pumili ng ibang view."
+"Kita mo ba ako nang maayos?"
+end
+*Mini_Map
+"Ipinapakita ng mapang ito kung nasaan ka, sa simpleng paraan."
+"Makikita mo ang mga friend, shop, warehouse at portal sa isang tingin."
+"Hindi mo ako makikita sa mapa. Lagi akong nasa tabi mo..^^"
+"Puwede mo itong buksan at isara."
+end
+*CarStatus
+"Gusto mong malaman ang EXP at level mo?"
+"Tingnan mo! Dito mo makikita ang attack power, defense at iba pa..."
+"Curious ka ba kung ano ang level ko?"
+"Ang shortcut na ito ay nagbubukas at nagsasara ng info ng character."
+end
+*InvenTory
+"Puwede ko bang makita ang mga item mo?"
+"Hindi ka makakapulot ng item kung puno o walang espasyo ang inventory."
+"Pahingi naman ng kaunti-_-;;;"
+"Ang shortcut na ito ay nagbubukas at nagsasara ng item inventory."
+end
+*Skill
+"Puwede ko bang makita ang mga skill mo?"
+"Lahat ng skill ay puwedeng i-register dito para magamit mamaya."
+"Naku! Wala ka pang kahit isang skill."
+"Ang shortcut na ito ay nagbubukas at nagsasara ng skill window."
+end
+*Party
+"Dito mo makikita ang mga player ng party mo."
+"Hanggang 6 na tao lang ang puwede sa party."
+"Puwede kang bumuo ng party hanggang 6 na tao."
+"Ang shortcut na ito ay nagbubukas at nagsasara ng party window."
+end
+*Quest
+"Dito mo makikita ang kasalukuyan mong quest."
+"Tingnan mo ang quest mo sa quest window."
+"Gusto mo bang ako na ang gumawa para sa iyo-_-? Ikaw na ang gumawa!"
+"Ang shortcut na ito ay nagbubukas at nagsasara ng quest window."
+end
+*System
+"Dito mo makikita ang guide o puwede kang lumabas ng laro."
+"Kailangan mo ba ng guide? Gusto mo bang lumabas?"
+"Iiwan mo akong mag-isa? Naiinis ako sa iyo..T_T"
+"Ang shortcut na ito ay nagbubukas ng system menu."
+end
+*InvenTory_Item
+"Ito ang item mo."
+"Saan mo gustong ilipat?"
+"Anong item ang ginamit mo?"
+end
+*Drop_Item
+"Puwede mong pulutin ang item!"
+"Pulutin mo ang lahat ng item. Malaking tulong lahat!"
+"May napulot ka ba? Pahingi naman ng kaunti~"
+end
+*Monster
+"May monster!! Atakihin natin~!!!"
+"Kaya mo 'yan! Mananalo ka!"
+"Wala ka pang kahit isang skill...-_-;"
+end
+*Message
+"Kailangan mo ba ng tulong ko?"
+"Baby dragon pa lang ako, hindi pa sapat ang lakas ko. Magpalakas tayo!"
+"Ang pinakamakapangyarihan kong sandata ay ang pagiging cute ko. Ho Ho"
+end
+*Battle_Message
+"Magaling! Gamitin ang auto attack sa pagpindot ng Shift at pag-right click ng mouse."
+"Kaya mo 'yan~"
+"Kaya mo 'yan! Mukhang malapit ka nang mag-level up~"
+"Konti na lang~ konti pa~ Lakasan mo!"
+"MUKHANG PAGOD KA NA~ Magpahinga ka muna."
+"Sa ngayon, wala kang penalty sa pagkamatay, pero mabigat ito sa matataas na level."
+"Hindi mo ba kailangan ng potion?"
+"Lumalakas ka na!!"
+"Sabay akong lalaki kasama mo."
+"Kapag puno na ang inventory, pumunta ka sa lungsod at ibenta ang mga item mo."
+"Iya~ Ito ang atake ko" o "HP~"
+"Hay, hay, ang hirap pala ng tumulong sa iba..T.T"
+"Maglaro tayo nang magkasama~"
+"Kapag nakakuha ka ng napakagandang item, bigyan mo ako ng kalahati!"
+"...Mas malakas ka kaysa sa inaasahan ko."
+"Gutom na ako! Kumain muna tayo ng kahit ano.."
+"May nakuha ka bang napakagandang item?"
+"Napapagod na ako..."
+"Malakas na atake o HP~ Iya!"
+"Kapag nakakuha ka ng crystal, gamitin mo: magiging kaibigan mo ang isang monster."
+"Tara~ Mag-PT tayo hanggang bukas!"
+"Tapang~ Kaya mo 'yan! Tapang~"
+"Mas masaya ang maglaro kasama ang mahal mo sa buhay, mayroon ka ba?"
+"Ang ganda ng araw, 'di ba?"
+"La la la~ la la la~"
+"Para gumamit ng skill, kailangan mo ng level 10~ Kaya mo 'yan~"
+"Oh! Mukhang malapit ka nang mag-level up! Nakakatulong ba ako?"
+end
+*Normal_Message
+"Oh! Kailan kaya ako magiging totoong dragon?'
+"Magandang araw ito para makakuha ng napakagandang item, 'di ba?'
+"Panatag ka habang kasama mo ako, 'di ba?"
+"Zzz. Nakaidlip ako, sorry."
+"Hindi maganda ang sobrang paglalaro."
+"Narinig mo na ba ang aging at mix?"
+"Ang ganda ng araw, 'di ba?"
+"La la la~ la la la~"
+"Mas masaya ang maglaro kasama ang mahal mo sa buhay, mayroon ka ba?"
+end
+*Level_Message2-1
+"Congrats! Nag-level up ka!"
+"Sa bawat level, makakakuha ka ng 5 attribute point. Ipamahagi ang mga point sa character info window."
+"Lumalago ang character mo sa pamamahagi ng mga point sa lakas, espiritu, talento, liksi at kalusugan."
+"Ngayon, pindutin ang C."
+end
+*Level_Message2-2
+"Lakas: tumataas ang atake, STM, STM recovery, HP, absorption at bigat."
+"Espiritu: tumataas ang magic attack, MP at MP recovery."
+"Talento: tumataas ang attack rate, attack power, defense, STM, bilis at absorption."
+"Liksi: tumataas ang damage ng mga ranged weapon, attack rate at defense."
+"Kalusugan: tumataas ang HP, HP recovery, STM, bigat at MP recovery."
+end
+*Level_Message3
+"Sa Pristontale, may mga shortcut key para madaling gumamit ng potion kapag gusto mong mag-recover ng HP, STM at MP ng character."
+"Ilagay ang mga potion sa shortcut inventory, sa gitna ng ibabang bahagi, at gamitin ang mga ito gamit ang mga key 1 hanggang 3."
+"Alam mo bang depende sa bracelet ang dami ng potion?"
+end
+*Level_Message4
+"May minimap sa kanang ibabang sulok."
+"Ipinapakita nito kung nasaan ka ngayon."
+"Ipinapakita nito kung anong field ang kinaroroonan mo."
+"Ipinapakita nito ang mga NPC sa berde at ang mga kasama mo sa dilaw."
+"Gamit ito, nakikita mo ang paligid."
+"I-on at i-off ang minimap gamit ang Tab key."
+end
+*Level_Message5
+"Puwede kang mag-equip ng 2 weapon at magpalit-palit sa mga ito."
+"Magpalit tayo ng weapon: pindutin ang V at pagkatapos ay W, o ang arrow, sa inventory."
+"At magpalit ng weapon ayon sa sitwasyon."
+"Sa ganitong paraan, mas may bentahe ka sa pag-hunt ng mga monster."
+end
+*Level_Message6-1
+"Sa Pristontale, may party system."
+"Puwede kang sumama sa ibang player para mag-hunt.
+"Ang isang party ay may 2 hanggang 6 na player."
+"Hinahati ang EXP at gold sa mga player ng party."
+"Puwede kang makipag-usap sa mga player ng party."
+end
+*Level_Message6-2
+"Pero, kung mahigit 10 level ang agwat ng character,"
+"baka hindi ka makabuo ng party."
+"I-click ang character para bumuo ng party,"
+"pindutin ang invite button at itanong kung gusto niyang sumali."
+"Kung tanggapin niya, party na kayo!"
+end
+*Level_Message7
+"Ang portal ay isang paraan para makapunta sa ibang lugar nang mabilis."
+"Gamit ang mga portal, makakarating ka sa malalayong lugar."
+"Libre ang mga portal ng Pillai at Ricarten."
+"Para pumunta at bumalik sa iba't ibang field, kailangan mo ng Wing"
+"mula sa portal inventor sa Ricarten. Nakilala mo na ba siya?"
+end
+*Level_Message8
+"Hanapin ang mix craftsman sa Ricarten"
+"at i-mix ang mga equipment mo para lumakas ang mga ito.
+"Sa pag-mix, gagastos ka ng sheltom at gold,"
+"pero ligtas itong paraan para pataasin ang kakayahan ng mga equipment."
+"Ingat! Kapag na-mix na, hindi na ito puwedeng i-mix ulit."
+end
+*Level_Message9-1
+"Hanapin ang aging craftsman"
+"at i-aging ang mga item mo para lumakas ang mga ito."
+"Sa pag-aging, gagastos ka ng sheltom at gold."
+"Ang isang item ay puwedeng i-aging nang 9 na beses sa kabuuan."
+end
+*Level_Message9-2
+"Ang item na may aging ay kumikinang sa iba't ibang kulay sa bawat stage, ang ganda!"
+"Pero habang dumarami ang stage, tumataas ang tsansang pumalya."
+"Kapag pumalya, puwede mong mawala ang sheltom, gold at ang item."
+"Ingat~!"
+end
+*Level_Message10-1
+"Congrats! Umabot ka na sa level 10. Ngayon, tuloy-tuloy ka na bilang tunay na mandirigma."
+"Nakausap ko na ang skill master ng Ricarten at Pillai."
+"Ituturo ng skill master ang skill na kailangan mo."
+"Natututo ka ng skill sa skill master."
+"At nakakakuha ka ng 1 skill point kada 2 level~"
+end
+*Level_Message10-2
+"Habang tumataas ang level ng skill, lumalakas ito."
+"Oras na para magpaalam."
+"Magkikita ulit tayo kapag isa ka nang dakilang mandirigma."
+"Dahil pangako ito ng mandirigma at ng dragon."
+"Mangako kang magiging dakilang mandirigma ka^^"
+"Mami-miss kita nang sobra..."
+end
+*Special_Message8_Mecha
+"Ang Mechanician ay isang talentadong character"
+"na gumagamit ng iba't ibang uri ng sandata sa lupain ng Priston."
+"Ginagamit ng Mechanician ang mga sandata na may mechanic specialization."
+"Mula level 20 pataas, tutulungan ka ng skill master ng Ricarten na mag-rank up."
+end
+*Special_Message8_Fighter
+"Ang Fighter ang pinakamatibay na character sa lupain ng Priston."
+"Palakol ang pangunahing gamit ng Fighter."
+"Para sa malakas na damage, gumamit ng two-handed weapon;"
+"para sa defense at attack power, gumamit ng one-handed weapon."
+"Mula level 20 pataas, tutulungan ka ng skill master ng Ricarten na mag-rank up."
+end
+*Special_Message8_Pikeman
+"Ang Pikeman ay lumalaban sa maraming laban gamit ang mahuhusay na skill at sandata!"
+"Sibat ang pangunahing gamit ng Pikeman."
+"Taglay niya ang pinakamalakas na skill para manakit ng kalaban sa malapitan…"
+"Pero hindi siya gumagamit ng shield, kaya mahina siya sa defense."
+"Mula level 20 pataas, tutulungan ka ng skill master ng Ricarten na mag-rank up."
+end
+*Special_Message8_Archer
+"Ipinapakita ng Archer sa mga monster ang lakas ng pana niya mula sa malayo!"
+"Pana ang pangunahing gamit niya."
+"Isang tira, isang patay! Nangangarap na maging sharpshooter~"
+"Mula level 20 pataas, tutulungan ka ng skill master ng Pillai na mag-rank up."
+end
+*Special_Message8_Assassin
+"Ang Assassin ang nag-iisang babaeng mandirigma sa mga Tempskron."
+"Gumagamit siya ng dalawang talim para sa mabibilis na atake."
+"Sa mahihirap na sitwasyon, ginagamit din niya ang anino, lason at mga patibong para takutin ang mga kalaban."
+"Pagdating sa level 20, tutulungan ka ng skill master ng Ricarten na mag-rank up."
+end
+*Special_Message8_Knight
+"Sinusunod ng Knight ang landas ng Holy Knight ng lupaing ito."
+"Espada ang pangunahing gamit ng Knight."
+"Mula level 20 pataas, tutulungan ka ng magic master ng Pillai na mag-rank up."
+end
+*Special_Message8_Atalanta
+"Ang Atalanta ay isang babaeng mandirigma na naglalakbay sa lupain gamit ang kanyang dart!"
+"Dart ang pangunahing gamit ng Atalanta."
+"Mula level 20 pataas, tutulungan ka ng magic master ng Pillai na mag-rank up."
+end
+*Special_Message8_Priestess
+"Ang Priestess ay isang santa na tumutulong sa mga tao ayon sa salita ng Diyos."
+"Staff o wand ang pangunahing gamit ng Priestess."
+"Ang Priestess ng lupaing ito ay gumagawa ng malalakas na ranged attack"
+"at nagsisilbi ring tagapagpagaling."
+"Mula level 20 pataas, tutulungan ka ng magic master ng Pillai na mag-rank up."
+end
+*Special_Message8_Magician
+"Ginagamit ng Magician ang kapangyarihan ng magic sa lakas ng espiritu, sa halip na sanayin ang katawan."
+"Staff o wand ang pangunahing gamit ng Magician."
+"Mahina pa siya ngayon, pero habang tumataas ang level, ipinapakita niya ang buong talento niya."
+"Mula level 20 pataas, tutulungan ka ng magic master ng Pillai na mag-rank up."
+end
+*Special_Message8_Shaman
+"Taglay ng Shaman ang kapangyarihan ng pangkukulam at dark magic."
+"Gumagamit siya ng sandatang kakaiba sa lahat ng ibang class, na tinatawag na ghost."
+"Maging ang mga accessory niya, tulad ng bungo, sungay at balahibo, ay may aura ng demonyo."
+"Pagdating sa level 20, tutulungan ka ng magic master ng Pillai na mag-rank up."
+end
+*Special_Message8_MartialArtist
+"Lumaban gamit ang mga paa at kamao bilang sandata!"
+"Gumamit ng armlet para sa malalakas na atake."
+"Mula level 20 pataas, tutulungan ka ng skill master ng Ricarten."
+end
+*Special_Message9
+"Oras na para magpaalam. Oh! Huwag kang malungkot."
+"Hindi ito pamamaalam. Siguradong magkikita pa tayo ulit."
+"At malakas ka na naman kahit wala ang tulong ko."
+"Sige, sugod na"
+end

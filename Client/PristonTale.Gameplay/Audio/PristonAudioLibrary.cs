@@ -1,7 +1,6 @@
 using Microsoft.Xna.Framework.Audio;
 using PristonTale.Engine3D.Diagnostics;
 using PristonTale.Engine3D.Formats;
-using PristonTale.Engine3D.IO;
 using PristonTale.Engine3D.Rendering;
 using PristonTale.Simulation.World.Npcs;
 using PristonTale.Contracts.Motion;
@@ -93,110 +92,99 @@ public sealed class PristonAudioLibrary : IDisposable
         "wav/Ambient/icewind.wav"
     ];
 
-    private readonly Dictionary<string, SoundEffect> _fieldMusic = new(StringComparer.Ordinal);
-    private readonly SoundEffect[] _ambients = new SoundEffect[AmbientFiles.Length];
-    private readonly SoundEffect[] _fieldAmbients = new SoundEffect[FieldAmbientFiles.Length];
-    private readonly Dictionary<(int SoundCode, MotionCode Motion), SoundEffect[]> _npcSounds = [];
-    private readonly Dictionary<uint, SoundEffect> _talkSounds = [];
-    private readonly List<SoundEffect> _owned = [];
-    private readonly Dictionary<string, SoundEffect> _itemSounds = new(StringComparer.OrdinalIgnoreCase);
-    private readonly Dictionary<EventCue, SoundEffect> _events = [];
-    private readonly Dictionary<LoginCue, SoundEffect> _loginCues = [];
-    private readonly List<(SoundEffect Sound, float Volume)> _characterSelectLoops = [];
+    private const string OpeningMusicFile = "StartImage/Opening/Intro.wav";
+    private const string PortalWarpFile = "wav/Effects/Skill/Learn_Skill.wav";
+    private const string QuestFanfareFile = "image/Sinimage/Sound/drink2.wav";
+    private const string WhisperFile = "wav/Effects/event/hosound.wav";
+    private const string CraftFailureFile = "image/Sinimage/Sound/sheltom-failure.wav";
+    private const string RainFile = "wav/rain01.wav";
+    private const string ThunderFile = "wav/thunder1.wav";
+
+    private readonly string _assetRoot;
+    private readonly IClientLog _log;
+    private readonly SoundLoader<SoundEffect> _sounds;
+    private readonly bool _onDemand;
+    private readonly Dictionary<string, string> _fieldMusic = new(StringComparer.Ordinal);
+    private readonly Dictionary<(int SoundCode, MotionCode Motion), string[]> _npcSounds = [];
+    private readonly Dictionary<uint, string> _talkSounds = [];
+    private readonly Dictionary<EventCue, string> _events = [];
+    private readonly Dictionary<LoginCue, string> _loginCues = [];
+    private readonly List<(string Path, float Volume)> _openingLoops = [];
+    private readonly List<(string Path, float Volume)> _characterSelectLoops = [];
     private int _npcSoundCount;
 
-    private PristonAudioLibrary()
+    private PristonAudioLibrary(string assetRoot, IClientLog log)
     {
+        _assetRoot = assetRoot;
+        _log = log;
+        _onDemand = SoundFiles.Source.OnDemand;
+        _sounds = new SoundLoader<SoundEffect>(
+            path => SoundFiles.ReadAsync(assetRoot, path),
+            static wave =>
+            {
+                using var stream = new MemoryStream(wave, writable: false);
+                return SoundEffect.FromStream(stream);
+            },
+            (path, error) => log.Warn($"[Audio] sound {path} unavailable: {error.Message}"));
     }
 
-    public SoundEffect OpeningMusic { get; private set; }
-    public SoundEffect CharacterSelectMusic { get; private set; }
-    public IReadOnlyList<(SoundEffect Sound, float Volume)> CharacterSelectLoops => _characterSelectLoops;
-    public SoundEffect PortalWarpSound { get; private set; }
+    // The music and loops of the login and character screens as (asset-relative path, volume), each played through
+    // LoginSound. The opening's are empty when the library was loaded without the opening music.
+    public IReadOnlyList<(string Path, float Volume)> OpeningLoops => _openingLoops;
+    public IReadOnlyList<(string Path, float Volume)> CharacterSelectLoops => _characterSelectLoops;
+    public SoundEffect PortalWarpSound => _sounds.Get(PortalWarpFile);
 
     // Played when a quest starts, moves on or ends.
-    public SoundEffect QuestFanfareSound { get; private set; }
+    public SoundEffect QuestFanfareSound => _sounds.Get(QuestFanfareFile);
 
     // Played when a whisper or notice opens the closed chat window.
-    public SoundEffect WhisperSound { get; private set; }
+    public SoundEffect WhisperSound => _sounds.Get(WhisperFile);
 
-    public SoundEffect CraftFailureSound { get; private set; }
+    public SoundEffect CraftFailureSound => _sounds.Get(CraftFailureFile);
 
     // The rain's loop and a lightning strike's thunder.
-    public SoundEffect RainSound { get; private set; }
-    public SoundEffect ThunderSound { get; private set; }
+    public SoundEffect RainSound => _sounds.Get(RainFile);
+    public SoundEffect ThunderSound => _sounds.Get(ThunderFile);
     public bool MusicEnabled { get; private set; } = true;
     public bool SoundEnabled { get; private set; } = true;
     public float MusicGain { get; private set; } = 1f;
     public float SoundGain { get; private set; } = 1f;
-    public int AmbientCount => _ambients.Length;
-    public int FieldAmbientCount => _fieldAmbients.Length;
+    public int AmbientCount => AmbientFiles.Length;
+    public int FieldAmbientCount => FieldAmbientFiles.Length;
     public int NpcSoundCount => _npcSoundCount;
     public int TalkSoundCount => _talkSounds.Count;
 
+    // From disk every sound is decoded here. When the sound files arrive on demand (the browser), nothing is decoded
+    // yet: the short cues start downloading now, and music, ambience and NPC sounds when they are first asked for, so
+    // each of them is silent until its file arrives.
     public static PristonAudioLibrary LoadBootstrap(string assetRoot, IClientLog log, bool loadOpeningMusic = true)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(assetRoot);
         ArgumentNullException.ThrowIfNull(log);
 
-        var library = new PristonAudioLibrary();
+        var library = new PristonAudioLibrary(assetRoot, log);
         try
         {
-            var byPath = new Dictionary<string, SoundEffect>(StringComparer.OrdinalIgnoreCase);
-            if (loadOpeningMusic)
+            library.Catalogue(loadOpeningMusic);
+            if (library._onDemand)
             {
-                library.OpeningMusic = library.Load(assetRoot, "StartImage/Opening/Intro.wav", byPath);
+                foreach (var path in library.CuePaths())
+                {
+                    library._sounds.Request(path);
+                }
             }
-
-            library.CharacterSelectMusic = library.Load(assetRoot, CharacterSelectSounds.Music, byPath);
-            foreach (var (cue, path) in LoginAudio.CueFiles)
+            else
             {
-                library._loginCues.Add(cue, library.Load(assetRoot, path, byPath));
+                foreach (var path in library.CuePaths().Concat(library.StreamPaths()))
+                {
+                    library._sounds.Load(path);
+                }
             }
-
-            foreach (var (path, volume) in LoginAudio.CharacterSelectLoopFiles)
-            {
-                library._characterSelectLoops.Add((library.Load(assetRoot, path, byPath), volume));
-            }
-
-            library.PortalWarpSound = library.Load(assetRoot, "wav/Effects/Skill/Learn_Skill.wav", byPath);
-            library.QuestFanfareSound = library.Load(assetRoot, "image/Sinimage/Sound/drink2.wav", byPath);
-            library.WhisperSound = library.Load(assetRoot, "wav/Effects/event/hosound.wav", byPath);
-            library.CraftFailureSound = library.Load(assetRoot, "image/Sinimage/Sound/sheltom-failure.wav", byPath);
-            library.RainSound = library.Load(assetRoot, "wav/rain01.wav", byPath);
-            library.ThunderSound = library.Load(assetRoot, "wav/thunder1.wav", byPath);
-            foreach (var (code, path) in FieldMusicFiles)
-            {
-                library._fieldMusic.Add(code, library.Load(assetRoot, path, byPath));
-            }
-
-            for (var index = 0; index < AmbientFiles.Length; index++)
-            {
-                library._ambients[index] = library.Load(assetRoot, AmbientFiles[index], byPath);
-            }
-
-            for (var index = 0; index < FieldAmbientFiles.Length; index++)
-            {
-                library._fieldAmbients[index] = library.Load(assetRoot, FieldAmbientFiles[index], byPath);
-            }
-
-            foreach (var file in ItemSoundRules.Files)
-            {
-                library._itemSounds[file] = library.Load(assetRoot, ItemSoundRules.Directory + file, byPath);
-            }
-
-            foreach (var (cue, path) in EventSounds.Files)
-            {
-                library._events[cue] = library.Load(assetRoot, path, byPath);
-            }
-
-            library.LoadNpcSoundBanks(assetRoot, byPath);
-            library.LoadTalkSounds(assetRoot, byPath, log);
 
             log.Info(
-                $"[Audio] prepared {library._fieldMusic.Count} field music codes, {library._fieldAmbients.Length} field ambience loops, "
-                + $"{library._ambients.Length} positional ambience sounds, {library._npcSoundCount} NPC motion sounds and "
-                + $"{library._talkSounds.Count} NPC talk sounds.");
+                $"[Audio] prepared {library._fieldMusic.Count} field music codes, {FieldAmbientFiles.Length} field ambience loops, "
+                + $"{AmbientFiles.Length} positional ambience sounds, {library._npcSoundCount} NPC motion sounds and "
+                + $"{library._talkSounds.Count} NPC talk sounds{(library._onDemand ? ", loaded as they are needed" : string.Empty)}.");
             return library;
         }
         catch
@@ -206,59 +194,67 @@ public sealed class PristonAudioLibrary : IDisposable
         }
     }
 
-    public SoundEffect ItemSound(string catalogKey) => _itemSounds.GetValueOrDefault(ItemSoundRules.For(catalogKey));
+    // A login or character-screen loop of OpeningLoops or CharacterSelectLoops; null while its file is still arriving.
+    public SoundEffect LoginSound(string path) => _sounds.Get(path);
 
-    public SoundEffect Cue(LoginCue cue) => _loginCues.GetValueOrDefault(cue);
+    public SoundEffect ItemSound(string catalogKey) => _sounds.Get(ItemSoundRules.Directory + ItemSoundRules.For(catalogKey));
 
-    public SoundEffect CoinSound => _itemSounds.GetValueOrDefault(ItemSoundRules.Coin);
+    public SoundEffect Cue(LoginCue cue) => _sounds.Get(_loginCues.GetValueOrDefault(cue));
 
-    public SoundEffect Event(EventCue cue) => _events.GetValueOrDefault(cue);
+    public SoundEffect CoinSound => _sounds.Get(ItemSoundRules.Directory + ItemSoundRules.Coin);
 
+    public SoundEffect Event(EventCue cue) => _sounds.Get(_events.GetValueOrDefault(cue));
+
+    // False for no music, and while the music's file is still arriving.
     public bool TryGetFieldMusic(string code, out SoundEffect music)
     {
-        if (string.IsNullOrEmpty(code) || code == "BGM_CODE_CUSTOM")
-        {
-            music = null;
-            return false;
-        }
-
-        return _fieldMusic.TryGetValue(code, out music);
+        music = string.IsNullOrEmpty(code) || code == "BGM_CODE_CUSTOM" ? null : _sounds.Get(_fieldMusic.GetValueOrDefault(code));
+        return music is not null;
     }
 
+    // Null while the sound's file is still arriving.
     public SoundEffect Ambient(int code)
     {
-        if ((uint)code >= (uint)_ambients.Length)
+        if ((uint)code >= (uint)AmbientFiles.Length)
         {
-            throw new ArgumentOutOfRangeException(nameof(code), code, $"Ambient sound code must be between 0 and {_ambients.Length - 1}.");
+            throw new ArgumentOutOfRangeException(nameof(code), code, $"Ambient sound code must be between 0 and {AmbientFiles.Length - 1}.");
         }
 
-        return _ambients[code];
+        return _sounds.Get(AmbientFiles[code]);
     }
 
+    // Null while the sound's file is still arriving.
     public SoundEffect FieldAmbient(int code)
     {
-        if ((uint)code >= (uint)_fieldAmbients.Length)
+        if ((uint)code >= (uint)FieldAmbientFiles.Length)
         {
-            throw new ArgumentOutOfRangeException(nameof(code), code, $"Field ambience code must be between 0 and {_fieldAmbients.Length - 1}.");
+            throw new ArgumentOutOfRangeException(nameof(code), code, $"Field ambience code must be between 0 and {FieldAmbientFiles.Length - 1}.");
         }
 
-        return _fieldAmbients[code];
+        return _sounds.Get(FieldAmbientFiles[code]);
     }
 
-    public bool TryGetNpcSound(int soundCode, MotionCode motion, out SoundEffect[] variants)
+    // One of the motion's sounds at random; null when it has none, and while that file is still arriving (asking
+    // starts every variant's download).
+    public SoundEffect NpcSound(int soundCode, MotionCode motion)
     {
-        return _npcSounds.TryGetValue((soundCode, motion), out variants);
+        if (!_npcSounds.TryGetValue((soundCode, motion), out var variants))
+        {
+            return null;
+        }
+
+        foreach (var variant in variants)
+        {
+            _sounds.Request(variant);
+        }
+
+        return _sounds.Get(variants[Random.Shared.Next(variants.Length)]);
     }
 
     public bool TryGetTalkSound(string message, out SoundEffect sound)
     {
-        if (string.IsNullOrEmpty(message))
-        {
-            sound = null;
-            return false;
-        }
-
-        return _talkSounds.TryGetValue(TalkSound.GetSoundCode(message), out sound);
+        sound = string.IsNullOrEmpty(message) ? null : _sounds.Get(_talkSounds.GetValueOrDefault(TalkSound.GetSoundCode(message)));
+        return sound is not null;
     }
 
     public void ApplySettings(ClientSettings settings)
@@ -270,30 +266,61 @@ public sealed class PristonAudioLibrary : IDisposable
         SoundGain = Math.Clamp(settings.SoundVolumePercent, 0, 100) / 100f;
     }
 
-    private SoundEffect Load(string assetRoot, string relativePath, Dictionary<string, SoundEffect> byPath)
+    private void Catalogue(bool loadOpeningMusic)
     {
-        if (byPath.TryGetValue(relativePath, out var existing))
+        if (loadOpeningMusic)
         {
-            return existing;
+            _openingLoops.Add((OpeningMusicFile, FieldAudioController.MusicVolume));
         }
 
-        var path = Path.Combine(assetRoot, relativePath);
-        using var stream = PristonWaveDecoder.OpenRead(path);
-        var sound = SoundEffect.FromStream(stream);
-        byPath.Add(relativePath, sound);
-        _owned.Add(sound);
-        return sound;
+        _characterSelectLoops.Add((CharacterSelectSounds.Music, FieldAudioController.MusicVolume));
+        _characterSelectLoops.AddRange(LoginAudio.CharacterSelectLoopFiles);
+        foreach (var (cue, path) in LoginAudio.CueFiles)
+        {
+            _loginCues.Add(cue, path);
+        }
+
+        foreach (var (code, path) in FieldMusicFiles)
+        {
+            _fieldMusic.Add(code, path);
+        }
+
+        foreach (var (cue, path) in EventSounds.Files)
+        {
+            _events[cue] = path;
+        }
+
+        CatalogueNpcSoundBanks();
+        CatalogueTalkSounds();
     }
 
-    private void LoadNpcSoundBanks(string assetRoot, Dictionary<string, SoundEffect> byPath)
+    // The short one-shot sounds any session plays, downloaded ahead when files arrive on demand.
+    private IEnumerable<string> CuePaths() =>
+    [
+        PortalWarpFile, QuestFanfareFile, WhisperFile, CraftFailureFile, RainFile, ThunderFile,
+        .. _loginCues.Values,
+        .. ItemSoundRules.Files.Select(static file => ItemSoundRules.Directory + file)
+    ];
+
+    // The music, the loops, the Bellatra cues and the NPC sounds, fetched when first asked for when files arrive on demand.
+    private IEnumerable<string> StreamPaths() =>
+    [
+        .. _openingLoops.Select(static loop => loop.Path),
+        .. _characterSelectLoops.Select(static loop => loop.Path),
+        .. _fieldMusic.Values,
+        .. AmbientFiles,
+        .. FieldAmbientFiles,
+        .. _events.Values,
+        .. _npcSounds.Values.SelectMany(static variants => variants),
+        .. _talkSounds.Values
+    ];
+
+    private void CatalogueNpcSoundBanks()
     {
-        var grouped = new Dictionary<(int SoundCode, MotionCode Motion), List<SoundEffect>>();
+        var grouped = new Dictionary<(int SoundCode, MotionCode Motion), List<string>>();
         foreach (var (soundCode, relativeDirectory) in NpcSoundBankDirectories)
         {
-            var directory = AssetFiles.Resolve(Path.Combine(assetRoot, relativeDirectory));
-            var paths = Directory.EnumerateFiles(directory, "*.wav", SearchOption.TopDirectoryOnly)
-                .Order(StringComparer.OrdinalIgnoreCase);
-            foreach (var path in paths)
+            foreach (var path in SoundFiles.Waves(_assetRoot, relativeDirectory))
             {
                 if (!TryGetMotion(Path.GetFileName(path), out var motion))
                 {
@@ -307,8 +334,7 @@ public sealed class PristonAudioLibrary : IDisposable
                     grouped.Add(key, variants);
                 }
 
-                var relativePath = Path.GetRelativePath(assetRoot, path);
-                variants.Add(Load(assetRoot, relativePath, byPath));
+                variants.Add(path);
                 _npcSoundCount++;
             }
         }
@@ -319,28 +345,24 @@ public sealed class PristonAudioLibrary : IDisposable
         }
     }
 
-    private void LoadTalkSounds(string assetRoot, Dictionary<string, SoundEffect> byPath, IClientLog log)
+    private void CatalogueTalkSounds()
     {
-        var relativeDirectory = Path.Combine("wav", "Talk");
-        var directory = AssetFiles.Resolve(Path.Combine(assetRoot, relativeDirectory));
-        if (!Directory.Exists(directory))
+        var paths = SoundFiles.Waves(_assetRoot, "wav/Talk");
+        if (paths.Count == 0)
         {
-            log.Info("[Audio] wav/Talk is absent; hashed NPC voice playback is disabled until the original voice archive is supplied.");
+            _log.Info("[Audio] wav/Talk is absent; hashed NPC voice playback is disabled until the original voice archive is supplied.");
             return;
         }
 
-        var paths = Directory.EnumerateFiles(directory, "*.wav", SearchOption.TopDirectoryOnly)
-            .Order(StringComparer.OrdinalIgnoreCase);
         foreach (var path in paths)
         {
             if (!uint.TryParse(Path.GetFileNameWithoutExtension(path), out var soundCode))
             {
-                log.Warn($"[Audio] ignored NPC talk asset with a non-numeric name: {path}");
+                _log.Warn($"[Audio] ignored NPC talk asset with a non-numeric name: {path}");
                 continue;
             }
 
-            var relativePath = Path.GetRelativePath(assetRoot, path);
-            _talkSounds[soundCode] = Load(assetRoot, relativePath, byPath);
+            _talkSounds[soundCode] = path;
         }
     }
 
@@ -395,19 +417,19 @@ public sealed class PristonAudioLibrary : IDisposable
 
     public void Dispose()
     {
-        foreach (var sound in _owned)
+        foreach (var sound in _sounds.Created)
         {
             sound.Dispose();
         }
 
-        _owned.Clear();
+        _sounds.Clear();
         _fieldMusic.Clear();
         _loginCues.Clear();
+        _events.Clear();
+        _openingLoops.Clear();
         _characterSelectLoops.Clear();
         _npcSounds.Clear();
         _talkSounds.Clear();
         _npcSoundCount = 0;
-        Array.Clear(_ambients);
-        Array.Clear(_fieldAmbients);
     }
 }

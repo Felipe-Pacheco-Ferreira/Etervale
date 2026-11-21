@@ -428,6 +428,10 @@ Etervale extension opcodes `SkillCast` (C→S), `SkillCastResult`, `SkillEvents`
 `ProgressionCommand`/`ProgressionResult`. Layouts, flags, phases and status ops are in [protocol.md](protocol.md).
 
 - The client sends only skill code, target id, its position and a command flag; the server re-derives everything.
+- A skill's hit reports its element on its `Hit` combat event (`CombatEventView.Element`): the damage rule's
+  `flatElement`, else its `element` (`mainElement` for the main target of an area), none for an `unresisted` rule
+  (`SkillDamageRule.HitElement`); bursts, counters and familiars report theirs, a helper pet its own (fire Terry, ice
+  Nepsys). Basic attacks, drains, periodic damage, reflects and summons' blows carry none.
 - The verdict, command, phase, event flags and status operation are the Contracts enums on every side; append values.
 - Statuses carry `SourceKind`: `PlayerSkill`, `Item`, or `MonsterSkill` for the slows, poison, stuns, curses and lent
   power of monster skills ([world.md](world.md#monster-skills)); the value is the main modifier, or the drawn element
@@ -480,7 +484,9 @@ Presentation (`SkillPresentation`):
   (`ISkillSceneHost.ApplyLook`); `ActorLookPresenter` paints body, head and held items, swaps or moves the shield, adds
   the enlarged weapon copy and the afterimage echoes (six two frames apart from -140 by -20 for the local player, four
   four frames apart at -160 for others) and reports Normal once a look ends.
-- Combat events add floating damage, heal and evade text and the revive effect (`ReviveEffect`).
+- Combat events add floating damage, heal and evade text and the revive effect (`ReviveEffect`). A hit's number carries
+  the hit's element (`FloatingCombatText.Add`): its icon beside the number and, optionally, the number in its colour
+  (`DamageElementStyle`, from the `showElementIcon` and `colorDamageByElement` settings).
 - VFX: every `<assetRoot>/Effect/Vfx/**/*.vfx.json`, read off the game thread in ordinal path order (docs/effects.md).
   Sounds are asset paths loaded by `SkillSoundBank`.
 - HUD: `HudSkillHud` draws the socket icons with the cooldown sweep from `SkillCooldownBook` and, from (10, 10), the

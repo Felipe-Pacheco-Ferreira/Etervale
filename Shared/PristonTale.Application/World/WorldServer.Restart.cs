@@ -70,12 +70,12 @@ public sealed partial class WorldServer
         }, waitForCapacity: true);
     }
 
-    // The record a dead player is saved with: the town restart with its costs, so leaving while down neither skips the
-    // penalty nor brings the player back dead.
-    private CharacterSaveSnapshot? CaptureDead(PlayerSession session, PlayerCharacter character, int fieldId, Vector3 fellAt)
+    // The record a dead player is saved with: the town restart with its costs (none when another player slew it), so
+    // leaving while down neither skips the penalty nor brings the player back dead.
+    private CharacterSaveSnapshot? CaptureDead(PlayerSession session, PlayerCharacter character, int fieldId, Vector3 fellAt, bool slainByPlayer)
     {
         if (session.Loaded is null || !_fields.TryGetValue(fieldId, out var field)
-            || RestartTransactions.Resolve(character, field.State, RestartChoice.Town, out _, out _, out _) is not { } candidate)
+            || RestartTransactions.Resolve(character, field.State, RestartChoice.Town, slainByPlayer, out _, out _, out _) is not { } candidate)
         {
             return null;
         }

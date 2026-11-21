@@ -3,6 +3,7 @@ using PristonTale.Gameplay.UI;
 using Microsoft.Xna.Framework.Input;
 using PristonTale.Contracts.Motion;
 using PristonTale.Engine3D;
+using PristonTale.Engine3D.Rendering;
 using PristonTale.Gameplay.UI.Widgets;
 using PristonTale.Gameplay.World.Remote;
 using PristonTale.Simulation.Skills;
@@ -60,6 +61,10 @@ public sealed partial class GameScene
 
     private bool InActionField => ActionCamera is not null;
 
+    // The dungeon camera setting applies only in an underground field; everywhere else the follow camera stays free.
+    internal static bool UsesTopDownCamera(FieldDef field, ClientSettings settings) =>
+        field is { Underground: true } && settings.DungeonCamera == DungeonCameraMode.TopDown;
+
     private void UpdateCamera(GameTime gameTime)
     {
         var view = ActionCamera;
@@ -84,6 +89,7 @@ public sealed partial class GameScene
             }
 
             var pointerCaptured = PointerCaptured || WebWorldHud.Enabled && !WebWorldHud.HasCanvasPointer;
+            _camera.TopDown = UsesTopDownCamera(_currentField, _presentation.Requested);
             _camera.Update(gameTime, _graphicsDevice, _playerBody.Position, _playerForward, _fieldCollision, pointerCaptured, CameraInputEnabled,
                 keysEnabled: !KeyboardCaptured, resolveKey: _cameraKeyResolver ??= ResolveCameraKey,
                 sideButtons: _presentation.Requested.CameraMouseButtons, mouse4: _presentation.Requested.CameraMouse4,

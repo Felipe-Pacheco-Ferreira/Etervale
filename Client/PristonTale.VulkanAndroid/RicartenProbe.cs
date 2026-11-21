@@ -148,7 +148,7 @@ internal sealed class RicartenProbe : Game
             loginAtlas = HudAtlas.LoadBootstrap(GraphicsDevice, assetRoot, ConsoleClientLog.Instance);
         }
 
-        screen = new ScreenContext(GraphicsDevice, Content, selectionBatch, Content.Load<SpriteFont>("Fonts/UI"),
+        screen = new ScreenContext(GraphicsDevice, Content, selectionBatch, new UiFonts(Content),
             assetRoot, connection, null, RequestScreen, presentation, uiAtlas: loginAtlas, sky: sky, effects: effects, audio: audio,
             renewBackend: RenewBackend);
         Window.TextInput += (_, args) => screen.TypedText.Push(args.Character);
@@ -250,7 +250,7 @@ internal sealed class RicartenProbe : Game
         scene.SelectCombatTargetOnTap = true;
         namePlates = new HudCombat();
         nameSprites = new HudSprites(GraphicsDevice, root, ConsoleClientLog.Instance);
-        namePainter = new HudPainter(selectionBatch, screen.Font, nameSprites);
+        namePainter = new HudPainter(selectionBatch, screen.Fonts, nameSprites);
         scene.PresenceObserved += session.Observe;
         scene.PresenceObserved += namePlates.Observe;
         chat = new HudChat { SelfId = session.Entered.EntityId, PlayerName = character.Name };

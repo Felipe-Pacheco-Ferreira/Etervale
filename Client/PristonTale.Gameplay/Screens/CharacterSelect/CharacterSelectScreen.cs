@@ -158,7 +158,7 @@ public sealed partial class CharacterSelectScreen : GameScreen
         {
             _assets = new CharSelectAssets(Context.GraphicsDevice, AssetPath);
             _portrait = new CharacterSelectPortrait(Context.GraphicsDevice);
-            _view = new CharacterSelectView(Context.SpriteBatch, Context.Font, _assets, _cameraCtl, ButtonScale, UiScale);
+            _view = new CharacterSelectView(Context.SpriteBatch, Context.Fonts, _assets, _cameraCtl, ButtonScale, UiScale);
         }
         _audio = LoginAudio.CharacterSelect(Context.Audio);
         if (_webOverlay)

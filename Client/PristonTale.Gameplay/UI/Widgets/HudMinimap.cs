@@ -34,6 +34,9 @@ public sealed class HudMinimap
     // The original adds a specular 96 to the frame (a quarter of it to the title) under the cursor; adding the sprite's own
     // colour once (a quarter for the title) gives the same brightening on the grey frame art.
     private const int HoverHighlight = 255;
+    private const int BoxSize = 128;
+    private const int TitleHeight = 16;
+    private const int TouchMargin = 10;
 
     private string _field;
     private string _neighbour;
@@ -42,8 +45,11 @@ public sealed class HudMinimap
     private string _neighbourMap;
     private float _viewSize = InitialViewSize;
 
+    // The touch HUD's skill wheel holds the lower right corner, so there the box sits in the upper right corner, as on the
+    // Android HUD, with its title above it.
     public static Rectangle Box(HudLayout layout) =>
-        layout.BottomRight(layout.Browser ? new Rectangle(662, 434, 128, 128) : new Rectangle(656, 426, 128, 128));
+        layout.Touch ? new Rectangle(layout.Width - TouchMargin - BoxSize, TouchMargin + TitleHeight, BoxSize, BoxSize)
+            : layout.BottomRight(layout.Browser ? new Rectangle(662, 434, BoxSize, BoxSize) : new Rectangle(656, 426, BoxSize, BoxSize));
 
     // 16 (dungeon) or 24 (other fields) cells of 64 world units from the centre to the box edge.
     public static float ViewSize(bool underground) => (underground ? 16 : 24) * 64f;
@@ -177,8 +183,13 @@ public sealed class HudMinimap
     // party: the other members' places, marked red past PartyLimits.NearRange, as the original marks them.
     // guide: the quest destination the minimap guide points at (ClientSettings.MinimapGuide), held to the box's edge while
     // it lies beyond the view.
+    private const int HalfBox = BoxSize / 2;
+    private const int ZoneDots = 72;
+    private static readonly Color ZoneColor = new(90, 200, 255);
+
+    // zone: the Battle Royale's safe zone (centre and radius), drawn as a dotted circle.
     public void Draw(HudPainter painter, HudLayout layout, HudWorldView world, IReadOnlyList<Vector3> npcs, IReadOnlyList<Vector3> party, bool hovered,
-        Vector3? guide = null)
+        Vector3? guide = null, (Vector3 Center, float Radius)? zone = null)
     {
         var box = Box(layout);
         painter.ColorBox(box, 0, 0, 0, 128);
@@ -192,7 +203,7 @@ public sealed class HudMinimap
             DrawMap(painter, box, _fieldMap, world.MapRectangle, world.PlayerPosition);
         }
 
-        var center = new Vector2(box.X + 64, box.Y + 64);
+        var center = new Vector2(box.X + HalfBox, box.Y + HalfBox);
         for (var index = 0; index < npcs.Count; index++)
         {
             var npc = npcs[index];
@@ -217,6 +228,20 @@ public sealed class HudMinimap
             }
         }
 
+        if (zone is { } safe)
+        {
+            for (var dot = 0; dot < ZoneDots; dot++)
+            {
+                var angle = MathF.Tau * dot / ZoneDots;
+                var point = safe.Center + new Vector3(MathF.Cos(angle) * safe.Radius, 0f, MathF.Sin(angle) * safe.Radius);
+                var offset = MarkerOffset(world.PlayerPosition, point, _viewSize);
+                if (MathF.Abs(offset.X) < HalfBox - 1 && MathF.Abs(offset.Y) < HalfBox - 1)
+                {
+                    painter.Fill(new Rectangle((int)(center.X + offset.X) - 1, (int)(center.Y + offset.Y) - 1, 2, 2), ZoneColor);
+                }
+            }
+        }
+
         if (guide is { } destination)
         {
             var offset = GuideOffset(world.PlayerPosition, destination, _viewSize);
@@ -234,7 +259,7 @@ public sealed class HudMinimap
 
         if (_field is not null)
         {
-            var title = new Rectangle(box.X, box.Y - 16, 128, 16);
+            var title = new Rectangle(box.X, box.Y - TitleHeight, BoxSize, TitleHeight);
             if (layout.Browser && string.Equals(_field, RicartenField.Definition.Id, StringComparison.OrdinalIgnoreCase))
             {
                 painter.FramedBox(title, new Color(166, 142, 88), new Color(64, 51, 31), new Color(13, 12, 9), 2);

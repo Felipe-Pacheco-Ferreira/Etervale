@@ -59,5 +59,21 @@ public static class HudPlayerButtons
         }
     }
 
+    // The Duel button (DuelRules) under the box, drawn in the HUD's own name box style: the original art has no room for it.
+    public static Rectangle DuelButton(HudTargetFrame frame) =>
+        new(Center(frame) - DuelWidth / 2, frame.Box.Bottom + DuelTop, DuelWidth, DuelHeight);
+
+    public static void DrawDuel(HudPainter painter, HudTargetFrame frame, Point pointer, string label)
+    {
+        var bounds = DuelButton(frame);
+        painter.DrawNameBox(bounds, bounds.Contains(pointer));
+        painter.TextCentered(label, bounds.Left, bounds.Right, bounds.Y + 2);
+    }
+
+    private const int DuelWidth = 64;
+    private const int DuelHeight = 18;
+    // Below the button strip, which fills the top half of the box's art.
+    private const int DuelTop = 24;
+
     private static int Center(HudTargetFrame frame) => frame.Box.X + (frame.Box.Width >> 1);
 }

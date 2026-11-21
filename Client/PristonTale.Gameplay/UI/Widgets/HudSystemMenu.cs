@@ -25,14 +25,17 @@ public static class HudSystemMenu
     private const int BrowserRowStep = 31;
     private const int BrowserWidth = 98;
 
-    private static readonly (HudSystemEntry Entry, string Portuguese, string English)[] Rows =
+    private static readonly (HudSystemEntry Entry, string Label)[] Rows =
     [
-        (HudSystemEntry.Servers, "Servidores", "Servers"),
-        (HudSystemEntry.Characters, "Personagens", "Characters"),
-        (HudSystemEntry.Settings, "Configurações", "Settings"),
-        (HudSystemEntry.Help, "Ajuda", "Help"),
-        (HudSystemEntry.Exit, "Sair", "Quit")
+        (HudSystemEntry.Servers, "ServerSelect.Title"),
+        (HudSystemEntry.Characters, "CharSelect.Title.Characters"),
+        (HudSystemEntry.Settings, "Settings.Title"),
+        (HudSystemEntry.Help, "SystemMenu.Help"),
+        (HudSystemEntry.Exit, "SystemMenu.Quit")
     ];
+
+    // The browser draws its first three plaques in English, the language of the atlas's Help and Quit art.
+    private static readonly string[] BrowserLabels = ["Servers", "Characters", "Settings"];
 
     public static Rectangle Bounds => new(X, Bottom - Height * Rows.Length, Width, Height * Rows.Length);
 
@@ -80,7 +83,6 @@ public static class HudSystemMenu
             return;
         }
 
-        var portuguese = ClientText.Language == "pt-BR";
         for (var index = 0; index < Rows.Length; index++)
         {
             var row = layout.Browser ? BrowserRow(index) : Row(index);
@@ -93,7 +95,7 @@ public static class HudSystemMenu
             painter.ColorBox(new Rectangle(row.Left, row.Bottom - 3, row.Width, 3), 44, 37, 32, 255);
             painter.ColorBox(new Rectangle(row.Left + 2, row.Top + 4, 3, 3), 177, 152, 119, 255);
             painter.ColorBox(new Rectangle(row.Right - 5, row.Top + 4, 3, 3), 177, 152, 119, 255);
-            var label = portuguese ? Rows[index].Portuguese : Rows[index].English;
+            var label = ClientText.Get(Rows[index].Label);
             painter.TextCentered(label, row.Left + 6, row.Right - 6, row.Top + 5, hovered ? Color.Wheat : Color.Gold);
         }
     }
@@ -103,7 +105,7 @@ public static class HudSystemMenu
         // The native atlas contains Help and Quit. Reuse its wood and metal pieces for the three extra plaques.
         var backgroundSource = new Rectangle(0, 0, BrowserWidth, BrowserRowStep);
         var plankSource = new Rectangle(13, 3, 13, 16);
-        for (var index = 0; index < 3; index++)
+        for (var index = 0; index < BrowserLabels.Length; index++)
         {
             var row = BrowserRow(index);
             row.Offset(layout.BottomBarOrigin);
@@ -116,7 +118,7 @@ public static class HudSystemMenu
                 painter.ColorBox(plank, 235, 164, 69, 45);
             }
 
-            painter.TextCentered(Rows[index].English, row.Left, row.Right, row.Top + 1, hovered ? Color.Wheat : new Color(255, 213, 75));
+            painter.TextCentered(BrowserLabels[index], row.Left, row.Right, row.Top + 1, hovered ? Color.Wheat : new Color(255, 213, 75));
         }
 
         var help = BrowserRow(3);

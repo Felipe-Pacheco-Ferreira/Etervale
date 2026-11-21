@@ -32,7 +32,7 @@ FluentMigrator migrations, the schema, and the SQLite and PostgreSQL providers. 
 | `.../Security/PasswordHasher.cs` | PBKDF2-SHA256 hashes: `pbkdf2-sha256$<iterations>$<salt b64>$<key b64>` |
 | `Persistence/PristonTale.Persistence/Repositories/` | `Dapper*Repository` implementations shared by both providers |
 | `Persistence/PristonTale.Persistence/PersistenceServiceCollectionExtensions.cs` | `AddPristonRepositories`: the repositories and the migration runner both providers register, given the provider's migration processor |
-| `Persistence/PristonTale.Persistence/Migrations/` | `M013Baseline`, `M014PortraitData`, `M015NpcServices`, `M016QuestData`, `M019GameMasters`, `M021MonsterSkillData`, `M022MonsterExperience64`, `M023ItemFootprints`, `M024WorldDataFields`, `M026Contacts`, `M027CatalogIdentities`, `M028WorldCatalog`, `M029NpcPlacementFacts`, `M030CharacterSaveSequence`, `M031GameLogs`, `M032StarterGifts`, `M033HelpPet`, `M034StarterOffHand`, `M035FieldOrder`, `M036CatalogPortuguese`, `M037Clans`, `M038Castle`, `M039CastleTreasury`, `M040Bellatra`, `M041RewardEvents`, `FluentMigratorDatabaseMigrator` |
+| `Persistence/PristonTale.Persistence/Migrations/` | `M013Baseline`, `M014PortraitData`, `M015NpcServices`, `M016QuestData`, `M019GameMasters`, `M021MonsterSkillData`, `M022MonsterExperience64`, `M023ItemFootprints`, `M024WorldDataFields`, `M026Contacts`, `M027CatalogIdentities`, `M028WorldCatalog`, `M029NpcPlacementFacts`, `M030CharacterSaveSequence`, `M031GameLogs`, `M032StarterGifts`, `M033HelpPet`, `M034StarterOffHand`, `M035FieldOrder`, `M036CatalogPortuguese`, `M046CatalogSpanish`, `M047ArenaScores`, `M048RoyalePrizes`, `M049Titles`, `M050BossRoulette`, `M051CatalogFilipino`, `M052CatalogVietnamese`, `M053CatalogSimplifiedChinese`, `M054CatalogJapanese`, `M037Clans`, `M038Castle`, `M039CastleTreasury`, `M040Bellatra`, `M041RewardEvents`, `FluentMigratorDatabaseMigrator` |
 | `Persistence/PristonTale.Persistence.Sqlite/` | `AddPristonSqlite`, connection factory (WAL), Dapper type handlers |
 | `Persistence/PristonTale.Persistence.Postgres/` | `AddPristonPostgres`, `NpgsqlDataSource` factory, `jsonb` handler for `JsonText` |
 | `docker-compose.yml` | Local PostgreSQL 17 for development |
@@ -49,11 +49,15 @@ Consumers: `Server/PristonTale.Server/Hosting/HostingExtensions.cs` (provider se
 | Interface | Implementation | Operations |
 | --- | --- | --- |
 | `IAccountRepository` | `DapperAccountRepository` | `FindByUserIdAsync` (exact name), `CreateAsync` (INSERT ... RETURNING), `UpdateLastLoginAsync`, `IsUserIdTakenAsync` (the name in any letter case, `lower()` on both providers) |
-| `IRankingRepository` | `DapperRankingRepository` | Read-only views for the website: `TopAsync` (characters by level, then experience, then id, of one job code or all, with their clan's name; game masters' and blocked accounts' characters left out), `TotalsAsync` (accounts and characters) |
+| `IRankingRepository` | `DapperRankingRepository` | Read-only views for the website: `TopAsync` (characters by level, then experience, then id, of one job code or all, with their id and their clan's name; game masters' and blocked accounts' characters left out), `TotalsAsync` (accounts and characters) |
 | `ICharacterRepository` | `DapperCharacterRepository` | List by account (ordered by slot), find by name for account, global `NameExistsAsync`, `UsedSlotsAsync`, create (RETURNING), delete by name, `UpdateAsync`, `SaveAllAsync` (the background saves: every record in one transaction, skipping older captures and missing characters, returns the rows written), `UpdateAllAsync` (several characters in one transaction, all or none: a personal shop sale) |
 | `IContactRepository` | `DapperContactRepository` | `ListAsync` (in the order added), `AddAsync` (false when the name is already on the list), `RemoveAsync` |
 | `IClanRepository` | `DapperClanRepository` | `LoadAsync` (clans, members with their character's name, class, level and account), `FoundAsync` (clan, chief and the paying character's `UpdateSql` in one transaction; 0 when the name is taken or the capture is stale), `AddMemberAsync` / `RemoveMemberAsync` (with the clan's state and deadline), `SetRanksAsync` (optionally with a payment), `SetMarkVersionAsync` (once a new mark is kept), `DisbandAsync` (clan and members go, cooldowns for the members), `CooldownAsync`, `IsMemberAsync`, `ClanNamesAsync` (the clan of each of an account's characters, for the character list) |
 | `IBellatraRepository` | `DapperBellatraRepository` | `LoadStateAsync`/`SaveStateAsync` (the day and its operating clan, one row), `TopAsync` (a day's clans by points), `BalanceAsync` (a clan's income), `RecordAsync` (a prize's points to its clan and its tax to the operating clan's balance with a `castle_treasury` movement, in one transaction), `RedeemAsync` (the balance less the redemption, the chief's character by its `UpdateSql` and the movement, in one transaction; false when the balance is short or the capture stale) |
+| `IArenaRepository` | `DapperArenaRepository` | The arena's weeks ([application.md](application.md#arena)): `RecordAsync` (a result: an upsert adding the win points or taking the loss points down to 0, with the count of each), `TopAsync` (a band's week by points, wins, then fewer losses; game masters' and blocked accounts' characters left out), `AwardAsync` (in one transaction, once per week and band: the best with points each get a `game_mail` row with their place's gold, sent from their own account as no system account exists, and an `arena_prizes` row; a week nobody scored is marked with a place-0 row) |
+| `IRoyaleRepository` | `DapperRoyaleRepository` | The Battle Royale's prizes ([application.md](application.md#battle-royale)): `AwardAsync` (an event once: each place's character mailed its gold, none for 0, and a `royale_prizes` row per place, or a place-0 row when nobody could be paid, all in one transaction; nothing when the event was already paid). The gold mail, the player's account sending to itself, is `GameMailPrizes.SendGoldAsync`, which the arena's prizes use too |
+| `ITitleRepository` | `DapperTitleRepository` | The position titles' holders ([application.md](application.md#titles)): `HoldersAsync` (every row), `SetHolderAsync` (the title passes to a character, replacing the row) |
+| `IBossRouletteRepository` | `DapperBossRouletteRepository` | The boss roulette ([application.md](application.md#boss-roulette)): `RecordAsync` (keeps the draw and mails its item prize to the winner's account through `GameMailPrizes.SendItemAsync`; none when the character is missing) |
 | `ICastleRepository` | `DapperCastleRepository` | `LoadAsync` (the castle row, `CastleRecord.Empty` before the first save), `SaveAsync` (upsert of the one row), `SaveWithAsync` (the castle with the character that paid or received gold, its `UpdateSql`, and a `castle_treasury` movement, in one transaction; false when the character's capture is stale) |
 | `IWarehouseRepository` | `DapperWarehouseRepository` | `FindAsync`, `SaveWithCharacterAsync` (character + warehouse in one transaction) |
 | `IWorldDataRepository` | `DapperWorldDataRepository` | Read-only bulk loads: items, monsters, NPCs, field spawns, motion models, motion slots |
@@ -121,8 +125,8 @@ and its account warehouse are always written together, so a gold or item move be
 
 ## Owned-state JSON
 
-`CharacterStateCodec`, `SavedPremium`, `QuestStateCodec`, `RewardEventStateCodec` and `WarehouseStateCodec` own the
-JSON stored in `characters.inventory`, `equipment`, `skills`, `premium`, `quests`, `events` and `warehouses.items`.
+`CharacterStateCodec`, `SavedPremium`, `QuestStateCodec`, `RewardEventStateCodec`, `TitleStateCodec` and `WarehouseStateCodec` own
+the JSON stored in `characters.inventory`, `equipment`, `skills`, `premium`, `quests`, `events`, `titles` and `warehouses.items`.
 
 | Column | Shape | Limits on restore |
 | --- | --- | --- |
@@ -133,6 +137,7 @@ JSON stored in `characters.inventory`, `equipment`, `skills`, `premium`, `quests
 | `premium` | `SavedPremium` v1 (`PremiumStateCodec.cs`): premium timers `(Kind, Value, DurationSeconds, ExpiresAtSeconds)` with Unix-second expiry, item-use `Operations`, `GravityScrolls`, head mode (1-2 big head, 3 soccer ball) and expiry, `SavedAtSeconds` (the last tick's clock); `{}` is empty | 17 timers; expired timers and heads are dropped on restore; boosters and skill delay move their expiry by the time since `SavedAtSeconds` |
 | `quests` | `SavedQuests` v1: the running quest (`SavedQuest`, with an elite quest's `Flags`), level, beginner and elite (`EliteLog`) logs, finished codes, `FinishedCount`, the redistribution offer, `Revision` and quest `Operations` (see [quests.md](quests.md)); `{}` reads as an idle journal | 32 finished codes, 64 operations, defined quest codes and timer kinds, non-negative counts |
 | `events` | `SavedRewardEvents` v1 (`RewardEventStateCodec.cs`): the welcome campaign's first and last counted day, login days and claimed days, the week (its Monday) and day the weekly and daily progress belong to with their counts and claims, the level race's claims; days are `DateOnly` day numbers of the server's local calendar, claims a bit an entry (see [application.md](application.md#events-and-rewards)); `{}` reads as a book that counted nothing | at most 7 login days, a Monday week start, counts and claims only for the entries the tables have, non-negative counts |
+| `titles` | `SavedTitles` v1 (`TitleStateCodec.cs`): the permanent titles earned (a bit per `TitleCode`), the title shown (0 none), the monsters and bosses killed and the best aging level reached; `{}` reads as no title and nothing counted ([application.md](application.md#titles)) |
 
 - Restore is strict: unknown JSON members are rejected, constructor parameters without defaults are required, max
   depth 16, at most `CharacterStateCodec.MaxStateLength` (4 MiB) characters, `Version` must be 1, instance ids must be unique and non-empty, the item code must
@@ -186,13 +191,22 @@ FluentMigrator scans `PristonTale.Persistence` for `[Migration(n)]` classes. Ver
 | 41 | `M041RewardEvents` | `characters.events` (JSON, `jsonb` on PostgreSQL, default `{}`): the character's events and rewards; characters stored before start the welcome campaign on their next entry |
 | 44 | `M044AccountContact` | `accounts.email` (nullable, unique index `ux_accounts_email`) and `accounts.referral_code` (nullable), filled by the website's entry-page registration |
 | 45 | `M045BrowserLoginTickets` | `browser_login_tickets` stores digests of one-use game login tickets, bound to an account and password stamp with a short expiry. Issuance clears expired tickets. |
+| 46 | `M046CatalogSpanish` | Adds `es` (Spanish) to `languages` |
+| 47 | `M047ArenaScores` | `arena_scores` (points, wins and losses per week as its Monday's yyyymmdd, level band and character) and `arena_prizes` (the prizes mailed per week, band and place, with the character, the gold and the mail) |
+| 48 | `M048RoyalePrizes` | `royale_prizes` (the Battle Royale's prizes mailed per event as its server-local yyyymmddhh and place, with the character, the gold and the mail) |
+| 49 | `M049Titles` | `characters.titles` (JSON, `jsonb` on PostgreSQL, default `{}`): the character's titles; `title_holders` (one row per position title: the character, its name and since when) |
+| 50 | `M050BossRoulette` | `boss_roulette` (every boss roulette draw: when, the field, the boss, the winner, the prize's catalog key, the mail and the entrants as JSON text) |
+| 51 | `M051CatalogFilipino` | Adds `fil` (Filipino) to `languages` |
+| 52 | `M052CatalogVietnamese` | Adds `vi` (Vietnamese) to `languages` |
+| 53 | `M053CatalogSimplifiedChinese` | Adds `zh-CN` (Simplified Chinese) to `languages` |
+| 54 | `M054CatalogJapanese` | Adds `ja` (Japanese) to `languages` |
 
 Upgrade path: databases from the earlier migration set at version 12 upgrade in place. Databases at
 versions 1-11 make `M013Baseline` throw; bring them to 12 with the previous release or back up and recreate them.
 After upgrading, run `import` again so existing rows receive the new columns (display names, services, portrait data).
 
 The PostgreSQL `jsonb` columns are `M013Baseline.JsonColumns` and M041's: `characters.inventory`, `equipment`,
-`skills`, `quests`, `premium`, `events` (M041), `warehouses.items` (`derived_stats` and `mailboxes.items` until M028,
+`skills`, `quests`, `premium`, `events` (M041), `titles` (M049), `warehouses.items` (`derived_stats` and `mailboxes.items` until M028,
 `npcs.dialog` until M027). The `*_json` columns of the `world_*` tables are plain text on both providers.
 
 ## Schema
@@ -211,7 +225,7 @@ The PostgreSQL `jsonb` columns are `M013Baseline.JsonColumns` and M041's: `chara
 
 | Table | Columns and constraints |
 | --- | --- |
-| `characters` | `id` int64 identity PK; `account_id` FK `accounts`; `name` globally unique; `slot` int16, unique with `account_id`; `job_code` (`PlayerClass`); `level`, `exp` int64 holding the unsigned 64-bit experience's bit pattern (past 2^63 it reads negative in SQL), `money` int64, `brood`; attributes `strength`, `spirit`, `talent`, `agility`, `health`, `stat_points`; vitals `life`, `mana`, `stamina`; `field_id`, `pos_x`, `pos_z` float; `model_name`, `model_name2` (head model for the chosen face); `face_index`, `tier` int16, `hair_index`, `size_level`; JSON `inventory`, `equipment`, `skills`, `quests`, `premium`; `save_seq` int64 (M030); `starter_gifts_received` int (M032; 0 for a new character, `StarterGifts.Count` once served); `help_pet` int16 (0 until drawn, 1 to 4) and `help_pet_hidden` bool (M033); JSON `events` (M041); `created_at`, `last_played_at` nullable. Index `characters_account_id_idx` |
+| `characters` | `id` int64 identity PK; `account_id` FK `accounts`; `name` globally unique; `slot` int16, unique with `account_id`; `job_code` (`PlayerClass`); `level`, `exp` int64 holding the unsigned 64-bit experience's bit pattern (past 2^63 it reads negative in SQL), `money` int64, `brood`; attributes `strength`, `spirit`, `talent`, `agility`, `health`, `stat_points`; vitals `life`, `mana`, `stamina`; `field_id`, `pos_x`, `pos_z` float; `model_name`, `model_name2` (head model for the chosen face); `face_index`, `tier` int16, `hair_index`, `size_level`; JSON `inventory`, `equipment`, `skills`, `quests`, `premium`; `save_seq` int64 (M030); `starter_gifts_received` int (M032; 0 for a new character, `StarterGifts.Count` once served); `help_pet` int16 (0 until drawn, 1 to 4) and `help_pet_hidden` bool (M033); JSON `events` (M041), `titles` (M049); `created_at`, `last_played_at` nullable. Index `characters_account_id_idx` |
 | `character_contacts` | `id` int64 identity PK (the order added); `character_id` FK `characters`; `list` int16 (`ContactList`); `name`; unique (`character_id`, `list`, `name`) (M026) |
 
 ### Inventory and warehouse

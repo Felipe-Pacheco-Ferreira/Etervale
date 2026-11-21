@@ -82,6 +82,8 @@ internal sealed class FieldDescriptors
                 && _appearance.Tier == appearance.Tier && _appearance.HairIndex == appearance.HairIndex && _appearance.FaceIndex == appearance.FaceIndex
                 && _appearance.InVillage == appearance.InVillage && _appearance.HelperPet == appearance.HelperPet && _appearance.Phoenix == appearance.Phoenix
                 && _appearance.BigHead == appearance.BigHead && _appearance.Mounted == appearance.Mounted && _appearance.Class == appearance.Class
+                && _appearance.Pvp == appearance.Pvp && _appearance.Murderer == appearance.Murderer && _appearance.Duelling == appearance.Duelling
+                && _appearance.ArenaSide == appearance.ArenaSide && _appearance.Title == appearance.Title
                 && string.Equals(_appearance.WeaponKey, appearance.WeaponKey, StringComparison.Ordinal)
                 && string.Equals(_appearance.ArmorKey, appearance.ArmorKey, StringComparison.Ordinal)
                 && string.Equals(_appearance.OffHandKey, appearance.OffHandKey, StringComparison.Ordinal)

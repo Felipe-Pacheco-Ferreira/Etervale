@@ -29,8 +29,8 @@ public sealed partial class GameScene
             return;
         }
 
-        _targetRing ??= RingTexture(_graphicsDevice, highlight: false);
-        _targetRingHighlight ??= RingTexture(_graphicsDevice, highlight: true);
+        _targetRing ??= RingTexture(_graphicsDevice, TargetRingPixels, TargetRingInner, TargetRingOuter, highlight: false);
+        _targetRingHighlight ??= RingTexture(_graphicsDevice, TargetRingPixels, TargetRingInner, TargetRingOuter, highlight: true);
         var seconds = (float)(_skillClockMs / 1000d);
         var breath = .5f + .5f * MathF.Sin(seconds * 5f);
         var radius = TargetRingRadius * (1f + .07f * breath);
@@ -42,17 +42,17 @@ public sealed partial class GameScene
             Vector3.TransformNormal(Vector3.Backward, turn) * radius, new Vector4(1f, .55f, .35f, 1f));
     }
 
-    // The ring's picture: a soft-edged white band (tinted when drawn); with highlight, only a short arc of it, fading out
-    // behind its leading end.
-    private static Texture2D RingTexture(GraphicsDevice device, bool highlight)
+    // A ring's picture of size pixels: a soft-edged white band from inner to outer (fractions of its radius, tinted when
+    // drawn); with highlight, only a short arc of it, fading out behind its leading end.
+    private static Texture2D RingTexture(GraphicsDevice device, int size, float inner, float outer, bool highlight)
     {
-        var pixels = new Color[TargetRingPixels * TargetRingPixels];
-        var half = TargetRingPixels / 2f;
-        var middle = (TargetRingInner + TargetRingOuter) / 2f;
-        var width = (TargetRingOuter - TargetRingInner) / 2f;
-        for (var y = 0; y < TargetRingPixels; y++)
+        var pixels = new Color[size * size];
+        var half = size / 2f;
+        var middle = (inner + outer) / 2f;
+        var width = (outer - inner) / 2f;
+        for (var y = 0; y < size; y++)
         {
-            for (var x = 0; x < TargetRingPixels; x++)
+            for (var x = 0; x < size; x++)
             {
                 var dx = (x + .5f - half) / half;
                 var dy = (y + .5f - half) / half;
@@ -65,11 +65,11 @@ public sealed partial class GameScene
                     alpha *= turn < TargetRingHighlight ? turn / TargetRingHighlight : 0f;
                 }
 
-                pixels[y * TargetRingPixels + x] = new Color(alpha, alpha, alpha, alpha);
+                pixels[y * size + x] = new Color(alpha, alpha, alpha, alpha);
             }
         }
 
-        var texture = new Texture2D(device, TargetRingPixels, TargetRingPixels);
+        var texture = new Texture2D(device, size, size);
         texture.SetData(pixels);
         return texture;
     }

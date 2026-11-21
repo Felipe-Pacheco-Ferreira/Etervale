@@ -43,10 +43,15 @@ internal static class WireMapping
                     WeaponGlow = Glow(appearance.WeaponGlow),
                     OffHandGlow = Glow(appearance.OffHandGlow),
                     Mounted = appearance.Mounted,
+                    Pvp = appearance.Pvp,
+                    Murderer = appearance.Murderer,
+                    Duelling = appearance.Duelling,
+                    ArenaSide = appearance.ArenaSide,
                     ShopSign = appearance.ShopSign,
                     ClanId = (ulong)Math.Max(0, appearance.ClanId),
                     ClanName = appearance.ClanName,
-                    ClanMark = appearance.ClanMark
+                    ClanMark = appearance.ClanMark,
+                    Title = appearance.Title
                 };
                 return new EntityDescriptionPacket(view.EntityId, revision, EntityKind.Player, view.Level, view.MoveSpeed, view.AttackRate,
                     appearance.Name ?? "", appearance.ModelName ?? "", looks);
@@ -120,7 +125,7 @@ internal static class WireMapping
 
         return new CombatEventEntry(view.AttackerId, view.TargetId, view.Kind, flags, view.DurationMs, view.HitAtMs, view.Damage,
             view.Resources, view.SourceSoundCode, GameUnits.ToFixed(view.Position.X), GameUnits.ToFixed(view.Position.Y),
-            GameUnits.ToFixed(view.Position.Z), (short)GameUnits.ToAngle(view.Facing), (short)Math.Clamp(view.Clip, -1, short.MaxValue));
+            GameUnits.ToFixed(view.Position.Z), (short)GameUnits.ToAngle(view.Facing), (short)Math.Clamp(view.Clip, -1, short.MaxValue), (byte)view.Element);
     }
 
     public static SkillEventEntry SkillEvent(in SkillEventView view) => new(

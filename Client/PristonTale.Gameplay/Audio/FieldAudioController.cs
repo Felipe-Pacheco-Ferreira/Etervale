@@ -116,7 +116,7 @@ public sealed class FieldAudioController : IDisposable
     {
         if (_library.SoundEnabled)
         {
-            _library.PortalWarpSound.Play(_library.SoundGain, 0f, 0f);
+            _library.PortalWarpSound?.Play(_library.SoundGain, 0f, 0f);
         }
     }
 
@@ -124,7 +124,7 @@ public sealed class FieldAudioController : IDisposable
     {
         if (_library.SoundEnabled)
         {
-            _library.WhisperSound.Play(SoftVolume * _library.SoundGain, 0f, 0f);
+            _library.WhisperSound?.Play(SoftVolume * _library.SoundGain, 0f, 0f);
         }
     }
 
@@ -151,7 +151,7 @@ public sealed class FieldAudioController : IDisposable
     {
         if (_library.SoundEnabled)
         {
-            _library.QuestFanfareSound.Play(_library.SoundGain, 0f, 0f);
+            _library.QuestFanfareSound?.Play(_library.SoundGain, 0f, 0f);
         }
     }
 
@@ -191,7 +191,7 @@ public sealed class FieldAudioController : IDisposable
     {
         if (_library.SoundEnabled)
         {
-            (success ? _library.QuestFanfareSound : _library.CraftFailureSound).Play(_library.SoundGain, 0f, 0f);
+            (success ? _library.QuestFanfareSound : _library.CraftFailureSound)?.Play(_library.SoundGain, 0f, 0f);
         }
     }
 
@@ -315,9 +315,10 @@ public sealed class FieldAudioController : IDisposable
         StartMusic();
     }
 
+    // A music whose file is still arriving (the browser) is asked for again on every update until it starts.
     private void StartMusic()
     {
-        if (_selectedMusic is null)
+        if (_selectedMusic is null && !_library.TryGetFieldMusic(_selectedMusicCode, out _selectedMusic))
         {
             _playingMusicCode = string.Empty;
             return;
@@ -354,12 +355,13 @@ public sealed class FieldAudioController : IDisposable
         }
 
         StopFieldAmbience();
-        if (code < 0)
+        // Without its sound yet, the code stays unset and the next update asks again.
+        if (code < 0 || _library.FieldAmbient(code) is not { } sound)
         {
             return;
         }
 
-        _fieldAmbient = _library.FieldAmbient(code).CreateInstance();
+        _fieldAmbient = sound.CreateInstance();
         _fieldAmbient.IsLooped = true;
         _fieldAmbient.Volume = FieldAmbientVolume * _library.SoundGain;
         _fieldAmbient.Play();
@@ -394,10 +396,10 @@ public sealed class FieldAudioController : IDisposable
             }
         }
 
-        if (bestCode >= 0 && bestCode != _positionalAmbientCode)
+        if (bestCode >= 0 && bestCode != _positionalAmbientCode && _library.Ambient(bestCode) is { } sound)
         {
             StopPositionalAmbience();
-            _positionalAmbient = _library.Ambient(bestCode).CreateInstance();
+            _positionalAmbient = sound.CreateInstance();
             _positionalAmbient.IsLooped = true;
             _positionalAmbient.Volume = 0f;
             _positionalAmbient.Play();

@@ -7,12 +7,12 @@ namespace PristonTale.Gameplay.World.Remote;
 
 internal static class GroundLootFilter
 {
-    public static readonly (string Portuguese, string English)[] Labels =
+    // The phrase keys of the categories, by the bit each one takes in the hidden-categories setting.
+    public static readonly string[] Labels =
     [
-        ("Poções de vida", "Life potions"), ("Poções de mana", "Mana potions"), ("Poções de stamina", "Stamina potions"),
-        ("Armaduras e robes", "Armor and robes"), ("Escudos", "Shields"), ("Botas", "Boots"), ("Luvas", "Gloves"),
-        ("Braceletes e orbs", "Bracelets and orbs"), ("Amuletos", "Amulets"), ("Anéis", "Rings"), ("Sheltoms", "Sheltoms"),
-        ("Force Orbs", "Force orbs"), ("Outros itens", "Other items"), ("Cristais de invocação", "Summoning crystals"), ("Cores", "Cores")
+        "LootFilter.LifePotions", "LootFilter.ManaPotions", "LootFilter.StaminaPotions", "LootFilter.Armor", "LootFilter.Shields", "LootFilter.Boots",
+        "LootFilter.Gloves", "LootFilter.Bracelets", "LootFilter.Amulets", "LootFilter.Rings", "LootFilter.Sheltoms", "LootFilter.ForceOrbs",
+        "LootFilter.Other", "LootFilter.Crystals", "LootFilter.Cores"
     ];
 
     public static bool IsVisible(ClientSettings settings, GroundDropView drop)

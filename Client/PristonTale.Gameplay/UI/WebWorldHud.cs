@@ -11,6 +11,9 @@ internal static class WebWorldHud
     internal static Input.ITouchFingers Fingers { get; set; }
     internal static bool TouchDevice { get; set; }
 
+    // Whether the page's touch HUD is in use: the page reports fingers and the interface type asks for it.
+    internal static bool TouchActive(Engine3D.Rendering.ClientSettings settings) => Fingers is not null && settings.UsesTouch(TouchDevice);
+
     internal static void Attach(GameplayHud hud)
     {
         if (Enabled)

@@ -212,6 +212,9 @@ internal sealed partial class ClientSession : IMovementVerdictSink
                 case EtervaleOpcodes.ChatSay:
                     await SayAsync(ChatSayPacket.Read(memory.Span));
                     break;
+                case EtervaleOpcodes.ChatTranslateTo:
+                    TranslateTo(ChatTranslateToPacket.Read(memory.Span));
+                    break;
                 case EtervaleOpcodes.Login:
                     await LoginAsync(LoginPacket.Read(memory.Span));
                     break;
@@ -251,6 +254,30 @@ internal sealed partial class ClientSession : IMovementVerdictSink
                     if (_player is not null && _session is { } rider)
                     {
                         _ = _services.World.MountAsync(rider.EntityId, mount.Mount);
+                    }
+
+                    break;
+                case EtervaleOpcodes.ChooseTitle:
+                    var chosen = ChooseTitlePacket.Read(memory.Span);
+                    if (_player is not null && _session is { } titled)
+                    {
+                        _ = _services.World.ChooseTitleAsync(titled, (Simulation.Titles.TitleCode)chosen.Title);
+                    }
+
+                    break;
+                case EtervaleOpcodes.DuelAnswer:
+                    var duelAnswer = DuelAnswerPacket.Read(memory.Span);
+                    if (_player is not null && _session is { } duellist)
+                    {
+                        _ = _services.World.AnswerDuelAsync(duellist, duelAnswer.FromId, duelAnswer.Accept);
+                    }
+
+                    break;
+                case EtervaleOpcodes.PvpSwitch:
+                    var pvp = PvpSwitchPacket.Read(memory.Span);
+                    if (_player is not null && _session is { } fighter)
+                    {
+                        _ = _services.World.SwitchPvpAsync(fighter.EntityId, pvp.On);
                     }
 
                     break;
@@ -551,7 +578,7 @@ internal sealed partial class ClientSession : IMovementVerdictSink
         _outbox = outbox;
         _encoder = new PresenceEncoder(session.EntityId, _services.WorldData, _services.LocalizedWorldData, session.Language);
         SendLarge(new WorldJoinedPacket(session.EntityId, Environment.TickCount64, (byte)Math.Clamp(session.GmLevel, 0, 255),
-            _services.World.GameClockMs).Write, WorldJoinedPacket.Size);
+            _services.World.GameClockMs, _services.Chat.Translation is not null).Write, WorldJoinedPacket.Size);
         _pump = PumpAsync(outbox, _encoder);
         JoinChat(session, contacts);
         RefreshContacts();

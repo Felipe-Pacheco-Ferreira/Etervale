@@ -34,6 +34,14 @@ internal static class WebAssetPackTests
         yield return ("world packs refuse damaged chunks and leave only fully checked files", DamagedChunksAsync);
         yield return ("world packs pass the caller's cancellation on instead of falling back", CancellationAsync);
         yield return ("bootstrap lines refuse unsafe paths, malformed hashes and paths that differ only by case", BootstrapLinesAsync);
+        yield return ("a language's own interface font gets a world-pack chunk of its own", LanguageFontChunkAsync);
+    }
+
+    private static async Task LanguageFontChunkAsync()
+    {
+        using var fixture = await PackFixture.CreateAsync([("Content/Effects/Scene.xnb", 1024), ("Content/Fonts/UI-zh-CN.xnb", 2048), ("Content/Fonts/UI.xnb", 1024)]);
+        var font = fixture.Index.Files.Single(file => file.Path == "Content/Fonts/UI-zh-CN.xnb");
+        Assert.True(fixture.Index.Chunks.Length == 2 && fixture.Index.Chunks[font.Chunk].Files == 1, "a language's font shared a chunk with other files, or the others did not share theirs");
     }
 
     private static async Task RoundTripAsync()
@@ -261,12 +269,12 @@ internal static class WebAssetPackTests
         public string BootstrapSha256 { get; private set; } = string.Empty;
         private int _clients;
 
-        public static async Task<PackFixture> CreateAsync()
+        public static async Task<PackFixture> CreateAsync(IReadOnlyList<(string Path, long Bytes)>? files = null)
         {
             var fixture = new PackFixture(Path.Combine(Path.GetTempPath(), "etervale-packs-" + Guid.NewGuid().ToString("N")));
             var lines = new StringBuilder();
             var seed = 1;
-            foreach (var (path, bytes) in FixtureFiles)
+            foreach (var (path, bytes) in files ?? FixtureFiles)
             {
                 var data = new byte[bytes];
                 var random = new Random(seed++);

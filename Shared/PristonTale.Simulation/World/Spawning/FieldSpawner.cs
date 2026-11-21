@@ -173,6 +173,7 @@ public sealed class FieldSpawner
 
             Vector3 anchor = PointToWorld(_data.SpawnPoints[pointIndex]);
             MonsterInstance master = sink.Spawn(masterDef, anchor, pointIndex, RandomFacing());
+            master.Scheduled = true;
             SeedIdleDespawn(master, masterDef);
 
             if (boss.EscortCount > 0 && _catalog.TryGet(boss.EscortMonsterCode, out MonsterDefinition escortDef))

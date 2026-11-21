@@ -64,21 +64,21 @@ internal static class ProgressionTransactionTests
         var registry = new CharacterClassRegistry();
         var character = registry.CreatePlayer(PlayerClass.Fighter, "Cues", 1);
         var player = new WorldPlayer(1, new Vector3(100, 0, 100), character, false, default);
-        player.TakeProgressCues(out var leveled, out var learned);
-        Assert.True(!leveled && !learned, "a player that just entered gave a cue");
+        player.TakeProgressCues(out var previous, out var learned);
+        Assert.True(previous == 1 && !learned, "a player that just entered gave a cue");
 
         character.AwardExperience(ExperienceTable.ForLevel(20));
-        player.TakeProgressCues(out leveled, out learned);
-        Assert.True(leveled && !learned, "a level gain gave no level-up cue");
-        player.TakeProgressCues(out leveled, out _);
-        Assert.True(!leveled, "a level-up cue repeated");
+        player.TakeProgressCues(out previous, out learned);
+        Assert.True(previous == 1 && character.Level > previous && !learned, "a level gain did not report the level before it");
+        player.TakeProgressCues(out previous, out _);
+        Assert.True(previous == character.Level, "a level-up cue repeated");
 
         var skill = ClassSkillCatalog.For(PlayerClass.Fighter)[0];
         character.RestoreProgress(character.Experience, 1000000, tier: 0, skillPoints: 5, eliteSkillPoints: 0);
         Assert.True(character.ApplyProgression(new ProgressionCommand(Guid.NewGuid(), character.ProgressionRevision, ProgressionAction.LearnSkill,
             SkillCode: skill.Code, NpcEntityId: 1)), "the skill was not taught");
-        player.TakeProgressCues(out leveled, out learned);
-        Assert.True(learned && !leveled, "a trained rank gave no skill-learn cue");
+        player.TakeProgressCues(out previous, out learned);
+        Assert.True(learned && previous == character.Level, "a trained rank gave no skill-learn cue");
         player.TakeProgressCues(out _, out learned);
         Assert.True(!learned, "a skill-learn cue repeated");
         return Task.CompletedTask;

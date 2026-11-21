@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text;
 using Microsoft.Xna.Framework;
+using PristonTale.Gameplay.Localization;
 using PristonTale.Gameplay.UI.Rendering;
 
 namespace PristonTale.Gameplay.UI.Widgets;
@@ -21,6 +22,8 @@ internal sealed partial class HudNews
 
     // The categories of the form, as the server stores them, and their icons in SupportIcons.
     private static readonly string[] CategoryKeys = ["Bug", "Melhoria", "Outro"];
+    private static readonly string[] TicketCategories = ["News.Ticket.Category.Bug", "News.Ticket.Category.Improvement", "News.Ticket.Category.Other"];
+    private static readonly string[] TicketTabs = ["News.Ticket.Tab.News", "News.Ticket.Tab.Mine", "News.Ticket.Tab.New"];
     private const int CategoryIcon = 3;
     private const int DescriptionLimit = 1500;
     private const int SubjectLimit = 55;
@@ -255,9 +258,8 @@ internal sealed partial class HudNews
             return null;
         }
 
-        var portuguese = Portuguese;
-        var messages = count == 1 ? (portuguese ? "1 mensagem" : "1 message") : count + (portuguese ? " mensagens" : " messages");
-        var details = (portuguese ? "aberto " : "opened ") + Date(created) + " · " + messages + " · " + (portuguese ? "atualizado " : "updated ") + Date(updated);
+        var messages = count == 1 ? ClientText.Get("News.Ticket.OneMessage") : ClientText.Format("News.Ticket.Messages", count);
+        var details = ClientText.Format("News.Ticket.Details", Date(created), messages, Date(updated));
         return new TicketItem(id, "#" + fields[1], fields[2], fields[3] == "-" ? "" : fields[3], fields[8], details, updated);
     }
 
@@ -270,7 +272,7 @@ internal sealed partial class HudNews
             return null;
         }
 
-        var opened = (Portuguese ? "Aberto em " : "Opened on ") + Date(created) + (Portuguese ? " por " : " by ") + fields[6];
+        var opened = ClientText.Format("News.Ticket.Opened", Date(created), fields[6]);
         return new TicketDetail
         {
             Id = id,
@@ -281,8 +283,6 @@ internal sealed partial class HudNews
             Editable = fields[5] == "1"
         };
     }
-
-    private static bool Portuguese => Localization.ClientText.Language == "pt-BR";
 
     private static string Date(long unixSeconds) =>
         DateTimeOffset.FromUnixTimeSeconds(unixSeconds).ToLocalTime().ToString("dd/MM/yyyy, HH:mm", CultureInfo.InvariantCulture);
@@ -601,12 +601,11 @@ internal sealed partial class HudNews
 
     private int MaxListScroll => Math.Max(0, _ticketList.Count - VisibleCards);
 
-    private bool DrawTickets(HudPainter painter, bool portuguese)
+    private bool DrawTickets(HudPainter painter)
     {
-        string[] tabs = portuguese ? ["Novidades", "Meus tickets", "Novo ticket"] : ["News", "My tickets", "New ticket"];
-        for (var index = 0; index < tabs.Length; index++)
+        for (var index = 0; index < TicketTabs.Length; index++)
         {
-            IconButton(painter, Tab(index), tabs[index], index, _tab == index, false);
+            IconButton(painter, Tab(index), ClientText.Get(TicketTabs[index]), index, _tab == index, false);
         }
 
         if (_tab == 0)
@@ -616,41 +615,41 @@ internal sealed partial class HudNews
 
         if (_tab == 1 && Viewing)
         {
-            DrawDetail(painter, portuguese);
+            DrawDetail(painter);
         }
         else if (_tab == 1)
         {
-            DrawList(painter, portuguese);
+            DrawList(painter);
         }
         else
         {
-            DrawForm(painter, portuguese);
+            DrawForm(painter);
         }
 
         var status = _state switch
         {
-            "saved" => portuguese ? "Ticket enviado." : "Ticket sent.",
-            "replied" => portuguese ? "Resposta enviada." : "Reply sent.",
-            "edited" => portuguese ? "Ticket alterado." : "Ticket changed.",
-            "closed" => portuguese ? "Ticket cancelado." : "Ticket cancelled.",
-            "waiting" => portuguese ? "Aguardando servidor..." : "Waiting for server...",
-            "invalid" => portuguese ? "Preencha título e descrição." : "Fill in subject and description.",
-            "error" => portuguese ? "Suporte indisponível." : "Support unavailable.",
+            "saved" => ClientText.Get("News.Ticket.Sent"),
+            "replied" => ClientText.Get("News.Ticket.Replied"),
+            "edited" => ClientText.Get("News.Ticket.Edited"),
+            "closed" => ClientText.Get("News.Ticket.Closed"),
+            "waiting" => ClientText.Get("News.Ticket.Waiting"),
+            "invalid" => ClientText.Get("News.Ticket.Invalid"),
+            "error" => ClientText.Get("News.Ticket.Error"),
             _ => ""
         };
         painter.Text(status, Content.X, 576, Color.Wheat);
         return true;
     }
 
-    private void DrawList(HudPainter painter, bool portuguese)
+    private void DrawList(HudPainter painter)
     {
-        DrawSupportButton(painter, RefreshButton, portuguese ? "Atualizar" : "Refresh");
-        DrawSupportButton(painter, NewTicketButton, portuguese ? "+ NOVO TICKET" : "+ NEW TICKET", primary: true);
+        DrawSupportButton(painter, RefreshButton, ClientText.Get("News.Ticket.Refresh"));
+        DrawSupportButton(painter, NewTicketButton, ClientText.Get("News.Ticket.New"), primary: true);
         if (_ticketList.Count == 0)
         {
             if (_state != "waiting")
             {
-                painter.Text(portuguese ? "Nenhum ticket." : "No tickets.", Content.X, 160, Color.Wheat);
+                painter.Text(ClientText.Get("News.Ticket.None"), Content.X, 160, Color.Wheat);
             }
 
             return;
@@ -662,8 +661,8 @@ internal sealed partial class HudNews
             var card = Card(index - _listScroll);
             painter.FramedBox(card, new Color(102, 77, 39), new Color(42, 34, 22), new Color(24, 19, 13), 4);
             painter.Fill(new Rectangle(card.X, card.Y, 3, card.Height), new Color(207, 160, 44));
-            TicketTitle(painter, card.X + 12, card.Y + 8, item.Number, item.Category, card.Right - 110, item.Subject, portuguese);
-            StatusChip(painter, card.Right - 12, card.Y + 8, item.Status, portuguese);
+            TicketTitle(painter, card.X + 12, card.Y + 8, item.Number, item.Category, card.Right - 110, item.Subject);
+            StatusChip(painter, card.Right - 12, card.Y + 8, item.Status);
             painter.Text(painter.Fit(item.Details, card.Width - 24), card.X + 12, card.Y + 28, new Color(186, 163, 120));
         }
 
@@ -673,9 +672,9 @@ internal sealed partial class HudNews
         }
     }
 
-    private void DrawDetail(HudPainter painter, bool portuguese)
+    private void DrawDetail(HudPainter painter)
     {
-        DrawSupportButton(painter, BackButton, portuguese ? "‹ Voltar" : "‹ Back");
+        DrawSupportButton(painter, BackButton, ClientText.Get("News.Ticket.Back"));
         if (_detail is not { } detail)
         {
             return;
@@ -684,15 +683,14 @@ internal sealed partial class HudNews
         var header = new Rectangle(Content.X, 152, Content.Width, detail.Editable ? 112 : 64);
         painter.FramedBox(header, new Color(102, 77, 39), new Color(42, 34, 22), new Color(24, 19, 13), 4);
         painter.Fill(new Rectangle(header.X, header.Y, 3, header.Height), new Color(207, 160, 44));
-        TicketTitle(painter, header.X + 12, header.Y + 10, detail.Number, detail.Category, header.Right - 110, detail.Subject, portuguese);
-        StatusChip(painter, header.Right - 12, header.Y + 10, detail.Status, portuguese);
+        TicketTitle(painter, header.X + 12, header.Y + 10, detail.Number, detail.Category, header.Right - 110, detail.Subject);
+        StatusChip(painter, header.Right - 12, header.Y + 10, detail.Status);
         painter.Text(painter.Fit(detail.Opened, header.Width - 24), header.X + 12, header.Y + 34, new Color(186, 163, 120));
         if (detail.Editable)
         {
-            DrawSupportButton(painter, EditButton, portuguese ? "Editar" : "Edit");
-            DrawDangerButton(painter, CancelButton, _confirmCancel ? (portuguese ? "Confirmar" : "Confirm") : (portuguese ? "Cancelar ticket" : "Cancel ticket"));
-            painter.Text(portuguese ? "Enquanto a equipe não responder, você pode editar ou cancelar este ticket."
-                : "Until the staff answers, you may edit or cancel this ticket.", header.X + 12, header.Y + 88, new Color(150, 130, 100));
+            DrawSupportButton(painter, EditButton, ClientText.Get("News.Ticket.Edit"));
+            DrawDangerButton(painter, CancelButton, _confirmCancel ? ClientText.Get("News.Ticket.Confirm") : ClientText.Get("News.Ticket.Cancel"));
+            painter.Text(ClientText.Get("News.Ticket.EditHint"), header.X + 12, header.Y + 88, new Color(150, 130, 100));
         }
 
         var writable = Writable(detail);
@@ -700,12 +698,12 @@ internal sealed partial class HudNews
         DrawConversation(painter, detail, area);
         if (writable)
         {
-            DrawReplyBox(painter, portuguese);
+            DrawReplyBox(painter);
         }
         else
         {
-            var closed = detail.Status == "Cancelled" ? (portuguese ? "Ticket cancelado por você." : "Ticket cancelled by you.")
-                : (portuguese ? "Ticket fechado pela equipe." : "Ticket closed by the staff.");
+            var closed = detail.Status == "Cancelled" ? ClientText.Get("News.Ticket.CancelledByYou")
+                : ClientText.Get("News.Ticket.ClosedByStaff");
             painter.Text(closed, Content.X, Content.Bottom - 14, Color.Wheat);
         }
     }
@@ -776,7 +774,7 @@ internal sealed partial class HudNews
         return layout;
     }
 
-    private void DrawReplyBox(HudPainter painter, bool portuguese)
+    private void DrawReplyBox(HudPainter painter)
     {
         painter.FramedBox(ReplyBox, new Color(102, 77, 39), new Color(36, 29, 19), new Color(22, 17, 11), 4);
         painter.ColorBox(ReplyField, 107, 79, 39, 255);
@@ -785,7 +783,7 @@ internal sealed partial class HudNews
         painter.ColorBox(inner, 16, 13, 9, 255);
         if (_reply.Length == 0)
         {
-            painter.Text(portuguese ? "Escreva uma resposta..." : "Write a reply...", inner.X + 8, inner.Y + 6, new Color(130, 115, 90));
+            painter.Text(ClientText.Get("News.Ticket.ReplyHint"), inner.X + 8, inner.Y + 6, new Color(130, 115, 90));
         }
         else
         {
@@ -793,25 +791,24 @@ internal sealed partial class HudNews
         }
 
         painter.TextCentered($"{_reply.Length}/{DescriptionLimit}", ReplyField.Right - 80, ReplyField.Right, ReplyField.Bottom + 4, new Color(150, 130, 100));
-        DrawSupportButton(painter, ReplySend, portuguese ? "ENVIAR" : "SEND", primary: true);
+        DrawSupportButton(painter, ReplySend, ClientText.Get("News.Ticket.ReplySend"), primary: true);
     }
 
-    private void DrawForm(HudPainter painter, bool portuguese)
+    private void DrawForm(HudPainter painter)
     {
-        string[] categories = portuguese ? ["Reportar bug", "Pedir melhoria", "Outro assunto"] : ["Report bug", "Suggest improvement", "Other"];
-        for (var index = 0; index < categories.Length; index++)
+        for (var index = 0; index < TicketCategories.Length; index++)
         {
-            IconButton(painter, Category(index), categories[index], index + CategoryIcon, index == _category, true);
+            IconButton(painter, Category(index), ClientText.Get(TicketCategories[index]), index + CategoryIcon, index == _category, true);
         }
 
-        DrawSupportButton(painter, Subject, _subject.Length == 0 ? (portuguese ? "Título" : "Subject") : _subject, !_editingDescription);
+        DrawSupportButton(painter, Subject, _subject.Length == 0 ? ClientText.Get("News.Ticket.Subject") : _subject, !_editingDescription);
         painter.ColorBox(Description, 107, 79, 39, 255);
         var inner = Description;
         inner.Inflate(-1, -1);
         painter.ColorBox(inner, 16, 13, 9, 255);
         if (_description.Length == 0)
         {
-            painter.Text(portuguese ? "Descrição" : "Description", inner.X + 8, inner.Y + 6, new Color(130, 115, 90));
+            painter.Text(ClientText.Get("News.Ticket.Description"), inner.X + 8, inner.Y + 6, new Color(130, 115, 90));
         }
         else
         {
@@ -822,12 +819,12 @@ internal sealed partial class HudNews
             new Color(150, 130, 100));
         if (_editingTicket == Guid.Empty)
         {
-            DrawSupportButton(painter, FormSend, portuguese ? "Enviar ticket" : "Send ticket", primary: true);
+            DrawSupportButton(painter, FormSend, ClientText.Get("News.Ticket.Send"), primary: true);
         }
         else
         {
-            DrawSupportButton(painter, FormCancel, portuguese ? "Voltar" : "Back");
-            DrawSupportButton(painter, FormSend, portuguese ? "Salvar alterações" : "Save changes", primary: true);
+            DrawSupportButton(painter, FormCancel, ClientText.Get("News.Ticket.FormBack"));
+            DrawSupportButton(painter, FormSend, ClientText.Get("News.Ticket.SaveChanges"), primary: true);
         }
     }
 
@@ -843,7 +840,7 @@ internal sealed partial class HudNews
     }
 
     // The category icon, "#1234", the category chip and the subject, from the left.
-    private static void TicketTitle(HudPainter painter, int x, int y, string number, string category, int right, string subject, bool portuguese)
+    private static void TicketTitle(HudPainter painter, int x, int y, string number, string category, int right, string subject)
     {
         var icon = Array.IndexOf(CategoryKeys, category);
         DrawIcon(painter, x, y + 1, (icon < 0 ? 2 : icon) + CategoryIcon);
@@ -852,7 +849,13 @@ internal sealed partial class HudNews
         x += painter.Measure(number) + 8;
         if (category.Length > 0)
         {
-            var label = portuguese || category != "Melhoria" ? category : "Improvement";
+            var label = category switch
+            {
+                "Bug" => ClientText.Get("News.Ticket.CategoryBug"),
+                "Melhoria" => ClientText.Get("News.Ticket.CategoryImprovement"),
+                "Outro" => ClientText.Get("News.Ticket.CategoryOther"),
+                _ => category
+            };
             var chip = new Rectangle(x, y - 1, painter.Measure(label) + 14, 17);
             painter.RoundedFill(chip, category switch
             {
@@ -868,14 +871,14 @@ internal sealed partial class HudNews
     }
 
     // The status chip, right-aligned at right.
-    private static void StatusChip(HudPainter painter, int right, int y, string status, bool portuguese)
+    private static void StatusChip(HudPainter painter, int right, int y, string status)
     {
         var (label, color) = status switch
         {
-            "Answered" => (portuguese ? "Respondido" : "Answered", new Color(50, 120, 60)),
-            "Closed" => (portuguese ? "Fechado" : "Closed", new Color(90, 90, 90)),
-            "Cancelled" => (portuguese ? "Cancelado" : "Cancelled", new Color(120, 50, 40)),
-            _ => (portuguese ? "Aberto" : "Open", new Color(150, 110, 30))
+            "Answered" => (ClientText.Get("News.Ticket.Status.Answered"), new Color(50, 120, 60)),
+            "Closed" => (ClientText.Get("News.Ticket.Status.Closed"), new Color(90, 90, 90)),
+            "Cancelled" => (ClientText.Get("News.Ticket.Status.Cancelled"), new Color(120, 50, 40)),
+            _ => (ClientText.Get("News.Ticket.Status.Open"), new Color(150, 110, 30))
         };
         var chip = new Rectangle(right - painter.Measure(label) - 16, y - 1, painter.Measure(label) + 16, 17);
         painter.RoundedFill(chip, color, 7);

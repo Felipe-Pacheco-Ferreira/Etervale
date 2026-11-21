@@ -31,14 +31,14 @@ internal static class AgingTests
     private static ItemDefinition Def(string code, Func<ItemTemplateRecord, ItemTemplateRecord>? change = null) =>
         WorldDataFactory.ToItemDefinition(change is null ? Record(code) : change(Record(code)));
 
-    private static ItemInstance Axe(int price = 1000) =>
+    internal static ItemInstance Axe(int price = 1000) =>
         new(Def("WA101", record => record with
         {
             Kind = (int)ItemKind.Axe, Price = price, DamageMinLow = 10, DamageMinHigh = 10, DamageMaxLow = 20, DamageMaxHigh = 20,
             AttackRatingMin = 50, AttackRatingMax = 50, DurabilityMin = 200, DurabilityMax = 200
         }));
 
-    private static ItemInstance Sheltom(int ordinal, int count = 1) =>
+    internal static ItemInstance Sheltom(int ordinal, int count = 1) =>
         new(Def($"OS1{ordinal:00}", record => record with { Kind = (int)ItemKind.Sheltom }), count);
 
     private static PlayerCharacter Fighter(int level = 50) => new CharacterClassRegistry().CreatePlayer(PlayerClass.Fighter, "Aging", level);

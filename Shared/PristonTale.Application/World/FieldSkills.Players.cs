@@ -81,7 +81,8 @@ internal sealed partial class FieldSkills
 
         PayLifeCost(caster, cast);
         var origin = caster.Position;
-        _host.HurtPlayer(caster, foe, ModifierRules.ScaleDamage(damage, character.Effects.Totals, foe.Character.Effects.Totals), crit);
+        _host.HurtPlayer(caster, foe, ModifierRules.ScaleDamage(damage, character.Effects.Totals, foe.Character.Effects.Totals), crit,
+            SkillDamageRule.HitElement(damageRule));
         if (cast.Rule.Burst is { } burst && burst.AfterHit == hit)
         {
             Burst(caster, cast, rule, origin);
@@ -98,7 +99,7 @@ internal sealed partial class FieldSkills
         }
 
         var power = SkillFormulas.RollPower(caster.Character, rule, rule.Damage, cast.Rank, _rng);
-        _host.HurtPlayer(caster, foe, PowerOnPlayer(caster, foe, power, rule.Damage, cast.Rank), false);
+        _host.HurtPlayer(caster, foe, PowerOnPlayer(caster, foe, power, rule.Damage, cast.Rank), false, SkillDamageRule.HitElement(rule.Damage));
         return true;
     }
 
@@ -128,7 +129,7 @@ internal sealed partial class FieldSkills
             }
 
             _host.HurtPlayer(caster, foe, SkillFormulas.PowerAgainstPlayer(Math.Max(1, share), resolved, defender, caster.Character.Effects.Totals,
-                foe.Character.Effects.Totals, cast.Rank), crit);
+                foe.Character.Effects.Totals, cast.Rank), crit, SkillDamageRule.HitElement(damageRule, isMain));
             hits++;
         }
 
@@ -148,14 +149,14 @@ internal sealed partial class FieldSkills
         }
 
         _host.HurtPlayer(caster, foe, SkillFormulas.MainSpellPowerAgainstPlayer(power, main, cast.Rank, defender, character.Effects.Totals,
-            foe.Character.Effects.Totals), crit);
+            foe.Character.Effects.Totals), crit, SkillDamageRule.HitElement(main));
     }
 
     // The clicked player's weapon-rolled hit of an area skill (MainHit), besides its area share.
     private bool MainWeaponHitOnPlayer(WorldPlayer caster, SkillRule rule, int rank, WorldPlayer foe)
     {
         var power = SkillFormulas.RollPower(caster.Character, rule, rule.MainHit, rank, _rng);
-        _host.HurtPlayer(caster, foe, PowerOnPlayer(caster, foe, power, rule.MainHit, rank), false);
+        _host.HurtPlayer(caster, foe, PowerOnPlayer(caster, foe, power, rule.MainHit, rank), false, SkillDamageRule.HitElement(rule.MainHit));
         return true;
     }
 

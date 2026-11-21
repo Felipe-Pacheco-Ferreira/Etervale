@@ -47,28 +47,27 @@ internal sealed partial class HudSettingsPanel
     public void Draw(HudPainter painter, Point pointer)
     {
         RefreshLabels();
-        var portuguese = ClientText.Language == "pt-BR";
         DrawWindow(painter, pointer);
-        DrawTabs(painter, pointer, portuguese ? PortugueseTabs : EnglishTabs);
+        DrawTabs(painter, pointer);
 
         var headings = _tab switch
         {
-            0 => portuguese ? ("Texturas", "Interface e nomes") : ("Textures", "Interface and names"),
-            1 => portuguese ? ("Música de fundo", "Efeitos sonoros") : ("Background music", "Sound effects"),
-            2 => portuguese ? ("Janelas", "Habilidades") : ("Windows", "Skills"),
-            _ => portuguese ? ("Idioma", "Interface") : ("Language", "Interface")
+            0 => ("Settings.Card.Textures", "Settings.Card.InterfaceAndNames"),
+            1 => ("Settings.Card.BackgroundMusic", "Settings.Card.SoundEffects"),
+            2 => ("Settings.Card.Windows", "Settings.Card.Skills"),
+            _ => ("Settings.Card.Language", "Settings.Card.Interface")
         };
         if (_tab == 1)
         {
-            DrawCard(painter, 109, headings.Item1, CardTop, 87);
-            DrawCard(painter, 401, headings.Item2, CardTop, 87);
-            DrawCard(painter, 109, portuguese ? "Chat de voz" : "Voice chat", 221, 186);
-            DrawCard(painter, 401, portuguese ? "Microfone" : "Microphone", 221, 186);
+            DrawCard(painter, 109, ClientText.Get(headings.Item1), CardTop, 87);
+            DrawCard(painter, 401, ClientText.Get(headings.Item2), CardTop, 87);
+            DrawCard(painter, 109, ClientText.Get("Settings.VoiceChat"), 221, 186);
+            DrawCard(painter, 401, ClientText.Get("Settings.Microphone"), 221, 186);
         }
         else
         {
-            DrawCard(painter, 109, headings.Item1);
-            DrawCard(painter, 401, headings.Item2);
+            DrawCard(painter, 109, ClientText.Get(headings.Item1));
+            DrawCard(painter, 401, ClientText.Get(headings.Item2));
         }
 
         var current = _draft ?? _settings.Requested;
@@ -81,34 +80,33 @@ internal sealed partial class HudSettingsPanel
                 {
                     var section = shortcutIndex switch
                     {
-                        -9 => portuguese ? "Interface" : "Interface",
-                        -10 => portuguese ? "Personagem" : "Character",
-                        -11 => portuguese ? "Voz" : "Voice",
-                        -12 => portuguese ? "Poções" : "Potions",
-                        -7 => portuguese ? "Câmera" : "Camera",
-                        _ => string.Empty
+                        -9 => "Settings.Card.Interface",
+                        -10 => "Settings.Section.Character",
+                        -11 => "Settings.Section.Voice",
+                        -12 => "Settings.Section.Potions",
+                        -7 => "Settings.Section.Camera",
+                        _ => null
                     };
-                    if (section.Length > 0)
+                    if (section is not null)
                     {
                         var heading = Row(index);
                         painter.RoundedGradient(heading, CardHeader, CardBody, 2);
                         painter.Diamond(heading.X + 8, heading.Center.Y, 3, Gold);
-                        painter.Text(section, heading.X + 17, heading.Y + 5, TitleGold);
+                        painter.Text(ClientText.Get(section), heading.X + 17, heading.Y + 5, TitleGold);
                     }
 
                     continue;
                 }
-                var shortcut = Shortcuts[shortcutIndex];
                 var capturing = shortcutIndex == _binding;
-                var key = capturing ? (portuguese ? "Pressione uma tecla" : "Press a key") : BindingLabel(BindingOf(current, shortcutIndex));
+                var key = capturing ? ClientText.Get("Settings.PressKey") : BindingLabel(BindingOf(current, shortcutIndex));
                 var row = Row(index);
                 var keyBounds = new Rectangle(row.Right - KeyBoxWidth, row.Top, KeyBoxWidth, row.Height);
-                painter.Text(painter.Fit(portuguese ? shortcut.Portuguese : shortcut.English, row.Width - KeyBoxWidth - 10),
+                painter.Text(painter.Fit(_shortcutNames[shortcutIndex], row.Width - KeyBoxWidth - 10),
                     row.X + 4, row.Y + 5, Color.Wheat);
                 DrawField(painter, keyBounds, key, pointer, capturing, centered: true);
             }
 
-            DrawButton(painter, RestoreKeys, portuguese ? "Restaurar padrão" : "Restore defaults", pointer);
+            DrawButton(painter, RestoreKeys, ClientText.Get("Settings.RestoreDefaults"), pointer);
         }
         else
         {
@@ -126,17 +124,17 @@ internal sealed partial class HudSettingsPanel
                 {
                     var title = option switch
                     {
-                        -2 => portuguese ? "Qualidade gráfica" : "Graphics quality",
-                        -3 => portuguese ? "Gráficos aprimorados" : "Enhanced graphics",
-                        -4 => portuguese ? "Exibição e resolução" : "Display and resolution",
-                        -5 => portuguese ? "Jogo" : "Game",
-                        -6 => portuguese ? "Filtro de loot" : "Loot filter",
-                        -7 => portuguese ? "Câmera" : "Camera",
-                        _ => portuguese ? "Notificações do chat" : "Chat notifications"
+                        -2 => "Settings.Section.GraphicsQuality",
+                        -3 => "Settings.Section.EnhancedGraphics",
+                        -4 => "Settings.Section.Display",
+                        -5 => "Settings.Section.Game",
+                        -6 => "Settings.Section.LootFilter",
+                        -7 => "Settings.Section.Camera",
+                        _ => "Settings.Section.ChatNotifications"
                     };
                     painter.RoundedGradient(row, CardHeader, CardBody, 2);
                     painter.Diamond(row.X + 8, row.Center.Y, 3, Gold);
-                    painter.Text(title, row.X + 17, row.Y + 5, TitleGold);
+                    painter.Text(ClientText.Get(title), row.X + 17, row.Y + 5, TitleGold);
                 }
                 else if (option is 100 or 101 or 102)
                 {
@@ -149,13 +147,13 @@ internal sealed partial class HudSettingsPanel
                 }
                 else if (option == 109 && _binding == VoiceShortcut)
                 {
-                    DrawField(painter, row, portuguese ? "Pressione uma tecla" : "Press a key", pointer, true, centered: true);
+                    DrawField(painter, row, ClientText.Get("Settings.PressKey"), pointer, true, centered: true);
                 }
                 else if (option == 196)
                 {
                     DrawField(painter, row, EditingLootNames ? _lootNameDraft + "|" : _labels[option], pointer, EditingLootNames, centered: false);
                 }
-                else if (option is not (110 or 111 or 114))
+                else if (option is not (110 or 111 or 114) && (option != ChatTranslateOption || ChatTranslationAvailable))
                 {
                     DrawOption(painter, row, _labels[option], pointer);
                 }
@@ -172,16 +170,16 @@ internal sealed partial class HudSettingsPanel
             painter.RoundedFill(new Rectangle(track.X, track.Y + (track.Height - thumb) * _firstRow / max, track.Width, thumb), Gold);
         }
 
-        var hint = EditingLootNames
-            ? (portuguese ? "Separe os nomes por vírgula. Enter confirma, Esc cancela." : "Separate names with commas. Enter confirms, Esc cancels.")
+        var hint = ClientText.Get(EditingLootNames
+            ? "Settings.Hint.LootNames"
             : _tab == 2
-            ? (portuguese ? "Clique para alterar. Shift + clique restaura o atalho." : "Click to rebind. Shift + click restores the shortcut.")
+            ? "Settings.Hint.Rebind"
             : Tabs[_tab].Length > VisibleRows
-                ? (portuguese ? "Role para ver mais opções." : "Scroll for more options.")
-                : ClientText.Get("Settings.Hint");
+                ? "Settings.Hint.Scroll"
+                : "Settings.Hint");
         painter.Text(painter.Fit(hint, _tab == 2 ? 370 : 580), 111, 488, HudTextColors.Hint);
         painter.Text(painter.Fit(_settings.EffectiveDisplay, 580), 111, 507, HudTextColors.Hint);
-        DrawFooter(painter, pointer, portuguese);
+        DrawFooter(painter, pointer);
     }
 
     private static void DrawWindow(HudPainter painter, Point pointer)
@@ -210,9 +208,9 @@ internal sealed partial class HudSettingsPanel
         painter.TextCentered("X", close.Left + 1, close.Right, close.Top + 6, hover ? Color.White : Color.Wheat);
     }
 
-    private void DrawTabs(HudPainter painter, Point pointer, string[] names)
+    private void DrawTabs(HudPainter painter, Point pointer)
     {
-        for (var tab = 0; tab < names.Length; tab++)
+        for (var tab = 0; tab < TabLabels.Length; tab++)
         {
             var bounds = Tab(tab);
             var active = tab == _tab;
@@ -234,7 +232,7 @@ internal sealed partial class HudSettingsPanel
             painter.Disc(icon.Center.X, icon.Center.Y, 14, active ? Gold : DimGold);
             painter.Disc(icon.Center.X, icon.Center.Y, 13, active ? TabActive : Field);
             DrawTabIcon(painter, tab, icon, active ? TitleGold : Gold);
-            painter.Text(names[tab], bounds.X + 46, bounds.Y + 15, active ? Color.White : Color.Wheat, HeadingScale);
+            painter.Text(ClientText.Get(TabLabels[tab]), bounds.X + 46, bounds.Y + 15, active ? Color.White : Color.Wheat, HeadingScale);
             if (active)
             {
                 painter.Fill(new Rectangle(bounds.X + 5, bounds.Bottom - 3, bounds.Width - 10, 2), Gold);
@@ -298,17 +296,30 @@ internal sealed partial class HudSettingsPanel
         painter.Text(heading, x + 24, top + 6, TitleGold, HeadingScale);
     }
 
-    private static void DrawOption(HudPainter painter, Rectangle row, string label, Point pointer)
+    private const char FullWidthColon = '：';
+
+    // A row's label as its name and value, split at the last ": " or, in Chinese and Japanese, the last full-width colon;
+    // null for a label without a value (a button).
+    internal static (string Name, string Value)? SplitOption(string label)
     {
         var separator = label.LastIndexOf(": ", StringComparison.Ordinal);
-        if (separator < 0)
+        if (separator >= 0)
+        {
+            return (label[..separator], label[(separator + 2)..]);
+        }
+
+        separator = label.LastIndexOf(FullWidthColon);
+        return separator >= 0 ? (label[..separator], label[(separator + 1)..]) : null;
+    }
+
+    private static void DrawOption(HudPainter painter, Rectangle row, string label, Point pointer)
+    {
+        if (SplitOption(label) is not var (name, value))
         {
             DrawButton(painter, row, label, pointer);
             return;
         }
 
-        var name = label[..separator];
-        var value = label[(separator + 2)..];
         var enabled = IsOn(value);
         if (enabled || IsOff(value))
         {
@@ -327,12 +338,48 @@ internal sealed partial class HudSettingsPanel
         painter.DownTriangle(box.Right - 10, box.Y + 13, 4, 5, Gold);
     }
 
-    // The on and off words of the labels (Toggle and the resource texts), in either language and case.
-    private static bool IsOn(string value) => value.StartsWith("Ligad", StringComparison.OrdinalIgnoreCase)
-        || value.Equals("On", StringComparison.OrdinalIgnoreCase);
+    // A label's value is a switch when it is one of the shown language's on or off words, in any case and form
+    // (Settings.Switch.OnWords and OffWords, comma-separated), split again only when the language changes.
+    private static string _switchLanguage;
+    private static string[] _onWords = [];
+    private static string[] _offWords = [];
 
-    private static bool IsOff(string value) => value.StartsWith("Desligad", StringComparison.OrdinalIgnoreCase)
-        || value.Equals("Off", StringComparison.OrdinalIgnoreCase);
+    private static bool IsOn(string value)
+    {
+        RefreshSwitchWords();
+        return IsAny(_onWords, value);
+    }
+
+    private static bool IsOff(string value)
+    {
+        RefreshSwitchWords();
+        return IsAny(_offWords, value);
+    }
+
+    private static bool IsAny(string[] words, string value)
+    {
+        foreach (var word in words)
+        {
+            if (value.Equals(word, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static void RefreshSwitchWords()
+    {
+        if (_switchLanguage == ClientText.Language)
+        {
+            return;
+        }
+
+        _switchLanguage = ClientText.Language;
+        _onWords = ClientText.Get("Settings.Switch.OnWords").Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        _offWords = ClientText.Get("Settings.Switch.OffWords").Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+    }
 
     private static void DrawField(HudPainter painter, Rectangle bounds, string text, Point pointer, bool active, bool centered)
     {
@@ -368,7 +415,7 @@ internal sealed partial class HudSettingsPanel
         painter.Text($"{volume}%", track.Right + 13, bounds.Y + 5, Color.White);
     }
 
-    private static void DrawFooter(HudPainter painter, Point pointer, bool portuguese)
+    private static void DrawFooter(HudPainter painter, Point pointer)
     {
         var footer = new Rectangle(96, 529, 608, 53);
         painter.Fill(new Rectangle(footer.X, footer.Y - 1, footer.Width, 1), DimGold);
@@ -377,11 +424,11 @@ internal sealed partial class HudSettingsPanel
         var cancel = CancelButton;
         var hover = cancel.Contains(pointer);
         painter.FramedBox(cancel, hover ? Gold : DimGold, hover ? TabActiveTop : CancelTop, hover ? TabActive : CancelFill, 3);
-        painter.TextCentered(portuguese ? "Cancelar" : "Cancel", cancel.Left, cancel.Right, cancel.Top + 10, hover ? Color.White : Color.Wheat);
+        painter.TextCentered(ClientText.Get("Settings.Cancel"), cancel.Left, cancel.Right, cancel.Top + 10, hover ? Color.White : Color.Wheat);
 
         var save = OkButton;
         hover = save.Contains(pointer);
         painter.FramedBox(save, hover ? TitleGold : SaveEdge, hover ? SwitchOnEdge : SaveTop, SaveBottom, 3);
-        painter.TextCentered(portuguese ? "SALVAR" : "SAVE", save.Left, save.Right, save.Top + 9, HeadingScale);
+        painter.TextCentered(ClientText.Get("Settings.Save"), save.Left, save.Right, save.Top + 9, HeadingScale);
     }
 }

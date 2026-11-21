@@ -354,16 +354,15 @@ public sealed class HudHelpWindow(HudTextFiles texts, Action<string> requestArt)
         var fullRows = (Picture.Top - PageTextY) / PageLineStep;
         foreach (var line in lines)
         {
-            var words = Drawable(painter, line).Split(' ', StringSplitOptions.RemoveEmptyEntries);
             var current = "";
-            foreach (var word in words)
+            foreach (var (piece, space) in HudTextLayout.Pieces(Drawable(painter, line)))
             {
                 var width = picture && wrapped.Count >= fullRows ? beside : full;
-                var candidate = current.Length == 0 ? word : $"{current} {word}";
+                var candidate = current.Length == 0 ? piece : space ? $"{current} {piece}" : current + piece;
                 if (current.Length > 0 && painter.Measure(candidate) > width)
                 {
                     wrapped.Add(current);
-                    current = word;
+                    current = piece;
                 }
                 else
                 {

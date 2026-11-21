@@ -276,9 +276,12 @@ public static class CombatEventFlags
     public const byte Killed = 2;
     // A monster's swing or hit that belongs to its skill.
     public const byte Skill = 4;
+    // Written by the entry itself when it carries an element: a uint8 element follows the fields.
+    public const byte Element = 8;
 }
 
-// A resolved combat event. Positions are fixed point (x256); the wire holds them at 1/8 of a unit.
+// A resolved combat event. Positions are fixed point (x256); the wire holds them at 1/8 of a unit. Element is the hit's
+// element code (Simulation's Element), 0 for a physical hit.
 public readonly record struct CombatEventEntry(
     ulong Attacker,
     ulong Target,
@@ -293,12 +296,14 @@ public readonly record struct CombatEventEntry(
     int Y,
     int Z,
     short Angle,
-    short Clip = -1) : IEventEntry<CombatEventEntry>
+    short Clip = -1,
+    byte Element = 0) : IEventEntry<CombatEventEntry>
 {
-    // {uint8 Kind, Flags, Fields, entity Attacker}, then what Fields names, in its bit order (EventWire).
+    // {uint8 Kind, Flags, Fields, entity Attacker}, then what Fields names, in its bit order (EventWire), then uint8
+    // Element when Flags has CombatEventFlags.Element.
     public const int MinSize = 4;
     public const int MaxSize = 3 + EventWire.MaxEntityBytes * 2 + EventWire.MaxTimeBytes * 2 + VarInt.MaxBytes32 * 3 + EventWire.PointBytes
-        + VarInt.MaxBytes16 * 2;
+        + VarInt.MaxBytes16 * 2 + 1;
 
     static int IEventEntry<CombatEventEntry>.MinSize => MinSize;
 
@@ -327,8 +332,9 @@ public readonly record struct CombatEventEntry(
             | (X != 0 || Y != 0 || Z != 0 ? Fields.Point : 0)
             | (Angle != 0 ? Fields.Angle : 0)
             | (Clip != -1 ? Fields.Clip : 0);
+        var flags = Element != 0 ? (byte)(Flags | CombatEventFlags.Element) : (byte)(Flags & ~CombatEventFlags.Element);
         writer.Byte((byte)Kind);
-        writer.Byte(Flags);
+        writer.Byte(flags);
         writer.Byte((byte)fields);
         EventWire.WriteEntity(ref writer, Attacker, handles);
         if ((fields & Fields.Target) != 0)
@@ -371,6 +377,11 @@ public readonly record struct CombatEventEntry(
         {
             writer.VarInt(Clip);
         }
+
+        if (Element != 0)
+        {
+            writer.Byte(Element);
+        }
     }
 
     public static CombatEventEntry Read(ref PacketReader reader, IEventHandleReader handles)
@@ -387,17 +398,29 @@ public readonly record struct CombatEventEntry(
         var (x, y, z) = (fields & Fields.Point) != 0 ? EventWire.ReadPoint(ref reader) : (0, 0, 0);
         var angle = (fields & Fields.Angle) != 0 ? Short(reader.VarInt()) : (short)0;
         var clip = (fields & Fields.Clip) != 0 ? Short(reader.VarInt()) : (short)-1;
-        return new CombatEventEntry(attacker, target, kind, flags, duration, hitAt, damage, resources, sound, x, y, z, angle, clip);
+        byte element = 0;
+        if ((flags & CombatEventFlags.Element) != 0)
+        {
+            element = reader.Byte();
+            if (element == 0)
+            {
+                throw new InvalidDataException("Combat event element is flagged but empty.");
+            }
+        }
+
+        return new CombatEventEntry(attacker, target, kind, (byte)(flags & ~CombatEventFlags.Element), duration, hitAt, damage, resources, sound,
+            x, y, z, angle, clip, element);
     }
 
     private static short Short(int value) =>
         value is >= short.MinValue and <= short.MaxValue ? (short)value : throw new InvalidDataException("Combat event value is out of range.");
 }
 
-// Resolved combat events (EventWire, version 1); the original instead lets each client roll its own hits.
+// Resolved combat events (EventWire, version 2: entries may carry an element); the original instead lets each client roll
+// its own hits.
 public static class CombatEventList
 {
-    public const ushort CurrentVersion = 1;
+    public const ushort CurrentVersion = 2;
 
     public static int Write(Span<byte> destination, ReadOnlySpan<CombatEventEntry> events, IEventHandleWriter handles, out int written) =>
         EventWire.Write(destination, EtervaleOpcodes.CombatEvents, CurrentVersion, events, handles, out written);

@@ -315,5 +315,100 @@ public enum GameTextId : ushort
     RewardGoldLimit = 803,
     RewardLevelTooLow = 804,
     RewardBusy = 805,
-    RewardNotReady = 806
+    RewardNotReady = 806,
+
+    // What the server tells of other players: AgingNotice {0} the player, {1} the item, {2} the level; LevelNotice {0}
+    // the player, {1} the level; PartyLoot and PartyRareLoot (a unique or set item) {0} the member, {1} the item.
+    AgingNotice = 820,
+    LevelNotice = 821,
+    PartyLoot = 822,
+    PartyRareLoot = 823,
+    BellatraOpening = 824,
+
+    // A chat line translated for its receiver (ChatTranslation): the line's text is the translated line, which the client
+    // shows as {0} with the language's "(translated)" mark.
+    ChatTranslated = 830,
+
+    // The PvP mode's answers (PvpRules): PvpLevel {0} the level it needs, PvpInCombat {0} the seconds left of the hold,
+    // PvpMurderer {0} the seconds left of the mark; PvpMurder {0} the player the reader killed, {1} the minutes the reader
+    // is now a murderer.
+    PvpOn = 840,
+    PvpOff = 841,
+    PvpLevel = 842,
+    PvpInCombat = 843,
+    PvpMurderer = 844,
+    PvpMurder = 845,
+
+    // Duels (DuelRules): {0} the other player, except DuelField; DuelNotice {0} the winner, {1} the loser, and
+    // DuelDrawNotice {0}, {1} the two, which the other players of the field read (the client may hide them).
+    DuelChallenged = 850,
+    DuelNotFound = 851,
+    DuelTooFar = 852,
+    DuelField = 853,
+    DuelBusy = 854,
+    DuelSelf = 855,
+    DuelRefused = 856,
+    DuelStarted = 857,
+    DuelWon = 858,
+    DuelLost = 859,
+    DuelDraw = 860,
+    DuelNotice = 861,
+    DuelDrawNotice = 862,
+
+    // The arena (ArenaRules): ArenaOpen {0} the minutes it stays open; ArenaQueued {0} the mode ("1x1", "3x3");
+    // ArenaClosed {0} its hours; ArenaLevel {0} the level it needs; ArenaParty {0} the party's size; ArenaStarted {0} the
+    // mode, {1} the other side; ArenaWon and ArenaLost {0} the points won or lost. ArenaOpen, ArenaNotice ({0} the mode,
+    // {1} the winners, {2} the losers) and ArenaDrawNotice ({0} the mode, {1} and {2} the sides) go to every player, who
+    // may hide them.
+    ArenaOpen = 870,
+    ArenaQueued = 871,
+    ArenaLeft = 872,
+    ArenaClosed = 873,
+    ArenaLevel = 874,
+    ArenaParty = 875,
+    ArenaBusy = 876,
+    ArenaNotQueued = 877,
+    ArenaQueueClosed = 878,
+    ArenaStarted = 879,
+    ArenaOut = 880,
+    ArenaWon = 881,
+    ArenaLost = 882,
+    ArenaDraw = 883,
+    ArenaNotice = 884,
+    ArenaDrawNotice = 885,
+
+    // The Battle Royale (RoyaleRules): RoyaleOpen {0} the minutes until it starts, {1} the level it needs; RoyaleRegistered
+    // {0} how many are registered; RoyaleClosed {0} its hours; RoyaleLevel {0} the level it needs; RoyaleFull {0} the most
+    // players; RoyaleCancelled {0} how many registered, {1} the fewest it needs; RoyaleStarted {0} how many fight;
+    // RoyaleOut {0} the players still standing; RoyalePlace {0} the place, {1} the experience gained; RoyaleWinner {0}
+    // the winner. RoyaleOpen, RoyaleCancelled, RoyaleStarted and RoyaleWinner go to every player, who may hide them.
+    RoyaleOpen = 890,
+    RoyaleRegistered = 891,
+    RoyaleLeft = 892,
+    RoyaleClosed = 893,
+    RoyaleLevel = 894,
+    RoyaleFull = 895,
+    RoyaleBusy = 896,
+    RoyaleNotRegistered = 897,
+    RoyaleCancelled = 898,
+    RoyaleStarted = 899,
+    RoyaleOut = 900,
+    RoyalePlace = 901,
+    RoyaleWinner = 902,
+    RoyaleSkipped = 903,
+
+    // Titles (TitleRules): a title is its code, worded by the client. TitleGained {0} the player, {1} the title, to every
+    // player; TitleLost {0} the one who lost it, {1} the title, {2} who took it, to every player; TitleEarned {0} the title,
+    // to its owner whenever it gets one. TitleGained and TitleLost may be hidden.
+    TitleGained = 904,
+    TitleLost = 905,
+    TitleEarned = 906,
+
+    // TitleTaken {0} the title, {1} who took it: to the one who lost a position title.
+    TitleTaken = 907,
+
+    // The boss roulette (BossRoulette): BossRouletteWinner {0} the winner, {1} the prize, {2} the boss, to every player, who
+    // may hide it; BossRouletteWon {0} the prize, {1} the boss, to the winner.
+    BossRouletteWinner = 908,
+    BossRouletteWon = 909
 }

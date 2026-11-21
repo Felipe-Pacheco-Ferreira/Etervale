@@ -187,10 +187,12 @@ public sealed partial class RemoteEntityManager
             return;
         }
 
-        // A new sign or mount alone changes no model (MountPresentation draws the mount).
+        // A new sign, mount, PvP mark, duel or title alone changes no model (MountPresentation draws the mount, the HUD the mark).
         if (_entities.ContainsKey(spawn.EntityId) && !publish
             && (spawn.Player is null || (_playerAppearances.TryGetValue(spawn.EntityId, out var known)
-                && known with { ShopSign = spawn.Player.ShopSign, Mounted = spawn.Player.Mounted } == spawn.Player)))
+                && known with { ShopSign = spawn.Player.ShopSign, Mounted = spawn.Player.Mounted, Pvp = spawn.Player.Pvp, Murderer = spawn.Player.Murderer,
+                    Duelling = spawn.Player.Duelling, ArenaSide = spawn.Player.ArenaSide, Title = spawn.Player.Title }
+                    == spawn.Player)))
         {
             if (spawn.Player is not null)
             {
@@ -798,18 +800,17 @@ public sealed partial class RemoteEntityManager
         return false;
     }
 
-    // A living remote player's render position and clan (0 for none).
-    public bool TryGetLivingPlayer(ulong entityId, out XnaVector3 position, out long clanId)
+    // A living remote player's render position and looks (its clan, its PvP mode).
+    public bool TryGetLivingPlayer(ulong entityId, out XnaVector3 position, [System.Diagnostics.CodeAnalysis.MaybeNullWhen(false)] out PlayerAppearanceInfo player)
     {
-        if (_entities.TryGetValue(entityId, out var entity) && !entity.IsDead && _playerAppearances.TryGetValue(entityId, out var player))
+        if (_entities.TryGetValue(entityId, out var entity) && !entity.IsDead && _playerAppearances.TryGetValue(entityId, out player))
         {
             position = entity.RenderPosition;
-            clanId = player.ClanId;
             return true;
         }
 
         position = default;
-        clanId = 0;
+        player = null;
         return false;
     }
 

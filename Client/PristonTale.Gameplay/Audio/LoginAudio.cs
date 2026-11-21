@@ -35,47 +35,50 @@ public sealed class LoginAudio : IDisposable
 
     private readonly PristonAudioLibrary _library;
     private readonly List<(SoundEffectInstance Instance, float Volume)> _loops = [];
+    // Loops whose file is still arriving (the browser): each starts, at the fade's current volume, once it is there.
+    private readonly List<(string Path, float Volume)> _waiting = [];
     private float _fade;
 
     private LoginAudio(PristonAudioLibrary library) => _library = library;
 
-    public static LoginAudio Opening(PristonAudioLibrary library) =>
-        Start(library, library?.OpeningMusic, []);
+    public static LoginAudio Opening(PristonAudioLibrary library) => Start(library, library?.OpeningLoops ?? []);
 
-    public static LoginAudio CharacterSelect(PristonAudioLibrary library) =>
-        Start(library, library?.CharacterSelectMusic, library?.CharacterSelectLoops ?? []);
+    public static LoginAudio CharacterSelect(PristonAudioLibrary library) => Start(library, library?.CharacterSelectLoops ?? []);
 
-    private static LoginAudio Start(
-        PristonAudioLibrary library,
-        SoundEffect music,
-        IReadOnlyList<(SoundEffect Sound, float Volume)> loops)
+    private static LoginAudio Start(PristonAudioLibrary library, IReadOnlyList<(string Path, float Volume)> loops)
     {
         var audio = new LoginAudio(library);
-        audio.Loop(music, FieldAudioController.MusicVolume);
-        foreach (var (sound, volume) in loops)
-        {
-            audio.Loop(sound, volume);
-        }
-
+        audio._waiting.AddRange(loops);
+        audio.StartWaiting();
         return audio;
     }
 
-    private void Loop(SoundEffect sound, float volume)
+    private void StartWaiting()
     {
-        if (sound is null)
+        for (var index = _waiting.Count - 1; index >= 0; index--)
         {
-            return;
-        }
+            var (path, volume) = _waiting[index];
+            if (_library.LoginSound(path) is not { } sound)
+            {
+                continue;
+            }
 
-        var instance = sound.CreateInstance();
-        instance.IsLooped = true;
-        instance.Volume = 0f;
-        instance.Play();
-        _loops.Add((instance, volume));
+            _waiting.RemoveAt(index);
+            var instance = sound.CreateInstance();
+            instance.IsLooped = true;
+            instance.Volume = volume * _fade;
+            instance.Play();
+            _loops.Add((instance, volume));
+        }
     }
 
     public void Update(float dt)
     {
+        if (_waiting.Count > 0)
+        {
+            StartWaiting();
+        }
+
         if (_fade >= 1f)
         {
             return;
@@ -99,5 +102,6 @@ public sealed class LoginAudio : IDisposable
         }
 
         _loops.Clear();
+        _waiting.Clear();
     }
 }
