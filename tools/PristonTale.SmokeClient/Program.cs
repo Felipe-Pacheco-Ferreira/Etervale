@@ -5,20 +5,25 @@ using PristonTale.Simulation.Characters;
 using PristonTale.Simulation.Quests;
 using PristonTale.Contracts.Skills;
 using PristonTale.Contracts.Characters;
+using PristonTale.Contracts.Texts;
 using PristonTale.Protocol.Transport;
 
-// smoke [address] [account] [password] [--character NAME] [--skill CODE] [--chat TEXT]
+// smoke [address] [account] [password] [--character NAME] [--skill CODE] [--chat TEXT] [--login-only]
 // Without --character a new Mechanician is created and its skill cast must be answered (refused: unlearned, in town).
 // With --character the existing character casts CODE on itself and the cast must be accepted, start on the
 // presence timeline and, for buffs, add its status.
 var positional = args.Where((arg, index) => !arg.StartsWith("--", StringComparison.Ordinal)
-    && (index == 0 || !args[index - 1].StartsWith("--", StringComparison.Ordinal))).ToArray();
+    && (index == 0 || args[index - 1] is not ("--character" or "--skill" or "--chat"))).ToArray();
 var address = positional.Length > 0 ? positional[0] : TlsTransport.LocalAddress;
 var account = positional.Length > 1 ? positional[1] : "smoke";
 var password = positional.Length > 2 ? positional[2] : "smoke-pw";
 var existing = Option("--character");
 var skillCode = Option("--skill") is { } code ? Convert.ToUInt32(code.Replace("0x", "", StringComparison.OrdinalIgnoreCase), 16) : 0x01010001u;
-Console.WriteLine($"Connecting to {address}…");
+var loginOnly = args.Contains("--login-only", StringComparer.Ordinal);
+if (!loginOnly)
+{
+    Console.WriteLine($"Connecting to {address}…");
+}
 await using var conn = new GameServerConnection(address);
 
 var login = await conn.LoginAsync(account, password, "en");
@@ -26,6 +31,11 @@ Console.WriteLine($"Login            : ok={login.Ok} msg=\"{login.Message}\"");
 if (!login.Ok)
 {
     return 1;
+}
+
+if (loginOnly)
+{
+    return 0;
 }
 
 var before = await conn.ListCharactersAsync();
@@ -95,7 +105,8 @@ await using (var play = conn.OpenPlayChannel())
     }
 
     // A whisper to a player who is not online must be answered with a server line naming that player.
-    var whisper = await ChatAsync(play, "/:SmokeNobody hi", line => line.Text.StartsWith("SmokeNobody ", StringComparison.Ordinal));
+    var missingPlayer = GameText.Of(GameTextId.PlayerNotFound, "SmokeNobody");
+    var whisper = await ChatAsync(play, "/:SmokeNobody hi", line => line.Line == missingPlayer);
     if (whisper is null)
     {
         return 1;
@@ -160,7 +171,8 @@ async Task<ChatLineInfo?> ChatAsync(IPlayChannel play, string text, Func<ChatLin
         {
             foreach (var line in update.Chat)
             {
-                Console.WriteLine($"Chat {line.Kind,-12}: {line.Text}");
+                var message = line.Line.IsNone ? line.Text : line.Line.ToString();
+                Console.WriteLine($"Chat {line.Kind,-12}: {message}");
                 answer ??= expected(line) ? line : null;
             }
         }

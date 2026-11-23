@@ -27,7 +27,7 @@ internal sealed record ExportOptions(
     bool AnimationsOnly = false,
     uint JobMask = 0,
     bool StageObject = false,
-    bool TPose = false)
+    bool TPose = false, bool VillageLocomotion = false)
 {
     public float ClipTicksPerSecond => StageObject
         ? GltfSceneExport.StageObjectTicksPerSecond
@@ -512,7 +512,7 @@ internal static class GltfSceneExport
                 : [];
         }
 
-        return EnumerateClips(actor, options.JobMask)
+        return EnumerateClips(actor, options.JobMask, options.VillageLocomotion)
             .Select(clip => new ClipPlan(clip.Name, clip.StartTicks, clip.EndTicks, true, options.ClipTicksPerSecond))
             .ToList();
     }
@@ -613,12 +613,28 @@ internal static class GltfSceneExport
         return Math.Min(objectIndex, lastSkeletonIndex);
     }
 
-    private static IEnumerable<MotionClip> EnumerateClips(PristonActor actor, uint jobMask)
+    private static IEnumerable<MotionClip> EnumerateClips(PristonActor actor, uint jobMask, bool villageLocomotion)
     {
         var usedNames = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
         var actorInfo = actor.Info;
+        var context = new PristonMotionContext(-1, jobMask, 1);
+        var stand = villageLocomotion ? PristonMotionSelection.Select(actorInfo, MotionCode.Stand, context) : null;
+        var walk = villageLocomotion ? PristonMotionSelection.Select(actorInfo, MotionCode.Walk, context) : null;
+        var run = villageLocomotion ? PristonMotionSelection.Select(actorInfo, MotionCode.Run, context) : null;
+        if (villageLocomotion && (stand is null || walk is null || run is null))
+        {
+            throw new InvalidOperationException("The Windows selector found no village stand, walk or run motion.");
+        }
         foreach (var (index, motion) in actorInfo.UsableMotions())
         {
+            if (villageLocomotion && !ReferenceEquals(motion, stand) && !ReferenceEquals(motion, walk) && !ReferenceEquals(motion, run))
+            {
+                continue;
+            }
+            if (villageLocomotion)
+            {
+                Console.WriteLine($"Windows village motion {(MotionCode)motion.State}: record {index}, frames {motion.StartFrame}–{motion.EndFrame}");
+            }
 
             // Same job filter as PristonMotionSelection: a zero mask on either side matches every class.
             if (motion.JobCodeBit != 0 && jobMask != 0 && (motion.JobCodeBit & jobMask) == 0)

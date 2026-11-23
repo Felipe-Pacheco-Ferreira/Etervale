@@ -258,7 +258,7 @@ public sealed class GameplayScreen : GameScreen
     private bool Pressed(KeyboardState keyboard, Keys key) =>
         keyboard.IsKeyDown(key) && !_lastKeyboard.IsKeyDown(key);
 
-    public override bool HandleEscape() => _hud?.ClosePanel() == true;
+    public override void HandleEscape() => _hud?.HandleEscape();
 
     // The scene clears its hovered entity while the HUD has the pointer, so windows show the arrow unless the HUD imposes
     // one (a shop's mode, a dragged item).

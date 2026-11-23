@@ -427,7 +427,16 @@ internal sealed class HudCaptureProbe : Game
 
             _hud.Update(state, default, default);
             _hud.Update(state, scenario.Panel == Keys.None ? default : new KeyboardState(scenario.Panel), default);
-            if (scenario.Settings || scenario.SystemMenu)
+            if (scenario.SystemMenu)
+            {
+                _hud.HandleEscape();
+                Assert.True(_hud.ClosePanel(), "Escape should open the system menu when no panel is open");
+                _hud.HandleEscape();
+                _hud.HandleEscape();
+                Assert.True(!_hud.ClosePanel(), "Escape should close the open system menu");
+                _hud.HandleEscape();
+            }
+            else if (scenario.Settings)
             {
                 Click(state, layout, layout.Bottom(HudBar.MenuButton(HudMenuButton.System)).Center);
             }

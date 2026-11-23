@@ -9,6 +9,7 @@ public static class AssetFiles
 {
     // Resolution runs concurrently on the asset hot path.
     private static readonly ConcurrentDictionary<string, string> Cache = new();
+    private static readonly EnumerationOptions CaseLookupOptions = new() { IgnoreInaccessible = true, AttributesToSkip = 0 };
 
     // Joins an asset-relative reference to a root with the platform separator, without touching the disk.
     public static string Combine(string root, string relative) =>
@@ -105,7 +106,7 @@ public static class AssetFiles
             return null;
         }
 
-        foreach (var entry in Directory.EnumerateFileSystemEntries(current).Order(StringComparer.Ordinal))
+        foreach (var entry in Directory.EnumerateFileSystemEntries(current, "*", CaseLookupOptions).Order(StringComparer.Ordinal))
         {
             if (entry != direct && string.Equals(Path.GetFileName(entry), parts[index], StringComparison.OrdinalIgnoreCase)
                 && Walk(entry, parts, index + 1) is { } found)
