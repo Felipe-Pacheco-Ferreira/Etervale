@@ -1,0 +1,120 @@
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Title="Etervale" Width="960" Height="580" MinWidth="740" MinHeight="460" WindowStartupLocation="CenterScreen" Background="#111318" Foreground="#F3E6CB" FontFamily="Segoe UI">
+  <Window.Resources>
+    <LinearGradientBrush x:Key="GoldFrame" StartPoint="0,0" EndPoint="1,1" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+      <GradientStop Color="#D4AE72" Offset="0"/>
+      <GradientStop Color="#5C442E" Offset=".45"/>
+      <GradientStop Color="#B08C56" Offset="1"/>
+    </LinearGradientBrush>
+    <Style TargetType="Button">
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border Name="Surface" CornerRadius="12" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1">
+              <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="12,0"/>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Surface" Property="BorderBrush" Value="#FFE2AD"/></Trigger>
+              <Trigger Property="IsEnabled" Value="False"><Setter TargetName="Surface" Property="Opacity" Value=".45"/></Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+  </Window.Resources>
+  <Border BorderBrush="{StaticResource GoldFrame}" BorderThickness="2" Padding="3" Background="#15141B">
+  <Grid>
+    <Grid.RowDefinitions><RowDefinition/><RowDefinition Height="132"/></Grid.RowDefinitions>
+    <Grid ClipToBounds="True">
+      <Image Name="Scene" Stretch="UniformToFill" RenderTransformOrigin=".5,.5">
+        <Image.RenderTransform><ScaleTransform ScaleX="1.04" ScaleY="1.04"/></Image.RenderTransform>
+        <Image.Triggers>
+          <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+            <BeginStoryboard>
+              <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" From="1.04" To="1.14" Duration="0:0:18"/>
+                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" From="1.04" To="1.14" Duration="0:0:18"/>
+              </Storyboard>
+            </BeginStoryboard>
+          </EventTrigger>
+        </Image.Triggers>
+      </Image>
+      <Rectangle>
+        <Rectangle.Fill>
+          <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+            <GradientStop Color="#FA101116" Offset="0"/>
+            <GradientStop Color="#A0101116" Offset=".43"/>
+            <GradientStop Color="#08101116" Offset="1"/>
+          </LinearGradientBrush>
+        </Rectangle.Fill>
+      </Rectangle>
+      <StackPanel HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="44,0,0,45">
+        <Image Name="Emblem" Width="85" Height="85" HorizontalAlignment="Left"/>
+        <TextBlock Text="ETERVALE" FontFamily="Georgia" FontSize="64" Foreground="#F3D397"/>
+        <Border Width="96" Height="2" Background="#BA9258" HorizontalAlignment="Left" Margin="4,16,0,0"/>
+      </StackPanel>
+      <Border HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="246" Margin="32" Background="#DC171A22" BorderBrush="#988058" BorderThickness="1" Padding="20" CornerRadius="18">
+        <StackPanel>
+          <TextBlock Text="Notícias e eventos" FontFamily="Georgia" FontSize="23" Margin="0,0,0,14"/>
+          <Button Name="News" Content="Notícias do jogo" Height="38" Margin="0,0,0,8" Background="#30333D" Foreground="#F3E6CB" BorderBrush="#8F7148" Cursor="Hand"/>
+          <Button Name="Events" Content="Calendário de eventos" Height="38" Background="#30333D" Foreground="#F3E6CB" BorderBrush="#8F7148" Cursor="Hand"/>
+        </StackPanel>
+      </Border>
+    </Grid>
+    <Border Grid.Row="1" BorderBrush="#8F7148" BorderThickness="0,1,0,0" Padding="34,18">
+      <Border.Background>
+        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+          <GradientStop Color="#27232A" Offset="0"/>
+          <GradientStop Color="#12141B" Offset="1"/>
+        </LinearGradientBrush>
+      </Border.Background>
+      <DockPanel>
+        <Button DockPanel.Dock="Right" Name="Play" Content="Jogar" FontSize="23" FontWeight="Bold" Width="168" Height="56" Foreground="#20160C" BorderBrush="#E7C78E" Cursor="Hand">
+          <Button.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+              <GradientStop Color="#F6DCA7" Offset="0"/>
+              <GradientStop Color="#BB8E50" Offset="1"/>
+            </LinearGradientBrush>
+          </Button.Background>
+        </Button>
+        <Button DockPanel.Dock="Right" Name="Update" Content="Verificar atualizações" Width="176" Height="43" Margin="12,0" Background="#282A32" Foreground="#EDDBB9" BorderBrush="#866943" Cursor="Hand"/>
+        <StackPanel VerticalAlignment="Center" Margin="0,0,16,0">
+          <TextBlock Name="Version" Text="Cliente Windows" Foreground="#E7C68B" FontWeight="SemiBold"/>
+          <TextBlock Name="Status" TextWrapping="Wrap" Margin="0,5,0,0" Foreground="#D6D0C4"/>
+          <Border Height="19" Margin="0,10,0,0" Padding="2" CornerRadius="5" Background="#101117" BorderBrush="{StaticResource GoldFrame}" BorderThickness="1">
+            <Grid ClipToBounds="True">
+              <ProgressBar Name="Progress" Background="#201E27" BorderThickness="0">
+                <ProgressBar.Foreground>
+                  <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="#FFE5AA" Offset="0"/>
+                    <GradientStop Color="#D8A35D" Offset=".43"/>
+                    <GradientStop Color="#9E6132" Offset="1"/>
+                  </LinearGradientBrush>
+                </ProgressBar.Foreground>
+              </ProgressBar>
+              <Rectangle Name="DownloadShine" IsHitTestVisible="False" Visibility="Collapsed" Width="80" HorizontalAlignment="Left">
+                <Rectangle.Fill>
+                  <LinearGradientBrush StartPoint="0,.5" EndPoint="1,.5">
+                    <GradientStop Color="#00FFF2CC" Offset="0"/>
+                    <GradientStop Color="#77FFF2CC" Offset=".5"/>
+                    <GradientStop Color="#00FFF2CC" Offset="1"/>
+                  </LinearGradientBrush>
+                </Rectangle.Fill>
+                <Rectangle.RenderTransform><TranslateTransform X="-80"/></Rectangle.RenderTransform>
+                <Rectangle.Triggers>
+                  <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                    <BeginStoryboard>
+                      <Storyboard RepeatBehavior="Forever">
+                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)" From="-80" To="650" Duration="0:0:1.7"/>
+                      </Storyboard>
+                    </BeginStoryboard>
+                  </EventTrigger>
+                </Rectangle.Triggers>
+              </Rectangle>
+            </Grid>
+          </Border>
+        </StackPanel>
+      </DockPanel>
+    </Border>
+  </Grid>
+  </Border>
+</Window>
