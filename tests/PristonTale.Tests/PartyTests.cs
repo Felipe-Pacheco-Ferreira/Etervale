@@ -36,6 +36,7 @@ internal static class PartyTests
         yield return ("a monster's gold at any amount and other gold under 10000 picked up is split with the members in range, the picker's part stored; a member who cannot carry its part or whose save gate is held is left out", GoldAsync);
         yield return ("party rules: shares by size, the average level, the level gap, the share range and the gold split", RulesAsync);
         yield return ("party messages round-trip on the wire and refuse unknown commands and answers", WireAsync);
+        yield return ("party hunt sends real damage, kill credit, combat experience and deaths across fields", HuntAcrossFieldsAsync);
     }
 
     private static (ChatFixture Fixture, PartyAppService Parties) Fixture(TimeProvider? clock = null)
@@ -403,5 +404,44 @@ internal static class PartyTests
         buffer[length - 1] = 2;
         Assert.Throws<InvalidDataException>(() => PartyAnswerPacket.Read(buffer.AsSpan(0, length)), "an answer that is neither yes nor no was read");
         return Task.CompletedTask;
+    }
+
+    private static async Task HuntAcrossFieldsAsync()
+    {
+        const int secondField = 4;
+        var fixture = new ChatFixture(extraField: secondField);
+        var parties = new PartyAppService(fixture.Sessions, fixture.World, fixture.Directory);
+        var reader = await fixture.JoinAsync("Observer", 0, 0);
+        var hunter = await fixture.JoinAsync("Hunter", 0, 0, field: secondField);
+        await Group(fixture, parties, reader, hunter);
+
+        fixture.Tick(1);
+        var wire = new WireRoundTrip(reader.Id, fixture.Data);
+        var first = wire.Push(ChatFixture.Latest(reader)!.Value).Single(update => update.PartyHunt is not null).PartyHunt!;
+        Assert.True(first.Count == 2 && first.All(row => row.Counters == default), "party did not establish empty hunt counters");
+
+        var field = fixture.World.FieldFor(secondField)!;
+        var monster = ((ISpawnSink)field).Spawn(ChatFixture.Hopy, new Vector3(12f, 0f, 0f), -1, 0);
+        Assert.True(field.TryGet(hunter.Id, out var inField), "hunter was not in the second field");
+        var player = inField!;
+        var payout = ((IFieldSkillHost)field).ApplyPlayerDamage(player, monster, 2 * monster.Life, false);
+        Assert.True(payout is not null && !monster.IsAlive, $"the deterministic overkill left the monster with {monster.Life} life");
+        var earned = player.Character.Experience;
+        player.EndGuard();
+        player.ApplyDamage(player.Life);
+        fixture.Tick(12);
+        var updates = wire.Push(ChatFixture.Latest(reader)!.Value);
+        var group = updates.Single(update => update.PartyHunt is not null).PartyHunt!;
+        var actual = group.Single(member => member.EntityId == hunter.Id).Counters;
+        Assert.True(earned > 0 && actual == new PartyHuntCounters((ulong)ChatFixture.Hopy.Combat.MaxLife, earned, 1, 1),
+            $"the other field's counters did not reach the observer: {actual}; earned experience: {earned}");
+        Assert.True(group.Single(member => member.EntityId == reader.Id).Counters == default &&
+            updates.All(update => update.Events.Count == 0 && update.Spawns.All(entity => entity.EntityId != hunter.Id)),
+            "out-of-field metrics required presence or gave the observer rewards");
+
+        await Command(fixture, parties, hunter, PartyCommand.Leave);
+        fixture.Tick(1);
+        Assert.True(wire.Push(ChatFixture.Latest(reader)!.Value).Single(update => update.PartyHunt is not null).PartyHunt!.Count == 0,
+            "leaving the party did not remove its hunt counters");
     }
 }

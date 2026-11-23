@@ -9,6 +9,10 @@ public interface IGameBackend : IAsyncDisposable
     int OnlinePlayers => -1;
     string? SessionToken { get; }
 
+    // The server and account the player logged into, naming settings a client keeps per account (the free hunt's shared
+    // profile); empty before a login.
+    string SettingsScope => "";
+
     // The protocol allows one login per connection: after a successful login or a closed connection, log in again
     // through a new backend.
     bool RequiresNewConnection { get; }

@@ -11,7 +11,9 @@ public sealed partial class GameplayHud
     private RewardEventsInfo _rewardBoard = RewardEventsInfo.None;
     private bool _rewardsOpen;
     private string _rewardMessage = "";
+    private const int RewardClaimMs = 8000;
     private long _rewardDeadline;
+    private double _rewardReceivedMs;
     internal Func<RewardEventsAction, RewardTrack, int, Task> SendRewards { get; set; }
 
     private static Rectangle RewardsBounds(HudLayout layout) =>
@@ -25,6 +27,7 @@ public sealed partial class GameplayHud
         if (update.Rewards is { } board)
         {
             _rewardBoard = board;
+            _rewardReceivedMs = _clock.Elapsed.TotalMilliseconds;
         }
         if (update.RewardResult is { } result)
         {
@@ -33,11 +36,32 @@ public sealed partial class GameplayHud
         }
     }
 
+    // The touch HUD opens its own window (touch-rewards.js) in place of the canvas's.
     private void OpenRewards()
     {
-        _rewardsOpen = true;
         _rewardMessage = "";
+        if (TouchHudShown)
+        {
+            _touchRewardsRequests++;
+        }
+        else
+        {
+            _rewardsOpen = true;
+        }
+
         _ = SendRewards?.Invoke(RewardEventsAction.Open, default, 0);
+    }
+
+    // A claim, one at a time: the next waits for the answer or RewardClaimMs.
+    private void ClaimRewards(RewardEventsAction action, RewardTrack track, int index)
+    {
+        if (Environment.TickCount64 < _rewardDeadline)
+        {
+            return;
+        }
+
+        _rewardDeadline = Environment.TickCount64 + RewardClaimMs;
+        _ = SendRewards?.Invoke(action, track, index);
     }
 
     private bool CloseRewards()
@@ -65,10 +89,9 @@ public sealed partial class GameplayHud
         for (var index = 0; index < Math.Min(6, _rewardBoard.Tracks.Count); index++)
         {
             var track = _rewardBoard.Tracks[index];
-            if (RewardRow(box, index).Contains(point) && track.Ready > 0 && Environment.TickCount64 >= _rewardDeadline)
+            if (RewardRow(box, index).Contains(point) && track.Ready > 0)
             {
-                _rewardDeadline = Environment.TickCount64 + 8000;
-                _ = SendRewards?.Invoke(RewardEventsAction.ClaimAll, track.Track, 0);
+                ClaimRewards(RewardEventsAction.ClaimAll, track.Track, 0);
                 break;
             }
         }

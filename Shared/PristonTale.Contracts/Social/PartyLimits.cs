@@ -28,3 +28,7 @@ public enum PartyCommand : byte
 
 // A server-local, authoritative group listing. Joining rechecks its current leader, capacity and level rules.
 public sealed record PartyDirectoryEntry(ulong LeaderId, string LeaderName, int FieldId, int AverageLevel, int MemberCount, bool IsOpen);
+
+// A member's hunt while grouped, as the server counted it: effective damage to wild monsters, combat experience,
+// credited kills and deaths (WorldPlayer.RecordPartyHunt).
+public readonly record struct PartyHuntCounters(ulong Damage, ulong Experience, uint Kills, uint Deaths);

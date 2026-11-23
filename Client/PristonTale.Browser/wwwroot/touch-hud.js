@@ -1,9 +1,25 @@
 import { table } from './page-language.js';
 import * as art from './hud-art.js';
+import { createTouchQuests } from './touch-quests.js';
+import { createTouchMap } from './touch-map.js';
+import { createTouchBag } from './touch-bag.js';
+import { createTouchStatus } from './touch-status.js';
+import { createTouchSkills } from './touch-skills.js';
+import { createTouchNpc } from './touch-npc.js';
+import { createTouchFeed } from './touch-feed.js';
+import { createTouchParty } from './touch-party.js';
+import { createTouchRestart } from './touch-restart.js';
+import { createTouchRewards } from './touch-rewards.js';
+import { createSkillPicker } from './touch-skill-picker.js';
+import { createTouchLayout } from './touch-layout.js';
+import { createTouchTutorial } from './touch-tutorial.js';
+import { createTouchHunt } from './touch-hunt.js';
 // The touch HUD of phones and tablets, the Android client's bottom HUD over the canvas: the canvas's fingers go to the
 // game, which reads them with the Android client's gestures (joystick at the lower left, camera drag and pinch) and
 // draws the joystick; the page draws the action wheel (attack, four skills, the potion belt), the Menu and Bolsa
-// buttons, the menu and the experience bar with the Android client's art (hud-art.js).
+// buttons, the menu and the experience bar with the Android client's art (hud-art.js); touch-quests.js draws the quest
+// card and journal, touch-map.js the field map a tap on the minimap opens, touch-bag.js the bag, touch-status.js and
+// touch-skills.js the status and skills windows.
 // Settings' interface type decides whether it is used (BrowserHost.TouchInterface). On a phone or tablet the page
 // plays lying down, as a mobile game: the first touch goes full screen and locks landscape where the browser lets it,
 // a hint asks to turn the device while it stands, and the first world entry asks which HUD to use.
@@ -11,13 +27,13 @@ import * as art from './hud-art.js';
 const labels = {
     'pt-BR': { attack: 'Atacar', skill: 'Habilidade', empty: 'Sem habilidade', potion: 'Poção', character: 'Personagem',
         inventory: 'Bolsa', skills: 'Habilidades', quests: 'Missões', menu: 'Menu', 'close-menu': 'Fechar menu', bag: 'Inventário',
-        run: 'Corrida', mail: 'Correios', settings: 'Configurações', lobby: 'Trocar personagem', level: 'Nv.', experience: 'EXP',
+        run: 'Corrida', mail: 'Correios', settings: 'Configurações', lobby: 'Trocar personagem', 'edit-hud': 'Editar HUD', 'replay-tutorial': 'Rever tutorial', level: 'Nv.', experience: 'EXP',
         hunt: 'Auto-caça', 'pause-hunt': 'Pausar', 'hunt-on': 'Auto-caça · Ligado', chat: 'Chat', 'chat-feed': 'Mensagens na tela',
         'feed-shown': 'Mostrando', 'feed-hidden': 'Ocultas', send: 'Enviar', 'chat-empty': 'Nenhuma mensagem ainda.',
         'chat-hint': 'Escreva uma mensagem…', close: 'Fechar' },
     en: { attack: 'Attack', skill: 'Skill', empty: 'No skill', potion: 'Potion', character: 'Character',
         inventory: 'Bag', skills: 'Skills', quests: 'Quests', menu: 'Menu', 'close-menu': 'Close menu', bag: 'Inventory',
-        run: 'Run', mail: 'Mail', settings: 'Settings', lobby: 'Change character', level: 'Lv.', experience: 'EXP',
+        run: 'Run', mail: 'Mail', settings: 'Settings', lobby: 'Change character', 'edit-hud': 'Edit HUD', 'replay-tutorial': 'Replay tutorial', level: 'Lv.', experience: 'EXP',
         hunt: 'Auto-hunt', 'pause-hunt': 'Pause', 'hunt-on': 'Auto-hunt · On', chat: 'Chat', 'chat-feed': 'Messages on screen',
         'feed-shown': 'Shown', 'feed-hidden': 'Hidden', send: 'Send', 'chat-empty': 'No messages yet.',
         'chat-hint': 'Write a message…', close: 'Close' }
@@ -28,8 +44,8 @@ const statePeriodMs = 250;
 const playerShineSeconds = 3;
 // The target frame reaches this far under its portrait, in fractions of the short side.
 const targetFrameMargin = 0.025;
-// Holding the Auto-caça button this long opens its panel.
-const huntHoldMs = 500;
+// Holding a button this long is a long press: the Auto-caça button opens its panel, a skill button its list of skills.
+const holdMs = 500;
 // A picture the game could not read yet (its file still downloading) is asked for again after this long.
 const pictureRetryMs = 3000;
 
@@ -113,6 +129,21 @@ export function createTouchHud(root, getHost, getLanguage, interfaceChoice = {})
     if (!layer) return { setCanvas() {}, show() {}, hide() {}, frame() {}, refresh() {} };
 
     const menu = layer.querySelector('[data-role="touch-menu"]');
+    const quests = createTouchQuests(layer, getHost, getLanguage);
+    // The windows' pictures come through the same cache as the buttons' (picture, below).
+    const fieldMap = createTouchMap(layer, getHost, getLanguage, path => picture(path, performance.now()));
+    const bag = createTouchBag(layer, getHost, getLanguage, path => picture(path, performance.now()));
+    const statusWindow = createTouchStatus(layer, getHost, getLanguage);
+    const skillsWindow = createTouchSkills(layer, getHost, getLanguage, path => picture(path, performance.now()));
+    const npcPlate = createTouchNpc(layer, getHost, getLanguage);
+    const feed = createTouchFeed(layer, getHost, getLanguage);
+    const party = createTouchParty(layer, getHost, getLanguage);
+    const restart = createTouchRestart(layer, getHost, getLanguage);
+    const rewards = createTouchRewards(layer, getHost, getLanguage, path => picture(path, performance.now()));
+    const picker = createSkillPicker(layer, getHost, getLanguage, path => picture(path, performance.now()));
+    const hudLayout = createTouchLayout(layer, getHost, getLanguage);
+    const tutorial = createTouchTutorial(layer, getHost, getLanguage);
+    const huntPanel = createTouchHunt(layer, getHost, getLanguage, path => picture(path, performance.now()), interfaceChoice.persist);
     const menuName = layer.querySelector('[data-role="touch-menu-name"]');
     const eventsEntry = menu?.querySelector('[data-world-action="events"]');
     const targetCanvas = layer.querySelector('[data-role="touch-target"]');
@@ -139,7 +170,7 @@ export function createTouchHud(root, getHost, getLanguage, interfaceChoice = {})
         face.setAttribute('aria-hidden', 'true');
         button.replaceChildren(face);
         const orb = { button, face, kind, glyph, picture: null, path: '', caption: '', count: '', badge: 0, tier: 0, rank: 0,
-            maxRank: 0, cooldownEnd: 0, cooldownDuration: 0, selected: false, dirty: true, animated: false, drawn: 0 };
+            maxRank: 0, cooldownEnd: 0, cooldownDuration: 0, selected: false, dirty: true, animated: false, drawn: 0, code: 0, empty: false };
         const press = down => () => {
             if (button.dataset.pressed === String(down)) return;
             button.dataset.pressed = String(down);
@@ -161,7 +192,8 @@ export function createTouchHud(root, getHost, getLanguage, interfaceChoice = {})
     // A long press on the Auto-caça button opens its panel; the click that ends it then does nothing.
     let huntHold = 0;
     let huntHeld = false;
-    const openHuntPanel = () => root.querySelector('.world-hud-hunt [data-world-action="auto-hunt-panel"]')?.click();
+    // The touch HUD's Auto-caça is the free hunt's panel (touch-hunt.js), not the PC HUD's quest hunt panel.
+    const openHuntPanel = () => huntPanel.open();
     huntOrb.button.addEventListener('pointerdown', () => {
         huntHeld = false;
         clearTimeout(huntHold);
@@ -169,9 +201,27 @@ export function createTouchHud(root, getHost, getLanguage, interfaceChoice = {})
             huntHeld = true;
             closeMenu();
             openHuntPanel();
-        }, huntHoldMs);
+        }, holdMs);
     });
     for (const name of ['pointerup', 'pointercancel', 'pointerleave']) huntOrb.button.addEventListener(name, () => clearTimeout(huntHold));
+    // A long press on a skill button opens the list to choose its skill (as a tap on an empty one does); the click that
+    // ends it then casts nothing.
+    let skillHold = 0;
+    let skillHeld = false;
+    skills.forEach((orb, slot) => {
+        orb.button.addEventListener('pointerdown', () => {
+            skillHeld = false;
+            clearTimeout(skillHold);
+            skillHold = setTimeout(() => {
+                skillHeld = true;
+                closeMenu();
+                picker.open(slot);
+            }, holdMs);
+        });
+        for (const name of ['pointerup', 'pointercancel', 'pointerleave']) orb.button.addEventListener(name, () => clearTimeout(skillHold));
+        // A finger held still on a phone would otherwise open the browser's menu.
+        orb.button.addEventListener('contextmenu', event => event.preventDefault());
+    });
 
     // The chat as the Android client's: a round button under the player frame, the last lines under it, and a window
     // with every line kept, the switch for the lines on screen and a field to write in.
@@ -272,14 +322,15 @@ export function createTouchHud(root, getHost, getLanguage, interfaceChoice = {})
     });
     showChatFeedToggle();
 
-    function showHunt(active) {
+    // The orb shows the hunt running; the chip above the orbs, its status board, also as the free hunt's options let it.
+    function showHunt(active, board = active) {
+        if (huntChip) huntChip.hidden = !board;
         if (active === hunting && huntOrb.caption) return;
         hunting = active;
         huntOrb.selected = active;
         huntOrb.caption = say(active ? 'pause-hunt' : 'hunt');
         huntOrb.button.setAttribute('aria-label', active ? say('pause-hunt') + ' ' + say('hunt') : say('hunt'));
         huntOrb.dirty = true;
-        if (huntChip) huntChip.hidden = !active;
     }
 
     // The menu's entries carry their glyph as an inline drawing, in the Android menu's make.
@@ -319,7 +370,7 @@ export function createTouchHud(root, getHost, getLanguage, interfaceChoice = {})
         const radius = size / 2;
         const x = radius;
         const y = radius;
-        const enabled = !orb.button.disabled;
+        const enabled = !orb.button.disabled && !orb.empty;
         const pressed = orb.button.dataset.pressed === 'true';
         orb.drawn = now;
         orb.animated = false;
@@ -527,6 +578,20 @@ export function createTouchHud(root, getHost, getLanguage, interfaceChoice = {})
         chatWindow?.querySelector('[data-touch-chat-close]')?.setAttribute('aria-label', say('close'));
         chatInput?.setAttribute('placeholder', say('chat-hint'));
         showChatFeedToggle();
+        quests.translate();
+        fieldMap.translate();
+        bag.translate();
+        statusWindow.translate();
+        skillsWindow.translate();
+        npcPlate.translate();
+        feed.translate();
+        party.translate();
+        restart.translate();
+        rewards.translate();
+        picker.translate();
+        hudLayout.translate();
+        tutorial.translate();
+        huntPanel.translate();
         for (const orb of orbs) orb.dirty = true;
     }
 
@@ -552,6 +617,7 @@ export function createTouchHud(root, getHost, getLanguage, interfaceChoice = {})
         state.skills?.forEach((skill, slot) => {
             const orb = skills[slot];
             if (!orb) return;
+            orb.code = skill.code;
             set(orb, 'picture', picture(skill.icon, now));
             set(orb, 'caption', orb.picture || !skill.code ? '' : skill.caption ?? '');
             set(orb, 'tier', skill.tier ?? 0);
@@ -563,7 +629,9 @@ export function createTouchHud(root, getHost, getLanguage, interfaceChoice = {})
                 orb.cooldownDuration = skill.duration ?? 0;
                 orb.dirty = true;
             }
-            enable(orb, state.alive && skill.code);
+            // An empty button is drawn dimmed but still takes a tap, which opens the list to choose its skill.
+            set(orb, 'empty', !skill.code);
+            enable(orb, state.alive);
             orb.button.setAttribute('aria-label', skill.code ? say('skill') + ': ' + skill.name : say('empty'));
         });
         state.belt?.forEach((item, box) => {
@@ -577,7 +645,8 @@ export function createTouchHud(root, getHost, getLanguage, interfaceChoice = {})
             orb.button.setAttribute('aria-label', filled ? item.name + ', ' + item.count : say('potion') + ' ' + (box + 1));
         });
         enable(attack, state.alive);
-        showHunt(Boolean(getHost()?.WorldAutoHuntActive?.()));
+        const host = getHost();
+        showHunt(Boolean(host?.WorldAutoHuntActive?.()), Boolean(host?.WorldHuntStatusShown?.() ?? host?.WorldAutoHuntActive?.()));
         set(bagOrb, 'badge', state.bag ?? 0);
         set(menuOrb, 'badge', state.rewards ?? 0);
         if (eventsEntry) {
@@ -658,6 +727,20 @@ export function createTouchHud(root, getHost, getLanguage, interfaceChoice = {})
             host?.ClearTouches?.();
             closeMenu();
             if (chatWindow?.open) chatWindow.close();
+            quests.close();
+            fieldMap.close();
+            bag.close();
+            statusWindow.close();
+            skillsWindow.close();
+            npcPlate.close();
+            feed.close();
+            party.close();
+            restart.close();
+            rewards.close();
+            picker.close();
+            hudLayout.close();
+            tutorial.close();
+            huntPanel.close();
         }
         lastState = -Infinity;
         experienceDirty = true;
@@ -704,10 +787,27 @@ export function createTouchHud(root, getHost, getLanguage, interfaceChoice = {})
             closeMenu();
             return;
         }
+        const skillButton = event.target.closest('[data-touch-slot]');
+        if (skillButton) {
+            const slot = Number(skillButton.dataset.touchSlot);
+            if (skillHeld) return;
+            if (!skills[slot]?.code) {
+                picker.open(slot);
+                return;
+            }
+        }
         // Every entry of the menu closes it; the world shortcuts among them run through the world HUD's handler.
         if (menu?.contains(event.target) && event.target.closest('button')) closeMenu();
         if (event.target.closest('[data-touch-menu="settings"]')) {
             root.querySelector('[data-role="settings-open"]')?.click();
+            return;
+        }
+        if (event.target.closest('[data-touch-menu="layout"]')) {
+            hudLayout.open();
+            return;
+        }
+        if (event.target.closest('[data-touch-menu="tutorial"]')) {
+            tutorial.replay();
             return;
         }
         const button = event.target.closest('[data-touch-action]');
@@ -724,6 +824,7 @@ export function createTouchHud(root, getHost, getLanguage, interfaceChoice = {})
             active = true;
             translate();
             refresh();
+            hudLayout.refresh();
             ask();
         },
         hide() {
@@ -737,6 +838,18 @@ export function createTouchHud(root, getHost, getLanguage, interfaceChoice = {})
                 lastState = time;
                 showState(getHost()?.TouchState(), time);
                 refreshChat();
+                quests.frame();
+                fieldMap.frame();
+                bag.frame();
+                statusWindow.frame();
+                skillsWindow.frame();
+                npcPlate.frame();
+                feed.poll();
+                party.poll();
+                restart.poll();
+                rewards.poll();
+                tutorial.poll();
+                huntPanel.poll();
             }
             for (const orb of orbs) {
                 if (orb.dirty || (orb.animated && time - orb.drawn >= art.animationFrameMs)) {
@@ -754,6 +867,7 @@ export function createTouchHud(root, getHost, getLanguage, interfaceChoice = {})
                 experienceDirty = false;
                 drawExperience(time);
             }
+            feed.frame(time);
         }
     };
 }

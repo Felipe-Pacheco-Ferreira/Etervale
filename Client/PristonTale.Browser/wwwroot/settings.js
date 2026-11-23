@@ -629,6 +629,11 @@ export function createSettings(root, getHost, getLanguage, setLanguage, onApplie
         get classicLighting() { return active.classicLighting === true; },
         get qualityLabel() { return shownQualityLabel(); },
         get interfaceMode() { return active.interfaceMode ?? 'Auto'; },
+        // A change the game made to its own settings (the free hunt's options), kept now rather than when the page hides.
+        persist() {
+            const host = getHost();
+            if (host) store(host.Settings());
+        },
         // The interface type answered in the touch HUD's first question, saved as the panel saves it.
         setInterfaceMode(mode) {
             const host = getHost();

@@ -9,6 +9,9 @@ public sealed record GroundDropView(Guid Id, uint ItemCode, string CatalogKey, s
     public int RequiredLevel { get; init; }
     public uint SpecJob { get; init; }
     public bool Rare { get; init; }
+    // Thrown: a player threw it to the ground. ThrownByReceiver: the copy a client receives says the client threw it.
+    public bool Thrown { get; init; }
+    public bool ThrownByReceiver { get; init; }
 }
 
 public sealed record GroundDropState(GroundDropView View, ulong OwnerId, bool Public);

@@ -38,6 +38,11 @@ public static class TouchSkillSlots
         }
     }
 
+    // A skill the player may put on a button: learned, and cast (not passive, used with a mouse button), as the server
+    // would let it be cast (SkillFormulas.CheckCaster).
+    public static bool Eligible(Skill skill, int rank) =>
+        rank > 0 && skill.MouseUse != SkillMouseUse.None && SkillRuleCatalog.TryGet(skill.Code, out var rule) && rule.Kind != SkillKind.Passive;
+
     // A skill's name on its button: the first word, cut to seven characters.
     public static string ButtonCaption(string name)
     {

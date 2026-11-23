@@ -14,6 +14,9 @@ namespace PristonTale.Gameplay.UI.Widgets;
 // Brood is the 16x16 race icon of monsters; StatsY is the text line under the life bar (level and life percentage).
 public readonly record struct HudTargetFrame(Rectangle Box, Rectangle Portrait, Rectangle HealthBar, Rectangle Brood, int NameY, int StatsY);
 
+// An NPC in view: its render-space position and the name the HUD shows for it.
+public readonly record struct HudNpcMark(Vector3 Position, string Name);
+
 // Target inspection box (centred at 0.92/0.1 of the screen with cw.tga, the name 16 pixels above its bottom edge, the
 // monster race icon in its top right corner and the original life bar under it). Hits are kept as history lines; the
 // original shows them as floating numbers only, so the chat window does not list them.
@@ -81,6 +84,22 @@ public sealed partial class HudCombat
         }
     }
 
+    // The NPCs in view with their names, for the touch HUD's map.
+    public void CollectNpcMarks(List<HudNpcMark> marks)
+    {
+        marks.Clear();
+        foreach (var (id, entity) in _entities)
+        {
+            if (entity.Spawn.Kind == EntityKind.Npc)
+            {
+                marks.Add(new HudNpcMark(entity.Position, Name(id)));
+            }
+        }
+    }
+
+    // A monster the player's own hit killed, with its name.
+    public event Action<string> MonsterKilled;
+
     public void Observe(PresenceUpdate update)
     {
         foreach (var spawn in update.Spawns)
@@ -108,6 +127,12 @@ public sealed partial class HudCombat
             if (combat.Kind == CombatEventKind.SwingBegin && combat.AttackerId == _self && _self != 0)
             {
                 NoteAttack(combat.TargetId);
+            }
+
+            if (combat.Kind == CombatEventKind.Hit && combat.Killed && combat.AttackerId == _self && _self != 0
+                && _entities.TryGetValue(combat.TargetId, out var killed) && killed.Spawn.Kind == EntityKind.Monster)
+            {
+                MonsterKilled?.Invoke(Name(combat.TargetId));
             }
 
             ObserveDps(combat);

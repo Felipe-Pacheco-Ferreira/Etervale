@@ -85,6 +85,7 @@ public sealed class GameServerConnection : IGameBackend
     internal PersonalShopRequests PersonalShops { get; }
 
     public string? SessionToken { get; private set; }
+    public string SettingsScope => _account.Length == 0 ? "" : _address.GetLeftPart(UriPartial.Authority) + "/" + _account.ToUpperInvariant();
 
     // The player's game master level from WorldJoined (0 for players).
     public int GameMasterLevel { get; private set; }
@@ -430,6 +431,8 @@ public sealed class GameServerConnection : IGameBackend
     {
         Send(new PvpSwitchPacket(on));
     }
+
+    internal void SendCrystalPetTargeting(CrystalPetTargeting mode) => Send(new CrystalPetTargetingPacket(mode));
 
     internal void SendDismissCrystalPets(uint statusCode)
     {

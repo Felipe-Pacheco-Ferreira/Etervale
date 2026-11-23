@@ -103,8 +103,12 @@ public sealed partial class GameplayHud
 
         Contacts?.ChangeContactAsync(ContactList.Friends, true, name);
         _partyWindow.Friends.Met(name);
-        _questWindow.Close();
         _contactsAskedMs = double.MinValue;
-        _partyWindow.ShowFriends(HudFriendsView.Friends);
+        // The touch HUD has no friends page yet: the friend is added without opening the PC's window over it.
+        if (!TouchHudShown)
+        {
+            _questWindow.Close();
+            _partyWindow.ShowFriends(HudFriendsView.Friends);
+        }
     }
 }

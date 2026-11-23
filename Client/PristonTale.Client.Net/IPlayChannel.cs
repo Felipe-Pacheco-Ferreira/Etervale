@@ -95,6 +95,8 @@ public interface IPlayChannel : IAsyncDisposable
     // removal.
     Task SendDismissCrystalPetsAsync(uint statusCode, CancellationToken ct = default);
 
+    Task SendCrystalPetTargetingAsync(CrystalPetTargeting mode, CancellationToken ct = default);
+
     // Party requests: ask a player to group, answer a request (PresenceUpdate.PartyRequest), or a party window button. None
     // is answered: the members (PresenceUpdate.Party) and chat lines show what changed.
     Task InviteToPartyAsync(ulong targetId, CancellationToken ct = default);

@@ -26,15 +26,29 @@ public static class WeaponDamage
             return (character.Derived.AttackDamageMin, character.Derived.AttackDamageMax);
         }
 
-        var attributes = character.EffectiveAttributes;
-        var function = character.Definition.FunctionProfile;
         // Every usable worn item adds its damage range; a held weapon the character cannot use adds nothing.
         var items = character.EquipmentTotals;
-        var stats = (DamageMin: items.DamageMin, DamageMax: items.DamageMax);
+        var scaled = AttributeScaled(character.EffectiveAttributes, character.Definition.FunctionProfile, weapon.Definition.Kind, items.DamageMin,
+            items.DamageMax);
+        var favoured = ClassProfiles.Of(character.Definition.Class).Favours(weapon);
+        var jobDamage = favoured ? character.Level / 6 : 0;
+        var mastery = PassiveSkills.WeaponBonus(character, weapon);
+        var passive = PassiveSkillEffects.WeaponBonus(character, weapon);
+        mastery = (mastery.Min + passive.Min, mastery.Max + passive.Max);
+        var minimum = 2 + scaled.Min + jobDamage + (items.DamageMin + items.DamageMax) / 16;
+        var maximum = 4 + scaled.Max + jobDamage + items.LevelDamage;
+        return ModifierRules.ApplyDamage(character.Effects.Totals, minimum + mastery.Min, maximum + mastery.Max);
+    }
+
+    // The part of a weapon's damage the attributes make: the worn items' damage range grown by the weapon's damage
+    // attribute, plus the secondary attributes' share.
+    public static (int Min, int Max) AttributeScaled(CharacterAttributes attributes, CharacterFunctionProfile function, ItemKind weapon,
+        int damageMin, int damageMax)
+    {
         int primary;
         int divisor;
         int secondary;
-        var attribute = DamageAttribute(weapon.Definition.Kind, function);
+        var attribute = DamageAttribute(weapon, function);
         if (attribute == CharacterAttribute.Spirit)
         {
             primary = attributes.Spirit;
@@ -65,14 +79,7 @@ public static class WeaponDamage
             secondary = (attributes.Talent + attributes.Agility) / secondaryDivisor;
         }
 
-        var favoured = ClassProfiles.Of(character.Definition.Class).Favours(weapon);
-        var jobDamage = favoured ? character.Level / 6 : 0;
-        var mastery = PassiveSkills.WeaponBonus(character, weapon);
-        var passive = PassiveSkillEffects.WeaponBonus(character, weapon);
-        mastery = (mastery.Min + passive.Min, mastery.Max + passive.Max);
-        var minimum = 2 + stats.DamageMin * (primary + divisor) / divisor + secondary + jobDamage + (stats.DamageMin + stats.DamageMax) / 16;
-        var maximum = 4 + stats.DamageMax * (primary + divisor) / divisor + secondary + jobDamage + items.LevelDamage;
-        return ModifierRules.ApplyDamage(character.Effects.Totals, minimum + mastery.Min, maximum + mastery.Max);
+        return (damageMin * (primary + divisor) / divisor + secondary, damageMax * (primary + divisor) / divisor + secondary);
     }
 
     // The attack range of a single-target hit (a normal attack, a weapon skill's hit) and of the status window: the

@@ -80,6 +80,7 @@ progression, regeneration and movement rates. `World/`, `Physics/` and `Skills/`
 | `Progression/ExperienceTable.cs` | 180-level cumulative experience thresholds (the designed curve) and the saturation ceiling |
 | `Progression/SkillLearning.cs` | Skill-master training: window, prerequisites, prices, point kinds |
 | `Progression/ProgressionCommand.cs` | `ProgressionCommand` (allocate attribute, learn skill) |
+| `Progression/AttributeGains.cs` | What planned attribute points add before they are spent (the touch status window's preview) |
 
 ## Units and conventions
 
@@ -255,6 +256,8 @@ class's by the kind of its beginner weapon (the status window marks it):
   Mechanician).
 - Adds the passive weapon mastery bonuses (`PassiveSkills.WeaponBonus`, `PassiveSkillEffects.WeaponBonus`), then
   `ModifierRules.ApplyDamage` (DamageMin/DamageMax totals; max is never below min).
+- `WeaponDamage.AttributeScaled` is the attribute part alone (`wMin*(primary+divisor)/divisor + secondary` and its
+  max); `AttributeGains` compares it, and `DerivedStats.Compute`, between the attributes now and with planned points.
 
 ## Modifier engine
 

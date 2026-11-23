@@ -77,9 +77,9 @@ public sealed partial class GameplayHud
 
     private bool ClickClan(Point pointer)
     {
-        if (_clanRequest.Click(pointer) is { } answer)
+        if (!TouchHudShown && _clanRequest.Click(pointer) is { } answer)
         {
-            _sendClan?.Invoke(answer ? ClanAction.Accept : ClanAction.Refuse, 0, "");
+            AnswerClan(answer);
             return true;
         }
 
@@ -88,5 +88,7 @@ public sealed partial class GameplayHud
 
     private void InviteToClan(ulong playerId) => _sendClan?.Invoke(ClanAction.Invite, playerId, "");
 
-    private bool CapturesClan(Point pointer) => _clanRequest.Captures(pointer) || _clanWindow.Contains(pointer);
+    private void AnswerClan(bool accept) => _sendClan?.Invoke(accept ? ClanAction.Accept : ClanAction.Refuse, 0, "");
+
+    private bool CapturesClan(Point pointer) => !TouchHudShown && _clanRequest.Captures(pointer) || _clanWindow.Contains(pointer);
 }

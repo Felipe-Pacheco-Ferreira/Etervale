@@ -22,6 +22,13 @@ public sealed partial class GameplayHud
 
     internal bool RunWorldAction(string action)
     {
+        // The touch HUD's NPC plate answers the modal dialogs themselves, and its death plate the restart window, which
+        // the canvas also takes ahead of the NPC and quest dialogs.
+        if (RunTouchNpc(action) || RunTouchRestart(action))
+        {
+            return true;
+        }
+
         if (ModalOpen)
         {
             return false;
@@ -38,7 +45,16 @@ public sealed partial class GameplayHud
                 OpenNews();
                 return true;
             case "auto-hunt":
-                ToggleQuickHunt();
+                // The touch HUD's Auto-caça is the free hunt; the PC HUD's the quest hunt.
+                if (TouchHudShown && _freeHunt is not null)
+                {
+                    ToggleFreeHunt();
+                }
+                else
+                {
+                    ToggleQuickHunt();
+                }
+
                 return true;
             case "character":
                 PressButton(HudMenuButton.Status);

@@ -181,6 +181,35 @@ public sealed class GroundLootPresentation(IActorScene scene, PristonActorLoader
         return false;
     }
 
+    public bool FindForHunt(Vector2 origin, Vector2 player, float radius, PristonTale.Gameplay.Combat.FreeHuntSettings settings,
+        PristonTale.Simulation.Characters.OwnerState owner, uint spec, bool goldOnly, Guid ignored, out Guid id, out Vector3 position)
+    {
+        id = Guid.Empty;
+        position = default;
+        var nearest = float.PositiveInfinity;
+        var highestPriority = 0;
+        var radiusSquared = radius * radius;
+        foreach (var entry in _entries.Values)
+        {
+            var at = new Vector2(entry.Position.X, entry.Position.Z);
+            if (!entry.FloorFound || entry.Drop.Id == ignored || goldOnly && !entry.Drop.Gold || Vector2.DistanceSquared(at, origin) > radiusSquared)
+            {
+                continue;
+            }
+
+            var priority = settings.LootPriority(entry.Drop, owner, spec);
+            var distance = Vector2.DistanceSquared(player, at);
+            if (priority == 0 || priority < highestPriority || priority == highestPriority && distance >= nearest)
+            {
+                continue;
+            }
+            (id, position, nearest) = (entry.Drop.Id, entry.Position, distance);
+            highestPriority = priority;
+        }
+
+        return id != Guid.Empty;
+    }
+
     // The drop nearest to the origin on the ground plane, within radius.
     public bool FindNearest(Vector3 origin, float radius, out Guid id, out Vector3 position)
     {

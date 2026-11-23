@@ -20,6 +20,7 @@ internal static class ProgressionAndOwnershipTests
     {
         yield return ("original XP thresholds, multi-level rewards and job gate", ProgressionAsync);
         yield return ("each class names the attribute its own weapon's damage grows with, and spending points there raises it", DamageAttributeAsync);
+        yield return ("the status window's preview of planned points is what spending them gains, armed and bare-handed", AttributeGainsAsync);
         yield return ("inventory footprints, split identities and rejected swaps are atomic", GridAsync);
         yield return ("an item set down over one other takes its place and the other moves where it was or to free space", SwapAsync);
         yield return ("items received fill the bag down each column before the next, as the original sets them", FillAsync);
@@ -93,15 +94,61 @@ internal static class ProgressionAndOwnershipTests
 
         PlayerCharacter WithWeapon(PlayerClass job, ItemKind kind, CharacterAttribute trained)
         {
-            var player = classes.CreatePlayer(job, "Points", 40);
-            player.Equip(EquipmentSlot.Weapon, new ItemInstance(new ItemDefinition(1, "Fixture", kind, EquipmentSlot.Weapon)
-            {
-                BaseStats = new ItemStatBlock(37, 73, 0, 0, 0, 0, 0, 0, 0, 0)
-            }));
+            var player = Armed(job, kind);
             player.RestoreProgress(0, 0, 300);
             Assert.True(player.TryAllocateAttribute(trained, 300), "available points refused");
             return player;
         }
+    }
+
+    // The status window's preview of planned points (AttributeGains) is what the character gains once they are spent.
+    private static Task AttributeGainsAsync()
+    {
+        var classes = new CharacterClassRegistry();
+        var planned = new CharacterAttributes(7, 4, 5, 9, 6);
+        foreach (var job in Enum.GetValues<PlayerClass>())
+        {
+            var kind = ItemEquipmentMetadata.KindOf(ClassProfiles.Of(job).BeginnerWeapon).GetValueOrDefault();
+            foreach (var armed in new[] { false, true })
+            {
+                var player = armed ? Armed(job, kind) : classes.CreatePlayer(job, "Points", 40);
+                var before = player.Derived;
+                var damageBefore = WeaponDamage.Compute(player);
+                var totals = player.EquipmentTotals;
+                var gains = AttributeGains.Of(player.Definition.FunctionProfile, player.Level, player.Attributes, player.Attributes.Add(planned),
+                    armed ? kind : null, totals.DamageMin, totals.DamageMax);
+                player.RestoreProgress(0, 0, (int)planned.Total);
+                foreach (var (attribute, points) in new[] { (CharacterAttribute.Strength, planned.Strength), (CharacterAttribute.Spirit, planned.Spirit),
+                    (CharacterAttribute.Talent, planned.Talent), (CharacterAttribute.Agility, planned.Agility), (CharacterAttribute.Health, planned.Health) })
+                {
+                    Assert.True(player.TryAllocateAttribute(attribute, points), $"{job}: points refused");
+                }
+
+                var after = player.Derived;
+                var damageAfter = WeaponDamage.Compute(player);
+                var what = $"{job} {(armed ? "armed" : "bare-handed")}";
+                Assert.True(gains.DamageMin == damageAfter.Min - damageBefore.Min && gains.DamageMax == damageAfter.Max - damageBefore.Max,
+                    $"{what}: damage preview {gains.DamageMin}-{gains.DamageMax}, spent {damageAfter.Min - damageBefore.Min}-{damageAfter.Max - damageBefore.Max}");
+                Assert.True(gains.AttackRating == after.AttackRating - before.AttackRating && gains.Defence == after.Defence - before.Defence
+                    && gains.Absorption == after.Absorption - before.Absorption && gains.MoveSpeed == after.MoveSpeed - before.MoveSpeed,
+                    $"{what}: combat preview differs from the spent points");
+                Assert.True(gains.MaxLife == after.MaxLife - before.MaxLife && gains.MaxMana == after.MaxMana - before.MaxMana
+                    && gains.MaxStamina == after.MaxStamina - before.MaxStamina && gains.MaxWeight == after.MaxWeight - before.MaxWeight,
+                    $"{what}: vitals preview differs from the spent points");
+            }
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private static PlayerCharacter Armed(PlayerClass job, ItemKind kind)
+    {
+        var player = new CharacterClassRegistry().CreatePlayer(job, "Points", 40);
+        player.Equip(EquipmentSlot.Weapon, new ItemInstance(new ItemDefinition(1, "Fixture", kind, EquipmentSlot.Weapon)
+        {
+            BaseStats = new ItemStatBlock(37, 73, 0, 0, 0, 0, 0, 0, 0, 0)
+        }));
+        return player;
     }
 
     private static Task GridAsync()

@@ -136,7 +136,8 @@ public sealed class FieldGroundLoot(ItemCatalog catalog, FieldTerrain? terrain =
         var view = item is null
             ? new GroundDropView(id, 0u, ItemCodes.GoldKey, ItemCodes.GoldName, gold, true, spot)
             : new GroundDropView(id, item.Definition.Code, item.Definition.CatalogKey, item.Definition.Name, item.Count, false, spot);
-        _entries.Add(id, new Entry(WithEquipmentDetails(view, item), item, ownerId, nowMs, nowMs + LifetimeMs(item?.Definition), thrownBy));
+        view = WithEquipmentDetails(view, item) with { Thrown = thrownBy != NoThrower };
+        _entries.Add(id, new Entry(view, item, ownerId, nowMs, nowMs + LifetimeMs(item?.Definition), thrownBy));
         _dirty = true;
         return id;
     }

@@ -52,6 +52,7 @@ public sealed partial class GameScene : ISkillSceneHost
     public event Action<string> SkillNotice;
 
     public bool SelfCasting => _skillClockMs < _castLockUntilMs;
+    public bool AutomaticSkillInProgress => SelfCasting || _pendingCast is { ForQuest: true };
 
     ulong ISkillSceneHost.SelfId => _remote?.SelfEntityId ?? 0;
 
@@ -192,6 +193,7 @@ public sealed partial class GameScene : ISkillSceneHost
             QueueBlobShadows();
             QueueTargetRing();
             QueueDuelRing();
+            QueueFreeHuntRings();
             QueueFootprints();
             _shots.Draw(_skillFx.Renderer, _skillFx.Library);
 
@@ -288,6 +290,70 @@ public sealed partial class GameScene : ISkillSceneHost
         return CastAt(code, rule, target, kind);
     }
 
+    // A skill the free hunt or the automatic quest casts: only when nothing else is being cast, ready and learned, and at
+    // an enemy target when it needs one. It says nothing when it cannot (TryCastQuestSkill false).
+    public bool TryCastQuestSkill(uint code, ulong target)
+    {
+        if (_player is null || _remote is null || _skillFx is null || SelfCasting || _pendingCast is not null
+            || !SkillRuleCatalog.TryGet(code, out var rule) || Rank(code) <= 0 || !_skillFx.Cooldowns.Ready(code, _skillClockMs))
+        {
+            return false;
+        }
+
+        return rule.Target switch
+        {
+            SkillTarget.Self or SkillTarget.None or SkillTarget.Ally => RequestCast(code, rule, 0, null, forQuest: true),
+            SkillTarget.Enemy when target != 0 => RequestCast(code, rule, target, null, forQuest: true),
+            _ => false
+        };
+    }
+
+    public bool HasQuestSkillEffect(ulong entity, uint code)
+    {
+        if (_skillFx is null)
+        {
+            return false;
+        }
+
+        foreach (var status in _skillFx.Statuses.For(entity))
+        {
+            if (status.Code == code)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // A buff the free hunt casts again: absent, or ending within a second and a half.
+    public bool HuntBuffNeedsRefresh(ulong entity, uint code)
+    {
+        if (_skillFx is null)
+        {
+            return false;
+        }
+
+        foreach (var status in _skillFx.Statuses.For(entity))
+        {
+            if (status.Code == code)
+            {
+                return !status.Permanent && status.EndMs - _skillClockMs < 1500d;
+            }
+        }
+
+        return true;
+    }
+
+    // The player took over: a skill the automation asked for and has not cast yet is dropped.
+    public void CancelQuestSkill()
+    {
+        if (_pendingCast is { ForQuest: true })
+        {
+            CancelPendingCast();
+        }
+    }
+
     private bool CastAt(uint code, SkillRule rule, ulong target, EntityKind kind)
     {
         switch (rule.Target)
@@ -310,7 +376,7 @@ public sealed partial class GameScene : ISkillSceneHost
         }
     }
 
-    private bool RequestCast(uint code, SkillRule rule, ulong target, NumVector3? point, bool repeat = false)
+    private bool RequestCast(uint code, SkillRule rule, ulong target, NumVector3? point, bool repeat = false, bool forQuest = false)
     {
         var rank = Rank(code);
         var skill = FindSkill(code);
@@ -328,7 +394,7 @@ public sealed partial class GameScene : ISkillSceneHost
 
         _lootInteraction?.Cancel();
         ClearAttackTarget();
-        _pendingCast = new PendingCast(code, rule, rank, target, repeat);
+        _pendingCast = new PendingCast(code, rule, rank, target, repeat, forQuest);
         UpdatePendingCast();
         return true;
     }
@@ -336,7 +402,7 @@ public sealed partial class GameScene : ISkillSceneHost
     // Walks toward the pending target and casts once it is in range, like the original's approach before a skill.
     private void UpdatePendingCast()
     {
-        if (_pendingCast is not { } pending || _playerBody is null || SelfCasting || _playerController.LocomotionFrozen || SelfStunned)
+        if (_pendingCast is not { } pending || _playerBody is null || _selfAttacking || SelfCasting || _playerController.LocomotionFrozen || SelfStunned)
         {
             return;
         }
@@ -440,6 +506,14 @@ public sealed partial class GameScene : ISkillSceneHost
         var command = aggressive ? SkillCastCommand.SummonAggressive : SkillCastCommand.SummonPassive;
         SendUpstream(_playChannel.SendSkillCommandAsync(++_castSequence, skillCode, command, _presenceCts.Token), "summon mode");
         SkillNotice?.Invoke(ClientText.Format(aggressive ? "Skill.TargetAggressive" : "Skill.TargetFocused", DataText.SkillName(rule.Code, rule.Name)));
+    }
+
+    public void SetCrystalPetTargeting(CrystalPetTargeting mode)
+    {
+        if (_playChannel is not null)
+        {
+            SendUpstream(_playChannel.SendCrystalPetTargetingAsync(mode, _presenceCts.Token), "crystal pet targeting");
+        }
     }
 
     // A confirmed right click on a crystal pet's icon dismisses the pet of that status.
@@ -582,5 +656,5 @@ public sealed partial class GameScene : ISkillSceneHost
         }
     }
 
-    private readonly record struct PendingCast(uint Code, SkillRule Rule, int Rank, ulong TargetId, bool Repeat = false);
+    private readonly record struct PendingCast(uint Code, SkillRule Rule, int Rank, ulong TargetId, bool Repeat = false, bool ForQuest = false);
 }

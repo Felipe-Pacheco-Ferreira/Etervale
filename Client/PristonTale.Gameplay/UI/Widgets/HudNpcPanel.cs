@@ -34,6 +34,7 @@ public sealed class HudNpcPanel(
     private const int ButtonColumns = 2;
     private const int MaxButtonRows = 3;
     private const int MaxDestinations = 4;
+    public const string WhereTo = "Npc.WhereTo";
     private static readonly Color Unavailable = new(130, 130, 130);
     private static readonly Color Highlight = HudTextColors.Marked;
 
@@ -107,13 +108,23 @@ public sealed class HudNpcPanel(
             return;
         }
 
-        _dialog = Current.Ok
-            ? Current.Dialog.SelectMany(line => HudTextLayout.Wrap(font, line, TextWidth, HudPainter.TextScale)).ToArray()
-            : HudTextLayout.Wrap(font, Current.Message.IsNone ? HudRequest.ConnectionError : ClientText.Format(Current.Message), TextWidth, HudPainter.TextScale);
+        _dialog = Said(Current).SelectMany(line => HudTextLayout.Wrap(font, line, TextWidth, HudPainter.TextScale)).ToArray();
         _services = Current.Ok ? Buttons(Current) : [];
         _firstLine = 0;
         ReadyToOpen = true;
         opened?.Invoke(Current);
+    }
+
+    // What the NPC says: its lines, or why it could not be talked to.
+    public static IReadOnlyList<string> Said(NpcInteraction interaction) =>
+        interaction.Ok ? interaction.Dialog : [interaction.Message.IsNone ? HudRequest.ConnectionError : ClientText.Format(interaction.Message)];
+
+    public static string DestinationLabel(TeleportOffer destination)
+    {
+        var price = destination.Price.ToString("N0", System.Globalization.CultureInfo.InvariantCulture);
+        return destination.MinimumLevel > 0
+            ? ClientText.Format("Npc.DestinationLevel", destination.Name, price, destination.MinimumLevel)
+            : ClientText.Format("Npc.Destination", destination.Name, price);
     }
 
     // The skill master keeps its own box; services that share a label show one button, and only working services show.
@@ -204,7 +215,7 @@ public sealed class HudNpcPanel(
         painter.Sprite(HudArt.HelpTitle, title.X, title.Y);
         painter.TextCentered(painter.Fit(Current.Name, title.Width - 20), title.Left, title.Right, title.Y + 7, HudTextColors.BoxTitle);
         var capacity = LineCapacity;
-        string[] lines = Destinations.Count > 0 ? [ClientText.Get("Npc.WhereTo")] : _dialog;
+        string[] lines = Destinations.Count > 0 ? [ClientText.Get(WhereTo)] : _dialog;
         for (var line = 0; line < capacity && _firstLine + line < lines.Length; line++)
         {
             painter.Text(lines[_firstLine + line], TextLeft, TextTop + 15 * line);
@@ -233,10 +244,7 @@ public sealed class HudNpcPanel(
             var available = true;
             if (Destinations.Count > 0)
             {
-                var destination = Destinations[index];
-                label = destination.MinimumLevel > 0
-                    ? ClientText.Format("Npc.DestinationLevel", destination.Name, destination.Price.ToString("N0", System.Globalization.CultureInfo.InvariantCulture), destination.MinimumLevel)
-                    : ClientText.Format("Npc.Destination", destination.Name, destination.Price.ToString("N0", System.Globalization.CultureInfo.InvariantCulture));
+                label = DestinationLabel(Destinations[index]);
             }
             else
             {

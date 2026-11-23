@@ -145,7 +145,11 @@ public static partial class BrowserHost
     public static bool RunWorldAction(string action) => WebWorldHud.Current?.RunWorldAction(action) ?? false;
 
     [JSExport]
-    public static bool WorldAutoHuntActive() => WebWorldHud.Current?.AutoHuntEnabled ?? false;
+    public static bool WorldAutoHuntActive() => WebWorldHud.Current?.AnyHuntRunning ?? false;
+
+    // The touch HUD's "Auto-caça · Ligado" chip: a hunt runs and, for the free hunt, its Mostrar o quadro option is on.
+    [JSExport]
+    public static bool WorldHuntStatusShown() => WebWorldHud.Current?.HuntStatusShown ?? false;
 
     // The players online the page's counter shows; -1 while unknown or hidden in Settings.
     [JSExport]

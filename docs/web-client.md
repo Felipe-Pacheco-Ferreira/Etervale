@@ -43,7 +43,7 @@ use scalar updates. Scene disposal releases its JS meshes, materials and texture
 | `Client/PristonTale.Browser/wwwroot/settings-options.js` | The panel's rows (each bound to a `client-settings.json` field), presets, shadow and texture choices |
 | `Client/PristonTale.Browser/wwwroot/settings-effects.js` | What settings do on the page: full screen, leave prompt, grey screen while dead, low-life border, death notification, hidden HUD icons |
 | `Client/PristonTale.Browser/wwwroot/news.js` | News & Support in the Settings panel's style: the feed's posts, the tickets the game keeps, the community links |
-| `Client/PristonTale.Browser/wwwroot/touch-hud.js`, `hud-art.js`, `BrowserHost.Touch.cs`, `Client/PristonTale.Gameplay/UI/GameplayHud.Touch.cs`, `TouchPortraitPlacement.cs`, `Screens/Gameplay/GameplayScreen.Touch.cs` | The touch HUD of phones and tablets: the Android client's player frame, bottom HUD and art on page canvases, fed by the game's touch state, with the player's 3D head drawn by the game ([Entry page](#entry-page)) |
+| `Client/PristonTale.Browser/wwwroot/touch-hud.js`, `touch-quests.js`, `touch-map.js`, `touch-bag.js`, `touch-status.js`, `touch-skills.js`, `touch-npc.js`, `touch-feed.js`, `touch-party.js`, `touch-restart.js`, `touch-rewards.js`, `touch-skill-picker.js`, `touch-layout.js`, `touch-tutorial.js`, `touch-hunt.js`, `auto-hunt-items.tsv`, `touch-dom.js`, `hud-art.js`, `BrowserHost.Touch.cs`, `Client/PristonTale.Gameplay/UI/GameplayHud.Touch.cs`, `GameplayHud.TouchQuests.cs`, `GameplayHud.TouchMap.cs`, `GameplayHud.TouchBag.cs`, `GameplayHud.TouchStatus.cs`, `GameplayHud.TouchSkills.cs`, `GameplayHud.TouchNpc.cs`, `GameplayHud.TouchFeed.cs`, `GameplayHud.TouchParty.cs`, `GameplayHud.TouchRestart.cs`, `GameplayHud.TouchRewards.cs`, `GameplayHud.TouchTutorial.cs`, `GameplayHud.TouchHunt.cs`, `World/FreeHuntSession*.cs`, `Combat/FreeHunt*.cs`, `Screens/Gameplay/GameplayScreen.FreeHunt.cs`, `UI/Widgets/HudCombatFeed.cs`, `Input/TouchSkillSlots.cs`, `UI/Inventory/HudItemActions.cs`, `TouchPortraitPlacement.cs`, `Screens/Gameplay/GameplayScreen.Touch.cs` | The touch HUD of phones and tablets: the Android client's player frame, bottom HUD, quest card and journal, field map, bag, status and skills windows, NPC plate, combat feed, party, death plate, Eventos & Recompensas, the skill list of a long press, the HUD editor, the first-time tutorials, the free auto-hunt and art on page canvases, fed by the game's touch state, with the player's 3D head drawn by the game ([Entry page](#entry-page)) |
 | `Client/PristonTale.Browser/wwwroot/draggable.js` | Drags a page window by its header within the viewport; a double click on the header or Settings' reset puts it back |
 | `Client/PristonTale.Browser/publish.ps1`, `publish.sh` | Release publish into the website's `Play:ClientPath` folder, replacing the previous build and its world packs |
 | `Shared/PristonTale.Protocol/Transport/WebSocketTransport.cs` | Frames over a WebSocket, client and server side ([protocol.md](protocol.md#websocket-transport)) |
@@ -225,18 +225,180 @@ The site's address (`/`) is the game: the canvas fills the window, and the page'
     the game's keys while it has the keyboard.
   - Auto-caça is the third orb beside Menu and Bolsa, as in the Android client (the top shortcut is hidden with the
     touch HUD): a tap opens the auto-hunt panel, or pauses the hunt while it runs; a 500 ms press opens the panel.
-    While hunting the orb reads Pausar in gold and a green "Auto-caça · Ligado" chip stands above the orbs (both read
-    `WorldAutoHuntActive` with the touch state). The panel takes the Android panel's look (`VulkanPanel`,
-    `VulkanFreeHuntPanel`): a centred HUD plate over a dimmed world, the serif gold title, a round close orb, the
-    status bar with the blue AUTO-CAÇA chip and the start/pause button tinted green or gold. The Android free hunt's
-    own engine and its tabs (hunt radius, monster filters, skills, potions, safety, loot, gains, group, log) are not
-    in the browser; its auto-hunt is the quest hunt.
+    While hunting the orb reads Pausar in gold (`WorldAutoHuntActive`, `GameplayHud.AnyHuntRunning`) and a green
+    "Auto-caça · Ligado" chip stands above the orbs, for the free hunt while its Mostrar o quadro option is on
+    (`WorldHuntStatusShown`, `GameplayHud.HuntStatusShown`). With the touch HUD the orb runs the Android client's free
+    auto-hunt (`FreeHuntSession`); the PC HUD keeps the quest hunt. The free hunt:
+    - starts where it is switched on and fights the living wild monsters within its radius that the filters accept
+      (`FreeHuntSettings.AcceptsMonster`), quest, boss and ranged attackers first, a monster attacking the player
+      even past the radius, others' claimed monsters left alone;
+    - gives up a target that makes no progress, and walks back to the start along a planned route
+      (`GameScene.PlanRouteAsync`), moving the start where it is stuck;
+    - casts the chosen skills in their order (`GameScene.TryCastQuestSkill`), an area skill first when enough monsters
+      stand in its radius, each above its mana floor, a buff only when about to end, and swaps to the shield set for a
+      shield-only buff;
+    - drinks the smallest potion that reaches each threshold (`HuntPotionSelection`, from the server's potency ranges,
+      `PotionPotency`), critical life first, and refills the belt;
+    - releases crystal pets, sets how they choose prey (`CrystalPetTargeting`), and uses Force Orbs and premiums;
+    - picks up drops by the loot rules (`FreeHuntSettings.LootPriority`, `GameScene.PickUpForHunt`) within its loot
+      radius, gold only for a minute after a refused pickup;
+    - stops or returns to town on death, no party, a full bag or no life potion, as its safety options say;
+    - pauses `ResumeMs` after the player's own joystick, tap, Atacar or skill; and stops on a warp, a map change, the
+      quest hunt or the automatic quest, the PC HUD or a page in the background.
+
+    Atacar and an enemy skill with no marked target take the nearest wild monster within the hunt radius. Every
+    command is the manual one, and the server checks every target, item use and pickup.
+  - The orb opens the free hunt's panel (`touch-hunt.js`, the Android client's `VulkanFreeHuntPanel`): the tabs Caça,
+    Habilidades, Poções, Segurança, Coleta, Ganhos, Grupo and Log two by two on the left; a bar with the state, Iniciar
+    or Pausar and ↻ (every option back to its default); and the tab's cards. Coleta searches the loot catalog
+    (`wwwroot/auto-hunt-items.tsv`), which the game classifies once (`BrowserHost.ClassifyHuntItems`). Ganhos shows
+    the session's rates, kills, DPS and collected items. Grupo shows the members' damage, kills, experience and deaths
+    as the server counts them (`PartyHunt`). Log filters and searches the 300 latest entries, which the page words in
+    its language from their kind and reason. The page reads `BrowserHost.TouchHunt` (with `full`, the options and
+    what they offer) and `TouchHuntLog`. It sends the options back whole as JSON (`SetFreeHuntSettings`, checked as an
+    imported code is, `FreeHuntProfile.TryRead`) and its buttons as `touch-hunt:<action>`. Caça copies the profile code
+    (`ETERVALE-HUNT-1:`, the Android client's format, `FreeHuntProfileCode`) and imports one
+    (`ImportFreeHuntProfile`), which pauses the hunt. The options are kept per character, or shared with the account
+    on this browser (`FreeHuntProfileStore`, `ClientSettings.FreeHuntProfiles`); the totals and log are kept per
+    character (`FreeHuntRecords`), saved every 30 seconds when they change and as the panel closes
+    (`settings.persist`).
   - Menu opens the Android client's menu plate above it: the character's name, Inventário, Missões, Eventos (with the
     rewards to claim, also counted on the Menu orb), Habilidades, Corrida, Correios, Personagem, Calendário,
     Configurações (the gear's panel), then every shortcut that the PC layout keeps under Mais (Mais is hidden with the
     touch HUD) and Trocar personagem. The Bolsa orb counts the items new in the bag. The Android menu's Editar HUD,
     Mapas baixados and Sair do jogo have no browser counterpart. The quality line is hidden with the touch HUD, since
     it would cover the experience bar.
+  - The quest card and journal are the Android client's (`VulkanQuestTracker`, `VulkanQuestJournal`; `touch-quests.js`,
+    markup in `Jogar.cshtml`, styles in `play.css`). The card is 172 px wide at the top right, 5 layout pixels under the
+    canvas minimap (the touch state's `top`, a fraction of the screen's height): the step in serif gold (Jornada do
+    Aventureiro for the journey), the hunt's count on a red bar, a status line and the button that starts or pauses the
+    automatic quest; a count met gives it a breathing gold border. A tap folds it to the title (kept in `localStorage`
+    as `avalon.touchQuestFolded`); Settings' quest tracker switch hides it. Every 250 ms the page reads
+    `BrowserHost.TouchQuest` (`GameplayHud.TouchQuests.cs`): the step, journey flag, monster, count, timer left, the
+    step's own line when it has no hunt, whether the guide or quest hunt runs and whether either could start. The
+    automatic quest is the browser's own: Ir (`touch-quest-go`, `TouchQuestGo`) pauses a running guide or quest hunt,
+    else starts the journey's guide where the quest has a destination, else the quest hunt. Opening the quest window
+    (Missões, its key) while the touch HUD is in use counts a request in the state instead (`TouchJournalRequested`),
+    and the page opens the journal: a HUD plate with the Em andamento and Concluídas pill tabs (and an "Auto-missão
+    ativa" chip while it runs), a card per entry (the current step first, with its gauge drawn by `hud-art.js`) and the
+    chosen entry in a recessed card: the objectives as a checklist (the steps so far, the hunt with its gauge or the
+    step's line, the timer), the description's paragraphs (`HudQuestDocuments.Paragraphs`, "Carregando…" while the file
+    loads), the reward as a gold chip (`HudQuestDocuments.AvalonReward`) and, on the current step, Ir · auto-missão or
+    Pausar auto-missão. The journal reads the entries (`TouchQuest(true)`) only while it is open. The daily rewards stay
+    under Eventos.
+  - The minimap and field map are the Android client's (`MobileMinimap`, `VulkanWorldMap`). The minimap stays on the
+    canvas, which has the field's map and moves every frame, but with the touch HUD it sits 10 layout pixels from the
+    upper right corner and is drawn as the Android one (`HudMinimap.Draw` with `HudLayout.Touch`): a dark backdrop, no
+    title or frame art, the journey's hunting area in red while its hunt counts (`TribeRoute.HuntAreaIn`,
+    `GameplayHud.JourneyHuntArea`), the quest guide's route as gold dots (`GameplayScreen` hands its points to
+    `GameplayHud.QuestRoute`), a gold edge and a gold arrow on the heading; the NPC, party, guide and Battle Royale
+    marks stay. A tap on it counts a request (`ClickTouchMap`) and the page opens the field map (`touch-map.js`): a HUD
+    plate over the whole screen with the field's name, the field's map picture (`TouchPicture` of `HudArt.FieldMap`)
+    that pans by dragging and zooms by pinching, the wheel or + and − (1 to 8 times the whole field; it opens at 2 on
+    the player and ◎ centres it again at 2.5 at least), and over it the route's dots, the journey's hunting area with
+    its count, or the way out towards the hunting field, the tribe's guide as a gold star, every NPC in view with its
+    name where it covers no other name, and the player's arrow. The side lists the objective (with the count and the
+    hunting field), the NPCs nearest first (★ for the guide) and a legend. While it is open the page reads
+    `BrowserHost.TouchMap(true)` every 250 ms (`GameplayHud.TouchMap.cs`): the map's size and every mark in the map's
+    units, x east and y south of its top left corner (`HudMinimap.MapPoint`); closed, only the request count.
+  - The bag is the Android client's character window (`VulkanInventoryPanel`; `touch-bag.js`). Opening the inventory
+    (Bolsa, Inventário in the menu, its key) while the touch HUD is in use counts a request (`GameplayHud.ToggleInventory`)
+    and the page opens a HUD plate: the ten equipment wells around a faint figure with gold and a weight gauge under
+    them (red when overweight), the 12 x 6 bag as a field of wells with each item's picture at its footprint (`TouchPicture`
+    of its icon), its upgrade at the top left and count at the bottom right, and the potion belt under it. A well's edge
+    takes the item's tint (unique amber, enhanced blue, red when the class cannot use it), gold when chosen and glowing
+    at the highest upgrade. A chosen item opens its sheet: picture, name, kind and rank chips, "cannot use", the
+    maturing gauge, the desktop tooltip's lines (`HudItemDetailTooltip.Lines`) as banded rows, and its buttons, which
+    `HudItemActions.Offered` decides: Guardar na bolsa for a belt potion, Beber and Cinto 1–3 for a bag potion, Usar for
+    a usable item, Equipar or Retirar for gear. A button runs `touch-bag:<action>:<item>[:<box>]` through
+    `HudInventoryController.Run`, which sends only what the item offers and one operation at a time (the buttons are
+    disabled while one is pending); Usar closes the bag, since a usable item's confirmation is a canvas box. While it is
+    open the page reads `BrowserHost.TouchBag(true, <chosen item>)` every 250 ms, which also counts the bag's items as
+    seen for the Bolsa button's badge. Shops, the warehouse and other services still open the canvas inventory beside
+    them. `touch-dom.js` holds the pieces the journal, map and bag share (elements, chips, sections, gauges, `format`).
+  - The status and skills windows are the Android client's (`VulkanStatusPanel`, `VulkanSkillsPanel`; `touch-status.js`,
+    `touch-skills.js`). Personagem or Habilidades in the menu, their keys and a skill master's offer count a request
+    (`GameplayHud.ToggleStatus`, `ToggleSkills`, `OpenSkillMaster`) and the page opens the window. The status window
+    shows the level medallion (`hud-art.js`), class, experience and vitals; the five attributes with their emblems, what
+    each raises, a bar against the strongest and "+"/"−" that plan free points on the page (the class's damage
+    attribute, `CharacterClassRegistry.DamageAttribute`, marked Dano); the combat tiles with what the planned points add
+    (`AttributeGains`), and Desfazer and Confirmar. The page reads `BrowserHost.TouchStatus(true, <plan>)` while it is
+    open; Confirmar runs `touch-points:<five amounts>` (`GameplayHud.TryReadPoints` checks them against the free
+    points), and the game sends one `AllocateAttribute` per attribute, each after the last answered (`SendTouchPoints`,
+    each update), stopping at a refusal; the answers go to the chat as before. The skills window has a pill tab per
+    class tier, the tier's skills as cards (button picture in its tier's ring, name, rank, the touch button holding it,
+    "+" when `HudSkillsPanel.CanTrain` allows the next rank and a skill master was talked to) and the chosen skill's
+    sheet (description, cost, `HudSkillDetails.Lines`, what the next rank needs from `SkillLearning.Check`, and buttons
+    1–4 that put a skill on a touch skill button through `HudSkillBindings.Assign`). "+" runs
+    `touch-train:<index>`, a `LearnSkill` asked of that skill master. `BrowserHost.TouchSkills(true, <tier>, <chosen>)`
+    feeds it while it is open.
+  - A long press (500 ms) on a skill button opens the Android client's list to choose its skill (`touch-skill-picker.js`),
+    as a tap on an empty button does. Empty buttons are drawn dimmed but take taps; only death turns them off. The
+    list is a HUD plate in the middle of the screen with each skill a button may take (picture, name and the button
+    holding it, the one on this button highlighted). A tap runs `touch-skill-button:<slot>:<index>`, as the skills
+    window's buttons 1–4 do, and the button that held the skill gives it up (`HudSkillBindings.Assign`).
+    `BrowserHost.TouchSkillChoices()` hands out the list. Which skills a button may take is
+    `TouchSkillSlots.Eligible`: learned, cast with a mouse button and not passive, as the server lets a skill be cast.
+    The list, the skills window's buttons and the action that assigns all check it.
+  - The NPC plate is the Android client's (`VulkanNpcPanel`; `touch-npc.js`): a HUD plate at the bottom, centred
+    between the Menu and Bolsa buttons and the action wheel (over the HUD when that gap is under 300 px), with the
+    name as a section heading, the line in a recessed card that scrolls past 84 px and the buttons along the bottom,
+    the first highlighted. It shows, in the canvas's order, the yes/no box after a quest dialog (detail and question,
+    `HudQuestDialog.Question`) or offering a skill reset; else the quest dialog (title, the NPC it answers to, the
+    document's paragraphs from `HudQuestDocuments.Paragraphs`, a reward list's choices, a reward view's arrows, and
+    OK worded by what it leads to, with Fechar beside it when OK answers the quest); else the NPC's dialog
+    (`HudNpcPanel.Said`) with its service buttons, or a teleporter's destinations (`HudNpcPanel.DestinationLabel`),
+    and Fechar. The clan, castle and Bellatra windows still replace the NPC's dialog on the canvas. The page reads
+    `BrowserHost.TouchNpc()` with the other touch state and answers with `touch-npc:<action>[:<value>]`
+    (`GameplayHud.TryReadNpcAction`: service, destination, close, ok, choose, browse, yes, no), run as the canvas
+    buttons run (`OpenNpcService`, `ChooseNpcDestination`, `CloseNpc`, the quest controller). These answers pass
+    `RunWorldAction` ahead of its modal check, since they answer the modal dialogs themselves. The Android plate's live
+    3D portrait of the NPC is not drawn.
+  - The combat feed is the Android client's (`VulkanCombatFeed`; `touch-feed.js`): a canvas at the right above the
+    action wheel, 60% by 30% of the screen's height, where each kill, experience and gold gained within a level, level
+    reached and quest count grown rises and fades over 3.2 seconds, at most five at once, under a counter of the kills
+    since entering the world that flares at each one. `HudCombatFeed` keeps the newest eight lines as data (kind,
+    amount, count, name) from the character (`GameplayHud.Update`), the quest view and each kill (`HudCombat` raises
+    `MonsterKilled` when the player's own hit kills a monster); the page reads `BrowserHost.TouchFeed()` with the
+    other touch state, words the lines past the count it last saw and draws them with `hud-art.js`.
+  - The party is the Android client's (`VulkanPartyHud`; `touch-party.js`). While a reached player is the target
+    (`ShowsPlayerButtons`), a row of buttons under the target frame offers what the canvas offers there: Trocar,
+    Convidar p/ grupo (highlighted), Amigo, Clã for a recruiter beside a player without a clan (`ClanButton`) and Duelo.
+    The other members' plates (170 by 40 px, a crown before the leader's name, the level and the life gauge) stand
+    under the player frame. A tap opens the party's commands on a plate in the middle of the screen: Passar
+    liderança, Expulsar do grupo and Desfazer o grupo for the leader, and Sair do grupo for anyone. A party, clan,
+    trade or duel request shows on that plate with Recusar and Aceitar, the one the canvas would draw on top. The page
+    reads `BrowserHost.TouchParty()` with the other touch state; member ids travel as text, being 64-bit. It answers
+    with `touch-party:player:<button>`, `touch-party:command:<command>:<member>` or `touch-party:yes|no:<kind>`
+    (`GameplayHud.TryReadPartyAction`). These run as the canvas's buttons run (`UsePlayerButton`, `ChallengeReached`,
+    `AnswerClan`), and the game checks a command against who leads. While the touch HUD is in use, forming a party does
+    not open the PC's party window, and Amigo adds the friend without opening the PC's friends page.
+  - The death plate is the Android client's (`VulkanRestartPanel`; `touch-restart.js`): a HUD plate in the middle of
+    the screen, shown while the restart window would be (`HudRestartPanel.Open`, after `OpenDelayMs`). It says what the
+    death costs (the offer's experience and gold shares, the Resurrection Scroll that waives them, or none), then
+    Recomeçar no mapa (dark where the field restart is closed) and Recomeçar na cidade (highlighted), and the seconds
+    before the town is chosen by itself (`HudRestartPanel.SecondsLeft`). It offers no exit, as the Android plate does
+    not. The page reads `BrowserHost.TouchRestart()` and answers with `touch-restart:Field|Town`
+    (`GameplayHud.TryReadRestartAction`), which `HudRestartPanel.Pick` runs as a canvas click would, ahead of
+    `RunWorldAction`'s modal check, as the canvas takes it ahead of the NPC and quest dialogs.
+  - Eventos & Recompensas is the Android client's (`VulkanRewardsPanel`; `touch-rewards.js`): the menu's Eventos opens
+    it in place of the canvas's window (`OpenRewards` counts the request, as the quest journal's). The window has these
+    parts:
+    - The reward tracks as tabs in a column on the left, each with a red badge of what it has ready.
+    - A strip with the time to the track's end or reset (counted down since the board arrived) and its progress.
+    - The track's entries:
+      - the welcome days as cards side by side, the last one larger, a ready day claimed with a tap;
+      - the weekly and daily goals as rows, each with its count and a Receber button;
+      - the level race as rows beside a diamond with the level.
+    - Each entry's item rewards in wells with their pictures, and gold.
+    - A footer with what is ready, the track's note and Receber tudo.
+    - A ? button that swaps the entries for the track's help.
+
+    The page reads `BrowserHost.TouchRewards()` and, while the window is open, asks the server again every five
+    seconds with `touch-rewards:open:<track>`. It claims with `touch-rewards:claim:<track>:<entry>` or
+    `touch-rewards:all:<track>` (`GameplayHud.TryReadRewardsAction`). These go one at a time through `ClaimRewards`,
+    shared with the canvas window. The server's answer to a claim takes the note's place in the footer, where the
+    Android client shows a toast.
   - The Settings, News & Support and auto-hunt windows drag by their headers with a finger (`draggable.js`).
   - A phone or tablet plays lying down, as a mobile game (`touch-hud.js`, `root.dataset.mobile`): the first touch on
     the page asks for full screen and locks landscape (`enterLandscape`; browsers that refuse either, such as iOS
@@ -247,14 +409,50 @@ The site's address (`/`) is the game: the canvas fills the window, and the page'
     (`settings.setInterfaceMode`), so the question does not return; Escape leaves it for the next entry.
   - The page installs as an app ("Adicionar à tela inicial") from the site's manifest (`/manifest.webmanifest`,
     [website.md](website.md)): it opens full screen in landscape.
-  - Not ported yet: the Android HUD's own frames and windows (quest card, minimap and map,
-    bag, status, NPC dialog, combat feed, HUD editor, tutorials, a long press to choose a skill button's skill);
-    the browser keeps the desktop HUD on the canvas for those, at its own scale. What the touch HUD replaces is left
-    out of the canvas while it is in use (`WebWorldHud.TouchActive`: the page reports fingers and the interface type
-    asks for it): the bottom bar with its orbs, menu buttons and toggles, the action bar, the belt, the skill sockets,
-    the chat window and the target frame, both drawn and taking clicks, so a tap there reaches the world. The player
-    buttons (party, clan, duel) still show for a player target. The canvas minimap moves to the upper right corner,
-    as on the Android HUD, since the skill wheel holds the lower right one (`HudLayout.Touch`, `HudMinimap.Box`).
+  - Editar HUD in the menu opens the Android client's HUD editor (`HudLayoutEditor`; `touch-layout.js`). The screen
+    dims, each shown part of the HUD is outlined with its name, and a finger drags the smallest part under it, kept on
+    the screen. A round button also gets Tamanho (65–160%) and Transparência (0–80%) sliders on the editor's panel,
+    which drags by its title. Salvar keeps the layout, Padrão puts every part back, and Cancelar or Escape drops the
+    changes. The parts are the player and target frames, chat, chat history, Menu, Bolsa, Auto-caça, quest card,
+    Atacar, the four skill buttons, the three belt potions, the combat feed, the experience bar and the party plates.
+    Each moves by a CSS `translate` in short sides (`--touch-unit`), and a button also scales and fades. The layout is
+    kept in this browser (`localStorage`, `etervale.touch-layout`), and the game hears where the frames went
+    (`BrowserHost.SetTouchFrameShift`, `TouchPortraitPlacement`) to draw the 3D heads in them. The minimap, which the
+    game draws on the canvas, does not move, and the target frame and party plates can only be moved while shown.
+    The Android menu's Mapas baixados and Sair do jogo have no browser entry: the site fetches the map packs itself
+    and a page cannot close its tab.
+  - The first-time tutorials are the Android client's (`VulkanTutorial`; `touch-tutorial.js`). The first time
+    something is needed, the screen dims around the button to press, a gold ring pulses round it and a card explains
+    what to do. Only that button answers taps: a tap in its window is passed to it, and the rest of the screen waits. A
+    step moves on by itself once its goal is met, or with Entendi on a step that only explains; Pular tutorial ends the
+    lesson. The lessons, in order:
+    - the HUD on arrival: the player frame, the status (done once the status window opened), the quest card, Atacar
+      and Menu;
+    - wearing the starter kit: Bolsa, the piece's tile, Equipar;
+    - a potion on the belt: Bolsa, the potion's tile, Cinto 1;
+    - the automatic quest: the quest card's button;
+    - the first attack: Atacar while a hunt has no kill yet and the target can be fought;
+    - spending attribute points: the portrait, the free points, the main attribute's "+" and Confirmar.
+
+    None starts while the automatic quest runs, except the points, which wait only for a moment out of a fight. A
+    lesson whose window closed midway starts over. Each lesson shows once, kept in this browser (`localStorage`,
+    `etervale.touch-tutorials`, with a round that brings them back when they change), and Rever tutorial in the menu
+    shows them all again. The game tells when lessons start and steps end (`BrowserHost.TouchTutorial`: alive, idle,
+    the starter piece (`TouchStarterPiece`), the bag potion and empty belt, a hunt not begun, a target that can be
+    fought, the points and whether the player attacks). The page finds its targets by the bag's `data-item` and
+    `data-run`, the status window's `touch-status-free` and main row, and the quest card's auto button. The coach is a
+    popover, so it stands over the bag and status windows. Unlike the Android lesson, the quest card is not folded
+    before pointing at Atacar.
+  - Not ported yet: the PC's party window with its friends and clan pages, which the Android client lacks; the browser
+    keeps the desktop HUD on the canvas for it, at its own scale. What
+    the touch HUD replaces is left out of the canvas while it is in use (`WebWorldHud.TouchActive`: the page reports
+    fingers and the interface type asks for it): the bottom bar with its orbs, menu buttons and toggles, the action
+    bar, the belt, the skill sockets, the chat window, the target frame, the quest tracker and the quest window, the
+    inventory, status and skills windows when the menu or their keys open them, the NPC and quest dialogs and the
+    quest yes/no boxes, the buttons under a reached player's portrait, the party, clan, trade and duel request boxes,
+    the restart window and the Eventos & Recompensas window, both drawn and taking clicks, so a tap there reaches the world. The canvas minimap moves to the upper right
+    corner, as on the Android HUD, since the skill wheel holds the lower right one (`HudLayout.Touch`,
+    `HudMinimap.Box`).
     Canvas windows take taps but not drags.
 - The login panel ("Bem-vindo") is HTML, not `LoginPanel`: real form fields, so paste, password managers and phone
   keyboards work. `BrowserHost.Start` sets `WebLoginOverlay.Report`; while it is set, `OpeningScreen` takes the login at

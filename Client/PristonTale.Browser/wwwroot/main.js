@@ -301,7 +301,7 @@ const settings = createSettings(root, () => host, () => selectedLanguage, setLan
 const news = createNews(root, () => host, () => selectedLanguage);
 const worldHud = createWorldHud(root, () => host, () => selectedLanguage, () => settings.qualityLabel,
     () => activeGraphics?.workerRendering ? activeGraphics.workerStats.completedFrames : activeGraphics?.stats.frames ?? null,
-    { get mode() { return settings.interfaceMode; }, choose: mode => settings.setInterfaceMode(mode) });
+    { get mode() { return settings.interfaceMode; }, choose: mode => settings.setInterfaceMode(mode), persist: () => settings.persist() });
 const adaptiveResolution = createAdaptiveResolution();
 let adaptiveChangePending = false;
 let nextAdaptiveLabelTime = 0;

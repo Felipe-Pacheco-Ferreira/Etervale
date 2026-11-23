@@ -33,11 +33,13 @@ public static class EtervaleOpcodes
     public const uint ItemDetails = 0x45540300;
     public const uint OwnerItemStatus = 0x45540301;
     public const uint AgingProgress = 0x45540302;
+    public const uint PotionPotency = 0x45540303;
     public const uint ItemUseCommand = 0x45540400;
     public const uint ItemUseResult = 0x45540401;
     public const uint PremiumTimers = 0x45540402;
     public const uint ItemEffects = 0x45540403;
     public const uint DismissCrystalPets = 0x45540404;
+    public const uint CrystalPetTargeting = 0x45540405;
     public const uint QuestRequest = 0x45540500;
     public const uint QuestResult = 0x45540501;
     public const uint QuestJournal = 0x45540502;
@@ -55,6 +57,7 @@ public static class EtervaleOpcodes
     public const uint PartyRequest = 0x45540703;
     public const uint PartyMembers = 0x45540704;
     public const uint PartyDirectory = 0x45540705;
+    public const uint PartyHunt = 0x45540706;
     public const uint TradeRequest = 0x45540800;
     public const uint TradeAnswer = 0x45540801;
     public const uint TradeOffer = 0x45540802;

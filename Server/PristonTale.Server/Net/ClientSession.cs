@@ -289,6 +289,14 @@ internal sealed partial class ClientSession : IMovementVerdictSink
                     }
 
                     break;
+                case EtervaleOpcodes.CrystalPetTargeting:
+                    var targeting = CrystalPetTargetingPacket.Read(memory.Span);
+                    if (_player is not null && _session is { } summoner)
+                    {
+                        _ = _services.World.SetCrystalPetTargetingAsync(summoner.EntityId, targeting.Mode);
+                    }
+
+                    break;
                 case EtervaleOpcodes.DescribeEntity:
                     DescribeObject(DescribeEntityPacket.Read(memory.Span));
                     break;

@@ -10,6 +10,7 @@ using PristonTale.Simulation.Social;
 using PristonTale.Simulation.World;
 using PristonTale.Simulation.World.Motion;
 using PristonTale.Contracts.Motion;
+using PristonTale.Contracts.Social;
 using PristonTale.Contracts.World;
 using PristonTale.Simulation.Physics;
 
@@ -232,6 +233,20 @@ public sealed partial class WorldPlayer
     // The monster this player last attacked or cast at (its familiar and passive summon fight it).
     public ulong CombatTargetId { get; set; }
 
+    // How the player's crystal pets choose their prey (the client's free hunt sets it); independent by default.
+    public CrystalPetTargeting CrystalPetTargeting { get; private set; }
+
+    internal bool TrySetCrystalPetTargeting(CrystalPetTargeting mode)
+    {
+        if (!Enum.IsDefined(mode))
+        {
+            return false;
+        }
+
+        CrystalPetTargeting = mode;
+        return true;
+    }
+
     // A released charge ends the cast motion earlier.
     public void ShortenCast(float durationMs)
     {
@@ -346,6 +361,21 @@ public sealed partial class WorldPlayer
     // The party the player belongs to and the request to join one it has not answered (WorldServer.Parties).
     public Party? Party { get; internal set; }
     public PartyRequest? PartyRequest { get; internal set; }
+
+    // What the player did while grouped (PartyHuntCounters), kept for the session and shown to its party.
+    public PartyHuntCounters PartyHunt { get; private set; }
+
+    internal void RecordPartyHunt(ulong damage = 0, ulong experience = 0, uint kills = 0, uint deaths = 0)
+    {
+        if (Party is not null)
+        {
+            PartyHunt = new PartyHuntCounters(
+                PartyHunt.Damage + Math.Min(damage, ulong.MaxValue - PartyHunt.Damage),
+                PartyHunt.Experience + Math.Min(experience, ulong.MaxValue - PartyHunt.Experience),
+                PartyHunt.Kills + Math.Min(kills, uint.MaxValue - PartyHunt.Kills),
+                PartyHunt.Deaths + Math.Min(deaths, uint.MaxValue - PartyHunt.Deaths));
+        }
+    }
     public Contracts.Social.PartyDirectoryEntry[]? PartyDirectory { get; internal set; }
 
     // Party members fight side by side, but nobody does in the Battle Royale (RoyaleRules).
@@ -744,6 +774,7 @@ public sealed partial class WorldPlayer
         {
             _character.Life = 0;
             IsDead = true;
+            RecordPartyHunt(deaths: 1);
             Shop = null;
             _pendingPotion = null;
             _yahooPending = false;

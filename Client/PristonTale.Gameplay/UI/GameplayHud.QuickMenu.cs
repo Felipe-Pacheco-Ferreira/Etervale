@@ -78,7 +78,7 @@ public sealed partial class GameplayHud
             (_quickMenuOpen && QuickEntryAt(layout, pointer) >= 0))) ||
         (HasTrackedHunt && TrackerBounds(layout).Contains(pointer));
 
-    private bool HasTrackedHunt => !_context.Presentation.Requested.HideQuestTracker
+    private bool HasTrackedHunt => !TouchHudShown && !_context.Presentation.Requested.HideQuestTracker
         && (!WebWorldHud.Enabled || QuestTrackingEnabled) && _questView is { KillsNeeded: > 0 };
 
     private int QuickEntryAt(HudLayout layout, Point pointer)

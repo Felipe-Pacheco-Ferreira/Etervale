@@ -76,3 +76,63 @@ cada tarefa. Cada item diz onde mexer. Para quem for corrigir: leia [AGENTS.md](
 
 - A ajuda e as falas do pet usavam setas e um emoticon coreano que a fonte não desenhava; as setas entraram na fonte e o
   emoticon foi trocado por "T_T". O teste `FontCoverageTests` acusa qualquer caractere novo que falte.
+
+## HUD de celular no navegador
+
+- A Auto-caça livre do celular ainda não foi vista no jogo local nem num celular, só nos testes
+  ([17-auto-caca-livre-navegador.md](17-auto-caca-livre-navegador.md)). Ela vale só no HUD de celular; o HUD de PC do
+  navegador continua com a caça de missão. A aba Grupo depende de um servidor com a mensagem `PartyHunt`; num
+  servidor antigo ela conta só os golpes do grupo que o próprio cliente vê. O registro e os totais ficam neste
+  navegador (no `client-settings.json`), gravados a cada 30 s e ao fechar o painel: fechar a aba de repente pode
+  perder os últimos segundos. Os ícones do catálogo de coleta aparecem só para os itens cuja figura o cliente já tem. Os textos
+  das outras línguas foram traduzidos por mim e merecem revisão de quem fala cada língua.
+- Os tutoriais do celular ainda não foram vistos no jogo local nem num celular, só nos testes. Um toque na janela do
+  alvo vira um clique nele: o arrastar e o toque longo não passam. Antes de apontar para Atacar, o cartão de missão
+  não é dobrado como no Android, e pode ficar por cima. Num navegador sem popover, o treinador fica por baixo de uma
+  Bolsa ou Status abertos. Os textos nas outras línguas são traduções minhas e merecem revisão.
+- O editor de HUD do celular ainda não foi visto no jogo local nem num celular, só nos testes. O minimapa não se move
+  (o jogo o desenha no canvas); o quadro do alvo e as placas do grupo só podem ser movidos enquanto aparecem. A
+  posição fica guardada só neste navegador, não na conta. Os botões aumentados podem ficar um pouco borrados, porque
+  a página aumenta o desenho pronto.
+- Foi visto no jogo local, mas só no navegador do app em tamanho de celular (844x390), nunca num celular de verdade
+  com o dedo. O quadro do alvo contra um monstro e os botões com habilidades e poções reais não foram vistos no jogo;
+  o personagem de teste não tinha nenhum dos dois.
+- As capturas da nota (`devnotes/2026-11-21-hud-de-celular-no-navegador`) mostram 0 a 2 FPS porque o navegador do app
+  reduz a velocidade; num celular o número é o real.
+- O cartão de missão e o diário do celular ainda não foram vistos no jogo local nem num celular, só nos testes. Do
+  Android ficaram de fora a bússola até o guia, "Trocar asas", "Ir buscar missão" e "Resgatar recompensa" das missões
+  de habilidade: dependem do navegador de missões do Android, que o site não tem. A recompensa mostrada é a de
+  `HudQuestDocuments.AvalonReward` (a mesma da janela do PC), não a linha "Recompensa" lida da descrição.
+- O minimapa e o mapa da região do celular ainda não foram vistos no jogo local nem num celular, só nos testes. O
+  minimapa continua desenhado pelo jogo no canvas, com o visual do Android; o mapa da região usa a imagem do mapa do
+  campo do jogo original, não a imagem própria que o Android tem para cada campo. O mapa mostra só os NPCs à vista
+  (como o Android), e a rota só enquanto o guia da missão anda.
+- A Bolsa do celular ainda não foi vista no jogo local nem num celular, só nos testes. Não dá para arrastar itens
+  dentro da bolsa (como no Android, os itens só mudam pelos botões da ficha); lojas, armazém e outros serviços
+  continuam abrindo o inventário do PC no canvas. "Usar" fecha a Bolsa, porque a confirmação de itens usáveis
+  (cristais, teletransporte) ainda é a caixa do PC. O "Usar item de missão" das missões de elite do Android não entrou.
+- Status e Habilidades do celular ainda não foram vistos no jogo local nem num celular, só nos testes. A resposta do
+  servidor aos pontos e ao treino aparece no chat, não numa linha dentro da janela como no Android. O "Ir ao Mestre de
+  Habilidades" do Android não entrou (depende do navegador de missões do Android).
+- Segurar um botão de habilidade para escolher a habilidade ainda não foi visto no jogo local nem num celular, só nos
+  testes. Os botões que se completam sozinhos ainda podem pegar uma habilidade passiva aprendida, como no Android
+  (`TouchSkillSlots.Fill` não usa `Eligible`); a lista e a ficha só oferecem as que se lançam.
+- O diálogo com NPC do celular ainda não foi visto no jogo local nem num celular, só nos testes. Não tem o retrato 3D
+  vivo do NPC que o Android desenha à esquerda da placa. A janela de clã, de castelo e de Bellatra e a caixa de
+  treino do Mestre de Habilidades continuam as do PC no canvas. A placa aparece em até 250 ms depois de falar com o
+  NPC, porque a página lê o jogo nesse ritmo, e o diálogo de missão não avança sozinho como no Android.
+- O registro de combate do celular ainda não foi visto no jogo local nem num celular, só nos testes. Fica onde o Android
+  o põe (à direita, acima da roda de ações); numa tela baixa ele pode ficar por cima do cartão de missão, e isso só dá
+  para julgar vendo no jogo. Só conta as mortes de monstros em que o golpe final foi do próprio jogador; o abate de um
+  companheiro de grupo não entra. A contagem de abates recomeça a cada entrada no mundo.
+- O grupo do celular ainda não foi visto no jogo local nem num celular, só nos testes; o jogo com dois jogadores
+  (convite, pedido e comandos) não foi exercitado. Os botões aparecem só depois de alcançar o jogador, como no PC, e
+  não só por mirá-lo, como no Android. A janela de grupo do PC (com as abas de amigos e clã) continua no canvas
+  quando aberta pelo menu; ela não abre mais sozinha ao formar o grupo, e Amigo adiciona sem abrir a aba de amigos.
+  Aceitar uma troca abre a janela de troca do PC no canvas. Numa tela baixa a fileira de botões pode cobrir o
+  contador de jogadores sob o quadro do alvo.
+- A placa de morte e a janela Eventos & Recompensas do celular ainda não foram vistas no jogo local nem num celular,
+  só nos testes. A placa de morte não oferece "Sair do jogo" (o Android também não). Se a escolha for recusada, a placa
+  volta sem dizer por quê, como a janela do PC; o Android mostra um aviso. Na janela de recompensas, a resposta do
+  servidor a um resgate aparece no rodapé, não num aviso flutuante. Os cartões de dia e as fileiras não têm a borda
+  dourada animada do Android, só uma borda dourada fixa.

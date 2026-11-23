@@ -588,6 +588,10 @@ One summon per owner (`FieldSkills` maps owner id to summon id); a new call repl
 owner leaves the field (`FieldInstance.Remove` -> `FieldSkills.Forget` -> dismiss), is too far to recall, or the owner's
 summon status ends. Charmed wild monsters become summons for the charm duration.
 
+A player's crystal pets pick prey by its `CrystalPetTargeting` (`WorldPlayer.TrySetCrystalPetTargeting`, the client's free
+hunt sets it): independent (the nearest enemy in sight), the owner's combat target, or only monsters attacking the
+owner or the pet (`FieldSkills.SummonTarget`). It starts independent.
+
 ### Ground loot (`FieldGroundLoot`)
 
 - Every drop, thrown, made by a game master or from a corpse, lies on a cell of a square ring around its origin,
@@ -598,6 +602,8 @@ summon status ends. Charmed wild monsters become summons for the charm duration.
 - At most 1024 drops per field. Non-public drops (monster without `AllPlayersSeeDrops`) belong to the credited player
   for 5 s. Lifetime 90 s for gold and catalog keys starting `PL`/`PS`, 180 s otherwise.
 - Clients address drops by the drop's GUID, which `GroundItems` carries and the pick-up command names.
+- A drop a player threw carries `Thrown`; the copy sent to that player says it threw it (`OwnThrow`), so the free
+  hunt can leave its own throws on the ground.
 - Pickup reserves a drop by operation id (`TryReserve`, reach 32 units); a reserved drop does not expire. `Resolve`
   removes it on commit (a pickup has no store, so nothing releases it before). Inventory-delivered drops (`ToInventory`)
   throw `NotSupportedException`.
@@ -832,6 +838,10 @@ original's texts (`PartyMessages`, [simulation.md](simulation.md)).
   trade's receipt, a sale) checked the gold it may carry before the share. A part refused at the commit is not given.
 - Support skills marked `party` reach only the caster's members, `requiresParty` refuses a cast without a party, and a
   revive looks only for dead members ([skills.md](skills.md)).
+- While grouped, each member counts its hunt (`WorldPlayer.RecordPartyHunt`, `PartyHuntCounters`): the effective damage
+  it deals wild monsters (not summons or duel opponents), its credited kills, its combat experience and its deaths.
+  The counters ride in the `PartyView` and reach every member in any field as `PartyHunt`, whenever they change;
+  `PartyMembers` is sent again only when the roster, places or openness change (`PartyView.SameRosterAs`).
 
 ## Trades
 

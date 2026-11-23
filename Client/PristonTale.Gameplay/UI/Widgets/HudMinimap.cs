@@ -1,6 +1,7 @@
 using Microsoft.Xna.Framework;
 using PristonTale.Engine3D.Formats;
 using PristonTale.Gameplay.UI.Rendering;
+using PristonTale.Simulation.Quests;
 using PristonTale.Simulation.World;
 using PristonTale.Simulation.World.Fields;
 using PristonTale.Contracts.Social;
@@ -22,6 +23,12 @@ public readonly record struct HudWorldView(
     string NeighbourFieldId = null,
     PristonIntRectangle NeighbourMapRectangle = default,
     int FieldCode = 0);
+
+// The route the quest guide walks: render-plane (x, z) points, From the next one to reach.
+public readonly record struct HudMinimapRoute(IReadOnlyList<Vector2> Points, int From)
+{
+    public bool Shown => Points is not null && From < Points.Count;
+}
 
 // Original field minimap: 128x128 box at (656,426), right and bottom anchored, black 50% backdrop, the
 // field\map\<id>.tga region around the player (the neighbouring field's map first), NPC dots, the heading arrow,
@@ -45,10 +52,10 @@ public sealed class HudMinimap
     private string _neighbourMap;
     private float _viewSize = InitialViewSize;
 
-    // The touch HUD's skill wheel holds the lower right corner, so there the box sits in the upper right corner, as on the
-    // Android HUD, with its title above it.
+    // The touch HUD's skill wheel holds the lower right corner, so there the box sits in the upper right corner, drawn as
+    // the Android HUD's: no title or frame art, a gold edge, the guide's route and the journey's hunting area.
     public static Rectangle Box(HudLayout layout) =>
-        layout.Touch ? new Rectangle(layout.Width - TouchMargin - BoxSize, TouchMargin + TitleHeight, BoxSize, BoxSize)
+        layout.Touch ? new Rectangle(layout.Width - TouchMargin - BoxSize, TouchMargin, BoxSize, BoxSize)
             : layout.BottomRight(layout.Browser ? new Rectangle(662, 434, BoxSize, BoxSize) : new Rectangle(656, 426, BoxSize, BoxSize));
 
     // 16 (dungeon) or 24 (other fields) cells of 64 world units from the centre to the box edge.
@@ -60,6 +67,9 @@ public sealed class HudMinimap
     public static bool HiddenOn(int fieldCode, FieldState state) =>
         fieldCode is FieldCodes.Bellatra or FieldCodes.QuestArena or FieldCodes.Boss
         || state is FieldState.QuestArena or FieldState.Room or FieldState.Action;
+
+    // A route's point (the game's planar x, z) in render space, where the player and the minimap's marks are.
+    public static Vector3 RenderPoint(RoutePoint point) => WorldSpace.Mirror(new Vector3(point.X, 0f, point.Z));
 
     // Original stage coordinates are fixed point with Z mirrored relative to the engine (stage vertex Z = -z).
     public static Vector2 MapPoint(PristonIntRectangle rectangle, Vector3 position) =>
@@ -129,9 +139,11 @@ public sealed class HudMinimap
         return dw > 0 && dh > 0;
     }
 
+    // The heading clockwise from north (up on the map), 0 without a forward.
+    public static float Heading(Vector3 forward) => forward.X == 0 && forward.Z == 0 ? 0f : WorldSpace.TransportFacing(forward);
+
     // The minimap arrow bitmap points down and is turned half a circle before applying the heading.
-    public static float ArrowRotation(Vector3 forward) =>
-        forward.X == 0 && forward.Z == 0 ? MathF.PI : WorldSpace.TransportFacing(forward) + MathF.PI;
+    public static float ArrowRotation(Vector3 forward) => Heading(forward) + MathF.PI;
 
     // A world offset from the player to the box centre: x east, y south (engine z), 64 pixels per view radius.
     public static Vector2 MarkerOffset(Vector3 player, Vector3 marker, float size) =>
@@ -187,12 +199,31 @@ public sealed class HudMinimap
     private const int ZoneDots = 72;
     private static readonly Color ZoneColor = new(90, 200, 255);
 
-    // zone: the Battle Royale's safe zone (centre and radius), drawn as a dotted circle.
+    // Dots along the touch HUD's route are this many world units apart; its colours are the Android minimap's.
+    private const float RouteDotSpacing = 72f;
+    private const int HuntDots = 96;
+    private const float TouchArrowSize = BoxSize * .055f;
+    private static readonly Color TouchBackdrop = new(27, 22, 17);
+    private static readonly Color TouchEdge = new(233, 196, 117);
+    private static readonly Color RouteColor = new(255, 214, 64);
+    private static readonly Color HuntFill = Color.FromNonPremultiplied(255, 50, 36, 80);
+    private static readonly Color HuntEdge = Color.FromNonPremultiplied(255, 96, 72, 230);
+
+    // zone: the Battle Royale's safe zone (centre and radius), drawn as a dotted circle. The touch HUD's box also draws
+    // route (the quest guide's) and hunt (the journey's hunting area, render space).
     public void Draw(HudPainter painter, HudLayout layout, HudWorldView world, IReadOnlyList<Vector3> npcs, IReadOnlyList<Vector3> party, bool hovered,
-        Vector3? guide = null, (Vector3 Center, float Radius)? zone = null)
+        Vector3? guide = null, (Vector3 Center, float Radius)? zone = null, HudMinimapRoute route = default, (Vector3 Center, float Radius)? hunt = null)
     {
         var box = Box(layout);
-        painter.ColorBox(box, 0, 0, 0, 128);
+        var inside = new Rectangle(box.X + 1, box.Y + 1, BoxSize - 2, BoxSize - 2);
+        if (layout.Touch)
+        {
+            painter.Fill(box, TouchBackdrop);
+        }
+        else
+        {
+            painter.ColorBox(box, 0, 0, 0, 128);
+        }
         if (_neighbour is not null)
         {
             DrawMap(painter, box, _neighbourMap, world.NeighbourMapRectangle, world.PlayerPosition);
@@ -204,6 +235,13 @@ public sealed class HudMinimap
         }
 
         var center = new Vector2(box.X + HalfBox, box.Y + HalfBox);
+        if (layout.Touch && hunt is { } area)
+        {
+            var offset = MarkerOffset(world.PlayerPosition, area.Center, _viewSize);
+            painter.Disc((int)(center.X + offset.X), (int)(center.Y + offset.Y), (int)(area.Radius * 64 / _viewSize), HuntFill, inside);
+            DotRing(painter, center, world.PlayerPosition, area.Center, area.Radius, HuntDots, HuntEdge);
+        }
+
         for (var index = 0; index < npcs.Count; index++)
         {
             var npc = npcs[index];
@@ -230,16 +268,12 @@ public sealed class HudMinimap
 
         if (zone is { } safe)
         {
-            for (var dot = 0; dot < ZoneDots; dot++)
-            {
-                var angle = MathF.Tau * dot / ZoneDots;
-                var point = safe.Center + new Vector3(MathF.Cos(angle) * safe.Radius, 0f, MathF.Sin(angle) * safe.Radius);
-                var offset = MarkerOffset(world.PlayerPosition, point, _viewSize);
-                if (MathF.Abs(offset.X) < HalfBox - 1 && MathF.Abs(offset.Y) < HalfBox - 1)
-                {
-                    painter.Fill(new Rectangle((int)(center.X + offset.X) - 1, (int)(center.Y + offset.Y) - 1, 2, 2), ZoneColor);
-                }
-            }
+            DotRing(painter, center, world.PlayerPosition, safe.Center, safe.Radius, ZoneDots, ZoneColor);
+        }
+
+        if (layout.Touch && route.Shown)
+        {
+            DrawRoute(painter, inside, center, world.PlayerPosition, route);
         }
 
         if (guide is { } destination)
@@ -248,6 +282,12 @@ public sealed class HudMinimap
             var at = new Point((int)(center.X + offset.X), (int)(center.Y + offset.Y));
             painter.Fill(new Rectangle(at.X - 3, at.Y - 3, 7, 7), GuideRim);
             painter.Fill(new Rectangle(at.X - 2, at.Y - 2, 5, 5), GuideColor);
+        }
+
+        if (layout.Touch)
+        {
+            DrawTouchFrame(painter, box, center, world.PlayerForward);
+            return;
         }
 
         painter.Rotated(HudArt.MapArrow, center, ArrowRotation(world.PlayerForward));
@@ -274,6 +314,58 @@ public sealed class HudMinimap
                 }
             }
         }
+    }
+
+    // A circle of 2x2 dots around ring (render space), those inside the box.
+    private void DotRing(HudPainter painter, Vector2 center, Vector3 player, Vector3 ring, float radius, int dots, Color color)
+    {
+        for (var dot = 0; dot < dots; dot++)
+        {
+            var angle = MathF.Tau * dot / dots;
+            var point = ring + new Vector3(MathF.Cos(angle) * radius, 0f, MathF.Sin(angle) * radius);
+            var offset = MarkerOffset(player, point, _viewSize);
+            if (MathF.Abs(offset.X) < HalfBox - 1 && MathF.Abs(offset.Y) < HalfBox - 1)
+            {
+                painter.Fill(new Rectangle((int)(center.X + offset.X) - 1, (int)(center.Y + offset.Y) - 1, 2, 2), color);
+            }
+        }
+    }
+
+    // Gold dots from the player along the route's points still ahead, a larger one at its end.
+    private void DrawRoute(HudPainter painter, Rectangle inside, Vector2 center, Vector3 player, HudMinimapRoute route)
+    {
+        var from = new Vector2(player.X, player.Z);
+        for (var index = route.From; index < route.Points.Count; index++)
+        {
+            var to = route.Points[index];
+            var dots = Math.Max(1, (int)(Vector2.Distance(from, to) / RouteDotSpacing));
+            for (var dot = 1; dot <= dots; dot++)
+            {
+                RouteDot(painter, inside, center, player, Vector2.Lerp(from, to, dot / (float)dots), 1);
+            }
+
+            from = to;
+        }
+
+        RouteDot(painter, inside, center, player, from, 3);
+    }
+
+    private void RouteDot(HudPainter painter, Rectangle inside, Vector2 center, Vector3 player, Vector2 point, int radius)
+    {
+        var offset = MarkerOffset(player, new Vector3(point.X, 0f, point.Y), _viewSize);
+        painter.Disc((int)(center.X + offset.X), (int)(center.Y + offset.Y), radius, RouteColor, inside);
+    }
+
+    // The Android minimap's gold edge and its gold arrow turned to the heading.
+    private static void DrawTouchFrame(HudPainter painter, Rectangle box, Vector2 center, Vector3 forward)
+    {
+        painter.Fill(new Rectangle(box.X, box.Y, box.Width, 2), TouchEdge);
+        painter.Fill(new Rectangle(box.X, box.Bottom - 2, box.Width, 2), TouchEdge);
+        painter.Fill(new Rectangle(box.X, box.Y + 2, 2, box.Height - 4), TouchEdge);
+        painter.Fill(new Rectangle(box.Right - 2, box.Y + 2, 2, box.Height - 4), TouchEdge);
+        var (sin, cos) = MathF.SinCos(Heading(forward));
+        Vector2 Turned(float x, float y) => center + new Vector2(x * cos - y * sin, x * sin + y * cos) * TouchArrowSize;
+        painter.Triangle(Turned(0f, -1f), Turned(.7f, 1f), Turned(-.7f, 1f), TouchEdge);
     }
 
     private void DrawMap(HudPainter painter, Rectangle box, string path, PristonIntRectangle rectangle, Vector3 player)

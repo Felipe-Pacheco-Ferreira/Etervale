@@ -120,6 +120,7 @@ public sealed partial class GameplayScreen : GameScreen
 
         _ = FetchWorldCatalogAsync();
         AttachTouch();
+        AttachFreeHunt();
         WebWorldHud.Attach(_hud);
         WebWorldLoading.ScenePrepared();
     }
@@ -179,16 +180,19 @@ public sealed partial class GameplayScreen : GameScreen
         }
     }
 
+    // The quest hunt fights the quest's nearest monster; the touch HUD's free hunt (UpdateFreeHunt) what its options pick.
+    // A click on the world or the joystick ends the quest hunt and pauses the free hunt.
     private void UpdateAutoHunt()
     {
         var code = _hud.AutoHuntQuestCode;
-        if (_hud.InTown || code == 0 || _scene.PlayerDead || !Context.IsWindowActive ||
-            (!_hud.PointerCaptured && Mouse.GetState().LeftButton == ButtonState.Pressed) || TouchJoystickMoving)
+        var manual = (!_hud.PointerCaptured && Mouse.GetState().LeftButton == ButtonState.Pressed) || TouchJoystickMoving;
+        if (_hud.InTown || code == 0 || _scene.PlayerDead || !Context.IsWindowActive || manual)
         {
             _hud.AutoHuntEnabled = false;
         }
 
-        var target = 0UL;
+        var target = UpdateFreeHunt(manual);
+        var free = _freeHunt.Enabled;
         if (_hud.AutoHuntEnabled)
         {
             var nearest = float.PositiveInfinity;
@@ -202,7 +206,7 @@ public sealed partial class GameplayScreen : GameScreen
             }
         }
 
-        if (target != _autoHuntTarget)
+        if (target != _autoHuntTarget || free && target != 0 && _scene.AttackTargetId != target)
         {
             if (target != 0 || _scene.AttackTargetId == _autoHuntTarget)
             {
@@ -221,6 +225,7 @@ public sealed partial class GameplayScreen : GameScreen
         {
             _pendingHudCatalog = null;
             _hud.Combat.SetCatalog(catalog);
+            _freeHunt.Catalog = catalog;
         }
 
         var field = _scene.ActiveFieldDefinition;
@@ -268,6 +273,7 @@ public sealed partial class GameplayScreen : GameScreen
             _scene.SendChatAsync);
         UpdateAutoHunt();
         UpdateQuestNavigation(gameTime);
+        _hud.QuestRoute = new HudMinimapRoute(_questRoutePoints, _questRouteIndex);
         _scene.Update(gameTime);
         _hud.TargetId = _scene.SelectedTargetId;
         _hud.HelperPet = _scene.SelfHelperPet();
@@ -383,6 +389,7 @@ public sealed partial class GameplayScreen : GameScreen
         WebWorldHud.Detach(_hud);
         _voice.Dispose();
         CancelQuestNavigation();
+        DetachFreeHunt();
         if (_scene is not null && _hud is not null)
         {
             _scene.PresenceObserved -= _hud.Combat.Observe;

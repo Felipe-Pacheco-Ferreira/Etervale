@@ -276,12 +276,51 @@ public sealed class HudPainter : IDisposable
     }
 
     // A filled circle: one fill per row.
-    public void Disc(int centerX, int centerY, int radius, Color premultiplied)
+    public void Disc(int centerX, int centerY, int radius, Color premultiplied) =>
+        Disc(centerX, centerY, radius, premultiplied, new Rectangle(centerX - radius, centerY - radius, 2 * radius + 1, 2 * radius + 1));
+
+    // A filled circle cut to clip.
+    public void Disc(int centerX, int centerY, int radius, Color premultiplied, Rectangle clip)
     {
-        for (var row = -radius; row <= radius; row++)
+        var last = Math.Min(radius, clip.Bottom - 1 - centerY);
+        for (var row = Math.Max(-radius, clip.Top - centerY); row <= last; row++)
         {
             var half = (int)MathF.Round(MathF.Sqrt(radius * radius - row * row));
-            Fill(new Rectangle(centerX - half, centerY + row, 2 * half + 1, 1), premultiplied);
+            var left = Math.Max(centerX - half, clip.Left);
+            var right = Math.Min(centerX + half, clip.Right - 1);
+            Fill(new Rectangle(left, centerY + row, right - left + 1, 1), premultiplied);
+        }
+    }
+
+    // A filled triangle: one fill per row between its edges, sampled at the row's middle.
+    public void Triangle(Vector2 a, Vector2 b, Vector2 c, Color premultiplied)
+    {
+        var bottom = (int)MathF.Ceiling(MathF.Max(a.Y, MathF.Max(b.Y, c.Y)));
+        for (var row = (int)MathF.Floor(MathF.Min(a.Y, MathF.Min(b.Y, c.Y))); row < bottom; row++)
+        {
+            var y = row + .5f;
+            var left = float.MaxValue;
+            var right = float.MinValue;
+            Cross(a, b, y, ref left, ref right);
+            Cross(b, c, y, ref left, ref right);
+            Cross(c, a, y, ref left, ref right);
+            if (right >= left)
+            {
+                var x = (int)MathF.Round(left);
+                Fill(new Rectangle(x, row, Math.Max(1, (int)MathF.Round(right) - x), 1), premultiplied);
+            }
+        }
+
+        static void Cross(Vector2 from, Vector2 to, float y, ref float left, ref float right)
+        {
+            if (from.Y <= y == to.Y <= y)
+            {
+                return;
+            }
+
+            var x = from.X + (y - from.Y) * (to.X - from.X) / (to.Y - from.Y);
+            left = MathF.Min(left, x);
+            right = MathF.Max(right, x);
         }
     }
 

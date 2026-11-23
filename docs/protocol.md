@@ -41,7 +41,8 @@ The codecs live in `Shared/PristonTale.Protocol`; the server edge is `Server/Pri
 | `Packets/ItemPackets.cs` | Owner item details (`ItemDetailEntry`, `ItemDetailsPartPacket`), the equipment status (`OwnerItemStatusPacket`) and the aging progress (`AgingProgressPacket`). |
 | `Packets/SkillPackets.cs` | Skill cast, cast result, skill events, status effects, cooldowns. |
 | `Packets/PersonalShopPackets.cs` | Personal shop open, close, view and buy requests; result, listing and details. |
-| `Packets/PartyPackets.cs` | Party invite, answer and command requests; the request a player receives and the party's members. |
+| `Packets/PartyPackets.cs` | Party invite, answer and command requests; the request a player receives, the party's members and their hunt counters (`PartyHunt`). |
+| `Packets/PotionPotencyPacket.cs` | `PotionPotency`: the carried potions' restore ranges. |
 | `Packets/TradePackets.cs` | Trade request, answer, offer, lock and cancel; the request a player receives, the trade window and its items' values. |
 | `Packets/DuelPackets.cs` | Duel answer; the challenge a player receives and the duellist's duel ([application.md](application.md#duels)). |
 | `Packets/ArenaPackets.cs` | The receiver's arena queue or match ([application.md](application.md#arena)). |
@@ -228,10 +229,12 @@ Every message code has the high word `0x4554` ("ET"); every message keeps the `{
 | `0x45540300` | `ItemDetails` | S→C | The values of every owned item copy at an inventory revision, in parts sent before its `Inventory` parts. |
 | `0x45540301` | `OwnerItemStatus` | S→C | Carried and maximum weight, critical, block, range, attack speed, belt capacity, regeneration, magic mastery and the eight resistances; sent before every `OwnerStatus`. |
 | `0x45540302` | `AgingProgress` | S→C | The counts of the owner's worn aging copies toward their goals, whenever a count moves. |
+| `0x45540303` | `PotionPotency` | S→C | `{int64 Revision, list {Guid InstanceId, int32 LifeMin, LifeMax, ManaMin, ManaMax, StaminaMin, StaminaMax}}`: each carried potion's restore ranges at an inventory revision, sent with `ItemDetails`; the free hunt picks the smallest dose that reaches a threshold. An older client ignores it. |
 | `0x45540400` / `0x45540401` | `ItemUseCommand` / `ItemUseResult` | C→S / S→C | Use of one carried item, correlated by operation id; a travel item also sends a forced `FieldWarp`. |
 | `0x45540402` | `PremiumTimers` | S→C | The owner's running premium timers whenever they change. |
 | `0x45540403` | `ItemEffects` | S→C | Item effects around players (firecrackers, learn ring, mastery, pet strikes), on the presence timeline. |
 | `0x45540404` | `DismissCrystalPets` | C→S | `{uint16 Version = 1, uint16 0, uint32 StatusCode}`: the owner confirmed dismissing the pet its status code names (each pet has its own); the status's removal answers it. |
+| `0x45540405` | `CrystalPetTargeting` | C→S | `{uint16 Version = 1, uint16 0, uint8 Mode, uint8 0, uint16 0}`: how the owner's crystal pets pick prey (`CrystalPetTargeting`: independent, the owner's combat target, or only monsters attacking the owner or the pet); an unknown mode is refused. |
 | `0x45540500` / `0x45540501` | `QuestRequest` / `QuestResult` | C→S / S→C | One quest step (talk, proceed, accept, class change, reward choice, skill redistribution), correlated by operation id (see below). |
 | `0x45540502` | `QuestJournal` | S→C | The owner's quest journal view whenever its revision changes. |
 | `0x45540503` | `QuestNotices` | S→C | Quest notices of the world tick and a quest dialog the world opened. |
@@ -241,6 +244,7 @@ Every message code has the high word `0x4554` ("ET"); every message keeps the `{
 | `0x45540700` .. `0x45540702` | `PartyInvite`, `PartyAnswer`, `PartyCommand` | C→S | Ask a player to group, answer a request, a party window button (see below). |
 | `0x45540703` / `0x45540704` | `PartyRequest` / `PartyMembers` | S→C | A player asks the receiver to group; the receiver's party when it changed. |
 | `0x45540705` | `PartyDirectory` | S→C | Own admission policy and optional authoritative server-local group search results (up to 80). |
+| `0x45540706` | `PartyHunt` | S→C | `{uint8 Count, members {uint64 EntityId, uint64 Damage, uint64 Experience, uint32 Kills, uint32 Deaths}}` (party header first): each member's `PartyHuntCounters` while grouped (effective damage to wild monsters, combat experience, credited kills, deaths), in any field, sent when they change; `PartyMembers` is no longer resent for counters alone. |
 | `0x45540800` .. `0x45540804` | `TradeRequest`, `TradeAnswer`, `TradeOffer`, `TradeLock`, `TradeCancel` | C→S | Ask a player to trade, answer a request, the side's whole offer, lock it, close the trade (see below). |
 | `0x45540805` .. `0x45540807` | `TradeAsked`, `TradeState`, `TradeDetails` | S→C | A player asks the receiver to trade; the trade window when it changed, after its partner items' values. |
 | `0x45541000` / `0x45541001` | `ContactChange` / `ContactRefresh` | C→S | Put a name on the friends or ignored list or take it off; send the lists again. |
@@ -289,7 +293,7 @@ These bodies have no version header, except the combat event list's (see [Event 
 | `Skills` | `int64 Revision, int32 Count`, then `{uint Code, int32 Rank, int32 Uses}` | 20 + 12n |
 | `CombatEvents` | `uint16 Version (2), uint16 Count`, then compact entries (see [Event lists](#event-lists)) | 12 + 4 to 66 per entry |
 | `RemoveObjects` | `int32 Count`, then `uint64 EntityId` | 12 + 8n |
-| `GroundItems` | `uint16 Version (1), uint16 Flags, int32 Count`, then `{Guid Id, uint32 ItemCode, uint8 Flags (1 gold, 2 equipment details, 4 rare), uint8 RequiredLevel, uint16 PackedSpec, int32 Amount, X, Y, Z, text Name (64 B)}` (1 to 64) | 16 + up to 106n |
+| `GroundItems` | `uint16 Version (1), uint16 Flags, int32 Count`, then `{Guid Id, uint32 ItemCode, uint8 Flags (1 gold, 2 equipment details, 4 rare, 8 thrown by the receiver), uint8 RequiredLevel, uint16 PackedSpec, int32 Amount, X, Y, Z, text Name (64 B)}` (1 to 64) | 16 + up to 106n |
 | `GroundItemsRemoved` | `uint16 Version (1), uint16 Flags, int32 Count`, then `Guid Id` | 16 + 16n |
 | `ItemDetails` | `uint16 Version (1), uint16 Flags, int64 Revision, int32 Part, Parts, Count`, then 236-byte entries (at most 24) | 32 + 236n |
 | `OwnerItemStatus` | `uint16 Version (1), uint16 Flags, int32 CarriedWeight, MaxWeight, CriticalChance, BlockChance, ShootingRange, AttackSpeed, PotionSpace, float LifeRegen, ManaRegen, StaminaRegen, MagicMastery, int16 Resistances[8]` | 72 |

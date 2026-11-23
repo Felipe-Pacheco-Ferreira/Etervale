@@ -9,6 +9,7 @@ using PristonTale.Simulation.Characters;
 using PristonTale.Simulation.Quests;
 using PristonTale.Simulation.World.Loot;
 using PristonTale.Contracts.Motion;
+using PristonTale.Contracts.Social;
 using PristonTale.Contracts.World;
 using PristonTale.Simulation.Physics;
 using PristonTale.Simulation.World;
@@ -91,6 +92,7 @@ internal sealed partial class PresenceEncoder : IEventHandleWriter
     private SharedPresenceWire? _wire;
     private Simulation.Progression.RestartOffer? _restartOffer;
     private PartyView? _party;
+    private PartyHuntWire[] _partyHunt = [];
     private Contracts.Social.PartyDirectoryEntry[]? _partyDirectory;
     // The weather last sent; null until the first snapshot sends it.
     private WeatherState? _weather;
@@ -402,26 +404,33 @@ internal sealed partial class PresenceEncoder : IEventHandleWriter
         connection.Send(_scratch.AsSpan(0, packet.Write(_scratch)));
     }
 
-    // The party's members whenever they change (none once the receiver leaves it), and each new request to join one.
+    // The party's members whenever they change (none once the receiver leaves it), their hunt counters whenever those
+    // change, and each new request to join one.
     private void SendParty(in WorldSnapshot snapshot, IPacketSink connection)
     {
         var partyChanged = !ReferenceEquals(snapshot.Party, _party);
+        var rosterChanged = partyChanged && _party?.SameRosterAs(snapshot.Party) != true;
         if (partyChanged)
         {
             _party = snapshot.Party;
             var members = _party?.Members ?? [];
-            var wire = new PartyMemberWire[members.Count];
-            for (var index = 0; index < wire.Length; index++)
+            if (rosterChanged)
             {
-                var member = members[index];
-                wire[index] = new PartyMemberWire(member.EntityId, member.Name, member.Level, member.Life, member.MaxLife, member.X, member.Z);
+                var wire = new PartyMemberWire[members.Count];
+                for (var index = 0; index < wire.Length; index++)
+                {
+                    var member = members[index];
+                    wire[index] = new PartyMemberWire(member.EntityId, member.Name, member.Level, member.Life, member.MaxLife, member.X, member.Z);
+                }
+
+                connection.Send(_scratch.AsSpan(0, new PartyMembersPacket(wire).Write(_scratch)));
             }
 
-            connection.Send(_scratch.AsSpan(0, new PartyMembersPacket(wire).Write(_scratch)));
+            SendPartyHunt(members, connection);
         }
 
         var directoryChanged = !ReferenceEquals(snapshot.PartyDirectory, _partyDirectory);
-        if (partyChanged || directoryChanged)
+        if (rosterChanged || directoryChanged)
         {
             _partyDirectory = snapshot.PartyDirectory;
             var leaderId = _party is { Members.Count: > 0 } ? _party.Members[0].EntityId : 0;
@@ -433,6 +442,24 @@ internal sealed partial class PresenceEncoder : IEventHandleWriter
         {
             _partyRequest = request;
             connection.Send(_scratch.AsSpan(0, new PartyRequestPacket(request.FromId, request.FromName, request.Recommendation ? request.JoinerName : "").Write(_scratch)));
+        }
+    }
+
+    private void SendPartyHunt(IReadOnlyList<PartyMemberView> members, IPacketSink connection)
+    {
+        Span<PartyHuntWire> hunt = stackalloc PartyHuntWire[PartyLimits.MaxMembers];
+        var count = Math.Min(members.Count, hunt.Length);
+        for (var index = 0; index < count; index++)
+        {
+            var member = members[index];
+            hunt[index] = new PartyHuntWire(member.EntityId, member.Hunt);
+        }
+
+        var current = hunt[..count];
+        if (!current.SequenceEqual(_partyHunt))
+        {
+            _partyHunt = current.ToArray();
+            connection.Send(_scratch.AsSpan(0, new PartyHuntPacket(_partyHunt).Write(_scratch)));
         }
     }
 
@@ -1074,7 +1101,7 @@ internal sealed partial class PresenceEncoder : IEventHandleWriter
             _visibleDrops.Add(drop.View.Id);
             if (_drops.TryAdd(drop.View.Id, drop.View))
             {
-                _newDrops.Add(WireMapping.Drop(drop.View));
+                _newDrops.Add(WireMapping.Drop(drop.View, drop.View.Thrown && drop.OwnerId == _self));
             }
         }
 

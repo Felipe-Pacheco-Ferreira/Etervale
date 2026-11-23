@@ -29,6 +29,7 @@ public sealed class HudRequestBox(HudRequestBoxArt art, long lifeMs)
     public bool IsOpen => FromName is not null;
     public ulong FromId { get; private set; }
     public string FromName { get; private set; }
+    public string Line => _line;
 
     public void Show(ulong fromId, string fromName, string line, double nowMs)
     {

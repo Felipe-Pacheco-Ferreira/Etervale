@@ -6,10 +6,24 @@ import '../wwwroot/settings.js';
 import '../wwwroot/news.js';
 import { heroTables } from '../wwwroot/heroes.js';
 import { touchTables } from '../wwwroot/touch-hud.js';
+import { questTables } from '../wwwroot/touch-quests.js';
+import { mapTables } from '../wwwroot/touch-map.js';
+import { bagTables } from '../wwwroot/touch-bag.js';
+import { statusTables } from '../wwwroot/touch-status.js';
+import { skillsTables } from '../wwwroot/touch-skills.js';
+import { npcTables } from '../wwwroot/touch-npc.js';
+import { feedTables } from '../wwwroot/touch-feed.js';
+import { partyTables } from '../wwwroot/touch-party.js';
+import { restartTables } from '../wwwroot/touch-restart.js';
+import { rewardsTables } from '../wwwroot/touch-rewards.js';
+import { pickerTables } from '../wwwroot/touch-skill-picker.js';
+import { layoutTables } from '../wwwroot/touch-layout.js';
+import { tutorialTables } from '../wwwroot/touch-tutorial.js';
+import { huntTables } from '../wwwroot/touch-hunt.js';
 import { worldTables } from '../wwwroot/world-hud.js';
 import { loginTexts } from '../wwwroot/login-texts.js';
 
-const tables = { ...heroTables, ...touchTables, ...worldTables, login: loginTexts };
+const tables = { ...heroTables, ...touchTables, ...questTables, ...mapTables, ...bagTables, ...statusTables, ...skillsTables, ...npcTables, ...feedTables, ...partyTables, ...restartTables, ...rewardsTables, ...pickerTables, ...layoutTables, ...tutorialTables, ...huntTables, ...worldTables, login: loginTexts };
 const placeholders = text => (text.match(/\{\d+\}|%|\$\{[^}]*\}/g) ?? []).sort();
 
 // The keys, array lengths and function arities of a table, for comparing a catalog's table with the English one.

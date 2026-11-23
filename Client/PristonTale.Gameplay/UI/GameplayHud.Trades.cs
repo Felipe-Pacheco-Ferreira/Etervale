@@ -91,7 +91,7 @@ public sealed partial class GameplayHud
     private bool ClickTrade(Point pointer)
     {
         var from = _tradeRequest.FromId;
-        if (_tradeRequest.Click(pointer) is { } answer)
+        if (!TouchHudShown && _tradeRequest.Click(pointer) is { } answer)
         {
             Trades?.AnswerTradeAsync(from, answer);
             return true;

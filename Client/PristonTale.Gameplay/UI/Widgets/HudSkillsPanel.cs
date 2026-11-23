@@ -438,7 +438,8 @@ public sealed class HudSkillsPanel(UiFonts fonts, HudSprites sprites)
         }
     }
 
-    private bool CanTrain(int index, OwnerState state)
+    // The next rank of the class's skill at index can be trained and paid for, wherever the player stands.
+    public bool CanTrain(int index, OwnerState state)
     {
         if (state is null || index >= _entries.Length)
         {

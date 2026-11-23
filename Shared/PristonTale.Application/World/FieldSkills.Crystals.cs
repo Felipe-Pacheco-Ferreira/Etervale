@@ -4,6 +4,7 @@ using PristonTale.Simulation.World;
 using PristonTale.Simulation.World.Ai;
 using PristonTale.Simulation.World.Monsters;
 using PristonTale.Contracts.Motion;
+using PristonTale.Contracts.World;
 using PristonTale.Simulation.World.Npcs;
 
 namespace PristonTale.Application.World;
@@ -159,7 +160,7 @@ internal sealed partial class FieldSkills
             return null;
         }
 
-        return FollowAndFight(pet, owner, tuning, dtMs);
+        return FollowAndFight(pet, owner, tuning, dtMs, owner.CrystalPetTargeting);
     }
 
     // A pet that died, expired, cannot follow its owner or whose owner is gone or in a town: it falls, and the owner's

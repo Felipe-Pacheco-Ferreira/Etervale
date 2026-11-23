@@ -62,14 +62,19 @@ public sealed partial class GameplayHud
     private bool ClickDuel(HudLayout layout, Point pointer)
     {
         var from = _duelRequest.FromId;
-        if (_duelRequest.Click(pointer) is { } answer)
+        if (!TouchHudShown && _duelRequest.Click(pointer) is { } answer)
         {
             Duels?.AnswerDuelAsync(from, answer);
             return true;
         }
 
-        if (!ShowsPlayerButtons || !HudPlayerButtons.DuelButton(HudCombat.TargetFrame(layout)).Contains(pointer)
-            || Combat.PlayerName(ButtonsPlayerId) is not { } name)
+        return ShowsCanvasPlayerButtons && HudPlayerButtons.DuelButton(HudCombat.TargetFrame(layout)).Contains(pointer) && ChallengeReached();
+    }
+
+    // The Duel button, from the canvas or the touch HUD's row: false when the reached player's name is not known.
+    private bool ChallengeReached()
+    {
+        if (Combat.PlayerName(ButtonsPlayerId) is not { } name)
         {
             return false;
         }
@@ -80,7 +85,7 @@ public sealed partial class GameplayHud
     }
 
     private bool CapturesDuel(HudLayout layout, Point pointer) =>
-        _duelRequest.Captures(pointer) || ShowsPlayerButtons && HudPlayerButtons.DuelButton(HudCombat.TargetFrame(layout)).Contains(pointer);
+        !TouchHudShown && _duelRequest.Captures(pointer) || ShowsCanvasPlayerButtons && HudPlayerButtons.DuelButton(HudCombat.TargetFrame(layout)).Contains(pointer);
 
     private void DrawDuel(HudLayout layout)
     {

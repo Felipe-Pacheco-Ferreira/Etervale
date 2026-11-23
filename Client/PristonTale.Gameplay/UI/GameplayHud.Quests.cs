@@ -84,6 +84,7 @@ public sealed partial class GameplayHud
         if (!ReferenceEquals(_quests.View, _questView))
         {
             _questView = _quests.View;
+            _combatFeed.Observe(_questView);
             _questViewMs = _clock.Elapsed.TotalMilliseconds;
             _weaponHunt = _questView is { Code: RankUpByQuestWeapon.Code }
                 ? RankUpByQuestWeapon.HuntLine(QuestClasses.WeaponHunt(_class), _questView.WeaponStage, _questView.WeaponKillsLeft)
@@ -103,6 +104,12 @@ public sealed partial class GameplayHud
     // The quest dialog, its yes/no box and the skill redistribution offer are modal: they take every click.
     private bool ClickQuests(HudLayout layout, Point pointer)
     {
+        // The page answers the dialog and its yes/no boxes (touch-npc.js); a yes/no box still holds every other tap.
+        if (TouchHudShown && (_quests.SkillResetBox || _quests.Confirming || _quests.Dialog is not null))
+        {
+            return _quests.SkillResetBox || _quests.Confirming;
+        }
+
         if (_quests.SkillResetBox)
         {
             if (HudMessageBox.Accept.Contains(pointer) || HudMessageBox.Reject.Contains(pointer))
@@ -216,6 +223,16 @@ public sealed partial class GameplayHud
         _context.Presentation.Requested = _context.Presentation.Requested with { HideQuestTracker = !enabled };
     }
 
+    // The automatic quest ends, its route dropped (the free hunt starting).
+    private void StopQuestGuide()
+    {
+        if (QuestGuideEnabled)
+        {
+            QuestGuideEnabled = false;
+            QuestNavigationCanceled?.Invoke();
+        }
+    }
+
     internal void CancelQuestGuide()
     {
         QuestGuideEnabled = false;
@@ -228,6 +245,9 @@ public sealed partial class GameplayHud
     }
 
     internal void ClearQuestNavigationNotice() => _questNavigationMessage = "";
+
+    // The journey's hunt still counts kills.
+    private static bool JourneyHuntCounts(QuestView view) => view is { Code: AdventurerJourneyRoute.Code, KillsNeeded: > 0 } && view.Kills < view.KillsNeeded;
 
     internal static bool TryJourneyDestination(QuestView view, PlayerClass playerClass, out RoutePoint destination)
     {
@@ -243,7 +263,7 @@ public sealed partial class GameplayHud
             return false;
         }
         var route = AdventurerJourneyRoute.For(playerClass);
-        destination = view is { Code: QuestCode.AdventurerJourney, KillsNeeded: > 0 } && view.Kills < view.KillsNeeded
+        destination = JourneyHuntCounts(view)
             ? route.HuntPoints[0]
             : route.Guide;
         return true;

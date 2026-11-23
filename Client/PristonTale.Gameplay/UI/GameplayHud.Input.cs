@@ -96,19 +96,19 @@ public sealed partial class GameplayHud
 
         if (_settings.ShortcutPressed(keyboard, _previousKeyboard, HudSettingsPanel.InventoryShortcut) || (_settings.DefaultInventoryKey && Pressed(keyboard, Keys.I)))
         {
-            TogglePanel(_inventorySlide);
+            ToggleInventory();
             HelpPetKey("InvenTory");
         }
 
         if (_settings.ShortcutPressed(keyboard, _previousKeyboard, HudSettingsPanel.CharacterShortcut))
         {
-            TogglePanel(_statusSlide);
+            ToggleStatus();
             HelpPetKey("CarStatus");
         }
 
         if (_settings.ShortcutPressed(keyboard, _previousKeyboard, HudSettingsPanel.SkillsShortcut))
         {
-            TogglePanel(_skillSlide);
+            ToggleSkills();
             HelpPetKey("Skill");
         }
 
@@ -227,7 +227,7 @@ public sealed partial class GameplayHud
             return;
         }
 
-        if (_restart.Click(layout, pointer, RestartOffer?.FieldOpen == true))
+        if (!TouchHudShown && _restart.Click(layout, pointer, RestartOffer?.FieldOpen == true))
         {
             return;
         }
@@ -248,6 +248,11 @@ public sealed partial class GameplayHud
                 _settings.Click(pointer, keyboard.IsKeyDown(Keys.LeftShift) || keyboard.IsKeyDown(Keys.RightShift));
             }
 
+            return;
+        }
+
+        if (ClickTouchMap(layout, pointer))
+        {
             return;
         }
 
@@ -284,7 +289,7 @@ public sealed partial class GameplayHud
             return;
         }
 
-        if (_npcOpen && ClickNpc(state, layout, pointer))
+        if (_npcOpen && !TouchHudShown && ClickNpc(state, layout, pointer))
         {
             return;
         }
@@ -368,36 +373,48 @@ public sealed partial class GameplayHud
 
     private bool ClickNpc(OwnerState state, HudLayout layout, Point pointer)
     {
-        var current = _npc.Current;
         if (_npc.DestinationAt(pointer) is { } destination && state is not null)
         {
-            // A Bellatra team booth offers its ticket as its one destination.
-            var (kind, action) = _services.Open == NpcServiceKind.EventBooth
-                ? (NpcServiceKind.EventBooth, NpcServiceAction.EnterBellatra)
-                : (NpcServiceKind.Teleporter, NpcServiceAction.Teleport);
-            if (_services.Request(current.EntityId, current.Name, kind, action, state.InventoryRevision, anchor: destination.Index))
-            {
-                _prepareField?.Invoke(destination.FieldCode);
-            }
-
+            ChooseNpcDestination(state, destination);
             return true;
         }
 
         if (_npc.ServiceAt(pointer) is { } service)
         {
-            _services.Request(current.EntityId, current.Name, service.Kind, NpcServiceAction.Open);
+            OpenNpcService(service);
             return true;
         }
 
         if (HudNpcPanel.OkButton.Contains(pointer))
         {
-            _npcOpen = false;
-            _npc.Dismiss();
-            _quests.LeaveNpc();
+            CloseNpc();
             return true;
         }
 
         return HudNpcPanel.Box.Contains(pointer);
+    }
+
+    private void ChooseNpcDestination(OwnerState state, TeleportOffer destination)
+    {
+        var current = _npc.Current;
+        // A Bellatra team booth offers its ticket as its one destination.
+        var (kind, action) = _services.Open == NpcServiceKind.EventBooth
+            ? (NpcServiceKind.EventBooth, NpcServiceAction.EnterBellatra)
+            : (NpcServiceKind.Teleporter, NpcServiceAction.Teleport);
+        if (_services.Request(current.EntityId, current.Name, kind, action, state.InventoryRevision, anchor: destination.Index))
+        {
+            _prepareField?.Invoke(destination.FieldCode);
+        }
+    }
+
+    private void OpenNpcService(NpcServiceOffer service) =>
+        _services.Request(_npc.Current.EntityId, _npc.Current.Name, service.Kind, NpcServiceAction.Open);
+
+    private void CloseNpc()
+    {
+        _npcOpen = false;
+        _npc.Dismiss();
+        _quests.LeaveNpc();
     }
 
     private void PressButton(HudMenuButton button)
@@ -405,13 +422,13 @@ public sealed partial class GameplayHud
         switch (button)
         {
             case HudMenuButton.Status:
-                TogglePanel(_statusSlide);
+                ToggleStatus();
                 break;
             case HudMenuButton.Inventory:
-                TogglePanel(_inventorySlide);
+                ToggleInventory();
                 break;
             case HudMenuButton.Skills:
-                TogglePanel(_skillSlide);
+                ToggleSkills();
                 break;
             case HudMenuButton.System:
                 _systemMenu = !_systemMenu;
@@ -522,7 +539,7 @@ public sealed partial class GameplayHud
         }
 
         if (_helpPet.Captures(pointer) || CapturesHelp(pointer) || CapturesParty(layout, pointer) || CapturesClan(pointer) || CapturesCastle(pointer)
-            || CapturesBellatra(pointer) || _tradeRequest.Captures(pointer) || CapturesDuel(layout, pointer) || _personalShop.Captures(pointer)
+            || CapturesBellatra(pointer) || !TouchHudShown && _tradeRequest.Captures(pointer) || CapturesDuel(layout, pointer) || _personalShop.Captures(pointer)
             || _itemUse.Captures(pointer) || _wingGate.Captures(pointer) || _puzzle.Captures(pointer) || _crystalDismiss.Captures(pointer) || _premium.Contains(pointer))
         {
             return true;
@@ -542,16 +559,16 @@ public sealed partial class GameplayHud
             return true;
         }
 
-        if (_quests.SkillResetBox || _quests.Confirming || _quests.Dialog is not null && HudQuestDialog.Box.Contains(pointer)
+        if (_quests.SkillResetBox || _quests.Confirming || !TouchHudShown && _quests.Dialog is not null && HudQuestDialog.Box.Contains(pointer)
             || _questWindow.Contains(layout, pointer) || _skillHud.QuestTimerAt(pointer))
         {
             return true;
         }
 
-        return _restart.Open && HudRestartPanel.Box(layout).Contains(pointer)
+        return !TouchHudShown && _restart.Open && HudRestartPanel.Box(layout).Contains(pointer)
             || _systemMenu && HudSystemMenu.Captures(design, layout.Browser)
             || _settingsOpen && HudSettingsPanel.Box.Contains(pointer)
-            || _npcOpen && HudNpcPanel.Box.Contains(pointer)
+            || !TouchHudShown && _npcOpen && HudNpcPanel.Box.Contains(pointer)
             || _skills.TrainingPending && HudMessageBox.Bounds.Contains(pointer);
     }
 

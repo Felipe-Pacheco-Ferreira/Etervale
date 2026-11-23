@@ -163,7 +163,8 @@ internal static class WireMapping
             view.SourceKind, view.Control, flags, duration, remaining, view.Value);
     }
 
-    public static GroundItemEntry Drop(GroundDropView drop) => new(
+    // ownThrow: the receiver threw this drop.
+    public static GroundItemEntry Drop(GroundDropView drop, bool ownThrow = false) => new(
         drop.Id,
         drop.Gold ? ItemCodes.GoldCode : drop.ItemCode,
         drop.Gold,
@@ -176,6 +177,7 @@ internal static class WireMapping
         HasEquipmentDetails = drop.HasEquipmentDetails,
         RequiredLevel = (byte)Math.Clamp(drop.RequiredLevel, 0, byte.MaxValue),
         SpecJob = drop.SpecJob,
-        Rare = drop.Rare
+        Rare = drop.Rare,
+        OwnThrow = ownThrow
     };
 }

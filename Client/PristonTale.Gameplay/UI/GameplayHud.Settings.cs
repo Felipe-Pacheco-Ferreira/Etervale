@@ -40,7 +40,7 @@ public sealed partial class GameplayHud
             _guidePoint = TryJourneyDestination(_questView, _class, out var point) ? point : null;
         }
 
-        return _guidePoint is { } guide && guide.FieldCode == World.FieldCode ? new Vector3(guide.X, 0f, guide.Z) : null;
+        return _guidePoint is { } guide && guide.FieldCode == World.FieldCode ? HudMinimap.RenderPoint(guide) : null;
     }
 
     // The chat's place (ChatOffsetX/Y), held on the screen; while moveChat is on, a drag moves it and the place is kept

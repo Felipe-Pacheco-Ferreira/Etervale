@@ -498,6 +498,8 @@
                         <canvas data-role="touch-player" aria-hidden="true"></canvas>
                     </button>
                     <canvas class="touch-target" data-role="touch-target" aria-hidden="true" hidden></canvas>
+                    <div class="touch-player-buttons" data-role="touch-player-buttons" hidden></div>
+                    <div class="touch-party" data-role="touch-party" hidden></div>
                     <button type="button" class="touch-orb touch-chat" data-touch-chat aria-label="Chat"></button>
                     <div class="touch-chat-feed" data-role="touch-chat-feed" aria-live="polite"></div>
                     <dialog class="touch-chat-window" data-role="touch-chat-window" aria-labelledby="touch-chat-title">
@@ -516,6 +518,139 @@
                             <button type="submit" data-touch-label="send">Enviar</button>
                         </form>
                     </dialog>
+                    <div class="touch-quest" data-role="touch-quest" role="button" tabindex="0" hidden>
+                        <strong class="touch-quest-title" data-role="touch-quest-title"></strong>
+                        <span class="touch-quest-objective" data-role="touch-quest-objective"></span>
+                        <span class="touch-quest-bar" data-role="touch-quest-bar" hidden></span>
+                        <span class="touch-quest-status" data-role="touch-quest-status" hidden></span>
+                        <button type="button" class="touch-quest-auto" data-role="touch-quest-auto" hidden></button>
+                    </div>
+                    <dialog class="touch-journal" data-role="touch-journal" aria-labelledby="touch-journal-title">
+                        <header class="touch-chat-head">
+                            <h2 id="touch-journal-title" data-role="touch-journal-title">Missões</h2>
+                            <button type="button" class="touch-chat-close" data-touch-journal-close aria-label="Fechar">×</button>
+                        </header>
+                        <div class="touch-journal-tabs" data-role="touch-journal-tabs"></div>
+                        <div class="touch-journal-body">
+                            <div class="touch-journal-list" data-role="touch-journal-list"></div>
+                            <div class="touch-journal-detail" data-role="touch-journal-detail"></div>
+                        </div>
+                    </dialog>
+                    <dialog class="touch-bag" data-role="touch-bag" aria-labelledby="touch-bag-title">
+                        <header class="touch-chat-head">
+                            <h2 id="touch-bag-title" data-role="touch-bag-title">Inventário</h2>
+                            <button type="button" class="touch-chat-close" data-touch-bag-close aria-label="Fechar">×</button>
+                        </header>
+                        <div class="touch-bag-body">
+                            <div class="touch-bag-left">
+                                <div data-role="touch-bag-equipment-title">
+                                    <h3 class="touch-journal-section"><span class="touch-journal-diamond"></span><span>Equipamento</span><span class="touch-journal-rule"></span></h3>
+                                </div>
+                                <div class="touch-bag-equipment" data-role="touch-bag-equipment"></div>
+                                <div class="touch-bag-purse" data-role="touch-bag-purse"></div>
+                            </div>
+                            <div class="touch-bag-middle">
+                                <h3 class="touch-journal-section">
+                                    <span class="touch-journal-diamond"></span><span data-role="touch-bag-bag-title">Bolsa</span>
+                                    <span class="touch-journal-rule"></span><span class="touch-bag-note" data-role="touch-bag-note"></span>
+                                </h3>
+                                <div class="touch-bag-grid" data-role="touch-bag-grid"></div>
+                                <div class="touch-bag-belt-row">
+                                    <strong data-role="touch-bag-belt-title">Cinto</strong>
+                                    <div class="touch-bag-belt" data-role="touch-bag-belt"></div>
+                                </div>
+                            </div>
+                            <div class="touch-bag-sheet" data-role="touch-bag-sheet" hidden></div>
+                        </div>
+                    </dialog>
+                    <dialog class="touch-status" data-role="touch-status" aria-labelledby="touch-status-title">
+                        <header class="touch-chat-head">
+                            <h2 id="touch-status-title" data-role="touch-status-title"></h2>
+                            <button type="button" class="touch-chat-close" data-touch-status-close aria-label="Fechar">×</button>
+                        </header>
+                        <div class="touch-status-body">
+                            <div class="touch-status-hero" data-role="touch-status-hero"></div>
+                            <div class="touch-status-attributes" data-role="touch-status-attributes"></div>
+                            <div class="touch-status-combat" data-role="touch-status-combat"></div>
+                        </div>
+                    </dialog>
+                    <dialog class="touch-skills" data-role="touch-skills" aria-labelledby="touch-skills-title">
+                        <header class="touch-chat-head">
+                            <h2 id="touch-skills-title" data-role="touch-skills-title">Habilidades</h2>
+                            <button type="button" class="touch-chat-close" data-touch-skills-close aria-label="Fechar">×</button>
+                        </header>
+                        <div class="touch-journal-tabs" data-role="touch-skills-tabs"></div>
+                        <div class="touch-skills-body">
+                            <div class="touch-skills-cards" data-role="touch-skills-cards"></div>
+                            <div class="touch-skills-right">
+                                <div class="touch-skills-sheet" data-role="touch-skills-sheet"></div>
+                                <p class="touch-skills-note" data-role="touch-skills-note"></p>
+                            </div>
+                        </div>
+                    </dialog>
+                    <dialog class="touch-map" data-role="touch-map" aria-labelledby="touch-map-title">
+                        <header class="touch-chat-head">
+                            <h2 id="touch-map-title" data-role="touch-map-title">Mapa</h2>
+                            <button type="button" class="touch-chat-close" data-touch-map-close aria-label="Fechar">×</button>
+                        </header>
+                        <div class="touch-map-body">
+                            <div class="touch-map-frame">
+                                <canvas class="touch-map-canvas" data-role="touch-map-canvas"></canvas>
+                                <div class="touch-map-controls">
+                                    <button type="button" data-touch-map-zoom="in" aria-label="Aproximar">+</button>
+                                    <button type="button" data-touch-map-zoom="out" aria-label="Afastar">−</button>
+                                    <button type="button" data-touch-map-centre aria-label="Centralizar em você">◎</button>
+                                </div>
+                            </div>
+                            <div class="touch-map-side" data-role="touch-map-side"></div>
+                        </div>
+                    </dialog>
+                    <canvas class="touch-feed" data-role="touch-feed" aria-hidden="true"></canvas>
+                    <section class="touch-party-commands" data-role="touch-party-commands" hidden></section>
+                    <section class="touch-request" data-role="touch-request" aria-live="polite" hidden></section>
+                    <section class="touch-restart" data-role="touch-restart" aria-live="assertive" hidden></section>
+                    <section class="touch-skill-picker" data-role="touch-skill-picker" hidden></section>
+                    <div class="touch-layout" data-role="touch-layout" tabindex="-1" hidden></div>
+                    <div class="touch-coach" data-role="touch-coach" popover="manual" aria-live="polite" hidden></div>
+                    <dialog class="touch-hunt" data-role="touch-hunt" aria-labelledby="touch-hunt-title">
+                        <header class="touch-chat-head">
+                            <h2 id="touch-hunt-title"><span class="settings-diamond" aria-hidden="true"></span><span data-touch-hunt-title>Auto-caça</span></h2>
+                            <button type="button" class="touch-chat-close" data-touch-hunt-close aria-label="Fechar">×</button>
+                        </header>
+                        <div class="touch-hunt-body">
+                            <nav class="touch-hunt-tabs" data-role="touch-hunt-tabs"></nav>
+                            <div class="touch-hunt-main">
+                                <div class="touch-hunt-bar">
+                                    <span class="touch-hunt-badge" data-touch-hunt-chip aria-hidden="true">AUTO-CAÇA</span>
+                                    <strong data-role="touch-hunt-status" role="status">Desligado</strong>
+                                    <button type="button" class="touch-bag-action touch-hunt-toggle" data-role="touch-hunt-toggle">▶  INICIAR</button>
+                                    <button type="button" class="touch-chat-close" data-role="touch-hunt-reset" aria-label="Restaurar todas as configurações de Auto-caça">↻</button>
+                                </div>
+                                <div class="touch-hunt-page" data-role="touch-hunt-page"></div>
+                            </div>
+                        </div>
+                    </dialog>
+                    <dialog class="touch-rewards" data-role="touch-rewards" aria-labelledby="touch-rewards-title">
+                        <header class="touch-chat-head">
+                            <h2 id="touch-rewards-title" data-touch-rewards-title>Eventos &amp; Recompensas</h2>
+                            <button type="button" class="touch-chat-close" data-touch-rewards-help aria-pressed="false" aria-label="Ajuda">?</button>
+                            <button type="button" class="touch-chat-close" data-touch-rewards-close aria-label="Fechar">×</button>
+                        </header>
+                        <div class="touch-rewards-body">
+                            <div class="touch-rewards-tabs" data-role="touch-rewards-tabs"></div>
+                            <div class="touch-rewards-main">
+                                <div class="touch-rewards-strip" data-role="touch-rewards-strip"></div>
+                                <div class="touch-rewards-list" data-role="touch-rewards-list"></div>
+                                <div class="touch-rewards-footer" data-role="touch-rewards-footer"></div>
+                            </div>
+                        </div>
+                    </dialog>
+                    <section class="touch-npc" data-role="touch-npc" aria-live="polite" hidden>
+                        <div data-role="touch-npc-heading"></div>
+                        <div class="touch-npc-line" data-role="touch-npc-line"></div>
+                        <div class="touch-npc-browse" data-role="touch-npc-browse" hidden></div>
+                        <div class="touch-npc-actions" data-role="touch-npc-actions"></div>
+                    </section>
                     <nav class="touch-dock" aria-label="Janelas do jogo">
                         <button type="button" class="touch-orb touch-dock-orb" data-touch-menu-open aria-label="Menu"></button>
                         <button type="button" class="touch-orb touch-dock-orb" data-touch-action="inventory" aria-label="Bolsa"></button>
@@ -541,6 +676,10 @@
                             <button type="button" class="touch-menu-entry" data-touch-action="character" data-touch-glyph="shield"><span data-touch-label="character">Personagem</span></button>
                             <button type="button" class="touch-menu-entry" data-world-action="calendar" data-touch-glyph="calendar"><span data-world-label="calendar">Calendário</span></button>
                             <button type="button" class="touch-menu-entry" data-touch-menu="settings" data-touch-glyph="menu"><span data-touch-label="settings">Configurações</span></button>
+                        </div>
+                        <div class="touch-menu-row">
+                            <button type="button" class="touch-menu-entry" data-touch-menu="layout" data-touch-glyph="menu"><span data-touch-label="edit-hud">Editar HUD</span></button>
+                            <button type="button" class="touch-menu-entry" data-touch-menu="tutorial" data-touch-glyph="journal"><span data-touch-label="replay-tutorial">Rever tutorial</span></button>
                         </div>
                         <div class="touch-menu-grid">
                             <button type="button" data-world-action="auction" data-world-optional hidden>

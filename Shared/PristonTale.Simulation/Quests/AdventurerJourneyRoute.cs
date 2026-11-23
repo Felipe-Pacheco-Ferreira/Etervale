@@ -67,6 +67,9 @@ public sealed record TribeRoute(string GuideName, RoutePoint Guide, int HuntFiel
     // Where the hunt happens, as the maps mark it in red.
     public HuntArea HuntArea { get; } = HuntArea.Around(HuntPoints);
 
+    // The area the maps mark in a field: the hunt's, in its field, or null.
+    public HuntArea? HuntAreaIn(int field) => field == HuntField && HuntArea.Radius > 0 ? HuntArea : null;
+
     // The exit to take from a field towards another, or null when there is none.
     public RouteExit ExitTowards(int from, int to)
     {

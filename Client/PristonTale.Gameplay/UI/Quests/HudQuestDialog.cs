@@ -133,6 +133,8 @@ public sealed class HudQuestDialog
     }
 
     // The two question lines of the classic texts are one sentence; it wraps to the box under the yellow detail line.
+    public static string Question(string first, string second) => $"{first} {second}".Trim();
+
     // The last wrapped confirmation, kept while the box shows the same lines (the HUD draws on one thread).
     private static (string First, string Second, int Width) _boxText;
     private static IReadOnlyList<string> _boxLines = [];
@@ -152,7 +154,7 @@ public sealed class HudQuestDialog
         if (_boxText != (first, second, width))
         {
             _boxText = (first, second, width);
-            _boxLines = HudTextLayout.Wrap($"{first} {second}".Trim(), width, candidate => painter.Measure(candidate));
+            _boxLines = HudTextLayout.Wrap(Question(first, second), width, candidate => painter.Measure(candidate));
         }
 
         var lines = _boxLines;

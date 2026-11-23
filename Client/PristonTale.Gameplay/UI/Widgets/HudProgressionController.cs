@@ -14,6 +14,9 @@ public sealed class HudProgressionController(Func<ProgressionCommand, Task<Progr
     public bool LastOk { get; private set; }
     public int Completions { get; private set; }
 
+    // The progression revision the last accepted command left (the owner state that shows it may come later).
+    public long Revision { get; private set; }
+
     public void Submit(ProgressionCommand command)
     {
         if (Pending || apply is null)
@@ -37,6 +40,7 @@ public sealed class HudProgressionController(Func<ProgressionCommand, Task<Progr
         Message = outcome.Ok ? ClientText.Get("Progression.Saved")
             : outcome.Message.IsNone ? ClientText.Get("Progression.ConnectionError") : ClientText.Format(outcome.Message);
         LastOk = outcome.Ok;
+        Revision = outcome.Ok ? outcome.Revision : Revision;
         Completions++;
     }
 }

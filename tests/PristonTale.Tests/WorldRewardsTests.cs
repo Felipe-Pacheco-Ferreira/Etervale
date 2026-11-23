@@ -150,13 +150,14 @@ internal static class WorldRewardsTests
     private static Task PresenceAsync()
     {
         var code = ItemCodes.Parse("WA101");
-        var drop = new GroundDropView(Guid.NewGuid(), code, "WA101", "Stone Axe", 1, false, new Vector3(12, 3, -24));
+        var drop = new GroundDropView(Guid.NewGuid(), code, "WA101", "Stone Axe", 1, false, new Vector3(12, 3, -24)) { Thrown = true };
         EntityView Avatar(ulong id) => new(id, EntityKind.Player, false, Vector3.Zero, 0f, MotionState.Stand, 1, 10, 10, default);
         var snapshot = new WorldSnapshot(1, [Avatar(1), Avatar(2)], groundDrops: [new GroundDropState(drop, 1, false)]);
         var owner = new WireRoundTrip(1);
         var added = owner.PushMerged(snapshot).GroundAdded.Single();
         Assert.True(added.Id == drop.Id && added.ItemCode == code && added.CatalogKey == "WA101"
             && added.Name == "Stone Axe" && added.Amount == 1 && !added.Gold && added.Position == drop.Position, "ground loot changed over GroundItems");
+        Assert.True(added.ThrownByReceiver, "the thrower's own throw lost its flag over GroundItems");
         Assert.True(owner.PushMerged(snapshot).GroundAdded.Count == 0, "unchanged ground loot resent");
         Assert.True(new WireRoundTrip(2).PushMerged(snapshot).GroundAdded.Count == 0, "private loot leaked in presence");
         var outbox = new WorldOutbox();

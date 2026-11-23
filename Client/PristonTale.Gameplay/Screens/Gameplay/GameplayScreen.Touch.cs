@@ -63,6 +63,7 @@ public sealed partial class GameplayScreen
         _scene.SelectCombatTargetOnTap = true;
         // The target frame's target: the monster the player attacks, or else the one picked.
         _hud.TouchTargetId = _scene.AttackTargetId != 0 ? _scene.AttackTargetId : _scene.SelectedTargetId;
+        _hud.TouchAttacking = _scene.AttackTargetId != 0;
     }
 
     // The player's and the target's 3D heads for the page's frames, rendered before the world as the HUD's target
@@ -91,12 +92,12 @@ public sealed partial class GameplayScreen
             Context.SpriteBatch.Begin(blendState: BlendState.AlphaBlend);
             if (head is not null)
             {
-                Context.SpriteBatch.Draw(head, TouchPortraitPlacement.Bounds(viewport.Width, viewport.Height), Color.White);
+                Context.SpriteBatch.Draw(head, TouchPortraitPlacement.Bounds(viewport.Width, viewport.Height, _hud.TouchPlayerShift), Color.White);
             }
 
             if (target is not null)
             {
-                Context.SpriteBatch.Draw(target, TouchPortraitPlacement.TargetBounds(viewport.Width, viewport.Height), Color.White);
+                Context.SpriteBatch.Draw(target, TouchPortraitPlacement.TargetBounds(viewport.Width, viewport.Height, _hud.TouchTargetShift), Color.White);
             }
 
             Context.SpriteBatch.End();
@@ -113,17 +114,21 @@ public sealed partial class GameplayScreen
         Context.SpriteBatch.End();
     }
 
+    // The page's Atacar and skill buttons are the player's own commands: they pause the free hunt, whose target is dropped.
     private void TouchAttack()
     {
+        _freeHunt.NoteManualInput();
         var target = TouchTarget();
         if (target != 0)
         {
             _scene.SetQuestHuntTarget(target, automatic: false);
+            _autoHuntTarget = 0;
         }
     }
 
     private void TouchSkill(uint code)
     {
+        _freeHunt.NoteManualInput();
         var target = TouchTarget();
         if (!_scene.CastSkillAt(code, target) && target == 0)
         {
@@ -131,26 +136,10 @@ public sealed partial class GameplayScreen
         }
     }
 
-    // The living target the player selected, or else the nearest living monster, or 0.
+    // The living target the player selected, or else the nearest living wild monster within the free hunt's radius, or 0.
     private ulong TouchTarget()
     {
         var selected = _scene.SelectedCombatTarget;
-        if (selected != 0 && _scene.TrackQuestMonster(selected, out _))
-        {
-            return selected;
-        }
-
-        var target = 0UL;
-        var nearest = float.PositiveInfinity;
-        foreach (var entity in _huntMonsters.Keys)
-        {
-            if (_scene.TrackQuestMonster(entity, out var distance) && distance < nearest)
-            {
-                nearest = distance;
-                target = entity;
-            }
-        }
-
-        return target;
+        return selected != 0 && _scene.TrackQuestMonster(selected, out _) ? selected : _freeHunt.NearestInRadius();
     }
 }

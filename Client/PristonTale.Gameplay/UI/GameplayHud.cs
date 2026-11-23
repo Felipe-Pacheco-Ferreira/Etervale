@@ -50,6 +50,7 @@ public sealed partial class GameplayHud : IDisposable
     private readonly HudInventoryController _inventory;
     private readonly HudProgressionController _progression;
     private readonly HudNpcPanel _npc;
+    private readonly HudCombatFeed _combatFeed = new();
     private readonly HudNpcServiceController _services;
     private readonly HudShopWindow _shop = new();
     private readonly HudCountBox _countBox = new();
@@ -180,6 +181,7 @@ public sealed partial class GameplayHud : IDisposable
         _inventory = new HudInventoryController(context, applyInventory);
         _progression = new HudProgressionController(applyProgression, context.Log);
         _npc = new HudNpcPanel(interactNpc, context.Log, npcOpened, npcClosed);
+        Combat.MonsterKilled += _combatFeed.Kill;
         _portrait = new HudTargetPortrait(context.GraphicsDevice);
         _services = new HudNpcServiceController(requestNpcService, context.Log);
         _prepareField = prepareField;
@@ -509,6 +511,7 @@ public sealed partial class GameplayHud : IDisposable
         _sprites.Update();
         _icons.Update();
         _progression.Update();
+        SendTouchPoints();
         _services.Update();
         _itemUse.Update();
         _wingGate.Update();
@@ -630,6 +633,7 @@ public sealed partial class GameplayHud : IDisposable
         }
 
         _state = state;
+        _combatFeed.Observe(state);
         if (state is not null && !ReferenceEquals(state.Skills, _syncedSkills))
         {
             _syncedSkills = state.Skills;
@@ -850,7 +854,8 @@ public sealed partial class GameplayHud : IDisposable
         if (MinimapShown)
         {
             Combat.CollectNpcPositions(_minimapNpcs);
-            _minimap.Draw(_painter, layout, World, _minimapNpcs, MinimapParty(), HudMinimap.Box(layout).Contains(pointer), MinimapGuide(), MinimapZone());
+            _minimap.Draw(_painter, layout, World, _minimapNpcs, MinimapParty(), HudMinimap.Box(layout).Contains(pointer), MinimapGuide(), MinimapZone(),
+                QuestRoute, JourneyHuntArea());
         }
 
         var touchHud = TouchHudShown;
@@ -859,7 +864,7 @@ public sealed partial class GameplayHud : IDisposable
             Combat.DrawTarget(_painter, layout, TargetId, _context.Presentation.Requested.ClassicTargetHealthBar, _portrait.Texture(TargetId),
                 ShowsPlayerButtons, _context.Presentation.Requested.ShowPartyDps);
         }
-        if (ShowsPlayerButtons)
+        if (ShowsCanvasPlayerButtons)
         {
             // The Duel button first: a hovered button's tip draws over it.
             HudPlayerButtons.DrawDuel(_painter, HudCombat.TargetFrame(layout), pointer, ClientText.Get("Duel.Button"));
@@ -981,7 +986,7 @@ public sealed partial class GameplayHud : IDisposable
         // the help box before asking.
         if (_quests.Dialog is not null)
         {
-            if (!_quests.Confirming)
+            if (!_quests.Confirming && !touchHud)
             {
                 _painter.Flush();
                 _questDialog.Draw(_painter, _context.Font, _quests, _questDocuments, pointer);
@@ -1002,7 +1007,7 @@ public sealed partial class GameplayHud : IDisposable
             _painter.Flush();
             _bellatraWindow.Draw(_painter, pointer);
         }
-        else if (_npcOpen)
+        else if (_npcOpen && !touchHud)
         {
             _painter.Flush();
             _npc.Draw(_painter, pointer);
@@ -1079,12 +1084,12 @@ public sealed partial class GameplayHud : IDisposable
         }
 
         _skillHud.DrawQuestTimerTooltip(_painter, _questView, QuestTimeLeftMs, pointer);
-        if (_quests.Confirming)
+        if (_quests.Confirming && !touchHud)
         {
             _painter.Flush();
             HudQuestDialog.DrawConfirm(_painter, _quests, pointer);
         }
-        else if (_quests.SkillResetBox)
+        else if (_quests.SkillResetBox && !touchHud)
         {
             _painter.Flush();
             HudQuestDialog.DrawBox(_painter, ClientText.Format(QuestTexts.SkillPointName), ClientText.Format(QuestTexts.Redistribute.Item1),
@@ -1094,11 +1099,15 @@ public sealed partial class GameplayHud : IDisposable
         _painter.Flush();
         _premium.DrawHover(_painter, pointer, _clock.Elapsed.TotalMilliseconds);
         _painter.Flush();
-        _partyRequest.Draw(_painter, pointer, _clock.Elapsed.TotalMilliseconds);
-        _clanRequest.Draw(_painter, pointer, _clock.Elapsed.TotalMilliseconds);
-        _tradeRequest.Draw(_painter, pointer, _clock.Elapsed.TotalMilliseconds);
-        _duelRequest.Draw(_painter, pointer, _clock.Elapsed.TotalMilliseconds);
-        _restart.Draw(_painter, layout, pointer, RestartOffer?.FieldOpen == true, InCastleField);
+        if (!touchHud)
+        {
+            _partyRequest.Draw(_painter, pointer, _clock.Elapsed.TotalMilliseconds);
+            _clanRequest.Draw(_painter, pointer, _clock.Elapsed.TotalMilliseconds);
+            _tradeRequest.Draw(_painter, pointer, _clock.Elapsed.TotalMilliseconds);
+            _duelRequest.Draw(_painter, pointer, _clock.Elapsed.TotalMilliseconds);
+            _restart.Draw(_painter, layout, pointer, RestartOffer?.FieldOpen == true, InCastleField);
+        }
+
         _painter.Flush();
         _notice.Draw(_painter, layout);
         _painter.End();

@@ -118,7 +118,7 @@ public sealed partial class GameScene
             IsVisible = drop => GroundLootFilter.IsVisible(_presentation.Requested, drop),
             AlwaysShowLabel = drop => _presentation.Requested.AlwaysShowRareGroundLabels && drop.Rare
         };
-        _lootInteraction = new GroundLootInteraction(ApplyInventoryAsync, _log, drop => _fieldAudio?.PlayItem(drop.CatalogKey, drop.Gold),
+        _lootInteraction = new GroundLootInteraction(ApplyInventoryAsync, _log, OnGroundPickup,
             drop => PickupToCursor?.Invoke(drop.ItemCode) == true, (ok, revision) => PickupToCursorAnswered?.Invoke(ok, revision));
         _lootFloor = LootFloorAt;
     }

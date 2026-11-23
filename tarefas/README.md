@@ -25,8 +25,10 @@ Regras que valem para todos (resumo de [AGENTS.md](../AGENTS.md), que a IA deve 
 |---|---|---|
 | [02-voz-navegador.md](02-voz-navegador.md) | Chat de voz e microfone no navegador | técnico |
 | [09-chat-global.md](09-chat-global.md) | Chat global entre servidores | técnico |
+| [16-hud-celular-janelas.md](16-hud-celular-janelas.md) | HUD de celular no navegador: as janelas do Android 0.86 | técnico |
+| [17-auto-caca-livre-navegador.md](17-auto-caca-livre-navegador.md) | Auto-caça livre do Android 0.86 no navegador | aprovadas; feita, falta ver no jogo |
 
-Ordem sugerida: 02 e 09 quando houver tempo.
+Ordem sugerida: 16 e depois 17 (as duas mexem no HUD de celular; uma de cada vez), 02 e 09 quando houver tempo.
 
 ## Como continuar em outra IA
 
@@ -35,7 +37,7 @@ O trabalho está publicado no branch `claude/web-client-85f760` do repositório.
 2. Preparar as fontes da interface, que ficam fora do git em `assets/Hud/Fonts/` (o build do conteúdo falha sem elas):
    `tools/ui/build_font.py` com a DejaVu Sans 2.37 e, para chinês e japonês, com a Noto Sans SC e a Noto Sans JP do
    repositório notofonts/noto-cjk (o passo a passo está em `docs/tools.md`, seção "UI font").
-3. Escolher uma tarefa da tabela acima (02 ou 09), abrir uma sessão nova, colar o briefing e pedir para começar.
+3. Escolher uma tarefa da tabela acima, abrir uma sessão nova, colar o briefing e pedir para começar.
 4. Antes de mexer num sistema que já existe, ler [limites.md](limites.md): a lista do que ficou aquém e onde ajustar.
 
 ## Estado do trabalho

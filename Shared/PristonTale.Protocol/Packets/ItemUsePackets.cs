@@ -1,5 +1,6 @@
 using PristonTale.Protocol.Binary;
 using PristonTale.Contracts.Texts;
+using PristonTale.Contracts.World;
 
 namespace PristonTale.Protocol.Packets;
 
@@ -209,5 +210,27 @@ public readonly record struct DismissCrystalPetsPacket(uint StatusCode) : IFrame
         var reader = new PacketReader(packet, Size);
         WireHeader.Read(ref reader, "Crystal pet dismissal");
         return new DismissCrystalPetsPacket(reader.UInt32());
+    }
+}
+
+public readonly record struct CrystalPetTargetingPacket(CrystalPetTargeting Mode) : IFramePacket
+{
+    public const int Size = 8 + WireHeader.Size + 4;
+
+    public int Write(Span<byte> destination)
+    {
+        var writer = new PacketWriter(destination, EtervaleOpcodes.CrystalPetTargeting);
+        WireHeader.Write(ref writer, 1);
+        writer.Byte((byte)Mode);
+        writer.Byte(0);
+        writer.UInt16(0);
+        return writer.Finish();
+    }
+
+    public static CrystalPetTargetingPacket Read(ReadOnlySpan<byte> packet)
+    {
+        var reader = new PacketReader(packet, Size);
+        WireHeader.Read(ref reader, "Crystal pet targeting");
+        return new CrystalPetTargetingPacket((CrystalPetTargeting)reader.Byte());
     }
 }

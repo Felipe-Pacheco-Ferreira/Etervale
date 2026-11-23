@@ -11,16 +11,19 @@ public readonly record struct GroundItemEntry(Guid Id, uint ItemCode, bool Gold,
     private const byte GoldFlag = 1;
     private const byte EquipmentFlag = 2;
     private const byte RareFlag = 4;
+    private const byte OwnThrowFlag = 8;
     public bool HasEquipmentDetails { get; init; }
     public byte RequiredLevel { get; init; }
     public uint SpecJob { get; init; }
     public bool Rare { get; init; }
+    // The receiver threw it (the free hunt can leave its own throws on the ground).
+    public bool OwnThrow { get; init; }
 
     public void Write(ref PacketWriter writer)
     {
         writer.Guid(Id);
         writer.UInt32(ItemCode);
-        writer.Byte((byte)((Gold ? GoldFlag : 0) | (HasEquipmentDetails ? EquipmentFlag : 0) | (Rare ? RareFlag : 0)));
+        writer.Byte((byte)((Gold ? GoldFlag : 0) | (HasEquipmentDetails ? EquipmentFlag : 0) | (Rare ? RareFlag : 0) | (OwnThrow ? OwnThrowFlag : 0)));
         writer.Byte(RequiredLevel);
         writer.UInt16((ushort)((SpecJob & 0xFF) | ((SpecJob >> 8) & 0xFF00)));
         writer.Int32(Amount);
@@ -43,13 +46,15 @@ public readonly record struct GroundItemEntry(Guid Id, uint ItemCode, bool Gold,
             HasEquipmentDetails = (flags & EquipmentFlag) != 0,
             RequiredLevel = level,
             SpecJob = (spec & 0xFF) | ((spec & 0xFF00) << 8),
-            Rare = (flags & RareFlag) != 0
+            Rare = (flags & RareFlag) != 0,
+            OwnThrow = (flags & OwnThrowFlag) != 0
         };
     }
 }
 
-// S->C {header, uint16 Version = 1, uint16 Flags = 0, int32 Count, entries {Guid Id, uint32 ItemCode, uint8 Flags (1 gold),
-// uint8 0, uint16 0, int32 Amount, X, Y, Z (x256), text Name}}: drops entering the receiver's view.
+// S->C {header, uint16 Version = 1, uint16 Flags = 0, int32 Count, entries {Guid Id, uint32 ItemCode, uint8 Flags (1 gold,
+// 2 equipment details, 4 rare, 8 thrown by the receiver), uint8 RequiredLevel, uint16 SpecJob (bits 0..7 and 16..23),
+// int32 Amount, X, Y, Z (x256), text Name}}: drops entering the receiver's view.
 public static class GroundItemList
 {
     public const ushort CurrentVersion = 1;

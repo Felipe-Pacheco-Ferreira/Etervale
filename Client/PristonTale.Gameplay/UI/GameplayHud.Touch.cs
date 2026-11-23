@@ -34,7 +34,7 @@ public sealed partial class GameplayHud
     // A skill button, with the skill's code.
     internal event Action<uint> TouchSkillRequested;
 
-    // The pictures the page may ask for (TouchPicture): the skill buttons' and belt potions' files it was handed.
+    // The pictures the page may ask for (TouchPicture): the skill buttons', items' and field maps' files it was handed.
     private readonly HashSet<string> _touchPictures = new(StringComparer.OrdinalIgnoreCase);
 
     // With the page's touch HUD, the canvas leaves out what it replaces (the bottom bar with its orbs, action bar, belt
@@ -43,6 +43,16 @@ public sealed partial class GameplayHud
 
     // The target frame's entity (GameplayScreen sets it: the monster attacked, or else the one picked), or 0.
     internal ulong TouchTargetId { get; set; }
+
+    // Where the page's HUD editor moved the player and target frames (TouchPortraitPlacement), for the 3D heads in them.
+    internal Microsoft.Xna.Framework.Vector2 TouchPlayerShift { get; private set; }
+    internal Microsoft.Xna.Framework.Vector2 TouchTargetShift { get; private set; }
+
+    internal void SetTouchFrameShift(float playerX, float playerY, float targetX, float targetY)
+    {
+        TouchPlayerShift = TouchPortraitPlacement.Shift(playerX, playerY);
+        TouchTargetShift = TouchPortraitPlacement.Shift(targetX, targetY);
+    }
 
     // The bag's items when the player last looked in it, for the count of new ones on the Bolsa button.
     private readonly HashSet<Guid> _touchSeenItems = [];
@@ -131,7 +141,7 @@ public sealed partial class GameplayHud
                 json.WriteString("name", name);
                 json.WriteString("caption", TouchSkillSlots.ButtonCaption(name));
                 json.WriteString("icon", known && skill.IconKey.Length > 0 ? TouchPicturePath(AssetFiles.Combine(_context.AssetRoot, HudArt.SkillButton(_class, skill.IconKey, gray: false))) : "");
-                json.WriteNumber("tier", known && skill.Tier != 0 ? BitOperations.Log2((uint)skill.Tier) + 1 : 0);
+                json.WriteNumber("tier", known ? TouchSkillTier(skill.Tier) : 0);
                 json.WriteNumber("rank", state?.SkillRank(code) ?? 0);
                 json.WriteNumber("remaining", Cooldowns?.RemainingMs(code, now) ?? 0d);
                 json.WriteNumber("duration", Cooldowns?.DurationMs(code) ?? 0);
@@ -224,13 +234,16 @@ public sealed partial class GameplayHud
         return fresh;
     }
 
+    // A skill's tier as its button's ring colour (1 to 5, hud-art.js), 0 for none.
+    private static int TouchSkillTier(JobTier tier) => tier != 0 ? BitOperations.Log2((uint)tier) + 1 : 0;
+
     private string TouchPicturePath(string path)
     {
         _touchPictures.Add(path);
         return path;
     }
 
-    // A picture handed out in the touch state, decoded for the page: width and height (16-bit little-endian), then
+    // A picture handed out in the touch state or map, decoded for the page: width and height (16-bit little-endian), then
     // straight (not premultiplied) RGBA rows; empty for any other path or an unreadable file.
     internal byte[] TouchPicture(string path)
     {
@@ -265,7 +278,9 @@ public sealed partial class GameplayHud
         static byte Straight(byte channel, byte alpha) => alpha is 0 or 255 ? channel : (byte)Math.Min(255, channel * 255 / alpha);
     }
 
-    // touch-attack, touch-run, touch-skill:<slot> and touch-belt:<box>; false for any other action.
+    // touch-attack, touch-bag:..., touch-points:..., touch-train:..., touch-skill-button:..., touch-party:...,
+    // touch-rewards:..., touch-quest-go, touch-run, touch-skill:<slot> and touch-belt:<box> (RunWorldAction takes touch-npc:...
+    // and touch-restart:... first); false for any other action.
     private bool RunTouchAction(string action)
     {
         const string skillPrefix = "touch-skill:";
@@ -273,6 +288,17 @@ public sealed partial class GameplayHud
         if (action == "touch-attack")
         {
             TouchAttackRequested?.Invoke();
+            return true;
+        }
+
+        if (RunTouchBag(action) || RunTouchPoints(action) || RunTouchSkills(action) || RunTouchParty(action) || RunTouchRewards(action) || RunTouchHunt(action))
+        {
+            return true;
+        }
+
+        if (action == TouchQuestGoAction)
+        {
+            RunTouchQuestGo();
             return true;
         }
         if (action == "touch-run")

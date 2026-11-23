@@ -134,6 +134,7 @@ internal sealed class PresenceDecoder : IEventHandleReader
             EtervaleOpcodes.SkillCooldowns => OnSkillCooldowns(SkillCooldownsPacket.Read(packet)),
             EtervaleOpcodes.SkillCastResult => OnSkillCastResult(SkillCastResultPacket.Read(packet)),
             EtervaleOpcodes.ItemDetails => OnItemDetails(ItemDetailsPartPacket.Read(packet)),
+            EtervaleOpcodes.PotionPotency => OnPotionPotency(PotionPotencyPacket.Read(packet)),
             EtervaleOpcodes.OwnerItemStatus => OnOwnerItemStatus(OwnerItemStatusPacket.Read(packet)),
             EtervaleOpcodes.AgingProgress => OnAgingProgress(AgingProgressPacket.Read(packet)),
             EtervaleOpcodes.PremiumTimers => OnPremiumTimers(PremiumTimersPacket.Read(packet)),
@@ -144,6 +145,7 @@ internal sealed class PresenceDecoder : IEventHandleReader
             EtervaleOpcodes.ChatLine => OnChat(ChatLinePacket.Read(packet)),
             EtervaleOpcodes.CloseRequest => OnCloseRequest(packet),
             EtervaleOpcodes.PartyMembers => OnPartyMembers(PartyMembersPacket.Read(packet)),
+            EtervaleOpcodes.PartyHunt => OnPartyHunt(PartyHuntPacket.Read(packet)),
             EtervaleOpcodes.PartyRequest => OnPartyRequest(PartyRequestPacket.Read(packet)),
             EtervaleOpcodes.PartyDirectory => OnPartyDirectory(PartyDirectoryPacket.Read(packet)),
             EtervaleOpcodes.ClanState => new PresenceUpdate(_tick, [], [], [], [], FieldId) { Clan = Clan(ClanStatePacket.Read(packet)) },
@@ -277,6 +279,19 @@ internal sealed class PresenceDecoder : IEventHandleReader
         var sameLeader = members.Length > 0 && _party.Members.Count > 0 && members[0].EntityId == _party.Members[0].EntityId;
         _party = new PartyInfo(members, sameLeader && _party.IsOpen);
         return new PresenceUpdate(_tick, [], [], [], [], FieldId) { Party = _party };
+    }
+
+    // The members' hunt counters while grouped (PartyHuntCounters), for the free hunt's Grupo tab.
+    private PresenceUpdate OnPartyHunt(PartyHuntPacket packet)
+    {
+        var members = new PartyHuntInfo[packet.Members.Count];
+        for (var index = 0; index < members.Length; index++)
+        {
+            var member = packet.Members[index];
+            members[index] = new PartyHuntInfo(member.EntityId, member.Counters);
+        }
+
+        return new PresenceUpdate(_tick, [], [], [], [], FieldId) { PartyHunt = members };
     }
 
     private PresenceUpdate OnPartyDirectory(PartyDirectoryPacket packet)
@@ -713,7 +728,8 @@ internal sealed class PresenceDecoder : IEventHandleReader
                 HasEquipmentDetails = item.HasEquipmentDetails,
                 RequiredLevel = item.RequiredLevel,
                 SpecJob = item.SpecJob,
-                Rare = item.Rare
+                Rare = item.Rare,
+                ThrownByReceiver = item.OwnThrow
             });
         }
 
@@ -743,6 +759,12 @@ internal sealed class PresenceDecoder : IEventHandleReader
     {
         _status = status;
         return OwnerUpdate();
+    }
+
+    private PresenceUpdate? OnPotionPotency(PotionPotencyPacket part)
+    {
+        _ownerItems.OnPotency(part);
+        return null;
     }
 
     public PresenceUpdate? OnItemDetails(ItemDetailsPartPacket part)

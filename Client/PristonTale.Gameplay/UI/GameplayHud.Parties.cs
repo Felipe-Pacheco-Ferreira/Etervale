@@ -41,7 +41,7 @@ public sealed partial class GameplayHud
                 _partyWindow.CreatingParty = false;
             }
             _partyWindow.Refresh(party);
-            if (formed)
+            if (formed && !TouchHudShown)
             {
                 _questWindow.Close();
                 _partyWindow.Show();
@@ -70,6 +70,11 @@ public sealed partial class GameplayHud
 
     private void ToggleQuestWindow()
     {
+        if (TouchJournalRequested())
+        {
+            return;
+        }
+
         _partyWindow.Close();
         _questWindow.Toggle();
     }
@@ -118,35 +123,44 @@ public sealed partial class GameplayHud
 
     private bool ShowsPlayerButtons => ButtonsPlayerId != 0 && TargetId == ButtonsPlayerId;
 
+    private bool ShowsCanvasPlayerButtons => ShowsPlayerButtons && !TouchHudShown;
+
+    // A button under a reached player's portrait, from the canvas or the touch HUD's row: the row closes after it.
+    private void UsePlayerButton(HudPlayerButton button)
+    {
+        if (button == HudPlayerButton.Clan)
+        {
+            InviteToClan(ButtonsPlayerId);
+        }
+        else if (button == HudPlayerButton.Party)
+        {
+            Parties?.InviteToPartyAsync(ButtonsPlayerId);
+        }
+        else if (button == HudPlayerButton.Trade)
+        {
+            Trades?.RequestTradeAsync(ButtonsPlayerId);
+        }
+        else
+        {
+            BefriendReached();
+        }
+
+        PlayerButtonsUsed?.Invoke();
+    }
+
+    // The request box and the buttons under the portrait are the touch HUD's own while it is in use (GameplayHud.TouchParty).
     private bool ClickParty(HudLayout layout, Point pointer)
     {
         var from = _partyRequest.FromId;
-        if (_partyRequest.Click(pointer) is { } answer)
+        if (!TouchHudShown && _partyRequest.Click(pointer) is { } answer)
         {
             Parties?.AnswerPartyAsync(from, answer);
             return true;
         }
 
-        if (ShowsPlayerButtons && HudPlayerButtons.At(HudCombat.TargetFrame(layout), pointer, ClanButton) is { } button)
+        if (ShowsCanvasPlayerButtons && HudPlayerButtons.At(HudCombat.TargetFrame(layout), pointer, ClanButton) is { } button)
         {
-            if (button == HudPlayerButton.Clan)
-            {
-                InviteToClan(ButtonsPlayerId);
-            }
-            else if (button == HudPlayerButton.Party)
-            {
-                Parties?.InviteToPartyAsync(ButtonsPlayerId);
-            }
-            else if (button == HudPlayerButton.Trade)
-            {
-                Trades?.RequestTradeAsync(ButtonsPlayerId);
-            }
-            else
-            {
-                BefriendReached();
-            }
-
-            PlayerButtonsUsed?.Invoke();
+            UsePlayerButton(button);
             return true;
         }
 
@@ -154,8 +168,8 @@ public sealed partial class GameplayHud
     }
 
     private bool CapturesParty(HudLayout layout, Point pointer) =>
-        _partyRequest.Captures(pointer) || _partyWindow.Contains(layout, pointer)
-        || ShowsPlayerButtons && HudPlayerButtons.At(HudCombat.TargetFrame(layout), pointer, ClanButton) is not null;
+        !TouchHudShown && _partyRequest.Captures(pointer) || _partyWindow.Contains(layout, pointer)
+        || ShowsCanvasPlayerButtons && HudPlayerButtons.At(HudCombat.TargetFrame(layout), pointer, ClanButton) is not null;
 
     // The other members' last known places, for the minimap.
     private List<Vector3> MinimapParty()

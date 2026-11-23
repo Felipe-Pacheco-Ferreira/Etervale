@@ -179,3 +179,54 @@ public sealed record PartyMembersPacket(IReadOnlyList<PartyMemberWire> Members) 
         return new PartyMembersPacket(members);
     }
 }
+
+public readonly record struct PartyHuntWire(ulong EntityId, PartyHuntCounters Counters);
+
+public sealed record PartyHuntPacket(IReadOnlyList<PartyHuntWire> Members) : IFramePacket
+{
+    private const int MinimumSize = 8 + WireHeader.Size + 1;
+    private const int MemberSize = 8 * 3 + 4 * 2;
+    public const int MaxSize = MinimumSize + PartyLimits.MaxMembers * MemberSize;
+
+    public int Write(Span<byte> destination)
+    {
+        if (Members.Count > PartyLimits.MaxMembers)
+        {
+            throw new ArgumentOutOfRangeException(nameof(destination), "Too many party hunt members.");
+        }
+
+        var writer = new PacketWriter(destination, EtervaleOpcodes.PartyHunt);
+        PartyWire.Header(ref writer);
+        writer.Byte((byte)Members.Count);
+        foreach (var member in Members)
+        {
+            writer.UInt64(member.EntityId);
+            writer.UInt64(member.Counters.Damage);
+            writer.UInt64(member.Counters.Experience);
+            writer.UInt32(member.Counters.Kills);
+            writer.UInt32(member.Counters.Deaths);
+        }
+
+        return writer.Finish();
+    }
+
+    public static PartyHuntPacket Read(ReadOnlySpan<byte> packet)
+    {
+        var reader = new PacketReader(packet, MinimumSize);
+        PartyWire.ReadHeader(ref reader);
+        var count = reader.Byte();
+        if (count > PartyLimits.MaxMembers || reader.Remaining != count * MemberSize)
+        {
+            throw new InvalidDataException("Party hunt has an invalid member count or size.");
+        }
+
+        var members = new PartyHuntWire[count];
+        for (var index = 0; index < count; index++)
+        {
+            members[index] = new PartyHuntWire(reader.UInt64(), new PartyHuntCounters(
+                reader.UInt64(), reader.UInt64(), reader.UInt32(), reader.UInt32()));
+        }
+
+        return new PartyHuntPacket(members);
+    }
+}

@@ -655,6 +655,40 @@ public sealed class HudInventoryController(ScreenContext context, Func<Inventory
         }
     }
 
+    // An operation is on its way to the server: nothing else is sent until it answers.
+    public bool Busy => _pendingOperation;
+
+    // An item sheet's button (HudItemActions): false while an operation is pending or the item does not offer it.
+    public bool Run(OwnedItemView item, HudItemAction action, int box, List<HudItemAction> offered)
+    {
+        if (_pendingOperation || _state is null || item is null)
+        {
+            return false;
+        }
+
+        HudItemActions.Offered(item, _state.Items, offered);
+        if (!offered.Contains(action) || action == HudItemAction.BeltPut && box is < 0 or >= PotionBelt.Boxes)
+        {
+            return false;
+        }
+
+        switch (action)
+        {
+            case HudItemAction.BeltPut:
+                SendInventory(new InventoryCommand(Guid.NewGuid(), _state.InventoryRevision, InventoryAction.BeltPut, item.InstanceId, box, 0, default));
+                break;
+            case HudItemAction.BeltTake:
+                // No anchor: the server finds the potion a place in the bag.
+                SendInventory(new InventoryCommand(Guid.NewGuid(), _state.InventoryRevision, InventoryAction.BeltTake, item.InstanceId, -1, 0, default));
+                break;
+            default:
+                Use(item);
+                break;
+        }
+
+        return true;
+    }
+
     // Right click: a usable item is used, a potion drunk, and an item worn or taken off.
     private void Use(OwnedItemView item)
     {
@@ -675,7 +709,7 @@ public sealed class HudInventoryController(ScreenContext context, Func<Inventory
             return;
         }
 
-        var slot = item.Equipped ? (EquipmentSlot?)item.Slot : SlotFor(item.Kind);
+        var slot = item.Equipped ? (EquipmentSlot?)item.Slot : HudItemActions.SlotFor(item.Kind, _state.Items);
         if (slot.HasValue)
         {
             SendInventory(new InventoryCommand(Guid.NewGuid(), _state.InventoryRevision,
@@ -723,8 +757,4 @@ public sealed class HudInventoryController(ScreenContext context, Func<Inventory
 
         return count;
     }
-
-    private EquipmentSlot? SlotFor(ItemKind kind) =>
-        ItemEquipmentMetadata.DefaultSlot(kind, ItemEquipmentMetadata.SlotOf(kind), slot => OwnedItemView.InSlot(_state.Items, (int)slot) is not null);
-
 }

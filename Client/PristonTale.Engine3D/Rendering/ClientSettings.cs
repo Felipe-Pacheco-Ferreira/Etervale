@@ -207,6 +207,12 @@ public sealed record ClientSettings
     // The tutorial's tips, and the ones each character closed ("character/tip").
     public bool TutorialTips { get; init; } = true;
     public string[] TutorialTipsClosed { get; init; } = [];
+    // The free auto-hunt's profiles as their transfer codes (FreeHuntProfile), by "character:<name>" or "account:<scope>"; and
+    // each character's hunt totals and latest log lines (HuntRecord) as JSON, by character name.
+    public IReadOnlyDictionary<string, string> FreeHuntProfiles { get; init; } = NoEntries;
+    public IReadOnlyDictionary<string, string> FreeHuntRecords { get; init; } = NoEntries;
+    // One shared empty map, so settings that never stored any compare equal.
+    private static readonly IReadOnlyDictionary<string, string> NoEntries = new Dictionary<string, string>();
     // Browser only: the scenery casts no sun shadow, characters still do (the panel's "Simples" shadows).
     public bool ActorShadowsOnly { get; init; }
     public bool SpreadDamageNumbers { get; init; }
@@ -341,6 +347,8 @@ public sealed record ClientSettings
             ChatOffsetX = Math.Clamp(ChatOffsetX, -MostChatOffset, MostChatOffset),
             ChatOffsetY = Math.Clamp(ChatOffsetY, -MostChatOffset, MostChatOffset),
             TutorialTipsClosed = TutorialTipsClosed ?? defaults.TutorialTipsClosed,
+            FreeHuntProfiles = FreeHuntProfiles ?? defaults.FreeHuntProfiles,
+            FreeHuntRecords = FreeHuntRecords ?? defaults.FreeHuntRecords,
             RenderScale = float.IsFinite(RenderScale) && RenderScale is >= 0.5f and <= 1f ? RenderScale : defaults.RenderScale,
             MaxPixelRatio = MaxPixelRatio is 1f or 1.5f or MostPixelRatio ? MaxPixelRatio : defaults.MaxPixelRatio,
             MusicVolumePercent = Math.Clamp(MusicVolumePercent, 0, 100),

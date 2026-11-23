@@ -237,8 +237,7 @@ public sealed partial class GameplayHud
                 break;
             case NpcServiceKind.SkillMaster:
                 _npcOpen = false;
-                _skillMaster = _services.NpcId;
-                OpenOnly(_skillSlide);
+                OpenSkillMaster(_services.NpcId);
                 break;
         }
     }

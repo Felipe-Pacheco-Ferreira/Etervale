@@ -97,9 +97,9 @@ public sealed class HudRestartPanel(IClientLog log)
 
         foreach (var choice in Choices)
         {
-            if (Button(layout, choice).Contains(pointer) && (choice != RestartChoice.Field || fieldOpen))
+            if (Button(layout, choice).Contains(pointer))
             {
-                Choose(choice);
+                Pick(choice, fieldOpen);
             }
         }
 
@@ -138,6 +138,18 @@ public sealed class HudRestartPanel(IClientLog log)
             }
         }
     }
+
+    // A choice from the canvas or the touch HUD's death plate: the field only where its restart is open.
+    public void Pick(RestartChoice choice, bool fieldOpen)
+    {
+        if (Open && (choice != RestartChoice.Field || fieldOpen))
+        {
+            Choose(choice);
+        }
+    }
+
+    // The whole seconds before the town is chosen by itself, counting the one under way; 0 while the window is shut.
+    public int SecondsLeft(double nowMs) => Open ? (int)Math.Max(0, Math.Ceiling((TimeoutMs - (nowMs - _openSinceMs)) / 1000)) : 0;
 
     private void Choose(RestartChoice choice)
     {
