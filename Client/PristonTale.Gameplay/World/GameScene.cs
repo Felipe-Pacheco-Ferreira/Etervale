@@ -249,6 +249,10 @@ public sealed partial class GameScene : IDisposable, IHudPortraitScene
     public Guid HoveredDropId { get; private set; }
     public ulong TracedTargetId => _targetSelection.TracedId;
     public FieldDef ActiveFieldDefinition => _activeField?.Definition;
+
+    public Discord.PlayingStatus Playing => _player is null
+        ? Discord.PlayingStatus.Menu
+        : Discord.PlayingStatus.InField(_player.Name, _player.Class.Class, Owner?.Tier ?? _player.Tier, PlayerLevel, _activeField?.Definition.Name);
     public PristonIntRectangle ActiveMapRectangle => _activeField?.Stage.AuthoredMapRectangle ?? default;
     public PristonRenderer Renderer => _renderer;
 

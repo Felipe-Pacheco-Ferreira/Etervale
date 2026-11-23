@@ -1258,6 +1258,9 @@ tiến lên tháp cao.</value></data>
   <data name="Settings.Row.HudScale" xml:space="preserve"><value>Tỉ lệ HUD: {0}%</value></data>
   <data name="Settings.Row.MoveChat" xml:space="preserve"><value>Di chuyển chat (kéo khung chat)</value></data>
   <data name="Settings.Row.TutorialTips" xml:space="preserve"><value>Gợi ý hướng dẫn</value></data>
+  <data name="Settings.Row.DiscordPresence" xml:space="preserve"><value>Trạng thái Discord</value></data>
+  <data name="Discord.Menu" xml:space="preserve"><value>Đang ở menu</value></data>
+  <data name="Discord.NameLevel" xml:space="preserve"><value>{0} · Cấp {1}</value></data>
   <data name="Settings.Row.ResetInterface" xml:space="preserve"><value>Đặt lại giao diện (tỉ lệ và chat)</value></data>
   <data name="Settings.Row.GlobalBonuses" xml:space="preserve"><value>Thông báo thưởng toàn cục</value></data>
   <data name="Settings.Row.ExpGained" xml:space="preserve"><value>EXP nhận được</value></data>

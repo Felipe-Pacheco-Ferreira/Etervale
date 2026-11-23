@@ -46,6 +46,7 @@ The Android prototype (`Client/PristonTale.Android`) follows these screens with 
 | `Client/PristonTale.Gameplay/UI/Quests/` | Quest controller, quest dialog and yes/no boxes, quest window, quest texts and art (see [quests.md](quests.md#client)) |
 | `Client/PristonTale.Gameplay/UI/Rendering/` | `HudSprites` (original UI images), `HudIconCache` (item icons), `HudAtlas` (login atlas), `HudCursor` (mouse pointer), `HudPainter`/`HudCanvas`, `HudTextColors` (text colours several windows share) |
 | `Client/PristonTale.Gameplay/Weather/` | `WeatherPresentation`: the server's weather eased in, lightning and thunder timing; `FieldSnow`: the snow skies' falling snow |
+| `Client/PristonTale.Gameplay/Discord/` | The desktop Discord presence: `DiscordPresence` (worker), `DiscordPresenceTracker`, `DiscordActivity`, `PlayingStatus`, the IPC frame, messages and connectors ([Discord presence](#discord-presence)) |
 | `Client/PristonTale.Gameplay/Audio/` | `PristonAudioLibrary` (bootstrap sound load), `SoundFiles` and `SoundLoader` (where sound files come from, sounds made as their files arrive), `FieldAudioController` (music, field and positional ambience, the rain loop and thunder), `NpcAudioController`, `TalkSound`, `CombatSounds` and `CharacterSoundBanks` (character, weapon and footstep sounds), `MonsterSoundCues`, `ItemSoundRules` (item sounds) |
 | `Client/PristonTale.Gameplay/Effects/` | Effect glue: `EffectLibrary`, `VfxContent` (effect data from `<assetRoot>/Effect/Vfx`, loaded off the game thread), `SkillPresentation`, `ScriptEffects`, `SkillSoundBank`, `SkillState`, combat text, meteor, monster mesh and return effects ([effects.md](effects.md)) |
 | [`Client/PristonTale.Client.Net/GameServerConnection.cs`](../Client/PristonTale.Client.Net/GameServerConnection.cs) | TCP session: connect, login, characters, world entry, request correlation, heartbeat, receive dispatch |
@@ -159,6 +160,7 @@ the back buffer), clear, `GameScene.Draw` (renderer, effects, `ComposeScene`), g
 | UI bitmap transparency | `PristonImageDecoder.Decode(..., bmpCoverage: true)`, `PristonUiPixels.Prepare` | A 32-bit BMP whose fourth byte varies (not all 0, not all 255) carries its coverage, which replaces the black key (such as item `DA304`, drawn over a near-black background); other BMPs take exact black as transparent; world textures stay opaque |
 | Skill sounds | `SkillSoundBank` reads and decodes on a worker | Creates `SoundEffect`s in `Update`; a sound not ready is skipped |
 | Display settings file | `ClientSettingsStore` writer task | `QueueSave` only |
+| Discord presence | `DiscordPresence` worker: connect, handshake, send, retry | `DiscordPresence.Update` compares the status and queues a changed activity |
 
 Synchronous loads that are accepted because they happen at a screen boundary: `GameClient.LoadContent` bootstrap
 libraries, the opening and character-select stages in `Enter`, and the first field in `GameScene.LoadEntered`.
@@ -1041,6 +1043,39 @@ hour and whatever the `weatherEnabled` setting. Each frame its source moves 40 u
 last flakes play out. An effect lasts at most `VfxDefinition.MaxDuration`, so a new one starts 10 s before it ends,
 or at once if the effect system dropped it; a script the effect system cannot start yet (its library compiles over the
 first frames after entry) is tried again every second.
+
+## Discord presence
+
+The desktop client shows what the player is doing on their Discord profile ("Rich Presence"), through the Discord
+client's local IPC; the browser and Android clients have none. Code: `Client/PristonTale.Gameplay/Discord/`.
+
+- `Game1` gives `GameClient` a `DiscordPresence` from `DiscordPresence.ForThisPlatform` (null on a platform without a
+  connector). Every `GameClient.Update` hands it the settings and the screen's `GameScreen.Playing`: menus answer
+  `PlayingStatus.Menu`; `GameplayScreen` answers `GameScene.Playing` (name, class, tier from the owner state, the
+  server's level, the active field's name). `GameClient.Dispose` disposes it; closing the connection clears the profile.
+- `DiscordPresenceTracker` compares that status, the language, `discordPresence` and `discordApplicationId` with the
+  last ones and only on a change builds a `DiscordPresenceRequest`; an unchanged frame allocates nothing. The elapsed
+  time starts when a character enters the world and restarts at the next entry (a character switch passes through the
+  menu). Switching the presence off, or an empty application id, sends `DiscordPresenceRequest.Clear`.
+- `DiscordActivity.For` words the activity: in a menu "In the menu" (`Discord.Menu`) beside the game's logo; in the
+  world the details "SatroX · Level 71" (the character's name and level, `Discord.NameLevel`), the state line
+  "Sagittarion · Ricarten" (`DataText.ClassTitle` and the field's name, the title alone in a field without one),
+  the entry time as `timestamps.start`, the logo as the large image (tooltip "Priston Avalon") and the
+  class emblem `class_<class in lower case>` (`class_fighter` ... `class_martialartist`) as the small one, the class
+  title as its tooltip. A line shorter than 2 characters is left out and a longer one cut at 128, as Discord requires.
+- `DiscordPresence` runs one worker task fed by a bounded channel (capacity 1, the latest request wins). The worker
+  connects through an `IDiscordIpcConnector` (Windows: the named pipes `discord-ipc-0` to `-9`; Linux and macOS: the
+  Unix socket of that name in .NET's temporary path, each `/run/user/<id>` folder or `/tmp`, or their Flatpak and Snap
+  subfolders; no environment variable is read), sends the handshake (`{"v":1,"client_id":...}`) and waits for `READY`,
+  then sends `SET_ACTIVITY` with the process id and a nonce and reads frames until the reply with that nonce, answering
+  pings with pongs. Replies time out after 5 s. A request Discord could not take (Discord not running, a closed pipe)
+  is retried after 20 s or as soon as a newer one arrives; a refused application or activity is logged once
+  (`[Discord]`), and nothing reaches the game loop.
+- `DiscordIpcFrame` is the wire frame: a little-endian 32-bit opcode (handshake 0, frame 1, close 2, ping 3, pong 4),
+  a little-endian 32-bit payload length (at most 64 KiB) and the UTF-8 JSON payload (`DiscordIpcMessages`).
+
+The Discord application itself (created in the Discord Developer Portal) gives the presence its name, "Priston Avalon",
+and holds the art assets the activity names: `logo` and one `class_<class>` image per class.
 
 ## How to
 

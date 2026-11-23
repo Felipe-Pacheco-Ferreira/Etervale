@@ -9,6 +9,7 @@ using PristonTale.Engine3D.Rendering;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using PristonTale.Gameplay.Discord;
 using PristonTale.Gameplay.Screens;
 using PristonTale.Gameplay.Screens.Framework;
 using PristonTale.Assets;
@@ -56,7 +57,10 @@ public class Game1 : Game
     protected override void LoadContent()
     {
         _presentationController = new PresentationController(_presentation, _settingsStore, _graphics, Window);
-        _client = new GameClient(GraphicsDevice, Content, ResolveAssetRoot(), ResolveServerAddress(_presentation.Requested.ServerAddress), _presentation);
+        _client = new GameClient(GraphicsDevice, Content, ResolveAssetRoot(), ResolveServerAddress(_presentation.Requested.ServerAddress), _presentation)
+        {
+            DiscordPresence = DiscordPresence.ForThisPlatform(ConsoleClientLog.Instance)
+        };
         _client.LoadContent();
         Window.TextInput += (_, args) => _client.TypeCharacter(args.Character);
         ConsoleClientLog.Instance.Info($"[Presentation] GPU={GraphicsDevice.Adapter.DeviceName}; variable timestep; VSync={_presentation.VerticalSync}; maxFps={_presentation.Requested.MaxFps} (0=unlimited).");

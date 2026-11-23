@@ -1258,6 +1258,9 @@
   <data name="Settings.Row.HudScale" xml:space="preserve"><value>HUDの大きさ：{0}%</value></data>
   <data name="Settings.Row.MoveChat" xml:space="preserve"><value>チャットを移動 (チャットをドラッグ)</value></data>
   <data name="Settings.Row.TutorialTips" xml:space="preserve"><value>チュートリアルのヒント</value></data>
+  <data name="Settings.Row.DiscordPresence" xml:space="preserve"><value>Discordのステータス</value></data>
+  <data name="Discord.Menu" xml:space="preserve"><value>メニュー画面</value></data>
+  <data name="Discord.NameLevel" xml:space="preserve"><value>{0} · レベル{1}</value></data>
   <data name="Settings.Row.ResetInterface" xml:space="preserve"><value>インターフェースをリセット (大きさとチャット)</value></data>
   <data name="Settings.Row.GlobalBonuses" xml:space="preserve"><value>全体ボーナスのお知らせ</value></data>
   <data name="Settings.Row.ExpGained" xml:space="preserve"><value>獲得EXP</value></data>

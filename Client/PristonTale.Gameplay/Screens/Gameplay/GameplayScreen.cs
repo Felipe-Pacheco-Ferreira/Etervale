@@ -435,4 +435,6 @@ public sealed partial class GameplayScreen : GameScreen
     }
 
     public override Task Closing => _scene?.Closing ?? Task.CompletedTask;
+
+    public override Discord.PlayingStatus Playing => _scene?.Playing ?? Discord.PlayingStatus.Menu;
 }

@@ -1258,6 +1258,9 @@ ay uusad sa high tower.</value></data>
   <data name="Settings.Row.HudScale" xml:space="preserve"><value>Laki ng HUD: {0}%</value></data>
   <data name="Settings.Row.MoveChat" xml:space="preserve"><value>Ilipat ang chat (i-drag ang chat)</value></data>
   <data name="Settings.Row.TutorialTips" xml:space="preserve"><value>Mga tutorial tip</value></data>
+  <data name="Settings.Row.DiscordPresence" xml:space="preserve"><value>Status sa Discord</value></data>
+  <data name="Discord.Menu" xml:space="preserve"><value>Nasa menu</value></data>
+  <data name="Discord.NameLevel" xml:space="preserve"><value>{0} · Level {1}</value></data>
   <data name="Settings.Row.ResetInterface" xml:space="preserve"><value>I-reset ang interface (laki at chat)</value></data>
   <data name="Settings.Row.GlobalBonuses" xml:space="preserve"><value>Mga abiso ng global bonus</value></data>
   <data name="Settings.Row.ExpGained" xml:space="preserve"><value>Nakuhang EXP</value></data>

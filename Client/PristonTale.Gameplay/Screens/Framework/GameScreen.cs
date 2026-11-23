@@ -15,6 +15,9 @@ public abstract class GameScreen : IDisposable
     // The pointer this screen shows after its update.
     public virtual HudCursorKind Cursor => HudCursorKind.Default;
 
+    // What the player is doing on this screen, for the Discord presence; the menus are all alike.
+    public virtual Discord.PlayingStatus Playing => Discord.PlayingStatus.Menu;
+
     public virtual void Enter() { }
 
     public abstract void Update(GameTime gameTime);

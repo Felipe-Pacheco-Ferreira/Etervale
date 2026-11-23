@@ -1258,6 +1258,9 @@ go on to the high tower.</value></data>
   <data name="Settings.Row.HudScale" xml:space="preserve"><value>HUD scale: {0}%</value></data>
   <data name="Settings.Row.MoveChat" xml:space="preserve"><value>Move chat (drag the chat)</value></data>
   <data name="Settings.Row.TutorialTips" xml:space="preserve"><value>Tutorial tips</value></data>
+  <data name="Settings.Row.DiscordPresence" xml:space="preserve"><value>Discord status</value></data>
+  <data name="Discord.Menu" xml:space="preserve"><value>In the menu</value></data>
+  <data name="Discord.NameLevel" xml:space="preserve"><value>{0} · Level {1}</value></data>
   <data name="Settings.Row.ResetInterface" xml:space="preserve"><value>Reset interface (scale and chat)</value></data>
   <data name="Settings.Row.GlobalBonuses" xml:space="preserve"><value>Global bonus notices</value></data>
   <data name="Settings.Row.ExpGained" xml:space="preserve"><value>EXP gained</value></data>

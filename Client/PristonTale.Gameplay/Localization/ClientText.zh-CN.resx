@@ -1258,6 +1258,9 @@
   <data name="Settings.Row.HudScale" xml:space="preserve"><value>界面缩放：{0}%</value></data>
   <data name="Settings.Row.MoveChat" xml:space="preserve"><value>移动聊天框（拖动聊天框）</value></data>
   <data name="Settings.Row.TutorialTips" xml:space="preserve"><value>教程提示</value></data>
+  <data name="Settings.Row.DiscordPresence" xml:space="preserve"><value>Discord 状态</value></data>
+  <data name="Discord.Menu" xml:space="preserve"><value>在菜单中</value></data>
+  <data name="Discord.NameLevel" xml:space="preserve"><value>{0} · 等级 {1}</value></data>
   <data name="Settings.Row.ResetInterface" xml:space="preserve"><value>重置界面（缩放和聊天框）</value></data>
   <data name="Settings.Row.GlobalBonuses" xml:space="preserve"><value>全局加成通知</value></data>
   <data name="Settings.Row.ExpGained" xml:space="preserve"><value>获得经验</value></data>

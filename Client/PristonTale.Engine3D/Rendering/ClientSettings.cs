@@ -207,6 +207,11 @@ public sealed record ClientSettings
     // The tutorial's tips, and the ones each character closed ("character/tip").
     public bool TutorialTips { get; init; } = true;
     public string[] TutorialTipsClosed { get; init; } = [];
+    // The desktop client's Discord Rich Presence, shown through the Discord application of that id (an empty id
+    // shows nothing). The id is a Discord snowflake: decimal digits only.
+    public bool DiscordPresence { get; init; } = true;
+    public string DiscordApplicationId { get; init; } = "";
+    public const int LongestDiscordApplicationId = 20;
     // Browser only: the scenery casts no sun shadow, characters still do (the panel's "Simples" shadows).
     public bool ActorShadowsOnly { get; init; }
     public bool SpreadDamageNumbers { get; init; }
@@ -341,6 +346,7 @@ public sealed record ClientSettings
             ChatOffsetX = Math.Clamp(ChatOffsetX, -MostChatOffset, MostChatOffset),
             ChatOffsetY = Math.Clamp(ChatOffsetY, -MostChatOffset, MostChatOffset),
             TutorialTipsClosed = TutorialTipsClosed ?? defaults.TutorialTipsClosed,
+            DiscordApplicationId = IsDiscordApplicationId(DiscordApplicationId) ? DiscordApplicationId : defaults.DiscordApplicationId,
             RenderScale = float.IsFinite(RenderScale) && RenderScale is >= 0.5f and <= 1f ? RenderScale : defaults.RenderScale,
             MaxPixelRatio = MaxPixelRatio is 1f or 1.5f or MostPixelRatio ? MaxPixelRatio : defaults.MaxPixelRatio,
             MusicVolumePercent = Math.Clamp(MusicVolumePercent, 0, 100),
@@ -382,6 +388,9 @@ public sealed record ClientSettings
     // The tips a character closed stay closed.
     // The language sent to the server for the chat's translation, "" for none.
     public string ChatTranslationTarget => ChatTranslateTo == GameLanguageTranslation ? Language : ChatTranslateTo;
+
+    private static bool IsDiscordApplicationId(string value) =>
+        value is not null && value.Length <= LongestDiscordApplicationId && value.All(char.IsAsciiDigit);
 
     private static bool IsChatTranslation(string value) =>
         value is "" or GameLanguageTranslation || SupportedLanguages.Contains(value);

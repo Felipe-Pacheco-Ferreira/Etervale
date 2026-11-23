@@ -51,6 +51,9 @@ public sealed class GameClient : IDisposable
     public Func<PlayerClass, bool> CharacterAssetsReady { get; init; }
     public PristonTale.Gameplay.Weather.ClientWeatherDiagnostic WeatherDiagnostic { get; } = new();
 
+    // The desktop client's Discord presence (null in the browser); the client disposes it.
+    public Discord.DiscordPresence DiscordPresence { get; init; }
+
     public string StatusText
     {
         get
@@ -145,6 +148,10 @@ public sealed class GameClient : IDisposable
         _displayConfirmation?.Update();
         _screen?.Update(gameTime);
         _cursor?.Show(_screen?.Cursor ?? HudCursorKind.Default);
+        if (_shutdown is null)
+        {
+            DiscordPresence?.Update(_presentation.Requested, _screen?.Playing ?? Discord.PlayingStatus.Menu);
+        }
         if (_pendingScreen != null && (_leavingWorld is null || _leavingWorld.IsCompleted))
         {
             if (_screen is Gameplay.GameplayScreen)
@@ -274,6 +281,7 @@ public sealed class GameClient : IDisposable
     {
         WeatherDiagnostic.SetFullRain(false);
         _ = BeginShutdown();
+        DiscordPresence?.Dispose();
         _uiAtlas?.Dispose();
         _cursor?.Dispose();
         _sky?.Dispose();

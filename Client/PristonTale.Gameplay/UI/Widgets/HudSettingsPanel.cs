@@ -15,7 +15,9 @@ namespace PristonTale.Gameplay.UI.Widgets;
 // The interface scale (uiScale) cycles through UiScales; the browser's page panel takes any step between them.
 internal sealed partial class HudSettingsPanel
 {
-    private const int FirstSpecOption = ChatTranslateOption + 1;
+    private const int FirstSpecOption = DiscordPresenceOption + 1;
+    // The desktop client's only: the browser has no Discord presence.
+    private const int DiscordPresenceOption = 219;
     private const int DungeonCameraOption = 214;
     private const int MoveChatOption = 215;
     private const int TutorialTipsOption = 216;
@@ -37,13 +39,14 @@ internal sealed partial class HudSettingsPanel
     ];
     private static readonly int[] EquipmentLevels = [.. Enumerable.Range(0, 256)];
     private const int RowHeight = 22;
+    private static readonly int[] DiscordRows = OperatingSystem.IsBrowser() ? [] : [DiscordPresenceOption];
     private static readonly int[][] Tabs =
     [
         Columns([11, -2, 9, 13, 10, 12, 21, -3, 24, 25, 26, 23, 22, -4, 0, 1, 2, 3, 4, 7, 8, UiScaleOption],
             [209, 210, 211, 17, 18, MoveChatOption, ResetInterfaceOption]),
         [5, 6, 100, 101, 110, 111, 103, 108, 102, 109, 104, 112, 105, 113, 106, 114, 107, 114],
         [],
-        Columns([19, -5, 14, 20, TutorialTipsOption, 15, 16, 32, 30, 31, 33, -6, 27, 28, 29,
+        Columns([19, -5, 14, 20, TutorialTipsOption, .. DiscordRows, 15, 16, 32, 30, 31, 33, -6, 27, 28, 29,
             .. Enumerable.Range(34, GroundLootFilter.Labels.Length), 190, 191, 192, 193, 194, 196, .. Enumerable.Range(FirstSpecOption, LootJobs.Length)],
             [195, -7, DungeonCameraOption, 197, 200, 201, -8, 198, 199, 202, 203, 204, 205, 206, 207, 208, 212, 213, ChatTranslateOption])
     ];
@@ -599,6 +602,7 @@ internal sealed partial class HudSettingsPanel
                 DungeonCameraOption => WithDungeonCameraSwitched(current),
                 MoveChatOption => current with { MoveChat = !current.MoveChat },
                 TutorialTipsOption => current with { TutorialTips = !current.TutorialTips },
+                DiscordPresenceOption => current with { DiscordPresence = !current.DiscordPresence },
                 ResetInterfaceOption => current.WithInterfaceReset(),
                 ChatTranslateOption when ChatTranslationAvailable => current with { ChatTranslateTo = NextChatTranslation(current.ChatTranslateTo, direction) },
                 UiScaleOption => current with { UiScale = NextUiScale(current.UiScale, direction) },
@@ -814,6 +818,7 @@ internal sealed partial class HudSettingsPanel
         _labels[UiScaleOption] = ClientText.Format("Settings.Row.HudScale", Math.Round(settings.UiScale * 100));
         _labels[MoveChatOption] = Toggle("Settings.Row.MoveChat", settings.MoveChat);
         _labels[TutorialTipsOption] = Toggle("Settings.Row.TutorialTips", settings.TutorialTips);
+        _labels[DiscordPresenceOption] = Toggle("Settings.Row.DiscordPresence", settings.DiscordPresence);
         _labels[ResetInterfaceOption] = ClientText.Get("Settings.Row.ResetInterface");
         _labels[ChatTranslateOption] = ClientText.Format("Settings.Row.ChatTranslateTo", settings.ChatTranslateTo switch
         {
